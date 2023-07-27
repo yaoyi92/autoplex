@@ -10,3 +10,5 @@ Contributions are welcome. Please raise a pull request for contributions first. 
 - please use numpy docstrings
 - please write unit tests (testing will be performed with pytest)
 - please ensure high coverage of the code based on the tests
+
+Please check out atomate2 for example code (https://github.com/materialsproject/atomate2)
