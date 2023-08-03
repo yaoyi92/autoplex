@@ -62,7 +62,7 @@ class BenchPress(Maker):
 
             for i, struc in enumerate(structure_list):
                 MLoptphon = ML_based_optimization(
-                    struc = struc,
+                    structure = struc,
                     potential_filename = prepMLphon.output
                 )
                 jobs.append(MLoptphon)

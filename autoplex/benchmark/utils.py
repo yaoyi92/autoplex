@@ -1,10 +1,6 @@
 """
 Functions, classes to benchmark ML potentials
 """
-
-"""
-Atomistic Jobs to Benchmark Potentials
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -42,7 +38,7 @@ class OptimizationMLMaker(Maker):
     '''
 
     name: str = "apex job maker"
-    work_with_primitive: bool = False # True
+    work_with_primitive: bool = False  # True
 
     def make(self, structure: Structure, potential: Potential):
         '''
@@ -57,7 +53,7 @@ class OptimizationMLMaker(Maker):
         self.potential = potential
 
         if self.work_with_primitive:
-            structure = self._get_primitive_cell(self.initial_structure) #TODO doesn't work properly
+            structure = self._get_primitive_cell(self.initial_structure)  # TODO doesn't work properly
         else:
             structure = self.initial_structure
         self.initial_structure_primitive = structure
@@ -131,13 +127,13 @@ class StatMLMaker(Maker):
     name: str = "phonon-static"
 
     def make(self, structure: Structure, potential: Potential):
-
         self.optimized_structure = structure
         self.potential = potential
 
         self.energy_optimized_structure = self._get_potential_energy(self.optimized_structure, self.potential)
 
-        return Response(output = self.optimized_structure) #{"structure": self.optimized_structure, "energy": self.energy_optimized_structure,"phonon": self.phonon})
+        return Response(
+            output = self.optimized_structure)  # {"structure": self.optimized_structure, "energy": self.energy_optimized_structure,"phonon": self.phonon})
 
     def _get_ase_from_pmg(self, structure):
         pymatgentoase = AseAtomsAdaptor()
@@ -212,7 +208,7 @@ class GenPhoBandDosMLMaker(Maker):
         self.phonon = self._get_phononobject_phonopy(self.optimized_structure, self.potential, smat = self.smat,
                                                      save_parameters = True, path = self.path_parameters,
                                                      displacement_distance = self.displacementdistance)
-        #self.optimized_structure = get_pmg_structure(self.phonon.primitive)
+        # self.optimized_structure = get_pmg_structure(self.phonon.primitive)
         self.phonon_band_structure_pymatgen = self._get_bandstructure_calc(structure = self.optimized_structure,
                                                                            phonon = self.phonon,
                                                                            npoints_band = self.npoints_band)
@@ -224,7 +220,7 @@ class GenPhoBandDosMLMaker(Maker):
 
     def _get_phononobject_phonopy(self, structure, potential, smat, save_parameters, path, displacement_distance=0.01):
         cell = get_phonopy_structure(structure)
-        phonon = Phonopy(cell, smat, primitive_matrix = "auto", # [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+        phonon = Phonopy(cell, smat, primitive_matrix = "auto",  # [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                          factor = VaspToTHz)
 
         # displacements
@@ -272,6 +268,7 @@ class GenPhoBandDosMLMaker(Maker):
                     return self.kappa_xz[itemp]
                 elif whichvalue == "xy":
                     return self.kappa_xy[itemp]
+
     def _get_bandstructure_calc(self, structure, phonon, npoints_band=51):
         # TODO add option to save yaml file with eigenvalues in future versions
         tempfilename = tempfile.gettempprefix() + '.yaml'
@@ -312,7 +309,7 @@ class GenPhoBandDosMLMaker(Maker):
         Returns:
 
         """
-        kpath = KPathSeek(structure, symprec=0.0001) #HighSymmKpath(structure, symprec = 0.01)
+        kpath = KPathSeek(structure, symprec = 0.0001)  # HighSymmKpath(structure, symprec = 0.01)
         kpath_save = kpath.kpath
         labels = copy.deepcopy(kpath_save["path"])
         path = copy.deepcopy(kpath_save["path"])
@@ -545,4 +542,3 @@ class CompareDFTMLMaker(Maker):  # in pymatgen?
 
         diff = np.array(to_compare) - np.array(exp_data_y2)
         return np.sqrt(np.mean(diff ** 2))
-

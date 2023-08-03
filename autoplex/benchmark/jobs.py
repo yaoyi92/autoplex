@@ -9,6 +9,7 @@ from quippy.potential import Potential
 import os
 from jobflow import Flow, Response, job, Maker
 from autoplex.benchmark.utils import OptimizationMLMaker, StatMLMaker, GenPhoBandDosMLMaker, PlotPhoBandDosMLMaker, CompareDFTMLMaker
+from atomate2.forcefields.jobs import GAPRelaxMaker, GAPStaticMaker
 
 
 
@@ -22,22 +23,22 @@ def prepare_ML_for_phonons(
 
 @job
 def ML_based_optimization(
-        struc,
-        potential_filename
+        structure,
+       # potential_filename
 ):
-    potential = Potential('IP GAP', param_filename = potential_filename)
-    runner = OptimizationMLMaker(name = "testtesttest").make(structure = struc, potential = potential)
-
-    return Response(output = runner.output)
+    #potential = Potential('IP GAP', param_filename = potential_filename)
+    optimize = GAPRelaxMaker(name = "test GAP").make(structure = structure) #OptimizationMLMaker(name = "testtesttest").make(structure = struc, potential = potential)
+    return Response(output = optimize["final_structure"])
 
 @job
 def ML_stat_calc(
         structure,
-        potential_filename,
+        #potential_filename,
 ):
-    potential = Potential('IP GAP', param_filename = potential_filename)
-    stat = StatMLMaker(name = "teststat").make(structure = structure, potential = potential)
-    return Response(output = stat.output)
+    print("is that a structure ? ", structure)
+    #potential = Potential('IP GAP', param_filename = potential_filename)
+    static = GAPStaticMaker(name = "test GAPstat").make(structure = structure) #StatMLMaker(name = "teststat").make(structure = structure, potential = potential)
+    return Response(output = static["final_structure"])
 
 @job
 def ML_based_phonon_BS_DOS(
