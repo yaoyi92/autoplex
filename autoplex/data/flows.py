@@ -72,8 +72,6 @@ class DataGenerator(Maker):
             structure_list: list[Structure],
             mpids: list,  # list[MPID]
             prev_vasp_dir: str | Path | None = None,
-            born: list[Matrix3D] | None = None,
-            epsilon_static: Matrix3D | None = None,
             total_dft_energy_per_formula_unit: float | None = None,
             supercell_matrix: Matrix3D | None = None,
     ):
@@ -235,21 +233,6 @@ class DataGenerator(Maker):
                 static_run_job_dir = None
                 static_run_uuid = None
 
-            # Computation of BORN charges
-            if self.born_maker is not None and (born is None or epsilon_static is None):
-                born_job = self.born_maker.make(struc)
-                jobs.append(born_job)
-
-                # I am not happy how we currently access "born" charges
-                # This is very vasp specific code
-                epsilon_static = born_job.output.calcs_reversed[0].output.epsilon_static
-                born = born_job.output.calcs_reversed[0].output.outcar["born"]
-                born_run_job_dir = born_job.output.dir_name
-                born_run_uuid = born_job.output.uuid
-            else:
-                born_run_job_dir = None
-                born_run_uuid = None
-
             phonon_collect = generate_frequencies_eigenvectors(
                 supercell_matrix = supercell_matrix,
                 displacement = self.displacement,
@@ -260,13 +243,9 @@ class DataGenerator(Maker):
                 code = self.code,
                 structure = struc,
                 displacement_data = vasp_displacement_calcs.output,
-                epsilon_static = epsilon_static,
-                born = born,
                 total_dft_energy = total_dft_energy,
                 static_run_job_dir = static_run_job_dir,
                 static_run_uuid = static_run_uuid,
-                born_run_job_dir = born_run_job_dir,
-                born_run_uuid = born_run_uuid,
                 optimization_run_job_dir = optimization_run_job_dir,
                 optimization_run_uuid = optimization_run_uuid,
                 create_thermal_displacements = self.create_thermal_displacements,
@@ -281,8 +260,6 @@ class DataGenerator(Maker):
 
             # set these parameters to "None" to trigger the calculation for each structure in structure_list
             supercell_matrix = None
-            born = None
-            epsilon_static = None
 
         # create a flow including all jobs
         flow = Flow(jobs, PhononCollectOutput)

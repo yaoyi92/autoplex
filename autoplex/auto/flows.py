@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from jobflow import Flow, Maker, OutputReference, job
 from autoplex.data.flows import DataGenerator
 from autoplex.fitting.flows import MLIPFitMaker
-from autoplex.benchmark.flows import BenchPress
+from autoplex.benchmark.flows import PhononBenchmarkMaker
 
 __all__ = ["PhononDFTMLBenchmarkFlow"]
 
@@ -46,8 +46,8 @@ class PhononDFTMLBenchmarkFlow(Maker):
         flows.append(datagen)
         MLfit = MLIPFitMaker(name = "GAP")
         flows.append(MLfit)
-        bench = BenchPress(name = "Benchmark")
-        flows.append(bench)
+        benchmark = PhononBenchmarkMaker(name = "Benchmark")
+        flows.append(benchmark)
 
         flow = Flow(flows)
         return flow

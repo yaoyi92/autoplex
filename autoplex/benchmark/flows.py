@@ -12,11 +12,11 @@ from pymatgen.core.structure import Structure
 from autoplex.benchmark.jobs import prepare_ML_for_phonons, ML_based_optimization, ML_stat_calc, ML_based_phonon_BS_DOS
 
 
-__all__ = ["BenchPress"]
+__all__ = ["PhononBenchmarkMaker"]
 
 
 @dataclass
-class BenchPress(Maker):
+class PhononBenchmarkMaker(Maker):
     """
     Maker to create ML potentials based on DFT data
     3. Step: Evaluate Potentials
@@ -28,7 +28,7 @@ class BenchPress(Maker):
 
     """
 
-    name: str = "DFTbenchmark"
+    name: str = "PhononBenchmark"
 
     def make(
             self,
