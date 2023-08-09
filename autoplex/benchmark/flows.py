@@ -9,7 +9,6 @@ from pathlib import Path
 
 from jobflow import Flow, Maker, OutputReference, job
 from pymatgen.core.structure import Structure
-from autoplex.benchmark.jobs import prepare_ML_for_phonons, ML_based_optimization, ML_stat_calc, ML_based_phonon_BS_DOS
 
 
 __all__ = ["PhononBenchmarkMaker"]
@@ -54,41 +53,7 @@ class PhononBenchmarkMaker(Maker):
 
         start_from_files = False
         for ipot, pot in enumerate(potDir):
-            prepMLphon = prepare_ML_for_phonons(
-                pot = pot,
-                gapfile = self.gapfile,
-            )
-            jobs.append(prepMLphon)
-
-            for i, struc in enumerate(structure_list):
-                MLoptphon = ML_based_optimization(
-                    structure = struc,
-                    potential_filename = prepMLphon.output
-                )
-                jobs.append(MLoptphon)
-
-                MLstat = ML_stat_calc(
-                    structure = MLoptphon.output,
-                    potential_filename = prepMLphon.output,
-                )
-                jobs.append(MLstat)
-
-                MLBSDOS = ML_based_phonon_BS_DOS(
-                    statout = MLstat.output,
-                    potential_filename = prepMLphon.output,
-                    smat = smat[i]
-                )
-                jobs.append(MLBSDOS)
-                RMSstep.append(MLBSDOS.output)
-
-                plotBSDOS = plot_BS_DOS(
-                    distance = distance,
-                    dosband = MLBSDOS.output,
-                    struc = struc,
-                    i = i,
-                    pot_nam = potential_names[ipot]
-                )
-                jobs.append(plotBSDOS)
+            # will be replace by forcefield GAP PhononMaker
 
             rms = RMS(
                 distance = distance,

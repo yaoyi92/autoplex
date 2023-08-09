@@ -84,9 +84,10 @@ class MLIPFitMaker(Maker):
 
     def make(
             self,
-            structure_list: list[Structure],
-            mpids: list,  # list[MPID]
-            ml_dir: str | Path | None = None, #TODO einbauen, dass die ml_dir irgendwie verwendet wird, wenn sie vom user verwendet wird
+            species_list,
+            iso_atom_energy,
+            rattled_structures: list,
+            ml_dir: str | Path | None = None
     ):
         """
         Make flow to create ML potential fits.
@@ -96,31 +97,29 @@ class MLIPFitMaker(Maker):
         for now GAP fit specific parameters
         """
 
-#later adding: for i no. of potentials
+        jobs = []
+        iso_atom_energy_list = []
+        #for iso_atom in iso_atom_energy: iso_atom_energy_list.append(iso_atom.energy_per_atom)
+
         GAPfit = gapfit(
             # mind the GAP # converting OUTCARs to a joint extended xyz file and running gap_fit with certain settings
-            displacementinput = GAPinputs,
-            isolatedatoms = GAPisoatominput,
-            isolatedatomsenergy = GAPisoatomenergyinput,
-            at_file = self.at_file,
-            e0 = self.e0,
-            gap = self.gap,
-            default_sigma = self.default_sigma,
-            energyparam = self.energyparam,
-            forcesparam = self.forcesparam,
-            stressparam = self.stressparam,
-            sparse_jitter = self.jitter,
-            do_copy_at = self.copy,
-            openmp = self.openmp,
-            gpfile = self.gpfile,
+            rattledinput=rattled_structures,
+            isolatedatoms=species_list,
+            isolatedatomsenergy=iso_atom_energy,
+            at_file=self.at_file,
+            e0=self.e0,
+            gap=self.gap,
+            default_sigma=self.default_sigma,
+            energyparam=self.energyparam,
+            forcesparam=self.forcesparam,
+            stressparam=self.stressparam,
+            sparse_jitter=self.jitter,
+            do_copy_at=self.copy,
+            openmp=self.openmp,
+            gpfile=self.gpfile,
+            gapfile=self.gapfile
         )
         jobs.append(GAPfit)
-        # This will construct the names of the potentials
-        potential_names = ["GAPfit"]
-        #for i in pot ends here
-
-        potDir.append(GAPfit.output)
-        #potDir.append('/home/certural/finished/Sb2Se3GAP')
 
         # create a flow including all jobs
         flow = Flow(jobs)

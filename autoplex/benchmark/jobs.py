@@ -3,56 +3,10 @@ Atomistic Jobs to Benchmark Potentials
 """
 from __future__ import annotations
 
-
-from quippy.potential import Potential
-
 import os
 from jobflow import Flow, Response, job, Maker
-from autoplex.benchmark.utils import OptimizationMLMaker, StatMLMaker, GenPhoBandDosMLMaker, PlotPhoBandDosMLMaker, CompareDFTMLMaker
-from atomate2.forcefields.jobs import GAPRelaxMaker, GAPStaticMaker
+from autoplex.benchmark.utils import PlotPhoBandDosMLMaker, CompareDFTMLMaker
 
-
-
-@job
-def prepare_ML_for_phonons(
-        pot: str,
-        gapfile: str
-):
-    potential_filename = str(os.path.join(pot, gapfile))
-    return Response(output = potential_filename)
-
-@job
-def ML_based_optimization(
-        structure,
-       # potential_filename
-):
-    #potential = Potential('IP GAP', param_filename = potential_filename)
-    optimize = GAPRelaxMaker(name = "test GAP").make(structure = structure) #OptimizationMLMaker(name = "testtesttest").make(structure = struc, potential = potential)
-    return Response(output = optimize["final_structure"])
-
-@job
-def ML_stat_calc(
-        structure,
-        #potential_filename,
-):
-    print("is that a structure ? ", structure)
-    #potential = Potential('IP GAP', param_filename = potential_filename)
-    static = GAPStaticMaker(name = "test GAPstat").make(structure = structure) #StatMLMaker(name = "teststat").make(structure = structure, potential = potential)
-    return Response(output = static["final_structure"])
-
-@job
-def ML_based_phonon_BS_DOS(
-        statout,
-        potential_filename,
-        smat
-):
-    potential = Potential('IP GAP', param_filename = potential_filename)
-    dosband = GenPhoBandDosMLMaker(name = "testdosband").make(
-        structure = statout,
-        potential = potential,
-        smat = smat)
-
-    return Response(output = dosband.output)
 
 @job
 def plot_BS_DOS(
