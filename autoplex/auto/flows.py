@@ -50,6 +50,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
 
         flows = []
         isoatoms = []
+        fitinput = []
         for species in structure_list[0].types_of_species:
             isoatom = IsoAtomMaker().make(species=species)
             flows.append(isoatom)
@@ -58,15 +59,18 @@ class PhononDFTMLBenchmarkFlow(Maker):
         for struc_i, structure in enumerate(structure_list):  # later adding: for i no. of potentials
             DFTphonons = DFTPhononMaker().make(structure=structure)
             flows.append(DFTphonons)
+            fitinput.append(DFTphonons.output)
             datagen = DataGenerator(name="DataGen", symprec=0.0001).make(structure=structure, mpid=mpids[struc_i])
             flows.append(datagen)
+            fitinput.append(datagen.output)
 
-            MLfit = MLIPFitMaker(name="GAP").make(species_list=structure_list[0].types_of_species,
-                                                      iso_atom_energy=isoatoms, phonon_structures=DFTphonons.output,
-                                                      rattled_structures=datagen.output)
-            flows.append(MLfit)
-            #if ml_dir is None: ml_dir =
+        MLfit = MLIPFitMaker(name="GAP").make(species_list=structure_list[0].types_of_species,
+                                                      iso_atom_energy=isoatoms, fitinput=fitinput)
+        flows.append(MLfit)
 
+        #if ml_dir is None: ml_dir =
+
+        for struc_i, structure in enumerate(structure_list):
             GAPPhonons = PhononMaker(
                 bulk_relax_maker=GAPRelaxMaker(potential_param_file_name=MLfit.output, relax_cell=True,
                                                relax_kwargs={"interval": 500}),

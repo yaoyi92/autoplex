@@ -13,8 +13,7 @@ from jobflow import Flow, Response, job
 
 @job
 def gapfit(
-        phononstructures,
-        rattledinput,
+        fitinput,
         isolatedatoms,
         isolatedatomsenergy,
         at_file: str,
@@ -35,11 +34,10 @@ def gapfit(
 
     """
 
-    print("phonon stuff: ", phononstructures)
-    print("rattled stuff: ", rattledinput)
+    print("fit input: ", fitinput)
 
-    for rattled in rattledinput:
-        for rat in rattled['dirs']:
+    for entry in fitinput:
+        for rat in entry['dirs']:
             file = read(re.sub(r'^.*?/', '/', rat, count = 1) + "/OUTCAR.gz", index = ":")
             for i in file:  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html
                 xx, yy, zz, yz, xz, xy = -i.calc.results['stress'] * i.get_volume()
