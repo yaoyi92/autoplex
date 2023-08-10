@@ -13,6 +13,7 @@ from jobflow import Flow, Response, job
 
 @job
 def gapfit(
+        phononstructures,
         rattledinput,
         isolatedatoms,
         isolatedatomsenergy,
@@ -31,22 +32,11 @@ def gapfit(
 ):
     """
     job that prepares GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
-    :param gap:
-    :param default_sigma:
-    :param energyparam:
-    :param forcesparam:
-    :param stressparam:
-    :param sparse_jitter:
-    :param do_copy_at:
-    :param openmp:
-    :param gpfile:
-    :param isolatedatoms:
-    :param isolatedatomsenergy:
-    :param displacementinput:
-    :param at_file:
-    :param e0:
-    :return: Job output
+
     """
+
+    print("phonon stuff: ", phononstructures)
+    print("rattled stuff: ", rattledinput)
 
     for rattled in rattledinput:
         for rat in rattled['dirs']:

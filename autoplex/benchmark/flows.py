@@ -17,7 +17,7 @@ __all__ = ["PhononBenchmarkMaker"]
 @dataclass
 class PhononBenchmarkMaker(Maker):
     """
-    Maker to create ML potentials based on DFT data
+    Maker to benchmark ML potentials to DFT data
     3. Step: Evaluate Potentials
 
     Parameters

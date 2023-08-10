@@ -11,6 +11,7 @@ from autoplex.fitting.flows import MLIPFitMaker
 from autoplex.benchmark.flows import PhononBenchmarkMaker
 from atomate2.forcefields.jobs import GAPRelaxMaker, GAPStaticMaker
 from atomate2.forcefields.flows.phonons import PhononMaker
+from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
 
 __all__ = ["PhononDFTMLBenchmarkFlow"]
 
@@ -48,25 +49,29 @@ class PhononDFTMLBenchmarkFlow(Maker):
         # potential_names = ["GAPfit"]
 
         flows = []
-
-        isoatoms = IsoAtomMaker().make(structure_list=structure_list)
-        flows.append(isoatoms)
+        isoatoms = []
+        for species in structure_list[0].types_of_species:
+            isoatom = IsoAtomMaker().make(species=species)
+            flows.append(isoatom)
+            isoatoms.append(isoatom.output)
 
         for struc_i, structure in enumerate(structure_list):  # later adding: for i no. of potentials
+            DFTphonons = DFTPhononMaker().make(structure=structure)
+            flows.append(DFTphonons)
             datagen = DataGenerator(name="DataGen", symprec=0.0001).make(structure=structure, mpid=mpids[struc_i])
             flows.append(datagen)
 
             MLfit = MLIPFitMaker(name="GAP").make(species_list=structure_list[0].types_of_species,
-                                                      iso_atom_energy=isoatoms.output,
+                                                      iso_atom_energy=isoatoms, phonon_structures=DFTphonons.output,
                                                       rattled_structures=datagen.output)
             flows.append(MLfit)
-            if ml_dir is None: ml_dir = MLfit.output
+            #if ml_dir is None: ml_dir =
 
             GAPPhonons = PhononMaker(
-                bulk_relax_maker=GAPRelaxMaker(potential_param_file_name=ml_dir, relax_cell=True,
+                bulk_relax_maker=GAPRelaxMaker(potential_param_file_name=MLfit.output, relax_cell=True,
                                                relax_kwargs={"interval": 500}),
-                phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
-                static_energy_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
+                phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=MLfit.output),
+                static_energy_maker=GAPStaticMaker(potential_param_file_name=MLfit.output),
                 store_force_constants=False,
                 generate_frequencies_eigenvectors_kwargs={"units": "THz"}).make(structure=structure)
             flows.append(GAPPhonons)

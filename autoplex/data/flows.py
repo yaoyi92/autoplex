@@ -10,7 +10,6 @@ from pathlib import Path
 from jobflow import Flow, Maker, OutputReference, job
 from pymatgen.core.structure import Structure
 from autoplex.data.jobs import generate_random_displacement
-from atomate2.vasp.flows.phonons import PhononMaker
 from atomate2.vasp.sets.core import StaticSetGenerator
 from atomate2.common.jobs import structure_to_conventional, structure_to_primitive
 from emmet.core.math import Matrix3D, Vector3D
@@ -28,7 +27,7 @@ __all__ = ["DataGenerator", "IsoAtomMaker"]
 @dataclass
 class DataGenerator(Maker):
     """
-    Maker to create ML potentials based on DFT data
+    Maker to create DFT data for ML potential fitting
     1. Fetch Data from Materials Project and other databases (other: work in progress)
     + Perform DFT calculations (at the current point these are also used for Phonon calculations (that part
     shall be independent in the future.)
@@ -83,14 +82,11 @@ class DataGenerator(Maker):
         """
         jobs = []  # initializing empty job list
 
-        DFTphonons = PhononMaker().make(structure=structure)
-        jobs.append(DFTphonons)
-
         random_rattle_displacement = generate_random_displacement(structure=structure)
         jobs.append(random_rattle_displacement)
 
         # perform the phonon displaced calculations for randomized displaced structures
-        vasp_random_displacement_calcs = run_phonon_displacements(
+        vasp_random_displacement_calcs = run_phonon_displacements( #name phonon-static ändern?
             displacements=random_rattle_displacement.output,
             structure=structure,
             supercell_matrix=supercell_matrix,
@@ -99,7 +95,7 @@ class DataGenerator(Maker):
         jobs.append(vasp_random_displacement_calcs)
 
         # create a flow including all jobs
-        flow = Flow(jobs)
+        flow = Flow(jobs, vasp_random_displacement_calcs.output)
         return flow
 
 
@@ -110,20 +106,19 @@ class IsoAtomMaker(Maker):
     """
     name: str = "IsolatedAtomEnergyMaker"
 
-    def make(self, structure_list):
+    def make(self, species):
         """
         Returns a VASP job to calculate the isolated atoms energy.
         """
         jobs = []
-        for species in structure_list[0].types_of_species:
-            iso_atom = Structure(
-                lattice=[[20, 0, 0], [0, 20, 0], [0, 0, 20]],
-                species=[species],
-                coords=[[0, 0, 0]],
-            )
-            isoatom_calcs = StaticMaker(name=str(species) + "-statisoatom",input_set_generator=StaticSetGenerator(
-                                            user_kpoints_settings={"grid_density": 1}, )).make(iso_atom)
-            jobs.append(isoatom_calcs)
-            # create a flow including all jobs
-            flow = Flow(jobs)
-            return flow
+        iso_atom = Structure(
+            lattice=[[20, 0, 0], [0, 20, 0], [0, 0, 20]],
+            species=[species],
+            coords=[[0, 0, 0]],
+        )
+        isoatom_calcs = StaticMaker(name=str(species) + "-statisoatom", input_set_generator=StaticSetGenerator(
+            user_kpoints_settings={"grid_density": 1}, )).make(iso_atom)
+        jobs.append(isoatom_calcs)
+        # create a flow including all jobs
+        flow = Flow(jobs, isoatom_calcs.output)
+        return flow
