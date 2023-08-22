@@ -87,6 +87,7 @@ class MLIPFitMaker(Maker):
             species_list,
             iso_atom_energy,
             fitinput: list,
+            structurelist: list,
             ml_dir: str | Path | None = None
     ):
         """
@@ -117,7 +118,8 @@ class MLIPFitMaker(Maker):
             do_copy_at=self.copy,
             openmp=self.openmp,
             gpfile=self.gpfile,
-            gapfile=self.gapfile
+            gapfile=self.gapfile,
+            structurelist=structurelist,
         )
         jobs.append(GAPfit)
 

@@ -28,6 +28,7 @@ def gapfit(
         openmp: str,
         gpfile: str,
         gapfile: str,
+        structurelist: list,
 ):
     """
     job that prepares GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
@@ -59,4 +60,4 @@ def gapfit(
 
         directory = Path.cwd()
 
-    return Response(output = str(os.path.join(directory, gapfile)))
+    return Response(output = {"dir": str(os.path.join(directory, gapfile)), "struclist": structurelist})

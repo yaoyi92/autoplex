@@ -51,6 +51,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
         flows = []
         isoatoms = []
         fitinput = []
+        gapfit_dir = [] #OR dict mit key ansteuern !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         for species in structure_list[0].types_of_species:
             isoatom = IsoAtomMaker().make(species=species)
             flows.append(isoatom)
@@ -65,19 +66,20 @@ class PhononDFTMLBenchmarkFlow(Maker):
             fitinput.append(datagen.output)
 
         MLfit = MLIPFitMaker(name="GAP").make(species_list=structure_list[0].types_of_species,
-                                                      iso_atom_energy=isoatoms, fitinput=fitinput)
+                                                      iso_atom_energy=isoatoms, fitinput=fitinput, structurelist=structure_list)
         flows.append(MLfit)
+        gapfit_dir.append(MLfit.output)
 
         #if ml_dir is None: ml_dir =
 
         for struc_i, structure in enumerate(structure_list):
             GAPPhonons = PhononMaker(
-                bulk_relax_maker=GAPRelaxMaker(potential_param_file_name=MLfit.output, relax_cell=True,
+                bulk_relax_maker=GAPRelaxMaker(potential_param_file_name=MLfit.output["dir"], relax_cell=True,
                                                relax_kwargs={"interval": 500}),
-                phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=MLfit.output),
-                static_energy_maker=GAPStaticMaker(potential_param_file_name=MLfit.output),
+                phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=MLfit.output["dir"]),
+                static_energy_maker=GAPStaticMaker(potential_param_file_name=MLfit.output["dir"]),
                 store_force_constants=False,
-                generate_frequencies_eigenvectors_kwargs={"units": "THz"}).make(structure=structure)
+                generate_frequencies_eigenvectors_kwargs={"units": "THz"}).make(structure=MLfit.output["struclist"][struc_i])
             flows.append(GAPPhonons)
             # benchmark = PhononBenchmarkMaker(name="Benchmark").make()
             # flows.append(benchmark)
