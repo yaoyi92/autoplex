@@ -51,7 +51,6 @@ class PhononDFTMLBenchmarkFlow(Maker):
         flows = []
         isoatoms = []
         fitinput = []
-        gapfit_dir = [] #OR dict mit key ansteuern !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         for species in structure_list[0].types_of_species:
             isoatom = IsoAtomMaker().make(species=species)
             flows.append(isoatom)
@@ -68,7 +67,6 @@ class PhononDFTMLBenchmarkFlow(Maker):
         MLfit = MLIPFitMaker(name="GAP").make(species_list=structure_list[0].types_of_species,
                                                       iso_atom_energy=isoatoms, fitinput=fitinput, structurelist=structure_list)
         flows.append(MLfit)
-        gapfit_dir.append(MLfit.output)
 
         #if ml_dir is None: ml_dir =
 

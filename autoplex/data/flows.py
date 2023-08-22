@@ -16,7 +16,7 @@ from emmet.core.math import Matrix3D, Vector3D
 from atomate2.vasp.flows.core import DoubleRelaxMaker
 from atomate2.vasp.jobs.base import BaseVaspMaker
 from atomate2.vasp.jobs.core import DielectricMaker, StaticMaker, TightRelaxMaker
-from atomate2.vasp.jobs.phonons import (
+from atomate2.common.jobs.phonons import (
     PhononDisplacementMaker,
     run_phonon_displacements,
 )
