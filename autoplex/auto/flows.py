@@ -42,7 +42,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
             ml_dir: str | Path | None = None,
     ):
         """
-        Make flow for benchmarking..
+        Make flow for benchmarking.
 
         Parameters
         ----------
