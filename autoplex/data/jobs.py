@@ -16,7 +16,7 @@ def generate_random_displacement(
 ):
     random_displacements = []
     ase_structure = AseAtomsAdaptor.get_atoms(structure)
-    for seed in np.random.permutation(100)[:5]:
+    for seed in np.random.permutation(100)[:1]:
         ase_structure.rattle(seed=seed)
         random_displacements.append(AseAtomsAdaptor.get_structure(ase_structure))
     return random_displacements

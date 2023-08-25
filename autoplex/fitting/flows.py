@@ -7,8 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from jobflow import Flow, Maker, OutputReference, job
-from pymatgen.core.structure import Structure
+from jobflow import Flow, Maker
 from autoplex.fitting.jobs import gapfit
 
 __all__ = ["MLIPFitMaker"]
@@ -99,9 +98,6 @@ class MLIPFitMaker(Maker):
         """
 
         jobs = []
-        iso_atom_energy_list = []
-        #for iso_atom in iso_atom_energy: iso_atom_energy_list.append(iso_atom.energy_per_atom)
-
         GAPfit = gapfit(
             # mind the GAP # converting OUTCARs to a joint extended xyz file and running gap_fit with certain settings
             fitinput=fitinput,

@@ -11,11 +11,10 @@ from jobflow import Flow, Maker, OutputReference, job
 from pymatgen.core.structure import Structure
 from autoplex.data.jobs import generate_random_displacement
 from atomate2.vasp.sets.core import StaticSetGenerator
-from atomate2.common.jobs import structure_to_conventional, structure_to_primitive
 from emmet.core.math import Matrix3D, Vector3D
 from atomate2.vasp.flows.core import DoubleRelaxMaker
 from atomate2.vasp.jobs.base import BaseVaspMaker
-from atomate2.vasp.jobs.core import DielectricMaker, StaticMaker, TightRelaxMaker
+from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
 from atomate2.common.jobs.phonons import (
     PhononDisplacementMaker,
     run_phonon_displacements,
@@ -43,22 +42,8 @@ class DataGenerator(Maker):
     """
 
     name: str = "DataGenerationML"
-    sym_reduce: bool = True
-    symprec: float = 1e-4
-    displacement: float = 0.01
-    min_length: float | None = 5.0
-    prefer_90_degrees: bool = True
-    get_supercell_size_kwargs: dict = field(default_factory=dict)
-    use_symmetrized_structure: str | None = None
-    bulk_relax_maker: BaseVaspMaker | None = field(
-        default_factory=lambda: DoubleRelaxMaker.from_relax_maker(TightRelaxMaker()))
-    static_energy_maker: BaseVaspMaker | None = field(default_factory=StaticMaker)
     phonon_displacement_maker: BaseVaspMaker = field(default_factory=PhononDisplacementMaker)
-    create_thermal_displacements: bool = True
-    generate_frequencies_eigenvectors_kwargs: dict = field(default_factory=dict)
-    kpath_scheme: str = "seekpath"
     code: str = "vasp"
-    store_force_constants: bool = True
 
     def make(
             self,
@@ -84,13 +69,15 @@ class DataGenerator(Maker):
 
         random_rattle_displacement = generate_random_displacement(structure=structure)
         jobs.append(random_rattle_displacement)
+        phonon_stat = BaseVaspMaker(
+            input_set_generator = StaticSetGenerator(user_kpoints_settings = {"grid_density": 1}, ))
 
         # perform the phonon displaced calculations for randomized displaced structures
-        vasp_random_displacement_calcs = run_phonon_displacements( #name phonon-static ändern?
+        vasp_random_displacement_calcs = run_phonon_displacements(
             displacements=random_rattle_displacement.output,
             structure=structure,
             supercell_matrix=supercell_matrix,
-            phonon_maker=self.phonon_displacement_maker,
+            phonon_maker=phonon_stat #self.phonon_displacement_maker,
         )
         jobs.append(vasp_random_displacement_calcs)
 
@@ -120,5 +107,5 @@ class IsoAtomMaker(Maker):
             user_kpoints_settings={"grid_density": 1}, )).make(iso_atom)
         jobs.append(isoatom_calcs)
         # create a flow including all jobs
-        flow = Flow(jobs, isoatom_calcs.output)
+        flow = Flow(jobs, isoatom_calcs.output.output.energy_per_atom)
         return flow

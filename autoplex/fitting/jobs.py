@@ -37,9 +37,9 @@ def gapfit(
 
     print("fit input: ", fitinput)
 
-    for entry in fitinput:
-        for rat in entry['dirs']:
-            file = read(re.sub(r'^.*?/', '/', rat, count = 1) + "/OUTCAR.gz", index = ":")
+    for key in fitinput:
+        for dir in fitinput[key]:
+            file = read(re.sub(r'^.*?/', '/', dir, count = 1) + "/OUTCAR.gz", index = ":")
             for i in file:  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html
                 xx, yy, zz, yz, xz, xy = -i.calc.results['stress'] * i.get_volume()
                 i.info['virial'] = np.array([(xx, xy, xz), (xy, yy, yz), (xz, yz, zz)])
@@ -47,6 +47,7 @@ def gapfit(
                 i.pbc = True
                 poten = i.get_potential_energy()
             write("trainGAP.xyz", file, append = True)
+
 
     for isoatom, isoenergy in zip(isolatedatoms, isolatedatomsenergy):
         if isoatom == isolatedatoms[-1]:
