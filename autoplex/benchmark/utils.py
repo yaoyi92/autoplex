@@ -110,8 +110,6 @@ class CompareDFTMLMaker(Maker):  # in pymatgen?
         self.bands1 = self.quippyBS.bands
         self.bands2 = self.vaspBS.as_dict()['bands']
 
-        print("band1: ", self.bands1, "\n band2: ", self.bands2)
-
         # return Response(output = {"band1": self.bands1, "band2": self.bands2})
         diff = self.bands1 - self.bands2
         return np.sqrt(np.mean(diff ** 2))
@@ -181,26 +179,11 @@ class CompareDFTMLMaker(Maker):  # in pymatgen?
         self.bands1 = self.quippyBS.bands
         self.bands2 = self.vaspBS.as_dict()['bands']
 
-        print("band1.1: ", self.bands1, "\n band2.1: ", self.bands2)
-
-        # return Response(output = {"band1": self.bands1, "band2": self.bands2})
-
         band1 = np.sort(self.bands1, axis = 0)
         band2 = np.sort(self.bands2, axis = 0)
 
-        print("band1.2: ", band1, "\n band2.2: ", band2)
-
         diff = band1 - band2
         return np.sqrt(np.mean(diff ** 2))
-
-    # not used
-    # def mean_absolute_error(self):
-    #     band1 = np.sort(self.bands1, axis=0)
-    #     band2 = np.sort(self.bands2, axis=0)
-    #     diff_perc = (np.abs(band1 - band2)) / band1
-    #     return np.mean(np.abs(diff_perc))
-
-    #####
 
     def calculate_rms(self, exp_data_x=None, exp_data_y=None):
         to_compare = []

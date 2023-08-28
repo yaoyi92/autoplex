@@ -36,7 +36,7 @@ class PhononBenchmarkMaker(Maker):
             potDir: str | Path | None = None,
     ):
         """
-        Make flow for benchmarking..
+        Make flow for benchmarking.
 
         Parameters
         ----------

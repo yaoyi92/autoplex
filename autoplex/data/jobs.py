@@ -12,11 +12,12 @@ import numpy as np
 
 @job
 def generate_random_displacement(
-        structure: Structure
+        structure: Structure,
+        n_struc: int,
 ):
     random_displacements = []
     ase_structure = AseAtomsAdaptor.get_atoms(structure)
-    for seed in np.random.permutation(100)[:1]:
+    for seed in np.random.permutation(100)[:n_struc]:
         ase_structure.rattle(seed=seed)
         random_displacements.append(AseAtomsAdaptor.get_structure(ase_structure))
     return random_displacements

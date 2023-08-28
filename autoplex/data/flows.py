@@ -44,6 +44,7 @@ class DataGenerator(Maker):
     name: str = "DataGenerationML"
     phonon_displacement_maker: BaseVaspMaker = field(default_factory=PhononDisplacementMaker)
     code: str = "vasp"
+    n_struc: int = 1
 
     def make(
             self,
@@ -67,17 +68,15 @@ class DataGenerator(Maker):
         """
         jobs = []  # initializing empty job list
 
-        random_rattle_displacement = generate_random_displacement(structure=structure)
+        random_rattle_displacement = generate_random_displacement(structure=structure, n_struc=self.n_struc)
         jobs.append(random_rattle_displacement)
-        phonon_stat = BaseVaspMaker(
-            input_set_generator = StaticSetGenerator(user_kpoints_settings = {"grid_density": 1}, ))
 
         # perform the phonon displaced calculations for randomized displaced structures
         vasp_random_displacement_calcs = run_phonon_displacements(
             displacements=random_rattle_displacement.output,
             structure=structure,
             supercell_matrix=supercell_matrix,
-            phonon_maker=phonon_stat #self.phonon_displacement_maker,
+            phonon_maker=self.phonon_displacement_maker,
         )
         jobs.append(vasp_random_displacement_calcs)
 
