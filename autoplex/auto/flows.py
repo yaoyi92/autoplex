@@ -64,13 +64,11 @@ class PhononDFTMLBenchmarkFlow(Maker):
         for struc_i, structure in enumerate(structure_list):  # later adding: for i no. of potentials
             DFTphonons = DFTPhononMaker(symprec = self.symprec, phonon_displacement_maker = self.phonon_displacement_maker, born_maker = None, min_length = 8).make(structure=structure) # reduced the accuracy for test calculations
             flows.append(DFTphonons)
-            fitinput.append(DFTphonons.output.jobdirs.displacements_job_dirs)
             datagen = DataGenerator(name="DataGen", phonon_displacement_maker = self.phonon_displacement_maker).make(structure=structure, mpid=mpids[struc_i])
             flows.append(datagen)
-            fitinput.append(datagen.output['dirs'])
 
         MLfit = MLIPFitMaker(name="GAP").make(species_list=structure_list[0].types_of_species,
-                                                      iso_atom_energy=isoatoms, fitinput=fitinput, structurelist=structure_list)
+                                                      iso_atom_energy=isoatoms, fitinput=DFTphonons.output.jobdirs.displacements_job_dirs, fitinputrand=datagen.output['dirs'], structurelist=structure_list)
         flows.append(MLfit)
 
         #if ml_dir is None: ml_dir =

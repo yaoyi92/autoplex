@@ -13,7 +13,8 @@ from jobflow import Flow, Response, job
 
 @job
 def gapfit(
-        fitinput,
+        fitinput: list,
+        fitinputrand: list,
         isolatedatoms,
         isolatedatomsenergy,
         at_file: str,
@@ -34,18 +35,19 @@ def gapfit(
     job that prepares GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
 
     """
+    fit = []
+    fit.extend(fitinput)
+    fit.extend(fitinputrand)
+    print("for debug: ", fit)
+    for entry in fit:
+        file = read(re.sub(r'^.*?/', '/', entry, count = 1) + "/OUTCAR.gz", index = ":")
+        for i in file:  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html
+            xx, yy, zz, yz, xz, xy = -i.calc.results['stress'] * i.get_volume()
+            i.info['virial'] = np.array([(xx, xy, xz), (xy, yy, yz), (xz, yz, zz)])
+            del i.calc.results['stress']
+            i.pbc = True
+        write("trainGAP.xyz", file, append = True)
 
-    print("fit input: ", fitinput)
-
-    for entry in fitinput:
-        for dir in entry:
-            file = read(re.sub(r'^.*?/', '/', dir, count = 1) + "/OUTCAR.gz", index = ":")
-            for i in file:  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html
-                xx, yy, zz, yz, xz, xy = -i.calc.results['stress'] * i.get_volume()
-                i.info['virial'] = np.array([(xx, xy, xz), (xy, yy, yz), (xz, yz, zz)])
-                del i.calc.results['stress']
-                i.pbc = True
-            write("trainGAP.xyz", file, append = True)
 
 
     for isoatom, isoenergy in zip(isolatedatoms, isolatedatomsenergy):
