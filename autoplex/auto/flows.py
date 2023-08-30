@@ -1,21 +1,18 @@
 """
-Total AutoPLEX -- Automated machine-learned Potential Landscape explorer -- flow
+Complete AutoPLEX -- Automated machine-learned Potential Landscape explorer -- flows
 """
 
 from pathlib import Path
 from pymatgen.core.structure import Structure
 from dataclasses import dataclass, field
-from jobflow import Flow, Maker, OutputReference, job
+from jobflow import Flow, Maker
 from autoplex.data.flows import DataGenerator, IsoAtomMaker
 from autoplex.fitting.flows import MLIPFitMaker
-from atomate2.forcefields.jobs import GAPRelaxMaker, GAPStaticMaker
-from atomate2.forcefields.flows.phonons import PhononMaker
 from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
 from atomate2.vasp.jobs.base import BaseVaspMaker
 from atomate2.common.jobs.phonons import PhononDisplacementMaker
 
-__all__ = ["PhononDFTMLDataGenerationFlow",
-           "PhononDFTMLBenchmarkFlow"]
+__all__ = ["PhononDFTMLDataGenerationFlow"]
 
 
 # Volker's idea: provide several default flows with different setting/setups
@@ -69,40 +66,3 @@ class PhononDFTMLDataGenerationFlow(Maker):
 
         flow = Flow(flows, MLfit.output)
         return flow
-
-@dataclass
-class PhononDFTMLBenchmarkFlow(Maker):
-    """
-    Maker to benchmark the ML data to DFT data
-
-    Parameters
-    ----------
-    name : str
-        Name of the flows produced by this maker.
-
-    """
-
-    name: str = "DFTbenchmark"
-
-    def make(
-            self,
-            structure_list: list[Structure],
-            mpids: list,  # list[MPID]
-            ml_dir: str | Path | None = None,
-    ):
-        flows = []
-        for struc_i, structure in enumerate(structure_list):
-            GAPPhonons = PhononMaker(
-                bulk_relax_maker=GAPRelaxMaker(potential_param_file_name=ml_dir, relax_cell=True,
-                                               relax_kwargs={"interval": 500}),
-                phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
-                static_energy_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
-                store_force_constants=False,
-                generate_frequencies_eigenvectors_kwargs={"units": "THz"}).make(
-                structure=structure)
-            flows.append(GAPPhonons)
-            # benchmark = PhononBenchmarkMaker(name="Benchmark").make()
-            # flows.append(benchmark)
-
-            flow = Flow(flows) # output will follow
-            return flow
