@@ -37,7 +37,7 @@ class MLIPFitMaker(Maker):
             fitinputrand: list,
             structurelist: list,
             ml_dir: str | Path | None = None,
-            **kwargs
+            **fit_kwargs
     ):
         """
         Make flow to create ML potential fits.
@@ -55,7 +55,7 @@ class MLIPFitMaker(Maker):
             isolatedatoms=species_list,
             isolatedatomsenergy=iso_atom_energy,
             structurelist=structurelist,
-            kwargs=kwargs,
+            fit_kwargs=fit_kwargs,
         )
         jobs.append(GAPfit)
 

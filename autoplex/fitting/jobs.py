@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import os
 from jobflow import Flow, Response, job
+from dataclasses import dataclass, field
 
 @job
 def gapfit(
@@ -18,7 +19,7 @@ def gapfit(
         isolatedatoms,
         isolatedatomsenergy,
         structurelist: list,
-        kwargs
+        fit_kwargs: dict = field(default_factory=dict),
 ):
     """
     job that prepares GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
@@ -100,7 +101,7 @@ def gapfit(
 
     with open('std_out.log', 'w') as f_std, open('std_err.log', 'w') as f_err:
         subprocess.call(['gap_fit', at_file, e0, gap, default_sigma, energyparam, forcesparam, stressparam,
-                         sparse_jitter, do_copy_at, openmp, gpfile], stdout = f_std, stderr = f_err)
+                         jitter, copy, openmp, gpfile], stdout = f_std, stderr = f_err)
 
         directory = Path.cwd()
 
