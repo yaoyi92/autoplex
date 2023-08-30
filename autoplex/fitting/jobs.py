@@ -29,14 +29,14 @@ def gapfit(
     at_file: str = 'at_file=trainGAP.xyz'
     e0: str = "e0={"
     order: int = 2
-    cutoffgap: float = 6.5
-    cutoffsoap: float = cutoffgap
-    cutofftransgap: float = 0.5
+    cutoff: float = 6.5
+    cutoffsoap: float = cutoff
+    cutofftrans: float = 0.5
     cutofftranssoap: float = 0.5
     n_sparse: int = 15
-    covariance_type_gap: str = 'ard_se'
-    deltagap: float = 2.00
-    thetagap: float = 2.0
+    covariance_type: str = 'ard_se'
+    delta: float = 2.00
+    theta: float = 2.0
     sparsemethod: str = 'uniform'
     clusters: str = 'T'
     lmax: int = 6
@@ -60,9 +60,9 @@ def gapfit(
     do_copy_at: str = 'F'
     openmp_chunk_size: int = 10000
     gapfile: str = 'gap.xml'
-    gap: str = 'gap={distance_Nb order=' + str(order) + ' cutoff=' + str(cutoffgap) + ' cutoff_transition_width=' + \
-               str(cutofftransgap) + ' n_sparse=' + str(n_sparse) + ' covariance_type=' + covariance_type_gap + \
-               ' delta=' + str(deltagap) + ' theta_uniform=' + str(thetagap) + ' sparse_method=' + sparsemethod + \
+    gap: str = 'gap={distance_Nb order=' + str(order) + ' cutoff=' + str(cutoff) + ' cutoff_transition_width=' + \
+               str(cutofftrans) + ' n_sparse=' + str(n_sparse) + ' covariance_type=' + covariance_type + \
+               ' delta=' + str(delta) + ' theta_uniform=' + str(theta) + ' sparse_method=' + sparsemethod + \
                ' compact_clusters=' + clusters + ':soap' + ' l_max=' + str(lmax) + ' n_max=' + str(nmax) + \
                ' atom_sigma=' + str(atomsigma) + ' zeta=' + str(zeta) + ' cutoff=' + str(cutoffsoap) + \
                ' cutoff_transition_width=' + str(cutofftranssoap) + ' central_weight=' + str(central_weight) + \
