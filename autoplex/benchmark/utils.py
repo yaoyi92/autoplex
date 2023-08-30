@@ -42,40 +42,6 @@ class PlotPhoBandDosMLMaker(Maker):
         plotter2.add_dos(label = label, dos = self.phonon_dos_pymatgen)
         plotter2.save_plot(filename = filename, img_format = img_format, units = units)
 
-    def save_kappa_plot(self, mean_exp_data_T=None, mean_exp_data=None, exp_data_xx=None, exp_data_yy=None,
-                        exp_data_zz=None, mean_xx_yy_zz=True, xx=True, yy=True, zz=True, yz=True,
-                        xz=True, xy=True, filename="kappa.eps", format='eps'):
-
-        import matplotlib.pyplot as plt
-        plt.close("all")
-
-        if xx:
-            plt.plot(list(self.temperature_range_kappa), self.kappa_xx, label = "xx")
-        if yy:
-            plt.plot(list(self.temperature_range_kappa), self.kappa_yy, label = "yy")
-        if zz:
-            plt.plot(list(self.temperature_range_kappa), self.kappa_zz, label = "zz")
-        if yz:
-            plt.plot(list(self.temperature_range_kappa), self.kappa_yz, label = "yz")
-        if xz:
-            plt.plot(list(self.temperature_range_kappa), self.kappa_xz, label = "xz")
-        if xy:
-            plt.plot(list(self.temperature_range_kappa), self.kappa_xy, label = "xy")
-        if mean_xx_yy_zz:
-            plt.plot(list(self.temperature_range_kappa), self.kappa_mean, label = "mean_xx_yy_zz")
-        if mean_exp_data_T is not None and mean_exp_data is not None:
-            plt.plot(mean_exp_data_T, mean_exp_data, label = "benchmark")
-        if mean_exp_data_T is not None and exp_data_xx is not None:
-            plt.plot(mean_exp_data_T, exp_data_xx, label = "benchmark_xx")
-        if mean_exp_data_T is not None and exp_data_yy is not None:
-            plt.plot(mean_exp_data_T, exp_data_yy, label = "benchmark_yy")
-        if mean_exp_data_T is not None and exp_data_zz is not None:
-            plt.plot(mean_exp_data_T, exp_data_zz, label = "benchmark_zz")
-        plt.xlabel("Temperature (K)")
-        plt.ylabel("Kappa (W/(mK))")
-        plt.legend()
-        plt.savefig(filename, format = format)
-
 
 @dataclass
 class CompareDFTMLMaker(Maker):  # in pymatgen?

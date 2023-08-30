@@ -34,6 +34,7 @@ class PhononBenchmarkMaker(Maker):
             structure_list: list[Structure],
             mpids: list,  # list[MPID]
             potDir: str | Path | None = None,
+            **kwargs,
     ):
         """
         Make flow for benchmarking.
@@ -48,8 +49,8 @@ class PhononBenchmarkMaker(Maker):
         # prepare ML for phonon
 
         # number of points per path in phonon band structure #TODO einbauen
-        npoints_band = 51
-        kpoint_density = 12000
+        kwargs.get("npoints_band", 51)
+        kwargs.get("kpoint_density", 12000)
 
         start_from_files = False
         for ipot, pot in enumerate(potDir):
