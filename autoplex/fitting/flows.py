@@ -35,7 +35,6 @@ class MLIPFitMaker(Maker):
             iso_atom_energy,
             fitinput: list,
             fitinputrand: list,
-            structurelist: list,
             ml_dir: str | Path | None = None,
             **fit_kwargs
     ):
@@ -54,7 +53,6 @@ class MLIPFitMaker(Maker):
             fitinputrand=fitinputrand,
             isolatedatoms=species_list,
             isolatedatomsenergy=iso_atom_energy,
-            structurelist=structurelist,
             fit_kwargs=fit_kwargs,
         )
         jobs.append(GAPfit)

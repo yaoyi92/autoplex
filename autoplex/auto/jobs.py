@@ -7,13 +7,15 @@ from pymatgen.core.structure import Structure
 from jobflow import Flow, job, Response
 from atomate2.forcefields.jobs import GAPRelaxMaker, GAPStaticMaker
 from atomate2.forcefields.flows.phonons import PhononMaker
+from autoplex.benchmark.flows import PhononBenchmarkMaker
 
 @job
 def PhononDFTMLBenchmarkJob(
         structure_list: list[Structure],
+        mpids: list,  # list[MPID]
         ml_dir: str | Path | None = None,
 ):
-    flows = []
+    jobs = []
     for struc_i, structure in enumerate(structure_list):
         GAPPhonons = PhononMaker(
             bulk_relax_maker=GAPRelaxMaker(potential_param_file_name=ml_dir, relax_cell=True,
@@ -23,9 +25,9 @@ def PhononDFTMLBenchmarkJob(
             store_force_constants=False,
             generate_frequencies_eigenvectors_kwargs={"units": "THz"}).make(
             structure=structure)
-        flows.append(GAPPhonons)
-        # benchmark = PhononBenchmarkMaker(name="Benchmark").make()
-        # flows.append(benchmark)
+        jobs.append(GAPPhonons)
+        #benchmark = PhononBenchmarkMaker(name="Benchmark").make(structure_list=structure_list)
+        #jobs.append(benchmark)
 
-        flow = Flow(flows) # output will follow
+        flow = Flow(jobs) # output will follow
         return Response(replace=flow)
