@@ -75,11 +75,10 @@ def gapfit(
 
 
 def GAPHyperparameterParser(inputs, twobody: bool = True, threebody: bool = False, soap: bool = True):
-    gap: str = 'gap={'
     twob: str = " ".join([f"{key}={value}" for key, value in inputs['twob'].items() if twobody == True])
     threeb: str = " ".join([f"{key}={value}" for key, value in inputs['threeb'].items() if threebody == True])
     SOAP: str = str(":soap " if soap == True else "") + " ".join(
         [f"{key}={value}" for key, value in inputs['soap'].items() if soap == True])
-    gap += (twob + threeb + SOAP) + "}"
+    gap: str = 'gap={'+ (twob + threeb + SOAP) + "}"
 
     return gap
