@@ -3,6 +3,8 @@ Jobs to fit ML potentials
 """
 from __future__ import annotations
 
+import json
+
 import numpy as np
 from ase.io import read, write
 import subprocess
@@ -12,6 +14,8 @@ import os
 from jobflow import Flow, Response, job
 from dataclasses import dataclass, field
 
+CurrentDir = Path(__file__).absolute().parent
+
 
 @job
 def gapfit(
@@ -19,6 +23,10 @@ def gapfit(
         fitinputrand: list,
         isolatedatoms,
         isolatedatomsenergy,
+        gap_input=CurrentDir / "gap-defaults.json",
+        twobody: bool = True,
+        threebody: bool = False,
+        soap: bool = True,
         fit_kwargs: dict = field(default_factory=dict),
 ):
     """
@@ -37,33 +45,41 @@ def gapfit(
             i.pbc = True
         write("trainGAP.xyz", file, append=True)
 
+    with open(gap_input, "r") as infile:
+        inputs = json.load(infile)
+
+    e0: str = "{"
+
     for isoatom, isoenergy in zip(isolatedatoms, isolatedatomsenergy):
         if isoatom == isolatedatoms[-1]:
             e0 += str(isoatom) + ":" + str(isoenergy) + "}"
         else:
             e0 += str(isoatom) + ":" + str(isoenergy) + ":"
+    # Updating the isolated atom energy
+    inputs['general'].update({'e0': e0})
+    # Overwriting the default gap_fit settings with user settings #TODO XPOT support
+    for key in inputs:
+        for key2 in fit_kwargs:
+            if key == key2:
+                inputs[key].update(fit_kwargs[key2])
 
-    #TODO reading hyperparamertes from default file
-    #TODO let user overwrite/add hyperparameter settings
+    gap: str = GAPHyperparameterParser(inputs=inputs, twobody=twobody, threebody=threebody, soap=soap)
+    general = [str(key) + "=" + str(inputs['general'][key]) for key in inputs['general']]
 
-    with open('std_out.log', 'w') as f_std, open('std_err.log', 'w') as f_err: #TODO using hyperparameters from defualt json file
-        subprocess.call(['gap_fit', at_file, e0, gap, default_sigma, energyparam, forcesparam, stressparam,
-                         jitter, copy, openmp, gpfile], stdout=f_std, stderr=f_err)
+    with open('std_out.log', 'w') as f_std, open('std_err.log', 'w') as f_err:
+        subprocess.call(['gap_fit'] + general + [gap], stdout=f_std, stderr=f_err)
 
         directory = Path.cwd()
 
-    return Response(output=str(os.path.join(directory, gapfile)))
+    return Response(output=str(os.path.join(directory, inputs['general']['gp_file'])))
 
-@job
-def GAPHyperparameterParser():
-    gap = "COMING SOON"
-    # gap: str = 'gap={distance_Nb order=' + str(order) + ' cutoff=' + str(cutoff) + ' cutoff_transition_width=' + \
-    #            str(cutofftrans) + ' n_sparse=' + str(n_sparse) + ' covariance_type=' + covariance_type + \
-    #            ' delta=' + str(delta) + ' theta_uniform=' + str(theta) + ' sparse_method=' + sparsemethod + \
-    #            ' compact_clusters=' + clusters + ':soap' + ' l_max=' + str(lmax) + ' n_max=' + str(nmax) + \
-    #            ' atom_sigma=' + str(atomsigma) + ' zeta=' + str(zeta) + ' cutoff=' + str(cutoffsoap) + \
-    #            ' cutoff_transition_width=' + str(cutofftranssoap) + ' central_weight=' + str(central_weight) + \
-    #            ' n_sparse=' + str(n_sparse_soap) + ' delta=' + str(deltasoap) + ' f0=' + str(f0) + \
-    #            ' covariance_type=' + covariance_type_soap + ' sparse_method=' + sparse_method
-    # default_sigma: str = ' default_sigma={' + str(default_sigma_energy) + ' ' + str(default_sigma_force) + ' ' + \
-    #                      str(default_sigma_virial) + ' ' + str(default_sigma_hessian) + '}'
+
+def GAPHyperparameterParser(inputs, twobody: bool = True, threebody: bool = False, soap: bool = True):
+    gap: str = 'gap={'
+    twob: str = " ".join([f"{key}={value}" for key, value in inputs['twob'].items() if twobody == True])
+    threeb: str = " ".join([f"{key}={value}" for key, value in inputs['threeb'].items() if threebody == True])
+    SOAP: str = str(":soap " if soap == True else "") + " ".join(
+        [f"{key}={value}" for key, value in inputs['soap'].items() if soap == True])
+    gap += (twob + threeb + SOAP) + "}"
+
+    return gap

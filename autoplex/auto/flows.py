@@ -38,6 +38,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
             structure_list: list[Structure],
             mpids: list,  # list[MPID]
             ml_dir: str | Path | None = None,
+            **fit_kwargs
     ):
         """
         Make flow for benchmarking.
@@ -61,7 +62,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
             flows.append(datagen)
 
         MLfit = MLIPFitMaker(name="GAP").make(species_list=structure_list[0].types_of_species,
-                                                      iso_atom_energy=isoatoms, fitinput=DFTphonons.output.jobdirs.displacements_job_dirs, fitinputrand=datagen.output['dirs'], structurelist=structure_list)
+                                                      iso_atom_energy=isoatoms, fitinput=DFTphonons.output.jobdirs.displacements_job_dirs, fitinputrand=datagen.output['dirs'], structurelist=structure_list, **fit_kwargs)
         flows.append(MLfit)
 
         flow = Flow(flows, MLfit.output)
