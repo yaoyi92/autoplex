@@ -79,6 +79,6 @@ def GAPHyperparameterParser(inputs, twobody: bool = True, threebody: bool = Fals
     threeb: str = " ".join([f"{key}={value}" for key, value in inputs['threeb'].items() if threebody == True])
     SOAP: str = str(":soap " if soap == True else "") + " ".join(
         [f"{key}={value}" for key, value in inputs['soap'].items() if soap == True])
-    gap: str = "gap={"+ (twob + threeb + SOAP) + "}"
+    gap: str = "gap={" + (twob + threeb + SOAP) + "}"
 
     return gap
