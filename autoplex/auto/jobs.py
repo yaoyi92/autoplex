@@ -13,6 +13,7 @@ from autoplex.benchmark.flows import PhononBenchmarkMaker
 def PhononDFTMLBenchmarkJob(
         structure_list: list[Structure],
         mpids: list,  # list[MPID]
+        dft_reference,
         ml_dir: str | Path | None = None,
 ):
     jobs = []
@@ -26,8 +27,8 @@ def PhononDFTMLBenchmarkJob(
             generate_frequencies_eigenvectors_kwargs={"units": "THz"}).make(
             structure=structure)
         jobs.append(GAPPhonons)
-        #benchmark = PhononBenchmarkMaker(name="Benchmark").make(structure_list=structure_list)
-        #jobs.append(benchmark)
+        benchmark = PhononBenchmarkMaker(name="Benchmark").make(structure=structure, mpid=mpids[struc_i], ml_reference=GAPPhonons.output, dft_reference=dft_reference)
+        jobs.append(benchmark)
 
-        flow = Flow(jobs) # output will follow
+        flow = Flow(jobs) # TODO output # JaGeo: Probably good to define an output here to connect to the RMS values as well!
         return Response(replace=flow)

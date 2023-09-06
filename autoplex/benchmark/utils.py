@@ -9,44 +9,10 @@ from pymatgen.phonon.plotter import PhononBSPlotter, PhononDosPlotter
 from jobflow import Flow, Response, job, Maker
 
 
-
-@dataclass
-class PlotPhoBandDosMLMaker(Maker):
-    """
-    Class to plot phonon related stuff.
-    Parameters
-    ----------
-    name
-        Name of the job.
-    """
-
-    name: str = "plot_phonon_band_dos"
-
-    def make(self, phonon_band_structure_pymatgen, phonon_dos_pymatgen, bandname: str, ylim, dosname: str):
-        self.phonon_band_structure_pymatgen = phonon_band_structure_pymatgen
-        self.phonon_dos_pymatgen = phonon_dos_pymatgen
-        self.bandname = bandname
-        self.ylim = ylim
-        self.dosname = dosname
-
-        self.save_plot_band_structure(filename = self.bandname, ylim = self.ylim)
-        self.save_plot_dos(filename = self.dosname)
-        return Response
-
-    def save_plot_band_structure(self, filename, img_format="eps", units="thz", ylim=None):
-        plotter = PhononBSPlotter(bs = self.phonon_band_structure_pymatgen)
-        plotter.save_plot(filename, img_format = img_format, units = units, ylim = ylim)
-
-    def save_plot_dos(self, filename, img_format="eps", units="thz", label="total dos"):
-        plotter2 = PhononDosPlotter(stack = False, sigma = None)
-        plotter2.add_dos(label = label, dos = self.phonon_dos_pymatgen)
-        plotter2.save_plot(filename = filename, img_format = img_format, units = units)
-
-
 @dataclass
 class CompareDFTMLMaker(Maker):  # in pymatgen?
     """
-    Class to compare VASP and quippy calculations.
+    Class to compare VASP and quippy GAP calculations.
     Parameters
     ----------
     name
@@ -55,51 +21,19 @@ class CompareDFTMLMaker(Maker):  # in pymatgen?
 
     name: str = "compare_vasp_quippy"
 
-    # def __init__(self, phoncalc1, phoncalc2, bs1, bs2):
-    #     super().__init__()
-    #     self.phoncalc1 = phoncalc1
-    #     self.phoncalc2 = phoncalc2
-    #
-    #     self.bs1 = bs1
-    #     self.bs2 = bs2
-    #     self.bands1 = self.bs1.bands
-    #     self.bands2 = self.bs2.bands
-
     def make(self):
-        return  # idk
+        return  # TODO
 
     def rms_overall(self, quippyBS, vaspBS):
 
         self.quippyBS = quippyBS
         self.vaspBS = vaspBS
 
-        self.bands1 = self.quippyBS.bands
-        self.bands2 = self.vaspBS.as_dict()['bands']
+        self.bands1 = self.quippyBS.phonon_bandstructure.as_dict()['bands']
+        self.bands2 = self.vaspBS.phonon_bandstructure.as_dict()['bands']
 
-        # return Response(output = {"band1": self.bands1, "band2": self.bands2})
         diff = self.bands1 - self.bands2
         return np.sqrt(np.mean(diff ** 2))
-
-    def compare_zpe(self):
-        return
-
-    def get_rms_zpe(self):
-        zpe1 = self.phoncalc1.get_zero_point_energy()
-        zpe2 = self.phoncalc2.get_zero_point_energy()
-        return np.sqrt((zpe1 - zpe2) ** 2)
-
-    def get_rms_free_energy(self, startt=0, stopt=1000, stept=10):
-        list1 = []
-        list2 = []
-        for t in range(startt, stopt + stept, stept):
-            list1.append(self.phoncalc1.get_free_energy(temperature = t))
-            list2.append(self.phoncalc2.get_free_energy(temperature = t))
-        diff = np.array(list1) - np.array(list2)
-        return np.sqrt(np.mean(diff ** 2))
-
-    @property
-    def compare_phonon_BS(self):
-        return
 
     def rms_kdep(self):
         diff = self.bands1 - self.bands2
@@ -112,9 +46,9 @@ class CompareDFTMLMaker(Maker):  # in pymatgen?
         rms = self.rms_kdep()
 
         if whichkpath == 1:
-            plotter = PhononBSPlotter(bs = self.quippyBS)
+            plotter = PhononBSPlotter(bs=self.quippyBS)
         elif whichkpath == 2:
-            plotter = PhononBSPlotter(bs = self.vaspBS)
+            plotter = PhononBSPlotter(bs=self.vaspBS)
 
         distances = []
         for element in plotter.bs_plot_data()["distances"]:
@@ -122,17 +56,17 @@ class CompareDFTMLMaker(Maker):  # in pymatgen?
         import matplotlib.pyplot as plt
         plt.close("all")
         plt.plot(distances, rms)
-        plt.xticks(ticks = plotter.bs_plot_data()["ticks"]["distance"],
-                   labels = plotter.bs_plot_data()["ticks"]["label"])
+        plt.xticks(ticks=plotter.bs_plot_data()["ticks"]["distance"],
+                   labels=plotter.bs_plot_data()["ticks"]["label"])
         plt.xlabel("Wave vector")
         plt.ylabel("Phonons RMS (THz)")
-        plt.savefig(filename, format = format)
+        plt.savefig(filename, format=format)
 
     def compare_plot(self, filename="band_comparison.eps", img_format="eps"):
-        plotter = PhononBSPlotter(bs = self.quippyBS)
-        plotter2 = PhononBSPlotter(bs = self.vaspBS)
+        plotter = PhononBSPlotter(bs=self.quippyBS)
+        plotter2 = PhononBSPlotter(bs=self.vaspBS)
         new_plotter = plotter.plot_compare(plotter2)
-        new_plotter.savefig(filename, format = img_format)
+        new_plotter.savefig(filename, format=img_format)
         new_plotter.close()
 
     def rms_overall_second_definition(self, quippyBS, vaspBS):
@@ -142,42 +76,11 @@ class CompareDFTMLMaker(Maker):  # in pymatgen?
         self.quippyBS = quippyBS
         self.vaspBS = vaspBS
 
-        self.bands1 = self.quippyBS.bands
-        self.bands2 = self.vaspBS.as_dict()['bands']
+        self.bands1 = self.quippyBS.phonon_bandstructure.as_dict()['bands']
+        self.bands2 = self.vaspBS.phonon_bandstructure.as_dict()['bands']
 
-        band1 = np.sort(self.bands1, axis = 0)
-        band2 = np.sort(self.bands2, axis = 0)
+        band1 = np.sort(self.bands1, axis=0)
+        band2 = np.sort(self.bands2, axis=0)
 
         diff = band1 - band2
-        return np.sqrt(np.mean(diff ** 2))
-
-    def calculate_rms(self, exp_data_x=None, exp_data_y=None):
-        to_compare = []
-        exp_data_y2 = []
-        for ix, x in enumerate(exp_data_x):
-            for itemp, temp in enumerate(self.temperature_range_kappa):
-                if x == temp:
-                    to_compare.append(self.kappa_mean[itemp])
-                    exp_data_y2.append(exp_data_y[ix])
-        diff = np.array(to_compare) - np.array(exp_data_y2)
-        return np.sqrt(np.mean(diff ** 2))
-
-    def calculate_rms_xyz(self, exp_data_T=None, exp_data_xx=None, exp_data_yy=None, exp_data_zz=None):
-        to_compare = []
-        exp_data_y2 = []
-        for number in range(0, 3):
-            for ix, x in enumerate(exp_data_T):
-                for itemp, temp in enumerate(self.temperature_range_kappa):
-                    if x == temp:
-                        if number == 0:
-                            to_compare.append(self.kappa_xx[itemp])
-                            exp_data_y2.append(exp_data_xx[ix])
-                        elif number == 1:
-                            to_compare.append(self.kappa_yy[itemp])
-                            exp_data_y2.append(exp_data_yy[ix])
-                        elif number == 2:
-                            to_compare.append(self.kappa_zz[itemp])
-                            exp_data_y2.append(exp_data_zz[ix])
-
-        diff = np.array(to_compare) - np.array(exp_data_y2)
         return np.sqrt(np.mean(diff ** 2))

@@ -65,5 +65,5 @@ class PhononDFTMLDataGenerationFlow(Maker):
                                                       iso_atom_energy=isoatoms, fitinput=DFTphonons.output.jobdirs.displacements_job_dirs, fitinputrand=datagen.output['dirs'], structurelist=structure_list, **fit_kwargs)
         flows.append(MLfit)
 
-        flow = Flow(flows, MLfit.output)
+        flow = Flow(flows, {"ml_dir": MLfit.output, "dft_ref": DFTphonons.output}) #TODO in the future replace with separate DFT output
         return flow

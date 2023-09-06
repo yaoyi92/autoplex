@@ -7,6 +7,7 @@ from pymatgen.core.structure import Structure
 from dataclasses import dataclass, field
 from jobflow import Flow, Maker, OutputReference, job
 from autoplex.fitting.flows import MLIPFitMaker
+from autoplex.benchmark.flows import PhononBenchmarkMaker
 
 __all__ = ["debugger"]
 
@@ -23,6 +24,9 @@ class debugger(Maker):
 
         MLfit = MLIPFitMaker(name="GAP").make(species_list=["Li", "Cl"], iso_atom_energy=[-0.28665266, -0.25639058], fitinput=fitinput, fitinputrand = fitinputrand, **fit_kwargs)
         jobs.append(MLfit)
+
+        benchmark = PhononBenchmarkMaker(name="Benchmark").make(structure_list=structure_list, mpids=[])
+        jobs.append(benchmark)
 
         flow = Flow(jobs, MLfit.output)
         return flow
