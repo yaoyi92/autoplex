@@ -32,13 +32,12 @@ class CompareDFTMLMaker(Maker):
         self.bands1 = self.mlBS.phonon_bandstructure.as_dict()['bands']
         self.bands2 = self.dftBS.phonon_bandstructure.as_dict()['bands']
 
-        print("bands1", self.bands1, "bands2", self.bands2)
-
-        diff = self.bands1 - self.bands2
+        diff = np.array(self.bands1) - np.array(self.bands2)
+        print("differente: ", diff)
         return np.sqrt(np.mean(diff ** 2))
 
     def rms_kdep(self):
-        diff = self.bands1 - self.bands2
+        diff = np.array(self.bands1) - np.array(self.bands2)
 
         diff = np.transpose(diff)
         kpointdep = [np.sqrt(np.mean(diff[i] ** 2)) for i in range(len(diff))]
