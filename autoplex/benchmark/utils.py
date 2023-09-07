@@ -10,27 +10,29 @@ from jobflow import Flow, Response, job, Maker
 
 
 @dataclass
-class CompareDFTMLMaker(Maker):  # in pymatgen?
+class CompareDFTMLMaker(Maker):
     """
-    Class to compare VASP and quippy GAP calculations.
+    Class to compare DFT and ML calculations.
     Parameters
     ----------
     name
         Name of the job.
     """
 
-    name: str = "compare_vasp_quippy"
+    name: str = "compare_dft_ml"
 
     def make(self):
         return  # TODO
 
-    def rms_overall(self, quippyBS, vaspBS):
+    def rms_overall(self, mlBS, dftBS):
 
-        self.quippyBS = quippyBS
-        self.vaspBS = vaspBS
+        self.mlBS = mlBS
+        self.dftBS = dftBS
 
-        self.bands1 = self.quippyBS.phonon_bandstructure.as_dict()['bands']
-        self.bands2 = self.vaspBS.phonon_bandstructure.as_dict()['bands']
+        self.bands1 = self.mlBS.phonon_bandstructure.as_dict()['bands']
+        self.bands2 = self.dftBS.phonon_bandstructure.as_dict()['bands']
+
+        print("bands1", self.bands1, "bands2", self.bands2)
 
         diff = self.bands1 - self.bands2
         return np.sqrt(np.mean(diff ** 2))
@@ -46,9 +48,9 @@ class CompareDFTMLMaker(Maker):  # in pymatgen?
         rms = self.rms_kdep()
 
         if whichkpath == 1:
-            plotter = PhononBSPlotter(bs=self.quippyBS)
+            plotter = PhononBSPlotter(bs=self.mlBS)
         elif whichkpath == 2:
-            plotter = PhononBSPlotter(bs=self.vaspBS)
+            plotter = PhononBSPlotter(bs=self.dftBS)
 
         distances = []
         for element in plotter.bs_plot_data()["distances"]:
@@ -63,21 +65,21 @@ class CompareDFTMLMaker(Maker):  # in pymatgen?
         plt.savefig(filename, format=format)
 
     def compare_plot(self, filename="band_comparison.eps", img_format="eps"):
-        plotter = PhononBSPlotter(bs=self.quippyBS)
-        plotter2 = PhononBSPlotter(bs=self.vaspBS)
+        plotter = PhononBSPlotter(bs=self.mlBS)
+        plotter2 = PhononBSPlotter(bs=self.dftBS)
         new_plotter = plotter.plot_compare(plotter2)
         new_plotter.savefig(filename, format=img_format)
         new_plotter.close()
 
-    def rms_overall_second_definition(self, quippyBS, vaspBS):
+    def rms_overall_second_definition(self, mlBS, dftBS):
         # makes sure the frequencies are sorted by energy
         # otherwise the same as rms_overall
 
-        self.quippyBS = quippyBS
-        self.vaspBS = vaspBS
+        self.mlBS = mlBS
+        self.dftBS = dftBS
 
-        self.bands1 = self.quippyBS.phonon_bandstructure.as_dict()['bands']
-        self.bands2 = self.vaspBS.phonon_bandstructure.as_dict()['bands']
+        self.bands1 = self.mlBS.phonon_bandstructure.as_dict()['bands']
+        self.bands2 = self.dftBS.phonon_bandstructure.as_dict()['bands']
 
         band1 = np.sort(self.bands1, axis=0)
         band2 = np.sort(self.bands2, axis=0)

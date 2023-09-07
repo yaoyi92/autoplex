@@ -12,7 +12,12 @@ from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
 from atomate2.vasp.jobs.base import BaseVaspMaker
 from atomate2.common.jobs.phonons import PhononDisplacementMaker
 
-__all__ = ["PhononDFTMLDataGenerationFlow"]
+from autoplex.benchmark.flows import PhononBenchmarkMaker
+
+__all__ = [
+    "PhononDFTMLDataGenerationFlow",
+    "PhononDFTMLBenchmarkFlow"
+]
 
 
 # Volker's idea: provide several default flows with different setting/setups
@@ -66,4 +71,37 @@ class PhononDFTMLDataGenerationFlow(Maker):
         flows.append(MLfit)
 
         flow = Flow(flows, {"ml_dir": MLfit.output, "dft_ref": DFTphonons.output}) #TODO in the future replace with separate DFT output
+        return flow
+
+
+@dataclass
+class PhononDFTMLBenchmarkFlow(Maker):
+    """
+    Maker for benchmarking
+
+    Parameters
+    ----------
+    name : str
+        Name of the flows produced by this maker.
+
+    """
+
+    name: str = "MLDFTbenchmark"
+
+    def make(
+            self,
+            structure_list: list[Structure],
+            mpids: list,  # list[MPID]
+            ml_reference,
+            dft_reference,
+    ):
+        flows = []
+
+        for struc_i, structure in enumerate(structure_list):
+            benchmark = PhononBenchmarkMaker(name="Benchmark").make(structure=structure, mpid=mpids[struc_i],
+                                                                    ml_reference=ml_reference,
+                                                                    dft_reference=dft_reference)
+            flows.append(benchmark)
+
+        flow = Flow(flows)
         return flow

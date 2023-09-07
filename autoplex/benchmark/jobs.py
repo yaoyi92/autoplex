@@ -23,9 +23,9 @@ def RMS(
 
         comparison = CompareDFTMLMaker(name="comparetest")
 
-        rms = comparison.rms_overall(quippyBS=mlphonon, vaspBS=dftphonon)
+        rms = comparison.rms_overall(mlBS=mlphonon, dftBS=dftphonon)
 
-        rms2 = comparison.rms_overall_second_definition(quippyBS=mlphonon, vaspBS=dftphonon)
+        rms2 = comparison.rms_overall_second_definition(mlBS=mlphonon, dftBS=dftphonon)
 
         comparison.rms_kdep_plot(whichkpath=2,
                                  filename=os.path.join(foldername, str(structure.composition.reduced_formula) + '_')
