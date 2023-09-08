@@ -26,18 +26,14 @@ class CompareDFTMLMaker(Maker):
 
     def rms_overall(self, mlBS, dftBS):
 
-        self.mlBS = mlBS
-        self.dftBS = dftBS
+        self.mlBS = mlBS.phonon_bandstructure.as_dict()['bands']
+        self.dftBS = dftBS.phonon_bandstructure.as_dict()['bands']
 
-        self.bands1 = self.mlBS.phonon_bandstructure.as_dict()['bands']
-        self.bands2 = self.dftBS.phonon_bandstructure.as_dict()['bands']
-
-        diff = np.array(self.bands1) - np.array(self.bands2)
-        print("differente: ", diff)
+        diff = np.array(self.mlBS) - np.array(self.dftBS)
         return np.sqrt(np.mean(diff ** 2))
 
     def rms_kdep(self):
-        diff = np.array(self.bands1) - np.array(self.bands2)
+        diff = np.array(self.mlBS) - np.array(self.dftBS)
 
         diff = np.transpose(diff)
         kpointdep = [np.sqrt(np.mean(diff[i] ** 2)) for i in range(len(diff))]
@@ -74,14 +70,11 @@ class CompareDFTMLMaker(Maker):
         # makes sure the frequencies are sorted by energy
         # otherwise the same as rms_overall
 
-        self.mlBS = mlBS
-        self.dftBS = dftBS
+        self.mlBS = mlBS.phonon_bandstructure.as_dict()['bands']
+        self.dftBS = dftBS.phonon_bandstructure.as_dict()['bands']
 
-        self.bands1 = self.mlBS.phonon_bandstructure.as_dict()['bands']
-        self.bands2 = self.dftBS.phonon_bandstructure.as_dict()['bands']
-
-        band1 = np.sort(self.bands1, axis=0)
-        band2 = np.sort(self.bands2, axis=0)
+        band1 = np.sort(self.mlBS, axis=0)
+        band2 = np.sort(self.dftBS, axis=0)
 
         diff = band1 - band2
         return np.sqrt(np.mean(diff ** 2))
