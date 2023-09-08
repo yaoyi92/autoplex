@@ -24,7 +24,7 @@ def RMS(
 
     rms2 = comparison.rms_overall_second_definition(mlBS=mlphonon, dftBS=dftphonon)
 
-    comparison.rms_kdep_plot(whichkpath=2,
+    comparison.rms_kdep_plot(mlBS=mlphonon, dftBS=dftphonon, whichkpath=2,
                              filename=os.path.join(foldername, str(structure.composition.reduced_formula) + '_')
                                       + "_" + '_rms_phonons.eps')
 
