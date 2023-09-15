@@ -19,12 +19,12 @@ def RMS(
 ):
     def rms_overall():
 
-        diff = np.array(mlBS['bands']) - np.array(dftBS['bands'])
+        diff = np.array(mlBS.as_dict()['bands']) - np.array(dftBS.as_dict()['bands'])
         return np.sqrt(np.mean(diff ** 2))
 
     def rms_kdep():
 
-        diff = np.array(mlBS['bands']) - np.array(dftBS['bands'])
+        diff = np.array(mlBS.as_dict()['bands']) - np.array(dftBS.as_dict()['bands'])
 
         diff = np.transpose(diff)
         kpointdep = [np.sqrt(np.mean(diff[i] ** 2)) for i in range(len(diff))]
@@ -58,29 +58,16 @@ def RMS(
         new_plotter.savefig(filename, format=img_format)
         new_plotter.close()
 
-    def rms_overall_second_definition():
-        # makes sure the frequencies are sorted by energy
-        # otherwise the same as rms_overall
-
-        band1 = np.sort(mlBS['bands'], axis=0)
-        band2 = np.sort(dftBS['bands'], axis=0)
-
-        diff = band1 - band2
-        return np.sqrt(np.mean(diff ** 2))
-
-    mlBS = mlphonon.phonon_bandstructure.as_dict()
-    dftBS = dftphonon.phonon_bandstructure.as_dict()
+    mlBS = mlphonon.phonon_bandstructure
+    dftBS = dftphonon.phonon_bandstructure
 
     rms = rms_overall()
 
-    rms2 = rms_overall_second_definition()
+    rms_kdep_plot(whichkpath=2,
+                  filename=os.path.join(str(structure.composition.reduced_formula)) + '_rms_phonons.eps')
 
-    rms_kdep_plot(whichkpath=2, filename=os.path.join(str(structure.composition.reduced_formula) + '_') + '_rms_phonons.eps')
+    return Response(output=rms) #TODO TaskDoc
 
-    with open("results_" + ".txt", 'a') as f:
-        f.write("Pot Structure mpid RMS RMS2 imagmodes(pot) imagmodes(dft) \nGAP" + ' ' + # TODO include which pot. method has been used (GAP, ACE, etc.)
-                str(structure.composition.reduced_formula) + ' ' + str(rms) + str(rms2) + '\n') + int(mpid)
-        #TODO has img modes + ' ' + ' ' + str(ml.has_imag_modes(0.1)) + ' ' + str(dft.has_imag_modes(0.1))
 
 
 

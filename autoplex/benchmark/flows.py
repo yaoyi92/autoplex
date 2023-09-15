@@ -5,7 +5,6 @@ Flows consisting of jobs to benchmark ML potentials
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from jobflow import Flow, Maker, OutputReference, job
 from pymatgen.core.structure import Structure
@@ -62,5 +61,5 @@ class PhononBenchmarkMaker(Maker):
         jobs.append(rms)
 
         # create a flow including all jobs
-        flow = Flow(jobs)
+        flow = Flow(jobs, rms.output)
         return flow
