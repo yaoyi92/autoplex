@@ -36,7 +36,7 @@ def phonon_maker_random_structures(
         for displacement in displacements:
             random_phonon_maker = DFTPhononMaker(symprec=symprec,
                                                  phonon_displacement_maker=phonon_displacement_maker,
-                                                 born_maker=None,
+                                                 born_maker=None, bulk_relax_maker=None,
                                                  min_length=8, displacement=displacement).make(structure=rand_struc)
             jobs.append(random_phonon_maker)
             outputs.append(random_phonon_maker.output)
