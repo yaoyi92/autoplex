@@ -35,7 +35,8 @@ def gapfit(
     """
     fit = []
     fit.extend(fitinput)
-    fit.extend(fitinputrand)
+    flattened_input = lambda x: [y for z in x for y in (flattened_input(z) if isinstance(z, list) else [z])]
+    fit.extend(flattened_input(fitinputrand))
     for entry in fit:
         file = read(re.sub(r'^.*?/', '/', entry, count=1) + "/OUTCAR.gz", index=":")
         for i in file:  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html

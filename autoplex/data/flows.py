@@ -9,15 +9,14 @@ from pathlib import Path
 
 from jobflow import Flow, Maker, OutputReference, job
 from pymatgen.core.structure import Structure
-from autoplex.data.jobs import generate_random_displacement
+from autoplex.data.jobs import generate_randomized_structures, phonon_maker_random_structures
 from atomate2.vasp.sets.core import StaticSetGenerator
-from emmet.core.math import Matrix3D, Vector3D
-from atomate2.vasp.flows.core import DoubleRelaxMaker
+from emmet.core.math import Matrix3D
 from atomate2.vasp.jobs.base import BaseVaspMaker
-from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
+from atomate2.vasp.jobs.core import StaticMaker
 from atomate2.common.jobs.phonons import (
     PhononDisplacementMaker,
-    run_phonon_displacements,
+    run_phonon_displacements as run_static,
 )
 
 __all__ = ["DataGenerator", "IsoAtomMaker"]
@@ -45,6 +44,8 @@ class DataGenerator(Maker):
     phonon_displacement_maker: BaseVaspMaker = field(default_factory=PhononDisplacementMaker)
     code: str = "vasp"
     n_struc: int = 1
+    displacements: list[float] = field(default=0.1)
+    symprec: float = 0.01
 
     def make(
             self,
@@ -67,21 +68,30 @@ class DataGenerator(Maker):
         mpids: Materials Project IDs
         """
         jobs = []  # initializing empty job list
+        outputs = []
 
-        random_rattle_displacement = generate_random_displacement(structure=structure, n_struc=self.n_struc)
-        jobs.append(random_rattle_displacement)
+        random_rattle = generate_randomized_structures(structure=structure, n_struc=self.n_struc)
+        jobs.append(random_rattle)
 
         # perform the phonon displaced calculations for randomized displaced structures
-        vasp_random_displacement_calcs = run_phonon_displacements(
-            displacements=random_rattle_displacement.output,
-            structure=structure,
+
+        random_phonon_maker = phonon_maker_random_structures(rattled_structures=random_rattle.output,
+                                                             displacements=self.displacements, symprec=self.symprec,
+                                                             phonon_displacement_maker=self.phonon_displacement_maker)
+        jobs.append(random_phonon_maker)
+        outputs.append(random_phonon_maker.output.jobdirs.displacements_job_dirs)
+
+        vasp_random_displacement_calcs = run_static( # could be replaced with a simple static_vasp method
+            displacements=random_rattle.output,
+            structure=structure,  # strucure is only needed to keep track of the original structure
             supercell_matrix=supercell_matrix,
             phonon_maker=self.phonon_displacement_maker,
         )
         jobs.append(vasp_random_displacement_calcs)
+        outputs.append(vasp_random_displacement_calcs.output['dirs'])
 
         # create a flow including all jobs
-        flow = Flow(jobs, vasp_random_displacement_calcs.output)
+        flow = Flow(jobs, outputs)
         return flow
 
 
