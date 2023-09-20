@@ -14,8 +14,7 @@ from pymatgen.core.structure import Structure
 def RMS(
         mlphonon,  # TODO include which pot. method has been used (GAP, ACE, etc.)
         dftphonon,
-        structure: Structure,
-        mpid
+        structure: Structure
 ):
     def rms_overall():
 
@@ -58,15 +57,19 @@ def RMS(
         new_plotter.savefig(filename, format=img_format)
         new_plotter.close()
 
-    mlBS = mlphonon.phonon_bandstructure
-    dftBS = dftphonon.phonon_bandstructure
+    rms_dis = []
 
-    rms = rms_overall()
+    for dis_i, dis in enumerate(mlphonon):
+        mlBS = dis.phonon_bandstructure
+        dftBS = dftphonon[dis_i].phonon_bandstructure
 
-    rms_kdep_plot(whichkpath=2,
-                  filename=os.path.join(str(structure.composition.reduced_formula)) + '_rms_phonons.eps')
+        rms = rms_overall()
+        rms_dis.append(rms)
 
-    return Response(output=rms) #TODO TaskDoc
+        rms_kdep_plot(whichkpath=2,
+                      filename=os.path.join(str(structure.composition.reduced_formula)) + '_rms_phonons.eps')
+
+    return Response(output=rms_dis) #TODO TaskDoc
 
 
 

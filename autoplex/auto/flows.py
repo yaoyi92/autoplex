@@ -36,10 +36,10 @@ class PhononDFTMLDataGenerationFlow(Maker):
 
     """
 
-    name: str = "datagen+fit"
+    name: str = "datagen"
     phonon_displacement_maker: BaseVaspMaker = field(default_factory=PhononDisplacementMaker)
     n_struc: int = 1
-    displacements: list[float] = field(default=0.1)
+    displacements: list[float] = field(default_factory=lambda: [0.1])
     symprec: float = 0.01
 
     def make(
@@ -58,26 +58,26 @@ class PhononDFTMLDataGenerationFlow(Maker):
 
         """
         flows = []
+        DFTphonons_output = []
 
         # TODO later adding: for i no. of potentials
-        DFTphonons = DFTPhononMaker(symprec=self.symprec,
-                                    phonon_displacement_maker=self.phonon_displacement_maker, born_maker=None,
-                                    min_length=8).make(
-            structure=structure)  # reduced the accuracy for test calculations
-        flows.append(DFTphonons)
+        for displacement in self.displacements:
+            DFTphonons = DFTPhononMaker(symprec=self.symprec,
+                                        phonon_displacement_maker=self.phonon_displacement_maker, born_maker=None,
+                                        displacement=displacement, min_length=8).make(structure=structure)  # reduced the accuracy for test calculations
+            flows.append(DFTphonons)
+            DFTphonons_output.append(DFTphonons.output.jobdirs.displacements_job_dirs)
         datagen = DataGenerator(name="DataGen",
-                                phonon_displacement_maker=self.phonon_displacement_maker, n_struc=self.n_struc,
-                                displacements=self.displacements, symprec=self.symprec).make(structure=structure,
-                                                                                               mpid=mpid)
+                                phonon_displacement_maker=self.phonon_displacement_maker,
+                                n_struc=self.n_struc).make(structure=structure, mpid=mpid)
         flows.append(datagen)
 
         MLfit = MLIPFitMaker(name="GAP").make(species_list=structure.types_of_species, iso_atom_energy=isolated_atoms,
-                                              fitinput=DFTphonons.output.jobdirs.displacements_job_dirs,
-                                              fitinputrand=datagen.output, **fit_kwargs)
+                                              fitinput=DFTphonons_output, fitinputrand=datagen.output, **fit_kwargs)
         flows.append(MLfit)
 
         flow = Flow(flows, {"ml_dir": MLfit.output,
-                            "dft_ref": DFTphonons.output})  # TODO in the future replace with separate DFT output
+                            "dft_ref": DFTphonons_output})  # TODO in the future replace with separate DFT output
         return flow
 
 
@@ -127,7 +127,7 @@ class CompleteWorkflow(Maker):
 
     name: str = "complete_workflow"
     n_struc: int = 1
-    displacements: list[float] = field(default=0.1)
+    displacements: list[float] = field(default_factory=lambda: [0.1])
     symprec: float = 0.01
 
     def make(
@@ -139,7 +139,8 @@ class CompleteWorkflow(Maker):
         flows = []
         collect = []
         isoatoms = []
-        for species in structure_list[0].types_of_species:
+        all_species = set([s.types_of_species for s in structure_list])
+        for species in next(iter(all_species)):
             isoatom = IsoAtomMaker().make(species=species)
             flows.append(isoatom)
             isoatoms.append(isoatom.output)
@@ -151,7 +152,7 @@ class CompleteWorkflow(Maker):
                                                              symprec=self.symprec).make(
                 structure=structure, mpid=mpids[struc_i], isolated_atoms=isoatoms)
             flows.append(autoplex_datagen)
-            autoplex_ml_phonon = PhononMLCalculationJob(structure=structure,
+            autoplex_ml_phonon = PhononMLCalculationJob(structure=structure, displacements=self.displacements,
                                                         ml_dir=autoplex_datagen.output["ml_dir"])
             flows.append(autoplex_ml_phonon)
             autoplex_bm = PhononDFTMLBenchmarkFlow(name="testBM").make(structure=structure, mpid=mpids[struc_i],
@@ -160,7 +161,8 @@ class CompleteWorkflow(Maker):
             flows.append(autoplex_bm)
             collect.append(autoplex_bm.output)
 
-        collect_bm = CollectBenchmark(structure_list=structure_list, mpids=mpids, rms=collect)
+        collect_bm = CollectBenchmark(structure_list=structure_list, mpids=mpids, rms_dis=collect,
+                                      displacements=self.displacements)
         flows.append(collect_bm)
 
         flow = Flow(flows)

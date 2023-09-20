@@ -1,5 +1,5 @@
 """
-Total AutoPLEX -- Automated machine-learned Potential Landscape explorer -- flow
+PLEASE IGNORE ANY FILES CONCERNING DEBUGGING
 """
 
 from pathlib import Path

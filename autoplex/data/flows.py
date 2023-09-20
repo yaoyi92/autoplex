@@ -44,8 +44,6 @@ class DataGenerator(Maker):
     phonon_displacement_maker: BaseVaspMaker = field(default_factory=PhononDisplacementMaker)
     code: str = "vasp"
     n_struc: int = 1
-    displacements: list[float] = field(default=0.1)
-    symprec: float = 0.01
 
     def make(
             self,
@@ -74,12 +72,6 @@ class DataGenerator(Maker):
         jobs.append(random_rattle)
 
         # perform the phonon displaced calculations for randomized displaced structures
-
-        random_phonon_maker = phonon_maker_random_structures(rattled_structures=random_rattle.output,
-                                                             displacements=self.displacements, symprec=self.symprec,
-                                                             phonon_displacement_maker=self.phonon_displacement_maker)
-        jobs.append(random_phonon_maker)
-        outputs.append(random_phonon_maker.output.jobdirs.displacements_job_dirs)
 
         vasp_random_displacement_calcs = run_static( # could be replaced with a simple static_vasp method
             displacements=random_rattle.output,
