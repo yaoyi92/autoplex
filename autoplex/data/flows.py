@@ -9,14 +9,16 @@ from pathlib import Path
 
 from jobflow import Flow, Maker, OutputReference, job
 from pymatgen.core.structure import Structure
-from autoplex.data.jobs import generate_randomized_structures, phonon_maker_random_structures
+from phonopy import Phonopy
+from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
+from autoplex.data.jobs import generate_randomized_structures
 from atomate2.vasp.sets.core import StaticSetGenerator
 from emmet.core.math import Matrix3D
 from atomate2.vasp.jobs.base import BaseVaspMaker
 from atomate2.vasp.jobs.core import StaticMaker
 from atomate2.common.jobs.phonons import (
     PhononDisplacementMaker,
-    run_phonon_displacements as run_static,
+    run_phonon_displacements,
 )
 
 __all__ = ["DataGenerator", "IsoAtomMaker"]
@@ -44,6 +46,7 @@ class DataGenerator(Maker):
     phonon_displacement_maker: BaseVaspMaker = field(default_factory=PhononDisplacementMaker)
     code: str = "vasp"
     n_struc: int = 1
+    sc: bool = False
 
     def make(
             self,
@@ -68,12 +71,16 @@ class DataGenerator(Maker):
         jobs = []  # initializing empty job list
         outputs = []
 
+        supercell = Phonopy(unitcell=get_phonopy_structure(structure)).supercell
+
         random_rattle = generate_randomized_structures(structure=structure, n_struc=self.n_struc)
         jobs.append(random_rattle)
+        random_rattle_sc = generate_randomized_structures(structure=get_pmg_structure(supercell), n_struc=self.n_struc)
+        jobs.append(random_rattle_sc)
 
         # perform the phonon displaced calculations for randomized displaced structures
 
-        vasp_random_displacement_calcs = run_static( # could be replaced with a simple static_vasp method
+        vasp_random_displacement_calcs = run_phonon_displacements( # could be replaced with a simple static_vasp method
             displacements=random_rattle.output,
             structure=structure,  # strucure is only needed to keep track of the original structure
             supercell_matrix=supercell_matrix,
@@ -81,6 +88,16 @@ class DataGenerator(Maker):
         )
         jobs.append(vasp_random_displacement_calcs)
         outputs.append(vasp_random_displacement_calcs.output['dirs'])
+
+        if self.sc is True:
+            vasp_random_sc_displacement_calcs = run_phonon_displacements(  # could be replaced with a simple static_vasp method
+                displacements=random_rattle_sc.output,
+                structure=structure,  # strucure is only needed to keep track of the original structure
+                supercell_matrix=supercell_matrix,
+                phonon_maker=self.phonon_displacement_maker,
+            )
+            jobs.append(vasp_random_sc_displacement_calcs)
+            outputs.append(vasp_random_sc_displacement_calcs.output['dirs'])
 
         # create a flow including all jobs
         flow = Flow(jobs, outputs)

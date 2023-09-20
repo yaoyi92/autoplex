@@ -41,6 +41,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
     n_struc: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.1])
     symprec: float = 0.01
+    sc: bool = False
 
     def make(
             self,
@@ -69,7 +70,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
             DFTphonons_output.append(DFTphonons.output.jobdirs.displacements_job_dirs)
         datagen = DataGenerator(name="DataGen",
                                 phonon_displacement_maker=self.phonon_displacement_maker,
-                                n_struc=self.n_struc).make(structure=structure, mpid=mpid)
+                                n_struc=self.n_struc, sc=self.sc).make(structure=structure, mpid=mpid)
         flows.append(datagen)
 
         MLfit = MLIPFitMaker(name="GAP").make(species_list=structure.types_of_species, iso_atom_energy=isolated_atoms,
@@ -129,6 +130,7 @@ class CompleteWorkflow(Maker):
     n_struc: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.1])
     symprec: float = 0.01
+    sc: bool = False
 
     def make(
             self,
@@ -149,7 +151,7 @@ class CompleteWorkflow(Maker):
             autoplex_datagen = PhononDFTMLDataGenerationFlow(name="test",
                                                              phonon_displacement_maker=phonon_displacement_maker,
                                                              n_struc=self.n_struc, displacements=self.displacements,
-                                                             symprec=self.symprec).make(
+                                                             symprec=self.symprec, sc=self.sc).make(
                 structure=structure, mpid=mpids[struc_i], isolated_atoms=isoatoms)
             flows.append(autoplex_datagen)
             autoplex_ml_phonon = PhononMLCalculationJob(structure=structure, displacements=self.displacements,
