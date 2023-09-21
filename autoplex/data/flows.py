@@ -71,15 +71,9 @@ class DataGenerator(Maker):
         jobs = []  # initializing empty job list
         outputs = []
 
-        supercell = Phonopy(unitcell=get_phonopy_structure(structure)).supercell
-
         random_rattle = generate_randomized_structures(structure=structure, n_struc=self.n_struc)
         jobs.append(random_rattle)
-        random_rattle_sc = generate_randomized_structures(structure=get_pmg_structure(supercell), n_struc=self.n_struc)
-        jobs.append(random_rattle_sc)
-
         # perform the phonon displaced calculations for randomized displaced structures
-
         vasp_random_displacement_calcs = run_phonon_displacements( # could be replaced with a simple static_vasp method
             displacements=random_rattle.output,
             structure=structure,  # strucure is only needed to keep track of the original structure
@@ -90,6 +84,10 @@ class DataGenerator(Maker):
         outputs.append(vasp_random_displacement_calcs.output['dirs'])
 
         if self.sc is True:
+            supercell = Phonopy(unitcell = get_phonopy_structure(structure)).supercell
+            random_rattle_sc = generate_randomized_structures(structure = get_pmg_structure(supercell),
+                                                              n_struc = self.n_struc)
+            jobs.append(random_rattle_sc)
             vasp_random_sc_displacement_calcs = run_phonon_displacements(  # could be replaced with a simple static_vasp method
                 displacements=random_rattle_sc.output,
                 structure=structure,  # strucure is only needed to keep track of the original structure

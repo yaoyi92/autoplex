@@ -33,9 +33,8 @@ def gapfit(
 
     """
     print("testing: ", fitinput)
-    fit = []
     flattened_input = lambda x: [y for z in x for y in (flattened_input(z) if isinstance(z, list) else [z])]
-    fit.extend(flattened_input(fitinput))
+    fit = (flattened_input([dirs for data in fitinput for datatype, dirs in data.items()])) # unifrom dat structure
     for entry in fit:
         file = read(re.sub(r'^.*?/', '/', entry, count=1) + "/OUTCAR.gz", index=":")
         for i in file:  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html
