@@ -20,7 +20,6 @@ CurrentDir = Path(__file__).absolute().parent
 @job
 def gapfit(
         fitinput: list,
-        fitinputrand: list,
         isolatedatoms,
         isolatedatomsenergy,
         gap_input=CurrentDir / "gap-defaults.json",
@@ -33,10 +32,10 @@ def gapfit(
     job that prepares GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
 
     """
+    print("testing: ", fitinput)
     fit = []
-    fit.extend(fitinput)
     flattened_input = lambda x: [y for z in x for y in (flattened_input(z) if isinstance(z, list) else [z])]
-    fit.extend(flattened_input(fitinputrand))
+    fit.extend(flattened_input(fitinput))
     for entry in fit:
         file = read(re.sub(r'^.*?/', '/', entry, count=1) + "/OUTCAR.gz", index=":")
         for i in file:  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html

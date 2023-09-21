@@ -34,7 +34,6 @@ class MLIPFitMaker(Maker):
             species_list,
             iso_atom_energy,
             fitinput: list,
-            fitinputrand: list,
             ml_dir: str | Path | None = None,
             **fit_kwargs
     ):
@@ -50,7 +49,6 @@ class MLIPFitMaker(Maker):
         GAPfit = gapfit(
             # mind the GAP # converting OUTCARs to a joint extended xyz file and running gap_fit with certain settings
             fitinput=fitinput,
-            fitinputrand=fitinputrand,
             isolatedatoms=species_list,
             isolatedatomsenergy=iso_atom_energy,
             fit_kwargs=fit_kwargs,

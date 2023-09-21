@@ -46,13 +46,10 @@ class PhononDFTMLDataGenerationFlow(Maker):
     def make(
             self,
             structure: Structure,
-            mpid,
-            isolated_atoms,
-            ml_dir: str | Path | None = None,
-            **fit_kwargs
+            mpid
     ):
         """
-        Make flow for benchmarking.
+        Make flow for data generation.
 
         Parameters
         ----------
@@ -73,14 +70,46 @@ class PhononDFTMLDataGenerationFlow(Maker):
                                 n_struc=self.n_struc, sc=self.sc).make(structure=structure, mpid=mpid)
         flows.append(datagen)
 
-        MLfit = MLIPFitMaker(name="GAP").make(species_list=structure.types_of_species, iso_atom_energy=isolated_atoms,
-                                              fitinput=DFTphonons_output, fitinputrand=datagen.output, **fit_kwargs)
-        flows.append(MLfit)
-
-        flow = Flow(flows, {"ml_dir": MLfit.output,
-                            "dft_ref": DFTphonons_output})  # TODO in the future replace with separate DFT output
+        flow = Flow(flows, {"rand_struc_data": datagen.output,
+                            "phonon_data": DFTphonons_output}) # TODO in the future: DFT for fit and benchmark doesn't have to be the same
         return flow
 
+@dataclass
+class PhononDFTMLFitFlow(Maker):
+    """
+    Maker to fit ML potentials based on DFT data
+
+    Parameters
+    ----------
+    name : str
+        Name of the flows produced by this maker.
+
+    """
+
+    name: str = "ML fit"
+
+    def make(
+            self,
+            species,
+            isolated_atoms,
+            fitinput,
+            **fit_kwargs
+    ):
+        """
+        Make flow for ML fit.
+
+        Parameters
+        ----------
+
+        """
+        flows = []
+
+        MLfit = MLIPFitMaker(name="GAP").make(species_list=species, iso_atom_energy=isolated_atoms,
+                                              fitinput=fitinput, **fit_kwargs)
+        flows.append(MLfit)
+
+        flow = Flow(flows, MLfit.output)
+        return flow
 
 @dataclass
 class PhononDFTMLBenchmarkFlow(Maker):
@@ -139,6 +168,7 @@ class CompleteWorkflow(Maker):
             phonon_displacement_maker
     ):
         flows = []
+        datagen = []
         collect = []
         isoatoms = []
         all_species = set([s.types_of_species for s in structure_list])
@@ -152,14 +182,21 @@ class CompleteWorkflow(Maker):
                                                              phonon_displacement_maker=phonon_displacement_maker,
                                                              n_struc=self.n_struc, displacements=self.displacements,
                                                              symprec=self.symprec, sc=self.sc).make(
-                structure=structure, mpid=mpids[struc_i], isolated_atoms=isoatoms)
+                structure=structure, mpid=mpids[struc_i])
             flows.append(autoplex_datagen)
+            datagen.append(autoplex_datagen.output)
+
+        autoplex_fit = PhononDFTMLFitFlow().make(species=next(iter(all_species)), isolated_atoms=isoatoms,
+                                                 fitinput=datagen)
+        flows.append(autoplex_fit)
+
+        for struc_i, structure in enumerate(structure_list):
             autoplex_ml_phonon = PhononMLCalculationJob(structure=structure, displacements=self.displacements,
-                                                        ml_dir=autoplex_datagen.output["ml_dir"])
+                                                        ml_dir=autoplex_fit.output)
             flows.append(autoplex_ml_phonon)
             autoplex_bm = PhononDFTMLBenchmarkFlow(name="testBM").make(structure=structure, mpid=mpids[struc_i],
                                                                        ml_reference=autoplex_ml_phonon.output,
-                                                                       dft_reference=autoplex_datagen.output["dft_ref"])
+                                                                       dft_reference=datagen[struc_i]["phonon_data"])
             flows.append(autoplex_bm)
             collect.append(autoplex_bm.output)
 
