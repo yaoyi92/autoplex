@@ -32,9 +32,10 @@ def gapfit(
     job that prepares GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
 
     """
-    print("testing: ", fitinput)
+
     flattened_input = lambda x: [y for z in x for y in (flattened_input(z) if isinstance(z, list) else [z])]
-    fit = (flattened_input([dirs for data in fitinput for datatype, dirs in data.items()])) # unifrom dat structure
+    fit = (flattened_input([dirs for data in fitinput for datatype, dirs in data.items()
+                            if datatype != "phonon_data"])) # uniform data structure
     for entry in fit:
         file = read(re.sub(r'^.*?/', '/', entry, count=1) + "/OUTCAR.gz", index=":")
         for i in file:  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html

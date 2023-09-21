@@ -41,14 +41,13 @@ def CollectBenchmark(
         displacements
 ):
     with open("results_" + ".txt", 'a') as f:
-        f.write("Pot Structure mpid displacement RMS imagmodes(pot) imagmodes(dft) \nGAP" + ' ')
+        f.write("Pot Structure mpid displacement RMS imagmodes(pot) imagmodes(dft) \nGAP ")
         # TODO include which pot. method has been used (GAP, ACE, etc.)
 
     for dis, rms in enumerate(rms_dis):
-        for struc_i, structure in structure_list:
+        for struc_i, structure in enumerate(structure_list):
             with open("results_" + ".txt", 'a') as f:
-                f.write(str(structure.composition.reduced_formula) + " " + str(mpids[struc_i]) + " "
-                        + displacements[dis] + " " + str(rms[struc_i]))
+                f.write(f"{structure.composition.reduced_formula} {mpids[struc_i]} {displacements[dis]} {rms[struc_i]} \nGAP ")
                 # TODO has img modes + ' ' + ' ' + str(ml.has_imag_modes(0.1)) + ' ' + str(dft.has_imag_modes(0.1))
 
     return Response

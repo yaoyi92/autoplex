@@ -59,9 +59,10 @@ def RMS(
 
     rms_dis = []
 
-    for dis_i, dis in enumerate(mlphonon):
-        mlBS = dis.phonon_bandstructure
-        dftBS = dftphonon[dis_i].phonon_bandstructure
+    for mldis in mlphonon:
+        mlBS = mldis.phonon_bandstructure
+    for dftdis in dftphonon:
+        dftBS = dftdis.phonon_bandstructure
 
         rms = rms_overall()
         rms_dis.append(rms)

@@ -57,6 +57,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
         """
         flows = []
         DFTphonons_output = []
+        DFTphonons_dir_output = []
 
         # TODO later adding: for i no. of potentials
         for displacement in self.displacements:
@@ -64,13 +65,14 @@ class PhononDFTMLDataGenerationFlow(Maker):
                                         phonon_displacement_maker=self.phonon_displacement_maker, born_maker=None,
                                         displacement=displacement, min_length=8).make(structure=structure)  # reduced the accuracy for test calculations
             flows.append(DFTphonons)
-            DFTphonons_output.append(DFTphonons.output.jobdirs.displacements_job_dirs)
+            DFTphonons_output.append(DFTphonons.output) # I have no better solution to this now
+            DFTphonons_dir_output.append(DFTphonons.output.jobdirs.displacements_job_dirs)
         datagen = DataGenerator(name="DataGen",
                                 phonon_displacement_maker=self.phonon_displacement_maker,
                                 n_struc=self.n_struc, sc=self.sc).make(structure=structure, mpid=mpid)
         flows.append(datagen)
 
-        flow = Flow(flows, {"rand_struc_data": datagen.output,
+        flow = Flow(flows, {"rand_struc_dir": datagen.output, "phonon_dir": DFTphonons_dir_output,
                             "phonon_data": DFTphonons_output}) # TODO in the future: DFT for fit and benchmark doesn't have to be the same
         return flow
 
@@ -181,8 +183,8 @@ class CompleteWorkflow(Maker):
             autoplex_datagen = PhononDFTMLDataGenerationFlow(name="test",
                                                              phonon_displacement_maker=phonon_displacement_maker,
                                                              n_struc=self.n_struc, displacements=self.displacements,
-                                                             symprec=self.symprec, sc=self.sc).make(
-                structure=structure, mpid=mpids[struc_i])
+                                                             symprec=self.symprec, sc=self.sc).make(structure=structure,
+                                                                                                    mpid=mpids[struc_i])
             flows.append(autoplex_datagen)
             datagen.append(autoplex_datagen.output)
 
