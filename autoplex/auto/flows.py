@@ -11,7 +11,7 @@ from autoplex.fitting.flows import MLIPFitMaker
 from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
 from atomate2.vasp.jobs.base import BaseVaspMaker
 from atomate2.common.jobs.phonons import PhononDisplacementMaker
-
+from atomate2.vasp.powerups import update_user_incar_settings, update_user_kpoints_settings
 from autoplex.benchmark.flows import PhononBenchmarkMaker
 from autoplex.auto.jobs import CollectBenchmark, PhononMLCalculationJob
 
@@ -64,6 +64,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
             DFTphonons = DFTPhononMaker(symprec=self.symprec,
                                         phonon_displacement_maker=self.phonon_displacement_maker, born_maker=None,
                                         displacement=displacement, min_length=8).make(structure=structure)  # reduced the accuracy for test calculations
+            DFTphonons = update_user_incar_settings(DFTphonons, {"NPAR": 4})
             flows.append(DFTphonons)
             DFTphonons_output.append(DFTphonons.output) # I have no better solution to this now
             DFTphonons_dir_output.append(DFTphonons.output.jobdirs.displacements_job_dirs)
