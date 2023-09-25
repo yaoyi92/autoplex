@@ -40,6 +40,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
     phonon_displacement_maker: BaseVaspMaker = field(default_factory=PhononDisplacementMaker)
     n_struc: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.1])
+    min_length: int = 20
     symprec: float = 0.01
     sc: bool = False
 
@@ -63,7 +64,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
         for displacement in self.displacements:
             DFTphonons = DFTPhononMaker(symprec=self.symprec,
                                         phonon_displacement_maker=self.phonon_displacement_maker, born_maker=None,
-                                        displacement=displacement, min_length=8).make(structure=structure)  # reduced the accuracy for test calculations
+                                        displacement=displacement, min_length=self.min_length).make(structure=structure)
             DFTphonons = update_user_incar_settings(DFTphonons, {"NPAR": 4})
             flows.append(DFTphonons)
             DFTphonons_output.append(DFTphonons.output) # I have no better solution to this now
@@ -161,6 +162,7 @@ class CompleteWorkflow(Maker):
     name: str = "complete_workflow"
     n_struc: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.1])
+    min_length: int = 20
     symprec: float = 0.01
     sc: bool = False
 
@@ -184,8 +186,8 @@ class CompleteWorkflow(Maker):
             autoplex_datagen = PhononDFTMLDataGenerationFlow(name="test",
                                                              phonon_displacement_maker=phonon_displacement_maker,
                                                              n_struc=self.n_struc, displacements=self.displacements,
-                                                             symprec=self.symprec, sc=self.sc).make(structure=structure,
-                                                                                                    mpid=mpids[struc_i])
+                                                             min_length=self.min_length, symprec=self.symprec,
+                                                             sc=self.sc).make(structure=structure, mpid=mpids[struc_i])
             flows.append(autoplex_datagen)
             datagen.append(autoplex_datagen.output)
 
@@ -195,7 +197,7 @@ class CompleteWorkflow(Maker):
 
         for struc_i, structure in enumerate(structure_list):
             autoplex_ml_phonon = PhononMLCalculationJob(structure=structure, displacements=self.displacements,
-                                                        ml_dir=autoplex_fit.output)
+                                                        min_length=self.min_length, ml_dir=autoplex_fit.output)
             flows.append(autoplex_ml_phonon)
             autoplex_bm = PhononDFTMLBenchmarkFlow(name="testBM").make(structure=structure, mpid=mpids[struc_i],
                                                                        ml_reference=autoplex_ml_phonon.output,

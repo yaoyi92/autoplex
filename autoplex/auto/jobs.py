@@ -13,6 +13,7 @@ from atomate2.forcefields.flows.phonons import PhononMaker
 def PhononMLCalculationJob(
         structure: Structure,
         displacements,
+        min_length: int = 20,
         ml_dir: str | Path | None = None,
 ):
     jobs = []
@@ -24,8 +25,8 @@ def PhononMLCalculationJob(
             phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
             static_energy_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
             store_force_constants=False,
-            generate_frequencies_eigenvectors_kwargs={"units": "THz"}, displacement=displacement).make(
-            structure=structure)
+            generate_frequencies_eigenvectors_kwargs={"units": "THz"}, displacement=displacement,
+            min_length=min_length).make(structure=structure)
         jobs.append(GAPPhonons)
         GAPphonons_output.append(GAPPhonons.output)
 
