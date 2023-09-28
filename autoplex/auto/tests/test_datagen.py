@@ -13,9 +13,11 @@ from pytest import approx
 from pymatgen.core.structure import Structure
 from pymatgen.io.vasp import Vasprun
 
-class TestAutomation(unittest.TestCase):
-    def test_automation(self):
-        assert   # for now just noting ideas
+
+class TestDataGen(unittest.TestCase):
+    def test_datageneration(self):
+        assert isolated_atoms_no_duplicate_atoms # just noting ideas for now
+        assert sc true/false
 
 
 if __name__ == '__main__':

@@ -13,9 +13,11 @@ from pytest import approx
 from pymatgen.core.structure import Structure
 from pymatgen.io.vasp import Vasprun
 
+
 class TestAutomation(unittest.TestCase):
     def test_automation(self):
-        assert   # for now just noting ideas
+        assert complete wf  # for now just noting ideas
+        assert individual steps
 
 
 if __name__ == '__main__':
