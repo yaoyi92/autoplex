@@ -17,6 +17,7 @@ from pymatgen.io.vasp import Vasprun
 class TestBenchmark(unittest.TestCase):
     def test_benchmark(self):
         assert # just noting ideas for now
+        assert right sturcture has right mpid and right rms
 
 
 if __name__ == '__main__':

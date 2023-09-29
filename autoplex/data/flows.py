@@ -54,7 +54,7 @@ class DataGenerator(Maker):
             mpid: int,
             prev_vasp_dir: str | Path | None = None,
             total_dft_energy_per_formula_unit: float | None = None,
-            supercell_matrix: Matrix3D | None = None,
+            supercell_matrix: Matrix3D | None = None, # with a simplier static vasp method this will be redundant
     ):
         """
         Make flow to generate the data base.
