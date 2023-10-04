@@ -26,7 +26,7 @@ def gapfit(
         twobody: bool = True,
         threebody: bool = False,
         soap: bool = True,
-        fit_kwargs: dict = field(default_factory=dict),
+        fit_kwargs: dict = field(default_factory=dict), #mutable :/
 ):
     """
     job that prepares GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.

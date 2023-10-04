@@ -1,25 +1,24 @@
 from __future__ import annotations
 
-import json
 import os
-import tempfile
 import unittest
+from pathlib import Path
+from jobflow import run_locally
+from jobflow import SETTINGS
+from autoplex.fitting.flows import MLIPFitMaker
 
-import numpy as np
-import pytest
-from numpy.testing import assert_allclose, assert_array_equal
-from pytest import approx
-
-from pymatgen.core.structure import Structure
-from pymatgen.io.vasp import Vasprun
-
+CurrentDir = Path(__file__).absolute().parent
 
 class TestFitting(unittest.TestCase):
     def test_fitting(self):
-        assert hyperparametrs set correctly # just noting ideas for now
-        assert gap git successful
-        assert 2body (maybe 3body) + soap set
+        gapfit = MLIPFitMaker().make(species_list = ["Li", "Cl"], iso_atom_energy = [5, 3], fitinput = [{'dir':[f"{CurrentDir}/files"]}])
+        responses = run_locally(gapfit, ensure_success = True)
+
+        assert responses is not None
+        #assert hyperparametrs set correctly/check if 2body (maybe 3body) + soap set
+
+        for file in os.listdir("."):
+            if os.path.isfile(file) and file.startswith("gap.xml") \
+                    or file.startswith("trainGAP") or file.startswith("std_"): os.remove(file)
 
 
-if __name__ == '__main__':
-    unittest.main()
