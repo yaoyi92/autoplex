@@ -57,20 +57,15 @@ def RMS(
         new_plotter.savefig(filename, format=img_format)
         new_plotter.close()
 
-    rms_dis = []
+    mlBS = mlphonon.phonon_bandstructure
+    dftBS = dftphonon.phonon_bandstructure
 
-    for mldis in mlphonon:
-        mlBS = mldis.phonon_bandstructure
-    for dftdis in dftphonon:
-        dftBS = dftdis.phonon_bandstructure
+    rms = rms_overall()
 
-        rms = rms_overall()
-        rms_dis.append(rms)
+    rms_kdep_plot(whichkpath=2,
+                  filename=os.path.join(str(structure.composition.reduced_formula)) + '_rms_phonons.eps')
 
-        rms_kdep_plot(whichkpath=2,
-                      filename=os.path.join(str(structure.composition.reduced_formula)) + '_rms_phonons.eps')
-
-    return Response(output=rms_dis) #TODO TaskDoc
+    return Response(output=rms) #TODO TaskDoc
 
 
 

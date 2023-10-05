@@ -54,7 +54,7 @@ class PhononBenchmarkMaker(Maker):
 
         rms = RMS(
             mlphonon=ml_reference,
-            dftphonon=dft_reference, # this later will be replaced by an independent DFT phonon run
+            dftphonon=dft_reference,
             structure=structure
         )
         jobs.append(rms)

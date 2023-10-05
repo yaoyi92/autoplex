@@ -19,7 +19,7 @@ CurrentDir = Path(__file__).absolute().parent
 
 @job
 def gapfit(
-        fitinput: list,
+        fitinput: dict,
         isolatedatoms,
         isolatedatomsenergy,
         gap_input=CurrentDir / "gap-defaults.json",
@@ -32,10 +32,9 @@ def gapfit(
     job that prepares GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
 
     """
-
     flattened_input = lambda x: [y for z in x for y in (flattened_input(z) if isinstance(z, list) else [z])]
-    fit = (flattened_input([dirs for data in fitinput for datatype, dirs in data.items()
-                            if datatype != "phonon_data"])) # uniform data structure
+    fit = (flattened_input([dirs for data in fitinput.values() for datatype, dirs in data.items()
+                            if datatype != "phonon_data"]))  # uniform data structure
     for entry in fit:
         file = read(re.sub(r'^.*?/', '/', entry, count=1) + "/OUTCAR.gz", index=":")
         for i in file:  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html
@@ -66,8 +65,8 @@ def gapfit(
     gap: str = GAPHyperparameterParser(inputs=inputs, twobody=twobody, threebody=threebody, soap=soap)
     general = [str(key) + "=" + str(inputs['general'][key]) for key in inputs['general']]
 
-    with open('std_out.log', 'w') as f_std, open('std_err.log', 'w') as f_err:
-        subprocess.call(['gap_fit'] + general + [gap], stdout=f_std, stderr=f_err)
+    with open('std_out.log', 'w') as file_std, open('std_err.log', 'w') as file_err:
+        subprocess.call(['gap_fit'] + general + [gap], stdout=file_std, stderr=file_err)
 
         directory = Path.cwd()
 

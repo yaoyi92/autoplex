@@ -37,7 +37,7 @@ class TestAutomation(unittest.TestCase):
         assert len(fitauto.jobs) == 1
         assert len(bmauto.jobs) == 1
         assert responses is not None
-
+        # I have to adjust df_expect to my latest refactoring T...T
         df_expect = pd.read_csv('results_test.txt', engine='python', sep=' ', skiprows=1, skipfooter=1, header=None, names=['Pot', 'Structure', 'mpid', 'displacement', 'RMS', 'imagmodes(pot)', 'imagmodes(dft)'])
         df = pd.read_csv('results_.txt', engine='python', sep=' ', skiprows=1, skipfooter=1, header=None, names=['Pot', 'Structure', 'mpid', 'displacement', 'RMS', 'imagmodes(pot)', 'imagmodes(dft)'])
         for i, j in zip(df, df_expect): assert i == j #somehow the test fails when I compare it listwise
