@@ -31,17 +31,6 @@ dependencies = [
      "typing",
 ]
 
-strict = [
-     "pymatgen==2023.9.10",
-     "atomate2[phonons]",
-     "FireWorks==2.0.3",
-     "numpy",
-     "typing",
-     "jobflow==0.1.13",
-     "pydantic==1.10.9",
-     "pymatgen-analysis-defects==2023.8.22",
-]
-
 [tool.setuptools.package-data]
 "autoplex.fitting" = ["gap-defaults.json"]
 
@@ -58,6 +47,17 @@ docs = ["Sphinx==4.5.0",
     "pymatgen>=2023.9.10",
     "sphinx-argparse==0.4.0",
     "typing"]
+
+strict = [
+     "pymatgen==2023.9.10",
+     "atomate2[phonons]",
+     "FireWorks==2.0.3",
+     "numpy",
+     "typing",
+     "jobflow==0.1.13",
+     "pydantic==1.10.9",
+     "pymatgen-analysis-defects==2023.8.22",
+]
 
 [tool.versioningit.vcs]
 method = "git"
