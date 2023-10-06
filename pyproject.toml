@@ -27,6 +27,7 @@ dependencies = [
      "pymatgen>=2023.9.10",
      "atomate2[phonons]",
      "FireWorks>=2.0.3",
+     "ase>=3.22.1",
      "numpy",
      "typing",
 ]
