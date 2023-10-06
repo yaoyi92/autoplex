@@ -115,7 +115,7 @@ class IsoAtomMaker(Maker):
         """
         jobs = []
         iso_atom = Structure(
-            lattice=[[10, 0, 0], [0, 10, 0], [0, 0, 10]],  # set to a smaller lattice for tests
+            lattice=[[20, 0, 0], [0, 20, 0], [0, 0, 20]],  # TODO replace with boxed
             species=[species],
             coords=[[0, 0, 0]],
         )
