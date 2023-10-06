@@ -24,13 +24,29 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-     "pymatgen>=2023.1.20",
+     "pymatgen>=2023.9.10",
+     "atomate2[phonons]",
+     "FireWorks>=2.0.3",
      "numpy",
      "typing",
-     "Sphinx>=4",
-     "sphinx-argparse==0.4.0",
-     "sphinx-pdj-theme==0.2.1",
 ]
+
+[tool.setuptools.package-data]
+"autoplex.fitting" = ["gap-defaults.json"]
+
+[project.optional-dependencies]
+
+docs = ["Sphinx==4.5.0",
+    "jupyter",
+    "sphinx-argparse",
+    "sphinx-book-theme==0.3.3",
+    "m2r2",
+    "myst-parser",
+    "docutils",
+    "mendeleev==0.14.0",
+    "pymatgen>=2023.9.10",
+    "sphinx-argparse==0.4.0",
+    "typing"]
 
 [tool.versioningit.vcs]
 method = "git"
