@@ -143,6 +143,7 @@ ignore_missing_imports = true
 namespace_packages = true
 explicit_package_bases = true
 no_implicit_optional = false
+exclude = ['tutorials']
 
 
 [tool.codespell]
