@@ -23,8 +23,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest pytest-mock pytest-split pytest-cov
-        python -m pip install types-setuptools
+        pip install pytest pytest-mock pytest-split pytest-cov mypy pydocstyle pylint black flake8 pyproject-flake8==6.0.0
+        pip install types-setuptools
         pip install .
     - name: mypy
       run: |
