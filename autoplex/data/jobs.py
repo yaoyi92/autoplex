@@ -13,8 +13,8 @@ import numpy as np
 
 @job
 def generate_randomized_structures(
-        structure: Structure,
-        n_struc: int,
+    structure: Structure,
+    n_struc: int,
 ):
     random_rattled = []
     ase_structure = AseAtomsAdaptor.get_atoms(structure)
@@ -23,21 +23,23 @@ def generate_randomized_structures(
         random_rattled.append(AseAtomsAdaptor.get_structure(ase_structure))
     return random_rattled
 
+
 @job
 def phonon_maker_random_structures(
-        rattled_structures,
-        displacements,
-        symprec,
-        phonon_displacement_maker
+    rattled_structures, displacements, symprec, phonon_displacement_maker
 ):
     jobs = []
     outputs = []
     for rand_struc in rattled_structures:
         for displacement in displacements:
-            random_phonon_maker = DFTPhononMaker(symprec=symprec,
-                                                 phonon_displacement_maker=phonon_displacement_maker,
-                                                 born_maker=None, bulk_relax_maker=None,
-                                                 min_length=8, displacement=displacement).make(structure=rand_struc)
+            random_phonon_maker = DFTPhononMaker(
+                symprec=symprec,
+                phonon_displacement_maker=phonon_displacement_maker,
+                born_maker=None,
+                bulk_relax_maker=None,
+                min_length=8,
+                displacement=displacement,
+            ).make(structure=rand_struc)
             jobs.append(random_phonon_maker)
             outputs.append(random_phonon_maker.output)
     flow = Flow(jobs, outputs)

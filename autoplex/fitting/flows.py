@@ -30,12 +30,12 @@ class MLIPFitMaker(Maker):
     name: str = "MLpotentialFit"
 
     def make(
-            self,
-            species_list,
-            iso_atom_energy,
-            fitinput: list,
-            ml_dir: str | Path | None = None,
-            **fit_kwargs
+        self,
+        species_list,
+        iso_atom_energy,
+        fitinput: list,
+        ml_dir: str | Path | None = None,
+        **fit_kwargs,
     ):
         """
         Make flow to create ML potential fits.

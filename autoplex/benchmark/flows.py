@@ -30,12 +30,12 @@ class PhononBenchmarkMaker(Maker):
     name: str = "PhononBenchmark"
 
     def make(
-            self,
-            structure: Structure,
-            mpid,  # list[MPID]
-            ml_reference,
-            dft_reference,
-            **kwargs,
+        self,
+        structure: Structure,
+        mpid,  # list[MPID]
+        ml_reference,
+        dft_reference,
+        **kwargs,
     ):
         """
         Make flow for benchmarking.
@@ -51,12 +51,7 @@ class PhononBenchmarkMaker(Maker):
         kwargs.get("npoints_band", 51)
         kwargs.get("kpoint_density", 12000)
 
-
-        rms = RMS(
-            mlphonon=ml_reference,
-            dftphonon=dft_reference,
-            structure=structure
-        )
+        rms = RMS(mlphonon=ml_reference, dftphonon=dft_reference, structure=structure)
         jobs.append(rms)
 
         # create a flow including all jobs
