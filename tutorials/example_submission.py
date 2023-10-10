@@ -5,7 +5,7 @@ from atomate2.vasp.sets.core import StaticSetGenerator
 from atomate2.vasp.jobs.base import BaseVaspMaker
 from jobflow.managers.fireworks import flow_to_workflow
 from jobflow.core.flow import Flow
-from autoplex.auto.flows import CompleteWorkflow
+from autoplex.auto.flows import CompleteDFTvsMLBenchmarkWorkflow
 from mp_api.client import MPRester
 from jobflow.utils.graph import to_mermaid
 
@@ -23,7 +23,7 @@ phonon_stat = BaseVaspMaker(
         user_kpoints_settings={"grid_density": 1},
     )
 )  # reduced the accuracy for test calculations
-complete_flow = CompleteWorkflow(
+complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     n_struc=1, displacements=[0.1], symprec=0.1, sc=False
 ).make(structure_list=struc_list, mpids=mpids, phonon_displacement_maker=phonon_stat)
 

@@ -17,7 +17,7 @@ from autoplex.benchmark.flows import PhononBenchmarkMaker
 from autoplex.auto.jobs import CollectBenchmark, PhononMLCalculationJob
 
 __all__ = [
-    "CompleteWorkflow",
+    "CompleteDFTvsMLBenchmarkWorkflow",
     "PhononDFTMLDataGenerationFlow",
     "PhononDFTMLBenchmarkFlow",
 ]
@@ -27,7 +27,7 @@ __all__ = [
 
 
 @dataclass
-class CompleteWorkflow(Maker):
+class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     """
     Maker for benchmarking
 
