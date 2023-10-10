@@ -42,7 +42,7 @@ class CompleteWorkflow(Maker):
     n_struc: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
-    symprec: float = 0.01
+    symprec: float = 1e-4
     sc: bool = False
 
     def make(
@@ -147,7 +147,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
         default_factory=lambda: [0.01]
     )  # TODO: wanna make sure that 0.01 is always included, no matter what the user does
     min_length: int = 20
-    symprec: float = 0.01
+    symprec: float = 1e-4
     sc: bool = False
 
     def make(self, structure: Structure, mpid):
@@ -194,7 +194,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
                 "phonon_dir": DFTphonons_dir_output,
                 "phonon_data": DFTphonons_output,
             },
-        )  # TODO in the future: DFT for fit and benchmark doesn't have to be the same
+        )
         return flow
 
 

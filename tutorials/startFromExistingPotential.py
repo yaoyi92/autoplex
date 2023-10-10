@@ -13,7 +13,6 @@ name = "NameOfYourWorkflow"
 
 existing_pot = PhononMLCalculationJob(
     structure=structure,
-    displacements=[0.1],
     min_length=20,
     ml_dir="/path/to/your/GAP/pot/gap.xml",
 )
