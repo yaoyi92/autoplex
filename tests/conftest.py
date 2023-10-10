@@ -11,6 +11,14 @@ _VFILES: Final = ("incar", "kpoints", "potcar", "poscar")
 _REF_PATHS: Dict[str, Union[str, Path]] = {}
 _FAKE_RUN_VASP_KWARGS: Dict[str, dict] = {}
 
+@pytest.fixture(scope="session")
+def test_dir():
+    from pathlib import Path
+
+    module_dir = Path(__file__).resolve().parent
+    test_dir = module_dir / ".." / "tests" / "test_data"
+    return test_dir.resolve()
+
 
 @pytest.fixture(scope="session")
 def vasp_test_dir(test_dir):
