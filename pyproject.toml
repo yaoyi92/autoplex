@@ -33,6 +33,9 @@ dependencies = [
      "typing",
 ]
 
+[tool.setuptools.packages.find]
+exclude = ["tutorials"]
+
 [tool.setuptools.package-data]
 "autoplex.fitting" = ["gap-defaults.json"]
 
