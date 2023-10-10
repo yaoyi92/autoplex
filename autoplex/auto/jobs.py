@@ -1,7 +1,7 @@
 """
 Complete AutoPLEX -- Automated machine-learned Potential Landscape explorer -- jobs
 """
-
+from __future__ import annotations
 from pathlib import Path
 from pymatgen.core.structure import Structure
 from jobflow import Flow, job, Response
@@ -11,19 +11,19 @@ from atomate2.forcefields.flows.phonons import PhononMaker
 
 @job
 def PhononMLCalculationJob(
+    ml_dir: str,
     structure: Structure,
     min_length: int = 20,
-    ml_dir: "str | Path | None" = None,
 ):
     jobs = []
     GAPPhonons = PhononMaker(
         bulk_relax_maker=GAPRelaxMaker(
             potential_param_file_name=ml_dir,
-            relax_cell=True,  # type: ignore
+            relax_cell=True,
             relax_kwargs={"interval": 500},
         ),
-        phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=ml_dir),  # type: ignore
-        static_energy_maker=GAPStaticMaker(potential_param_file_name=ml_dir),  # type: ignore
+        phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
+        static_energy_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
         store_force_constants=False,
         generate_frequencies_eigenvectors_kwargs={"units": "THz"},
         min_length=min_length,
