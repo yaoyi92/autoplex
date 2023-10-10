@@ -1,9 +1,12 @@
 """Utility functions for fitting jobs"""
 
+from __future__ import annotations
+
 import json
+from pathlib import Path
 
 
-def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path):
+def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path):
     """
     Loads gap fit default parameters from the json file
 
@@ -23,7 +26,7 @@ def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path):
 
 
 def gap_hyperparameter_constructor(
-    gap_parameter_dict,
+    gap_parameter_dict: dict,
     two_body: bool = True,
     three_body: bool = False,
     soap: bool = True,
