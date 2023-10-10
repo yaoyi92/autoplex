@@ -26,15 +26,15 @@ def gapfit(
     twobody: bool = True,
     threebody: bool = False,
     soap: bool = True,
-    fit_kwargs: dict = field(default_factory=dict),  # mutable :/
+    fit_kwargs: dict = field(default_factory=dict),
 ):
     """
     job that prepares GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
 
     """
     flattened_input = lambda x: [
-        y for z in x for y in (flattened_input(z) if isinstance(z, list) else [z])
-    ]  # type:ignore
+        y for z in x for y in (flattened_input(z) if isinstance(z, list) else [z])  # type:ignore
+    ]
     fit = flattened_input(
         [
             dirs
