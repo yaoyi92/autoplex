@@ -34,7 +34,7 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-exclude = ["tutorials"]
+exclude = ["tutorials", "tests"]
 
 [tool.setuptools.package-data]
 "autoplex.fitting" = ["gap-defaults.json"]
@@ -144,6 +144,7 @@ exclude_lines = [
 # omit everything in test directory from coverage
 [tool.coverage.run]
 omit = [
+    "tests/*",
     "*/tests/*",
     "*/*/tests/*",
 ]
