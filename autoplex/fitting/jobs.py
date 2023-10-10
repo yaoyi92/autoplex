@@ -3,8 +3,6 @@ Jobs to fit ML potentials
 """
 from __future__ import annotations
 
-import json
-
 import numpy as np
 from ase.io import read, write
 import subprocess
@@ -13,6 +11,10 @@ import re
 import os
 from jobflow import Flow, Response, job
 from dataclasses import dataclass, field
+from autoplex.fitting.utils import (
+    load_gap_hyperparameter_defaults,
+    gap_hyperparameter_constructor,
+)
 
 CurrentDir = Path(__file__).absolute().parent
 
@@ -33,7 +35,9 @@ def gapfit(
 
     """
     flattened_input = lambda x: [
-        y for z in x for y in (flattened_input(z) if isinstance(z, list) else [z])  # type:ignore
+        y
+        for z in x
+        for y in (flattened_input(z) if isinstance(z, list) else [z])  # type:ignore
     ]
     fit = flattened_input(
         [
@@ -56,8 +60,12 @@ def gapfit(
             i.pbc = True
         write("trainGAP.xyz", file, append=True)
 
-    with open(gap_input, "r") as infile:
-        inputs = json.load(infile)
+    # with open(gap_input, "r") as infile:
+    #     inputs = json.load(infile)
+
+    gap_default_hyperparameters = load_gap_hyperparameter_defaults(
+        gap_fit_parameter_file_path=gap_input
+    )
 
     e0: str = "{"
 
@@ -67,18 +75,25 @@ def gapfit(
         else:
             e0 += str(isoatom) + ":" + str(isoenergy) + ":"
     # Updating the isolated atom energy
-    inputs["general"].update({"e0": e0})
-    # Overwriting the default gap_fit settings with user settings #TODO XPOT support
-    for key in inputs:
+    gap_default_hyperparameters["general"].update({"e0": e0})
+    # Overwriting the default gap_fit settings with user settings  # TODO XPOT support
+    for key in gap_default_hyperparameters:
         for key2 in fit_kwargs:
             if key == key2:
-                inputs[key].update(fit_kwargs[key2])
+                gap_default_hyperparameters[key].update(fit_kwargs[key2])
 
-    gap: str = GAPHyperparameterParser(
-        inputs=inputs, twobody=twobody, threebody=threebody, soap=soap
+    gap = gap_hyperparameter_constructor(
+        gap_parameter_dict=gap_default_hyperparameters,
+        two_body=twobody,
+        three_body=threebody,
+        soap=soap,
     )
+    # gap: str = GAPHyperparameterParser(
+    #     inputs=inputs, twobody=twobody, threebody=threebody, soap=soap
+    # )
     general = [
-        str(key) + "=" + str(inputs["general"][key]) for key in inputs["general"]
+        str(key) + "=" + str(gap_default_hyperparameters["general"][key])
+        for key in gap_default_hyperparameters["general"]
     ]
 
     with open("std_out.log", "w") as file_std, open("std_err.log", "w") as file_err:
@@ -86,25 +101,30 @@ def gapfit(
 
         directory = Path.cwd()
 
-    return Response(output=str(os.path.join(directory, inputs["general"]["gp_file"])))
+    return Response(
+        output=str(
+            os.path.join(directory, gap_default_hyperparameters["general"]["gp_file"])
+        )
+    )
 
 
-def GAPHyperparameterParser(
-    inputs, twobody: bool = True, threebody: bool = False, soap: bool = True
-):
-    twob: str = " ".join(
-        [f"{key}={value}" for key, value in inputs["twob"].items() if twobody is True]
-    )
-    threeb: str = " ".join(
-        [
-            f"{key}={value}"
-            for key, value in inputs["threeb"].items()
-            if threebody is True
-        ]
-    )
-    SOAP: str = str(":soap " if soap is True else "") + " ".join(
-        [f"{key}={value}" for key, value in inputs["soap"].items() if soap is True]
-    )
-    gap: str = "gap={" + (twob + threeb + SOAP) + "}"
-
-    return gap
+#
+# def GAPHyperparameterParser(
+#     inputs, twobody: bool = True, threebody: bool = False, soap: bool = True
+# ):
+#     twob: str = " ".join(
+#         [f"{key}={value}" for key, value in inputs["twob"].items() if twobody is True]
+#     )
+#     threeb: str = " ".join(
+#         [
+#             f"{key}={value}"
+#             for key, value in inputs["threeb"].items()
+#             if threebody is True
+#         ]
+#     )
+#     SOAP: str = str(":soap " if soap is True else "") + " ".join(
+#         [f"{key}={value}" for key, value in inputs["soap"].items() if soap is True]
+#     )
+#     gap: str = "gap={" + (twob + threeb + SOAP) + "}"
+#
+#     return gap

@@ -4,7 +4,7 @@ Flows consisting of jobs to fit ML potentials
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from jobflow import Flow, Maker
@@ -33,7 +33,7 @@ class MLIPFitMaker(Maker):
         self,
         species_list,
         iso_atom_energy,
-        fitinput: list,
+        fitinput: dict,
         ml_dir: str | Path | None = None,
         **fit_kwargs,
     ):
@@ -46,15 +46,15 @@ class MLIPFitMaker(Maker):
         """
 
         jobs = []
-        GAPfit = gapfit(
+        gap_fit_job = gapfit(
             # mind the GAP # converting OUTCARs to a joint extended xyz file and running gap_fit with certain settings
             fitinput=fitinput,
             isolatedatoms=species_list,
             isolatedatomsenergy=iso_atom_energy,
             fit_kwargs=fit_kwargs,
         )
-        jobs.append(GAPfit)
+        jobs.append(gap_fit_job)
 
         # create a flow including all jobs
-        flow = Flow(jobs, GAPfit.output)
+        flow = Flow(jobs, gap_fit_job.output)
         return flow

@@ -17,13 +17,113 @@ from autoplex.benchmark.flows import PhononBenchmarkMaker
 from autoplex.auto.jobs import CollectBenchmark, PhononMLCalculationJob
 
 __all__ = [
+    "CompleteWorkflow",
     "PhononDFTMLDataGenerationFlow",
     "PhononDFTMLBenchmarkFlow",
-    "CompleteWorkflow",
 ]
 
 
 # Volker's idea: provide several default flows with different setting/setups
+
+
+@dataclass
+class CompleteWorkflow(Maker):
+    """
+    Maker for benchmarking
+
+    Parameters
+    ----------
+    name : str
+        Name of the flows produced by this maker.
+
+    """
+
+    name: str = "complete_workflow"
+    n_struc: int = 1
+    displacements: list[float] = field(default_factory=lambda: [0.01])
+    min_length: int = 20
+    symprec: float = 0.01
+    sc: bool = False
+
+    def make(
+        self,
+        structure_list: list[Structure],
+        mpids,
+        phonon_displacement_maker,
+        benchmark_structure: Structure,
+        mpbm,
+    ):
+        flows = []
+        datagen = {}
+        collect = []
+        isoatoms = []
+        all_species = set([s.types_of_species for s in structure_list])
+        for species in next(iter(all_species)):
+            isoatom = IsoAtomMaker().make(species=species)
+            flows.append(isoatom)
+            isoatoms.append(isoatom.output)
+
+        for struc_i, structure in enumerate(structure_list):
+            mpid = mpids[struc_i]
+            autoplex_datagen = PhononDFTMLDataGenerationFlow(
+                name="test",
+                phonon_displacement_maker=phonon_displacement_maker,
+                n_struc=self.n_struc,
+                displacements=self.displacements,
+                min_length=self.min_length,
+                symprec=self.symprec,
+                sc=self.sc,
+            ).make(structure=structure, mpid=mpid)
+            flows.append(autoplex_datagen)
+            datagen.update({mpid: autoplex_datagen.output})
+
+        autoplex_fit = PhononDFTMLFitFlow().make(
+            species=next(iter(all_species)), isolated_atoms=isoatoms, fitinput=datagen
+        )
+        flows.append(autoplex_fit)
+
+        # for struc_i, structure in enumerate(structure_list):  ### just commenting this out for now
+        autoplex_ml_phonon = PhononMLCalculationJob(
+            structure=benchmark_structure,
+            min_length=self.min_length,
+            ml_dir=autoplex_fit.output,
+        )
+        flows.append(autoplex_ml_phonon)
+        if mpbm not in mpids:
+            DFTphonons = DFTPhononMaker(
+                symprec=self.symprec,
+                phonon_displacement_maker=phonon_displacement_maker,
+                born_maker=None,
+                min_length=self.min_length,
+            ).make(structure=benchmark_structure)
+            DFTphonons = update_user_incar_settings(DFTphonons, {"NPAR": 4})
+            flows.append(DFTphonons)
+
+            dft_reference = DFTphonons.output
+        else:
+            dft_reference = datagen[mpbm]["phonon_data"][
+                0
+            ]  # [0] because we only need the first entry for the displacement = 0.1
+
+        autoplex_bm = PhononDFTMLBenchmarkFlow(name="testBM").make(
+            structure=benchmark_structure,
+            mpid=mpbm,
+            ml_reference=autoplex_ml_phonon.output,
+            dft_reference=dft_reference,
+        )
+        flows.append(autoplex_bm)
+        collect.append(autoplex_bm.output)
+
+        collect_bm = CollectBenchmark(
+            benchmark_structure=benchmark_structure,
+            mpbm=mpbm,
+            rms=collect,
+            displacements=self.displacements,
+        )
+        flows.append(collect_bm)
+
+        flow = Flow(flows)
+        return flow
 
 
 @dataclass
@@ -166,104 +266,4 @@ class PhononDFTMLBenchmarkFlow(Maker):
         flows.append(benchmark)
 
         flow = Flow(flows, benchmark.output)
-        return flow
-
-
-@dataclass
-class CompleteWorkflow(Maker):
-    """
-    Maker for benchmarking
-
-    Parameters
-    ----------
-    name : str
-        Name of the flows produced by this maker.
-
-    """
-
-    name: str = "complete_workflow"
-    n_struc: int = 1
-    displacements: list[float] = field(default_factory=lambda: [0.01])
-    min_length: int = 20
-    symprec: float = 0.01
-    sc: bool = False
-
-    def make(
-        self,
-        structure_list: list[Structure],
-        mpids,
-        phonon_displacement_maker,
-        benchmark_structure: Structure,
-        mpbm,
-    ):
-        flows = []
-        datagen = {}
-        collect = []
-        isoatoms = []
-        all_species = set([s.types_of_species for s in structure_list])
-        for species in next(iter(all_species)):
-            isoatom = IsoAtomMaker().make(species=species)
-            flows.append(isoatom)
-            isoatoms.append(isoatom.output)
-
-        for struc_i, structure in enumerate(structure_list):
-            mpid = mpids[struc_i]
-            autoplex_datagen = PhononDFTMLDataGenerationFlow(
-                name="test",
-                phonon_displacement_maker=phonon_displacement_maker,
-                n_struc=self.n_struc,
-                displacements=self.displacements,
-                min_length=self.min_length,
-                symprec=self.symprec,
-                sc=self.sc,
-            ).make(structure=structure, mpid=mpid)
-            flows.append(autoplex_datagen)
-            datagen.update({mpid: autoplex_datagen.output})
-
-        autoplex_fit = PhononDFTMLFitFlow().make(
-            species=next(iter(all_species)), isolated_atoms=isoatoms, fitinput=datagen
-        )
-        flows.append(autoplex_fit)
-
-        # for struc_i, structure in enumerate(structure_list):  ### just commenting this out for now
-        autoplex_ml_phonon = PhononMLCalculationJob(
-            structure=benchmark_structure,
-            min_length=self.min_length,
-            ml_dir=autoplex_fit.output,
-        )
-        flows.append(autoplex_ml_phonon)
-        if mpbm not in mpids:
-            DFTphonons = DFTPhononMaker(
-                symprec=self.symprec,
-                phonon_displacement_maker=phonon_displacement_maker,
-                born_maker=None,
-                min_length=self.min_length,
-            ).make(structure=benchmark_structure)
-            DFTphonons = update_user_incar_settings(DFTphonons, {"NPAR": 4})
-            flows.append(DFTphonons)
-
-            dft_reference = DFTphonons.output
-        else:
-            dft_reference = datagen[mpbm]["phonon_data"][
-                0
-            ]  # [0] because we only need the first entry for the displacement = 0.1
-
-        autoplex_bm = PhononDFTMLBenchmarkFlow(name="testBM").make(
-            structure=benchmark_structure,
-            mpid=mpbm,
-            ml_reference=autoplex_ml_phonon.output,
-            dft_reference=dft_reference,
-        )
-        flows.append(autoplex_bm)
-        collect.append(autoplex_bm.output)
-
-        collect_bm = CollectBenchmark(
-            benchmark_structure=benchmark_structure,
-            mpbm=mpbm,
-            rms=collect,
-            displacements=self.displacements,
-        )
-        flows.append(collect_bm)
-
-        flow = Flow(flows)
         return flow
