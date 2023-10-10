@@ -2,7 +2,6 @@
 Complete AutoPLEX -- Automated machine-learned Potential Landscape explorer -- flows
 """
 
-from pathlib import Path
 from pymatgen.core.structure import Structure
 from dataclasses import dataclass, field
 from jobflow import Flow, Maker
@@ -13,7 +12,6 @@ from atomate2.vasp.jobs.base import BaseVaspMaker
 from atomate2.common.jobs.phonons import PhononDisplacementMaker
 from atomate2.vasp.powerups import (
     update_user_incar_settings,
-    update_user_kpoints_settings,
 )
 from autoplex.benchmark.flows import PhononBenchmarkMaker
 from autoplex.auto.jobs import CollectBenchmark, PhononMLCalculationJob
@@ -46,8 +44,8 @@ class PhononDFTMLDataGenerationFlow(Maker):
     )
     n_struc: int = 1
     displacements: list[float] = field(
-        default_factory=lambda: [0.1]
-    )  # TODO: wanna make sure that 0.1 is always included, no matter what the user does
+        default_factory=lambda: [0.01]
+    )  # TODO: wanna make sure that 0.01 is always included, no matter what the user does
     min_length: int = 20
     symprec: float = 0.01
     sc: bool = False
@@ -185,7 +183,7 @@ class CompleteWorkflow(Maker):
 
     name: str = "complete_workflow"
     n_struc: int = 1
-    displacements: list[float] = field(default_factory=lambda: [0.1])
+    displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
     symprec: float = 0.01
     sc: bool = False
