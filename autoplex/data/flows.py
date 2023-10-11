@@ -27,18 +27,18 @@ __all__ = ["DataGenerator", "IsoAtomMaker"]
 @dataclass
 class DataGenerator(Maker):
     """
-        Maker to create DFT data for ML potential fitting
-        1. Fetch Data from Materials Project and other databases (other: work in progress)
-        + Perform DFT calculations (at the current point these are also used for Phonon calculations (that part
-        shall be independent in the future.)
+    Maker to create DFT data for ML potential fitting
+    1. Fetch Data from Materials Project and other databases (other: work in progress)
+    + Perform DFT calculations (at the current point these are also used for Phonon calculations (that part
+    shall be independent in the future.)
 
     --Note:
         All phonon-related code parts have been copied from atomate2/vasp/flows/phonons.py
 
-        Parameters
-        ----------
-        name : str
-            Name of the flows produced by this maker.
+    Parameters
+    ----------
+    name : str
+        Name of the flows produced by this maker.
 
     """
 
@@ -69,7 +69,7 @@ class DataGenerator(Maker):
         ml_dir : str or Path or None
             ML directory to use for copying inputs/outputs.(hab noch keine Ahnung)
         supercell_matrix: Matrix of the SC
-        mpids: Materials Project IDs
+        mpid: Materials Project IDs
         """
         jobs = []  # initializing empty job list
         outputs = []
