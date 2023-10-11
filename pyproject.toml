@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autoplex"
-description = "Package for automatic ml potential generation"
+description = "Automated machine-learned Potential Landscape explorer"
 readme = "README.md"
 keywords = ["high-throughput", "automated", "mlpotential"]
 license = { text = "BSD 3-Clause" }
