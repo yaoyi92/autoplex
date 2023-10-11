@@ -2,15 +2,14 @@
 Jobs to fit ML potentials
 """
 from __future__ import annotations
-
-import numpy as np
-from ase.io import read, write
-import subprocess
-from pathlib import Path
+from dataclasses import field
 import re
 import os
-from jobflow import Flow, Response, job
-from dataclasses import dataclass, field
+from pathlib import Path
+import subprocess
+import numpy as np
+from ase.io import read, write
+from jobflow import Response, job
 from autoplex.fitting.utils import (
     load_gap_hyperparameter_defaults,
     gap_hyperparameter_constructor,
@@ -28,8 +27,8 @@ def gapfit(
     two_body: bool = True,
     three_body: bool = False,
     soap: bool = True,
-    fit_kwargs: dict = field(default_factory=dict),
-):
+    fit_kwargs: dict = field(default_factory=dict),  # pylint: disable=E3701
+):  # pylint: disable=R0913, R0914
     """
     Prepares the GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
 
@@ -58,11 +57,13 @@ def gapfit(
         Path to the gap fit file.
     """
 
-    flattened_input = lambda x: [
-        y
-        for z in x
-        for y in (flattened_input(z) if isinstance(z, list) else [z])  # type:ignore
-    ]
+    def flattened_input(x):
+        return [
+            y
+            for z in x
+            for y in (flattened_input(z) if isinstance(z, list) else [z])  # type:ignore
+        ]
+
     fit = flattened_input(
         [
             dirs
@@ -115,7 +116,9 @@ def gapfit(
         for key in gap_default_hyperparameters["general"]
     ]
 
-    with open("std_out.log", "w") as file_std, open("std_err.log", "w") as file_err:
+    with open("std_out.log", "w", encoding="utf-8") as file_std, open(
+        "std_err.log", "w", encoding="utf-8"
+    ) as file_err:
         subprocess.call(["gap_fit"] + general + [gap], stdout=file_std, stderr=file_err)
 
         directory = Path.cwd()

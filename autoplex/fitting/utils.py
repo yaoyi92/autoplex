@@ -16,11 +16,11 @@ def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path):
         Path to gap-defaults.json.
 
     Returns
-        -------
-        dict
-           gap fit default parameters.
+    -------
+    dict
+       gap fit default parameters.
     """
-    with open(gap_fit_parameter_file_path, "r") as f:
+    with open(gap_fit_parameter_file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
         return data
 

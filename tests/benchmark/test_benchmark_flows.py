@@ -2,10 +2,6 @@ from __future__ import annotations
 
 import unittest
 
-import pytest
-from numpy.testing import assert_allclose, assert_array_equal
-from pytest import approx
-
 from pymatgen.core.structure import Structure
 from autoplex.benchmark.flows import PhononBenchmarkMaker
 
@@ -24,9 +20,9 @@ class TestBenchmark(unittest.TestCase):
         test_mpid = "mp-test"
         benchmark = PhononBenchmarkMaker().make(
             structure=test_structure,
-            mpid=test_mpid,
-            ml_reference=None,
-            dft_reference=None,
+            mp_id=test_mpid,
+            ml_phonon_task_doc=None,
+            dft_phonon_task_doc=None,
         )
 
         assert len(benchmark.jobs) == 1

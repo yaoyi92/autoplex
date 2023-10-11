@@ -1,3 +1,1 @@
-"""
-Module to perform data generation, fitting, and benchmarking within one workflow
-"""
+"""AutoPLEX -- Automated machine-learned Potential Landscape explorer -- flows"""
