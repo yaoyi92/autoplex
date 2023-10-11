@@ -1,3 +1,16 @@
+"""Testing configurations to test flows with mock VASP runs.
+
+The following code has been taken and modified from
+https://github.com/materialsproject/atomate2/blob/main/tests/conftest.py
+https://github.com/materialsproject/atomate2/tree/main/tests/vasp
+The code has been released under BSD 3-Clause License
+and the following copyright applies:
+atomate2 Copyright (c) 2015, The Regents of the University of
+California, through Lawrence Berkeley National Laboratory (subject
+to receipt of any required approvals from the U.S. Dept. of Energy).
+All rights reserved.
+"""
+
 import logging
 from pathlib import Path
 from typing import Any, Callable, Dict, Final, Generator, Literal, Sequence, Union
@@ -16,8 +29,8 @@ _FAKE_RUN_VASP_KWARGS: Dict[str, dict] = {}
 def test_dir():
     from pathlib import Path
 
-    module_dir = Path(__file__).resolve().parent
-    test_dir = module_dir / ".." / "tests" / "test_data"
+    module_dir = Path(__file__).parent.resolve()
+    test_dir = module_dir.joinpath("test_data")
     return test_dir.resolve()
 
 
@@ -291,4 +304,26 @@ def copy_vasp_outputs(ref_path: Path):
     output_path = ref_path / "outputs"
     for output_file in output_path.iterdir():
         if output_file.is_file():
-            shutil.copy(output_file, "../../autoplex/data/tests")
+            shutil.copy(output_file, ".")
+
+
+@pytest.fixture(scope="session")
+def clean_dir(debug_mode):
+    import os
+    import shutil
+    import tempfile
+
+    old_cwd = os.getcwd()
+    new_path = tempfile.mkdtemp()
+    os.chdir(new_path)
+    yield
+    if debug_mode:
+        print(f"Tests ran in {new_path}")
+    else:
+        os.chdir(old_cwd)
+        shutil.rmtree(new_path)
+
+
+@pytest.fixture(scope="session")
+def debug_mode():
+    return False
