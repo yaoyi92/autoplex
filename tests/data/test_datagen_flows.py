@@ -34,3 +34,37 @@ def test_data_generation():
     ][
         0
     ] is False  # important to avoid accidentally way too large workflows
+
+
+def test_iso_atom_maker(mock_vasp, clean_dir):
+    from jobflow import run_locally
+    from pymatgen.core import Species
+    from atomate2.vasp.powerups import (
+        update_user_incar_settings,
+    )
+
+    specie = Species("Cl")
+
+    ref_paths = {
+        "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
+    }
+
+    # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
+    fake_run_vasp_kwargs = {
+        "Cl-statisoatom": {"incar_settings": ["NSW", "ISMEAR"]},
+    }
+
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths, fake_run_vasp_kwargs)
+
+    # generate the flow
+    flow_iso = IsoAtomMaker().make(species=specie)
+
+    flow_iso = update_user_incar_settings(flow_iso, {"ISMEAR": 0})
+
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(flow_iso, create_folders=True, ensure_success=True)
+
+    assert (
+        responses[flow_iso.output.uuid][1].output.output.energy_per_atom == -0.25638457
+    )
