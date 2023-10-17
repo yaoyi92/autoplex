@@ -2,46 +2,50 @@ from __future__ import annotations
 
 import inspect
 from pymatgen.core.structure import Structure
+from atomate2.vasp.powerups import update_user_incar_settings
 from autoplex.data.flows import DataGenerator, IsoAtomMaker
 
 
-def test_data_generation():
-    test_structure = Structure(
-        lattice=[
-            [3.0, 0.0, 0.0],
-            [0.0, 3.0, 0.0],
-            [0.0, 0.0, 3.0],
-        ],
-        species=["Mo", "C", "K"],
-        coords=[[0.66, 0.66, 0.66], [0.33, 0.33, 0.33], [0, 0, 0]],
-    )
-    test_mpid = "mp-test"
-    test_species = test_structure.types_of_species
+def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
+    from jobflow import run_locally
 
-    data = DataGenerator().make(structure=test_structure, mp_id=test_mpid)
-    isoatom = []
-    for species in test_species:
-        isoatom.append(IsoAtomMaker().make(species))
+    path_to_struct = vasp_test_dir / "Data_generator" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
 
-    assert (
-        len(data.jobs) == 2
-    )  # not sure how else checking if job is submitted correctly without actually running VASP jobs
-    assert len(isoatom) == 3
-    assert [
-        items.default
-        for items in inspect.signature(DataGenerator).parameters.values()
-        if items.name == "sc"
-    ][
-        0
-    ] is False  # important to avoid accidentally way too large workflows
+    test_mpid = "LiCL"
+    ref_paths = {
+        "phonon static 1/3": "Data_generator/rand_displacements/",
+        "phonon static 2/3": "Data_generator/rand_displacements/",
+        "phonon static 3/3": "Data_generator/rand_displacements/",
+    }
+
+    # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
+    # disabled poscar checks here to avoid failures due to randomness issues
+    fake_run_vasp_kwargs = {
+        "check_inputs": [["incar", "kpoints", "potcar"]],
+        "phonon static 1/3": {"incar_settings": ["NSW", "ISMEAR"]},
+        "phonon static 2/3": {"incar_settings": ["NSW", "ISMEAR"]},
+        "phonon static 3/3": {"incar_settings": ["NSW", "ISMEAR"]},
+    }
+    data_gen = DataGenerator(n_struct=3).make(structure=structure, mp_id=test_mpid)
+
+    data_gen = update_user_incar_settings(data_gen, {"ISMEAR": 0})
+
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths, fake_run_vasp_kwargs)
+
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(data_gen, create_folders=True, ensure_success=True)
+
+    assert len(responses[data_gen.output[0].uuid][2].output["dirs"]) == 3
+    job_names = ["phonon static 1/3", "phonon static 2/3", "phonon static 3/3"]
+    for inx, name in enumerate(job_names):
+        assert responses[data_gen.output[0].uuid][1].replace.jobs[inx].name == name
 
 
 def test_iso_atom_maker(mock_vasp, clean_dir):
     from jobflow import run_locally
     from pymatgen.core import Species
-    from atomate2.vasp.powerups import (
-        update_user_incar_settings,
-    )
 
     specie = Species("Cl")
 
