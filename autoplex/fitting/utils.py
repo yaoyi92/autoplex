@@ -72,6 +72,6 @@ def gap_hyperparameter_constructor(
         ]
     )
 
-    gap: str = "gap={" + (two_body_params + three_body_params + soap_params) + "}"
+    gap = f"gap={{{two_body_params} {three_body_params} {soap_params}}}"
 
     return gap
