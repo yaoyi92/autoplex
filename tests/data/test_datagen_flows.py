@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 from pymatgen.core.structure import Structure
 from atomate2.vasp.powerups import update_user_incar_settings
 from autoplex.data.flows import DataGenerator, IsoAtomMaker
