@@ -16,6 +16,7 @@ from autoplex.fitting.utils import (
 )
 
 current_dir = Path(__file__).absolute().parent
+GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 
 
 @job
@@ -23,7 +24,7 @@ def gapfit(
     fit_input: dict,
     isolated_atoms: list,
     isolated_atoms_energy: list,
-    path_to_default_hyperparameters: Path | str = current_dir / "gap-defaults.json",
+    path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
     two_body: bool = True,
     three_body: bool = False,
     soap: bool = True,
