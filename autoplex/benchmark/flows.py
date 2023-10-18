@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from jobflow import Flow, Maker
+from jobflow import Flow, Maker, Response
 from pymatgen.core.structure import Structure
-from atomate2.common.schemas.phonons import PhononBSDOSDoc
+from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 from autoplex.benchmark.jobs import compute_bandstructure_benchmark_metrics
 
 
@@ -30,8 +30,8 @@ class PhononBenchmarkMaker(Maker):
         self,
         structure: Structure,
         mp_id: str,
-        ml_phonon_task_doc: PhononBSDOSDoc,
-        dft_phonon_task_doc: PhononBSDOSDoc,
+        ml_phonon_bs: PhononBandStructureSymmLine,
+        dft_phonon_bs: PhononBandStructureSymmLine,
         **kwargs,
     ):
         """
@@ -43,9 +43,9 @@ class PhononBenchmarkMaker(Maker):
             Pymatgen structures drawn from the Materials Project.
         mp_id: str.
             Materials project IDs for the structure
-        ml_phonon_task_doc: PhononBSDOSDoc.
+        ml_phonon_bs: PhononBandStructureSymmLine.
             ML potential generated pymatgen phonon band-structure object
-        dft_phonon_task_doc: PhononBSDOSDoc.
+        dft_phonon_bs: PhononBandStructureSymmLine.
             DFT generated pymatgen phonon band-structure object
         """
         jobs = []
@@ -54,13 +54,13 @@ class PhononBenchmarkMaker(Maker):
         kwargs.get("npoints_band", 51)
         kwargs.get("kpoint_density", 12000)
 
-        rms = compute_bandstructure_benchmark_metrics(
-            ml_phonon_task_doc=ml_phonon_task_doc,
-            dft_phonon_task_doc=dft_phonon_task_doc,
+        benchmark_job = compute_bandstructure_benchmark_metrics(
+            ml_phonon_bs=ml_phonon_bs,
+            dft_phonon_bs=dft_phonon_bs,
             structure=structure,
         )
-        jobs.append(rms)
+        jobs.append(benchmark_job)
 
         # create a flow including all jobs
-        flow = Flow(jobs, rms.output)
-        return flow
+        flow = Flow(jobs, benchmark_job.output)
+        return Response(replace=flow)
