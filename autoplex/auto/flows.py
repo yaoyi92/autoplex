@@ -158,7 +158,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 @dataclass
 class PhononDFTMLDataGenerationFlow(Maker):
     """
-    Maker to fit ML potentials using DFT data
+    Maker to generate DFT reference database to be used for fitting ML potentials
 
     Parameters
     ----------
@@ -261,7 +261,7 @@ class PhononDFTMLFitFlow(Maker):
 
     def make(self, species, isolated_atoms_energy, fit_input, **fit_kwargs):
         """
-        Make flow for ML fit.
+        Make flow for to fit potential.
 
         Parameters
         ----------
