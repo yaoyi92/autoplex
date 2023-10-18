@@ -1,8 +1,12 @@
 import json
 import pytest
+from pymatgen.core.structure import Structure
 from pymatgen.io.phonopy import get_ph_bs_symm_line
 from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
-from autoplex.benchmark.jobs import compute_bandstructure_benchmark_metrics
+from autoplex.benchmark.jobs import (
+    compute_bandstructure_benchmark_metrics,
+    write_benchmark_metrics,
+)
 
 
 def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
@@ -16,7 +20,7 @@ def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     with open(dummy_bs_file_path, "r") as file:
         dummy_bs_dict = json.load(file)
 
-    parent_dir=os.getcwd()
+    parent_dir = os.getcwd()
 
     os.chdir(test_dir / "benchmark")
     df_bs = PhononBandStructureSymmLine.from_dict(dummy_bs_dict)
@@ -65,7 +69,9 @@ def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
 
     responses = run_locally(benchmark_job, create_folders=False, ensure_success=True)
 
-    assert responses[benchmark_job.output.uuid][1].output == pytest.approx(22.572177275621236)
+    assert responses[benchmark_job.output.uuid][1].output == pytest.approx(
+        22.572177275621236
+    )
 
     # get list of generated plot files
     test_files_dir = Path(test_dir / "benchmark").resolve()
@@ -76,5 +82,43 @@ def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
     # remove the plot files from directory
     for file in path_to_plot_files:
         file.unlink()
+
+    os.chdir(parent_dir)
+
+
+def test_write_benchmark_metrics(test_dir, clean_dir):
+    import os
+    from jobflow import run_locally
+
+    parent_dir = os.getcwd()
+
+    os.chdir(test_dir / "benchmark")
+
+    path_to_struct = test_dir / "benchmark" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    write_metrics_job = write_benchmark_metrics(
+        benchmark_structure=structure,
+        rmse=[22.572177275621236],
+        displacements=[0.01],
+        mp_id="mp-22905",
+    )
+
+    _ = run_locally(write_metrics_job, create_folders=False, ensure_success=True)
+
+    # get list of generated txt file
+    path_to_ref_txt_file = test_dir / "benchmark" / "results_LiCl_ref.txt"
+    path_to_txt_file = test_dir / "benchmark" / "results_LiCl.txt"
+
+    with open(path_to_ref_txt_file, "r") as ref:
+        ref_txt = ref.readlines()
+
+    with open(path_to_txt_file, "r") as org:
+        org_txt = org.readlines()
+
+    assert ref_txt == org_txt
+
+    # remove generated file as part of test
+    path_to_txt_file.unlink()
 
     os.chdir(parent_dir)
