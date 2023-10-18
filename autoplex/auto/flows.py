@@ -13,7 +13,8 @@ from atomate2.vasp.powerups import (
 from autoplex.data.flows import DataGenerator, IsoAtomMaker
 from autoplex.fitting.flows import MLIPFitMaker
 from autoplex.benchmark.flows import PhononBenchmarkMaker
-from autoplex.auto.jobs import write_benchmark_metrics, get_phonon_ml_calculation_jobs
+from autoplex.benchmark.jobs import write_benchmark_metrics
+from autoplex.auto.jobs import get_phonon_ml_calculation_jobs
 
 __all__ = [
     "CompleteDFTvsMLBenchmarkWorkflow",
@@ -62,7 +63,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         mpids,
         phonon_displacement_maker,
         benchmark_structure: Structure,
-        mpbm,
+        mp_id,
     ):
         """
 
@@ -76,7 +77,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             Maker used to compute the forces for a supercell.
         benchmark_structure: Structure.
             Structure used for benchmarking.
-        mpbm: str
+        mp_id: str
             materials project ID corresponding to the benchmark structure
         """
         flows = []
@@ -117,7 +118,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             ml_dir=autoplex_fit.output,
         )
         flows.append(autoplex_ml_phonon)
-        if mpbm not in mpids:
+        if mp_id not in mpids:
             dft_phonons = DFTPhononMaker(
                 symprec=self.symprec,
                 phonon_displacement_maker=phonon_displacement_maker,
@@ -129,13 +130,13 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
             dft_reference = dft_phonons.output
         else:
-            dft_reference = datagen[mpbm]["phonon_data"][
+            dft_reference = datagen[mp_id]["phonon_data"][
                 0
             ]  # [0] because we only need the first entry for the displacement = 0.1
 
         autoplex_bm = PhononDFTMLBenchmarkFlow(name="testBM").make(
             structure=benchmark_structure,
-            mp_id=mpbm,
+            mp_id=mp_id,
             ml_phonon_task_doc=autoplex_ml_phonon.output,
             dft_phonon_task_doc=dft_reference,
         )
@@ -144,8 +145,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         collect_bm = write_benchmark_metrics(
             benchmark_structure=benchmark_structure,
-            mpbm=mpbm,
-            rms=collect,
+            mp_id=mp_id,
+            rmse=collect,
             displacements=self.displacements,
         )
         flows.append(collect_bm)
