@@ -327,3 +327,14 @@ def clean_dir(debug_mode):
 @pytest.fixture(scope="session")
 def debug_mode():
     return False
+
+
+@pytest.fixture()
+def memory_jobstore():
+    from jobflow import JobStore
+    from maggma.stores import MemoryStore
+
+    store = JobStore(MemoryStore(), additional_stores={"data": MemoryStore()})
+    store.connect()
+
+    return store
