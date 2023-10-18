@@ -65,4 +65,4 @@ jobs:
           continue-on-error: true
           run: |
             coverage combine coverage*/.coverage*
-            coverage report
+            coverage report --show-missing
