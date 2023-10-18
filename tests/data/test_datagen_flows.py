@@ -22,7 +22,7 @@ def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
-        "check_inputs": [["incar", "kpoints", "potcar"]],
+        "check_inputs": ["incar", "kpoints", "potcar"],
         "phonon static 1/3": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 2/3": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 3/3": {"incar_settings": ["NSW", "ISMEAR"]},
