@@ -16,6 +16,8 @@ def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     with open(dummy_bs_file_path, "r") as file:
         dummy_bs_dict = json.load(file)
 
+    parent_dir=os.getcwd()
+
     os.chdir(test_dir / "benchmark")
     df_bs = PhononBandStructureSymmLine.from_dict(dummy_bs_dict)
     ml_bs = PhononBandStructureSymmLine.from_dict(dummy_bs_dict)
@@ -39,6 +41,8 @@ def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     for file in path_to_plot_files:
         file.unlink()
 
+    os.chdir(parent_dir)
+
 
 def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
     import os
@@ -48,6 +52,8 @@ def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
     # test wih two different band-structures
     dft_bs_file_path = test_dir / "benchmark" / "DFT_phonon_band_structure.yaml"
     ml_bs_file_path = test_dir / "benchmark" / "GAP_phonon_band_structure.yaml"
+
+    parent_dir = os.getcwd()
 
     os.chdir(test_dir / "benchmark")
     df_bs = get_ph_bs_symm_line(bands_path=dft_bs_file_path)
@@ -70,3 +76,5 @@ def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
     # remove the plot files from directory
     for file in path_to_plot_files:
         file.unlink()
+
+    os.chdir(parent_dir)

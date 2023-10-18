@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from jobflow import Flow, Maker, Response
+from jobflow import Flow, Maker
 from pymatgen.core.structure import Structure
 from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 from autoplex.benchmark.jobs import compute_bandstructure_benchmark_metrics
@@ -63,4 +63,4 @@ class PhononBenchmarkMaker(Maker):
 
         # create a flow including all jobs
         flow = Flow(jobs, benchmark_job.output)
-        return Response(replace=flow)
+        return flow

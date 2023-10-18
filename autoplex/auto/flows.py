@@ -326,8 +326,8 @@ class PhononDFTMLBenchmarkFlow(Maker):
         benchmark = PhononBenchmarkMaker(name="Benchmark").make(
             structure=structure,
             mp_id=mp_id,
-            ml_phonon_task_doc=ml_phonon_task_doc,
-            dft_phonon_task_doc=dft_phonon_task_doc,
+            ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,
+            dft_phonon_bs=dft_phonon_task_doc.phonon_bandstructure,
         )
         flows.append(benchmark)
 
