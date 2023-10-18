@@ -55,3 +55,39 @@ def compute_bandstructure_benchmark_metrics(
     )
 
     return Response(output=overall_rmse)  # TODO TaskDoc
+
+@job
+def write_benchmark_metrics(benchmark_structure: Structure, mp_id, rmse, displacements):
+    """
+    Generate a text file with evaluated benchmark metrics
+
+    Parameters
+    ----------
+    benchmark_structure: Structure.
+        Structure used for benchmarking.
+    mp_id: str
+        materials project ID corresponding to the structure
+    rmse: List[float]
+        root mean squared error between band structures
+    displacements: List[float]
+        Phonon displacement used for phonon computations
+
+    Returns
+    -------
+    A text file with root mean squared error between DFT and ML potential phonon band-structure
+    """
+    structure_composition = benchmark_structure.composition.reduced_formula
+    with open(
+        f"results_{structure_composition}.txt",
+        "a",
+        encoding="utf-8",
+    ) as file:
+        file.write(
+            f"Pot Structure mpid displacements RMS imagmodes(pot) imagmodes(dft) "
+            f"\nGAP {structure_composition} {mp_id} {displacements} {rmse} "
+        )
+        # TODO include which pot. method has been used (GAP, ACE, etc.)
+        # TODO has img modes + ' ' + ' ' + str(ml.has_imag_modes(0.1))
+        #  + ' ' + str(dft.has_imag_modes(0.1))
+
+    return Response

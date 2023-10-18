@@ -47,38 +47,3 @@ def get_phonon_ml_calculation_jobs(
     flow = Flow(jobs, gap_phonons.output)  # output for calculating RMS/benchmarking
     return Response(replace=flow)
 
-
-@job
-def write_benchmark_metrics(benchmark_structure: Structure, mpbm, rms, displacements):
-    """
-    Generate a text file with evaluated benchmark metrics
-
-    Parameters
-    ----------
-    benchmark_structure: Structure.
-        Structure used for benchmarking.
-    mpbm: str
-        materials project ID corresponding to the structure
-    rms: List[float]
-        root mean squared error between band structures
-    displacements: List[float]
-        Phonon displacement used for phonon computations
-
-    Returns
-    -------
-    A text file with root mean squared error between DFT and ML potential phonon band-structure
-    """
-    with open(
-        f"results_{benchmark_structure.composition.get_reduced_formula_and_factor()[0]}.txt",
-        "a",
-        encoding="utf-8",
-    ) as file:
-        file.write(
-            f"Pot Structure mpid displacements RMS imagmodes(pot) imagmodes(dft) "
-            f"\nGAP {benchmark_structure.composition.reduced_formula} {mpbm} {displacements} {rms} "
-        )
-        # TODO include which pot. method has been used (GAP, ACE, etc.)
-        # TODO has img modes + ' ' + ' ' + str(ml.has_imag_modes(0.1))
-        #  + ' ' + str(dft.has_imag_modes(0.1))
-
-    return Response
