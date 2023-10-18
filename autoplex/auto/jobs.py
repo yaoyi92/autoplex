@@ -46,4 +46,3 @@ def get_phonon_ml_calculation_jobs(
 
     flow = Flow(jobs, gap_phonons.output)  # output for calculating RMS/benchmarking
     return Response(replace=flow)
-

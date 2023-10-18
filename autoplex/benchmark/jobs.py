@@ -56,6 +56,7 @@ def compute_bandstructure_benchmark_metrics(
 
     return Response(output=overall_rmse)  # TODO TaskDoc
 
+
 @job
 def write_benchmark_metrics(benchmark_structure: Structure, mp_id, rmse, displacements):
     """
