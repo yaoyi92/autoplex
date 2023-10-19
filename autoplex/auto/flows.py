@@ -236,7 +236,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
 
         flow = Flow(
             flows,
-            {
+            output={
                 "rand_struc_dir": datagen.output,
                 "phonon_dir": dft_phonons_dir_output,
                 "phonon_data": dft_phonons_output,
