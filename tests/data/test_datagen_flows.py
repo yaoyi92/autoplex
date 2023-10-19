@@ -8,23 +8,31 @@ from autoplex.data.flows import DataGenerator, IsoAtomMaker
 def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
     from jobflow import run_locally
 
-    path_to_struct = vasp_test_dir / "Data_generator" / "POSCAR"
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    test_mpid = "LiCL"
+    test_mpid = "mp-22905"
     ref_paths = {
-        "phonon static 1/3": "Data_generator/rand_displacements/",
-        "phonon static 2/3": "Data_generator/rand_displacements/",
-        "phonon static 3/3": "Data_generator/rand_displacements/",
+        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
+        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
+        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
-        "check_inputs": ["incar", "kpoints", "potcar"],
-        "phonon static 1/3": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 2/3": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 3/3": {"incar_settings": ["NSW", "ISMEAR"]},
+        "phonon static 1/3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 2/3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 3/3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
     }
     data_gen = DataGenerator(n_struct=3).make(structure=structure, mp_id=test_mpid)
 
