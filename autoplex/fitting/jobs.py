@@ -3,7 +3,6 @@ Jobs to fit ML potentials
 """
 from __future__ import annotations
 from dataclasses import field
-import re
 import os
 from pathlib import Path
 import subprocess
