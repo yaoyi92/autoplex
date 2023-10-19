@@ -10,6 +10,7 @@ import subprocess
 import numpy as np
 from ase.io import read, write
 from jobflow import Response, job
+from atomate2.utils.path import strip_hostname
 from autoplex.fitting.utils import (
     load_gap_hyperparameter_defaults,
     gap_hyperparameter_constructor,
@@ -74,7 +75,10 @@ def gapfit(
         ]
     )  # uniform data structure
     for entry in fit:
-        file = read(re.sub(r"^.*?/", "/", entry, count=1) + "/OUTCAR.gz", index=":")
+        # file = read(re.sub(r"^.*?/", "/", entry, count=1) + "/OUTCAR.gz", index=":")
+        # strips hostname from the path
+        path_without_hostname = Path(strip_hostname(entry)).joinpath("OUTCAR.gz")
+        file = read(path_without_hostname, index=":")
         for (
             i
         ) in (
