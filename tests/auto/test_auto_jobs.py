@@ -8,8 +8,8 @@ from atomate2.common.schemas.phonons import PhononBSDOSDoc
 def test_get_phonon_ml_calculation_jobs(test_dir, clean_dir, memory_jobstore):
     from jobflow import run_locally
 
-    potential_file_dir = test_dir / "gap" / "gap.xml"
-    path_to_struct = test_dir / "gap" / "POSCAR"
+    potential_file_dir = test_dir / "fitting" / "ref_files" / "gap.xml"
+    path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
     gap_phonon_jobs = get_phonon_ml_calculation_jobs(

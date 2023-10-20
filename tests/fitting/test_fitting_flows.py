@@ -14,7 +14,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
 
     os.chdir(test_dir / "fitting")
 
-    # TODO: correclty use rand_static files ones the issue with outcar is resolved
+    # TODO: correctly use rand_static files ones the issue with outcar is resolved
     fit_input_dict = {
         "mp-22905": {
             "rand_struc_dir": [
@@ -65,13 +65,16 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
                     .as_posix(),
                 ]
             ],
+            "phonon_data": [],
         }
     }
 
+    # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
     gapfit = MLIPFitMaker().make(
         species_list=["Li", "Cl"],
         iso_atom_energy=[-0.28649227, -0.25638457],
         fit_input=fit_input_dict,
+        # **{'include_soap': False, 'include_three_body': True}
     )
 
     responses = run_locally(
