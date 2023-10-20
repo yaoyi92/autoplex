@@ -6,13 +6,12 @@ from dataclasses import field
 import os
 from pathlib import Path
 import subprocess
-import numpy as np
-from ase.io import read, write
 from jobflow import Response, job
-from atomate2.utils.path import strip_hostname
 from autoplex.fitting.utils import (
     load_gap_hyperparameter_defaults,
     gap_hyperparameter_constructor,
+    get_list_of_vasp_calc_dirs,
+    outcar_2_extended_xyz,
 )
 
 current_dir = Path(__file__).absolute().parent
@@ -25,9 +24,9 @@ def gapfit(
     isolated_atoms: list,
     isolated_atoms_energy: list,
     path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
-    two_body: bool = True,
-    three_body: bool = False,
-    soap: bool = True,
+    include_two_body: bool = True,
+    include_three_body: bool = False,
+    include_soap: bool = True,
     fit_kwargs: dict = field(default_factory=dict),  # pylint: disable=E3701
 ):  # pylint: disable=R0913, R0914
     """
@@ -36,18 +35,18 @@ def gapfit(
     Parameters
     ----------
     fit_input : dict.
-        list containing static calculation directories.
+        PhononDFTMLDataGenerationFlow output.
     isolated_atoms : list.
         List of isolated atoms
     isolated_atoms_energy : list.
         List of isolated atoms energy
     path_to_default_hyperparameters : str or Path.
         Path to gap-defaults.json.
-    two_body : bool.
+    include_two_body : bool.
         bool indicating whether to include two-body hyperparameters
-    three_body : bool.
+    include_three_body : bool.
         bool indicating whether to include three-body hyperparameters
-    soap : bool.
+    include_soap : bool.
         bool indicating whether to include soap hyperparameters
     fit_kwargs : dict.
         dict including gap fit keyword args.
@@ -57,73 +56,42 @@ def gapfit(
     Response.output
         Path to the gap fit file.
     """
+    list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
 
-    def flattened_input(x):
-        return [
-            y
-            for z in x
-            for y in (flattened_input(z) if isinstance(z, list) else [z])  # type:ignore
-        ]
-
-    fit = flattened_input(
-        [
-            dirs
-            for data in fit_input.values()
-            for datatype, dirs in data.items()
-            if datatype != "phonon_data"
-        ]
-    )  # uniform data structure
-    for entry in fit:
-        # file = read(re.sub(r"^.*?/", "/", entry, count=1) + "/OUTCAR.gz", index=":")
-        # strips hostname from the path
-        path_without_hostname = Path(strip_hostname(entry)).joinpath("OUTCAR.gz")
-        file = read(path_without_hostname, index=":")
-        for (
-            i
-        ) in (
-            file
-        ):  # credit goes to http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html
-            xx, yy, zz, yz, xz, xy = -i.calc.results["stress"] * i.get_volume()
-            i.info["virial"] = np.array([(xx, xy, xz), (xy, yy, yz), (xz, yz, zz)])
-            del i.calc.results["stress"]
-            i.pbc = True
-        write("trainGAP.xyz", file, append=True)
+    outcar_2_extended_xyz(path_to_vasp_static_calcs=list_of_vasp_calc_dirs)
 
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
         gap_fit_parameter_file_path=path_to_default_hyperparameters
     )
 
-    e0: str = "{"
+    # Update the default gap_fit settings with user provided settings  # TODO XPOT support
+    for parameter in gap_default_hyperparameters:
+        for arg in fit_kwargs:
+            if parameter == arg:
+                gap_default_hyperparameters[parameter].update(fit_kwargs[arg])
 
-    for iso_atom, iso_energy in zip(isolated_atoms, isolated_atoms_energy):
-        if iso_atom == isolated_atoms[-1]:
-            e0 += str(iso_atom) + ":" + str(iso_energy) + "}"
-        else:
-            e0 += str(iso_atom) + ":" + str(iso_energy) + ":"
-    # Updating the isolated atom energy
-    gap_default_hyperparameters["general"].update({"e0": e0})
-    # Overwriting the default gap_fit settings with user settings  # TODO XPOT support
-    for key in gap_default_hyperparameters:
-        for key2 in fit_kwargs:
-            if key == key2:
-                gap_default_hyperparameters[key].update(fit_kwargs[key2])
+    # check and update args of gap_hyperparameter_constructor
+    for arg in fit_kwargs:
+        if arg == "include_two_body":
+            include_two_body = fit_kwargs[arg]
+        elif arg == "include_three_body":
+            include_three_body = fit_kwargs[arg]
+        elif arg == "include_soap":
+            include_soap = fit_kwargs[arg]
 
-    gap = gap_hyperparameter_constructor(
+    gap_parameters = gap_hyperparameter_constructor(
         gap_parameter_dict=gap_default_hyperparameters,
-        two_body=two_body,
-        three_body=three_body,
-        soap=soap,
+        atoms_symbols=isolated_atoms,
+        atoms_energies=isolated_atoms_energy,
+        include_two_body=include_two_body,
+        include_three_body=include_three_body,
+        include_soap=include_soap,
     )
-
-    general = [
-        str(key) + "=" + str(gap_default_hyperparameters["general"][key])
-        for key in gap_default_hyperparameters["general"]
-    ]
 
     with open("std_out.log", "w", encoding="utf-8") as file_std, open(
         "std_err.log", "w", encoding="utf-8"
     ) as file_err:
-        subprocess.call(["gap_fit"] + general + [gap], stdout=file_std, stderr=file_err)
+        subprocess.call(["gap_fit"] + gap_parameters, stdout=file_std, stderr=file_err)
 
         directory = Path.cwd()
 
