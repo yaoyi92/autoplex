@@ -134,7 +134,7 @@ class DataGenerator(Maker):
             jobs.append(vasp_random_sc_displacement_calcs)
             outputs.append(vasp_random_sc_displacement_calcs.output["dirs"])
 
-        # create a flow including all jobsf
+        # create a flow including all jobs
         flow = Flow(jobs, outputs)
         return flow
 
