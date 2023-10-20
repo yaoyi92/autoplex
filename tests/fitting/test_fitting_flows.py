@@ -14,7 +14,6 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
 
     os.chdir(test_dir / "fitting")
 
-    # TODO: correctly use rand_static files ones the issue with outcar is resolved
     fit_input_dict = {
         "mp-22905": {
             "rand_struc_dir": [
@@ -22,7 +21,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
                     (
                         vasp_test_dir
                         / "dft_ml_data_generation"
-                        / "phonon_static_1"
+                        / "rand_static_1"
                         / "outputs"
                     )
                     .absolute()
@@ -30,7 +29,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
                     (
                         vasp_test_dir
                         / "dft_ml_data_generation"
-                        / "phonon_static_2"
+                        / "rand_static_2"
                         / "outputs"
                     )
                     .absolute()
@@ -38,7 +37,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
                     (
                         vasp_test_dir
                         / "dft_ml_data_generation"
-                        / "phonon_static_2"
+                        / "rand_static_3"
                         / "outputs"
                     )
                     .absolute()
