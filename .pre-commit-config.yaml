@@ -1,0 +1,55 @@
+exclude: ^(docs|tutorials|tests)
+
+ci:
+  autoupdate_schedule: monthly
+  skip: [mypy]
+  autofix_commit_msg: pre-commit auto-fixes
+  autoupdate_commit_msg: pre-commit autoupdate
+
+repos:
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.260
+    hooks:
+      - id: ruff
+        args: [ --fix, --ignore, D ]
+ 
+
+  - repo: https://github.com/pre-commit/mirrors-pydocstyle
+    rev: v6.0.0
+    hooks:
+    - id: pydocstyle
+      args: [--config, pyproject.toml]
+      
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    - id: check-yaml
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+    - id: flake8
+
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+    - id: black
+      language_version: python3.9
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
+    - id: mypy
+
+  - repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.16.0
+    hooks:
+    - id: blacken-docs
+
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: v2.0.2
+    hooks:
+    - id: autopep8
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+    - id: isort
