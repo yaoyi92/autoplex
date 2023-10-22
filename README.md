@@ -1,3 +1,4 @@
+[![Testing Linux](https://github.com/QuantumChemist/autoplex/actions/workflows/python-package.yml/badge.svg)](https://github.com/QuantumChemist/autoplex/actions/workflows/python-package.yml)
 # autoplex
 
 Software for automated fitting and benchmarking of ML potentials.
