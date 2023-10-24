@@ -1,20 +1,22 @@
-"""Flows perform automatic data generation, fitting, and benchmarking of ML potentials"""
+"""Flows perform automatic data generation, fitting, and benchmarking of ML potentials."""
 
 from dataclasses import dataclass, field
-from pymatgen.core.structure import Structure
-from jobflow import Flow, Maker
-from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
-from atomate2.vasp.jobs.base import BaseVaspMaker
+
 from atomate2.common.jobs.phonons import PhononDisplacementMaker
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
+from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
+from atomate2.vasp.jobs.base import BaseVaspMaker
 from atomate2.vasp.powerups import (
     update_user_incar_settings,
 )
-from autoplex.data.flows import DataGenerator, IsoAtomMaker
-from autoplex.fitting.flows import MLIPFitMaker
+from jobflow import Flow, Maker
+from pymatgen.core.structure import Structure
+
+from autoplex.auto.jobs import get_phonon_ml_calculation_jobs
 from autoplex.benchmark.flows import PhononBenchmarkMaker
 from autoplex.benchmark.jobs import write_benchmark_metrics
-from autoplex.auto.jobs import get_phonon_ml_calculation_jobs
+from autoplex.data.flows import DataGenerator, IsoAtomMaker
+from autoplex.fitting.flows import MLIPFitMaker
 
 __all__ = [
     "CompleteDFTvsMLBenchmarkWorkflow",
@@ -29,7 +31,7 @@ __all__ = [
 @dataclass
 class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     """
-    Maker to calculate harmonic phonons with DFT, fit GAP and benchmark the results
+    Maker to calculate harmonic phonons with DFT, fit GAP and benchmark the results.
 
     Parameters
     ----------
@@ -84,7 +86,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         datagen = {}
         collect = []
         isoatoms = []
-        all_species = set([s.types_of_species for s in structure_list])
+        all_species = {
+            s.types_of_species for s in structure_list
+        }  # TODO test set comprehension
         for species in next(iter(all_species)):
             isoatom = IsoAtomMaker().make(species=species)
             flows.append(isoatom)
@@ -158,7 +162,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 @dataclass
 class PhononDFTMLDataGenerationFlow(Maker):
     """
-    Maker to generate DFT reference database to be used for fitting ML potentials
+    Maker to generate DFT reference database to be used for fitting ML potentials.
 
     Parameters
     ----------
@@ -248,7 +252,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
 @dataclass
 class PhononDFTMLFitFlow(Maker):
     """
-    Maker to fit ML potentials based on DFT data
+    Maker to fit ML potentials based on DFT data.
 
     Parameters
     ----------
@@ -291,7 +295,7 @@ class PhononDFTMLFitFlow(Maker):
 @dataclass
 class PhononDFTMLBenchmarkFlow(Maker):
     """
-    Maker for benchmarking ML potential
+    Maker for benchmarking ML potential.
 
     Parameters
     ----------
@@ -309,7 +313,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
         dft_phonon_task_doc: PhononBSDOSDoc,
     ):
         """
-        Creates flow to benchmark the ML potential
+        Create flow to benchmark the ML potential.
 
         Parameters
         ----------
@@ -327,7 +331,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
         benchmark = PhononBenchmarkMaker(name="Benchmark").make(
             structure=structure,
             mp_id=mp_id,
-            ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,
+            ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,  # TODO take BS at top lvl
             dft_phonon_bs=dft_phonon_task_doc.phonon_bandstructure,
         )
         flows.append(benchmark)

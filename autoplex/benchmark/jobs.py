@@ -1,12 +1,13 @@
 """
-Atomistic Jobs to Benchmark Potentials
+Atomistic Jobs to Benchmark Potentials.
 """
 from __future__ import annotations
 
 from jobflow import Response, job
 from pymatgen.core.structure import Structure
 from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
-from autoplex.benchmark.utils import get_rmse, rmse_kdep_plot, compare_plot
+
+from autoplex.benchmark.utils import compare_plot, get_rmse, rmse_kdep_plot
 
 
 @job
@@ -16,7 +17,7 @@ def compute_bandstructure_benchmark_metrics(
     dft_phonon_bs: PhononBandStructureSymmLine,
 ):  # TODO include which pot. method has been used (GAP, ACE, etc.)
     """
-    Computes phonon band-structure benchmark metrics and associated plots.
+    Compute phonon band-structure benchmark metrics and associated plots.
 
     Parameters
     ----------
@@ -58,9 +59,11 @@ def compute_bandstructure_benchmark_metrics(
 
 
 @job
-def write_benchmark_metrics(benchmark_structure: Structure, mp_id, rmse, displacements):
+def write_benchmark_metrics(
+    benchmark_structure: Structure, mp_id, rmse, displacements
+):  # TODO put in flow
     """
-    Generate a text file with evaluated benchmark metrics
+    Generate a text file with evaluated benchmark metrics.
 
     Parameters
     ----------

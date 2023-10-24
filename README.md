@@ -13,7 +13,7 @@ Contributions are welcome. Please raise a pull request for contributions first. 
 
 # Commit guidelines
 1. `pip install pre-commit`
-2. Next, run `install pre-commit` (this will install all the hooks from pre-commit-config.yaml)
+2. Next, run `pre-commit install` (this will install all the hooks from pre-commit-config.yaml)
 3. Step 1 and 2, needs to be done only once in the local repository
 4. Procced with modifying the code and add commits as usual.
 
