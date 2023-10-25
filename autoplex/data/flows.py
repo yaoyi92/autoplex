@@ -26,20 +26,10 @@ __all__ = ["DataGenerator", "IsoAtomMaker"]
 @dataclass
 class DataGenerator(Maker):
     """
-    Maker to generate DFT data for ML potential fitting
+    Maker to generate DFT data based on random displacements for ML potential fitting
 
-    1. Fetches Data from Materials Project and other databases (other: work in progress)
-    2. Performs DFT calculations (currently these are also used for Phonon calculations : this part
-    will be independent in the future.)
-
-    All phonon-related code parts have been adapted from atomate2:
-    https://github.com/materialsproject/atomate2/blob/main/src/atomate2/vasp/flows/phonons.py
-    The code has been released under BSD 3-Clause License
-    and the following copyright applies:
-    atomate2 Copyright (c) 2015, The Regents of the University of
-    California, through Lawrence Berkeley National Laboratory (subject
-    to receipt of any required approvals from the U.S. Dept. of Energy).
-    All rights reserved.
+    1. Randomizes Structures (with and without supercell).
+    2. Performs DFT calculations.
 
     Parameters
     ----------
