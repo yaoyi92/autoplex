@@ -86,7 +86,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         datagen = {}
         collect = []
         isoatoms = []
-        all_species=set([specie for s in structure_list for specie in s.types_of_species])
+        all_species = set([specie for s in structure_list for specie in s.types_of_species])
 
         for species in all_species:
             isoatom = IsoAtomMaker().make(species=species)
@@ -163,6 +163,9 @@ class PhononDFTMLDataGenerationFlow(Maker):
     """
     Maker to generate DFT reference database to be used for fitting ML potentials.
 
+    The maker will use phonopy to create displacements according to the finite displacement method.
+    In addition, random displacments are applied to the provided structures.
+
     Parameters
     ----------
     name : str
@@ -221,6 +224,7 @@ class PhononDFTMLDataGenerationFlow(Maker):
                 displacement=displacement,
                 min_length=self.min_length,
             ).make(structure=structure)
+            # TODO: move this to a different level (e.g., submission script)
             dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4})
             flows.append(dft_phonons)
             dft_phonons_output.append(
