@@ -86,10 +86,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         datagen = {}
         collect = []
         isoatoms = []
-        all_species = {
-            s.types_of_species for s in structure_list
-        }  # TODO test set comprehension
-        for species in next(iter(all_species)):
+        all_species=set([specie for s in structure_list for specie in s.types_of_species])
+
+        for species in all_species:
             isoatom = IsoAtomMaker().make(species=species)
             flows.append(isoatom)
             isoatoms.append(isoatom.output)
@@ -109,7 +108,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             datagen.update({mp_id: autoplex_datagen.output})
 
         autoplex_fit = PhononDFTMLFitFlow().make(
-            species=next(iter(all_species)),
+            species=all_species,
             isolated_atoms_energy=isoatoms,
             fit_input=datagen,
         )

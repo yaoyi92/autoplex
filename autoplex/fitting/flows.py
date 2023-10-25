@@ -42,7 +42,7 @@ class MLIPFitMaker(Maker):
         Parameters
         ----------
         species_list : list.
-            List of species
+            List of element names (str)
         iso_atom_energy : list.
             List of isolated atoms energy
         fit_input : dict.

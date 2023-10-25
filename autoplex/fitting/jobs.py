@@ -37,7 +37,7 @@ def gapfit(
     fit_input : dict.
         PhononDFTMLDataGenerationFlow output.
     isolated_atoms : list.
-        List of isolated atoms
+        List of element names (str) for computation of isolated atoms.
     isolated_atoms_energy : list.
         List of isolated atoms energy
     path_to_default_hyperparameters : str or Path.

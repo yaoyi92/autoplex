@@ -1,14 +1,13 @@
-#!/usr/bin/env python
-
-from fireworks import LaunchPad
-from atomate2.vasp.sets.core import StaticSetGenerator
 from atomate2.vasp.jobs.base import BaseVaspMaker
-from jobflow.managers.fireworks import flow_to_workflow
-from jobflow.core.flow import Flow
+from atomate2.vasp.sets.core import StaticSetGenerator
 from autoplex.auto.flows import CompleteDFTvsMLBenchmarkWorkflow
-from mp_api.client import MPRester
+from fireworks import LaunchPad
+from jobflow.core.flow import Flow
+from jobflow.managers.fireworks import flow_to_workflow
 from jobflow.utils.graph import to_mermaid
+from mp_api.client import MPRester
 
+# Please be aware that you need to use your new API key here.
 mpr = MPRester(api_key="your MP API key")
 # generate the structure list by using Materials Project IDs
 struc_list = []
@@ -24,9 +23,8 @@ phonon_stat = BaseVaspMaker(
     )
 )  # reduced the accuracy for test calculations
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    n_struc=1, displacements=[0.1], symprec=0.1, sc=False
+    n_struc=1, displacements=[0.01], symprec=1e-4, sc=False
 ).make(structure_list=struc_list, mpids=mpids, phonon_displacement_maker=phonon_stat)
-
 
 autoplex_flow = Flow(
     [complete_flow], output=None, name="Si-AutoPLEX-Flow", uuid=None, hosts=None
