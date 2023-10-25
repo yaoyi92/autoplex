@@ -86,7 +86,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         datagen = {}
         collect = []
         isoatoms = []
-        all_species = list(set([specie for s in structure_list for specie in s.types_of_species]))
+        all_species = list(
+            set([specie for s in structure_list for specie in s.types_of_species])
+        )
 
         for species in all_species:
             isoatom = IsoAtomMaker().make(species=species)
