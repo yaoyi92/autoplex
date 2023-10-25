@@ -161,7 +161,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
 
 @dataclass
-class PhononDFTMLDataGenerationFlow(Maker):
+class DFTDataGenerationFlow(Maker):
     """
     Maker to generate DFT reference database to be used for fitting ML potentials.
 
