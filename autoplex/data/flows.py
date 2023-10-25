@@ -71,7 +71,6 @@ class DataGenerator(Maker):
         structure: Structure,
         mp_id: str,
         prev_vasp_dir: str | Path | None = None,
-        total_dft_energy_per_formula_unit: float | None = None,
         supercell_matrix: Matrix3D
         | None = None,  # with a simplier static vasp method this will be redundant
     ):
@@ -86,15 +85,11 @@ class DataGenerator(Maker):
             Materials Project IDs
         prev_vasp_dir: str or Path or None
              A previous vasp calculation directory to use for copying outputs.
-        total_dft_energy_per_formula_unit: float or None
-            It has to be given per formula unit (as a result in corresponding Doc).
-            Instead of recomputing the energy of the bulk structure every time, this
-            value can also be provided in eV. If it is provided, the static run will be
-            skipped. This energy is the typical output dft energy of the dft workflow.
-            No conversion needed.
         supercell_matrix: Matrix3D.
             Matrix for obtaining the supercell
         """
+        # TODO: clean up unused arguments: is prev_vasp_dir needed?
+
         # ml_dir : str or Path or None
         #  ML directory to use for copying inputs/outputs.(hab noch keine Ahnung)
 
