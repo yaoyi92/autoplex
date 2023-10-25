@@ -1,32 +1,32 @@
-"""Flows to create training data for ML potentials"""
+"""Flows to create training data for ML potentials."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from phonopy import Phonopy
-from emmet.core.math import Matrix3D
-from pymatgen.core.structure import Structure, Species
-from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
-from jobflow import Flow, Maker
-from atomate2.vasp.jobs.base import BaseVaspMaker
-from atomate2.vasp.jobs.core import StaticMaker
 from atomate2.common.jobs.phonons import (
     PhononDisplacementMaker,
     run_phonon_displacements,
 )
+from atomate2.vasp.jobs.base import BaseVaspMaker
+from atomate2.vasp.jobs.core import StaticMaker
 from atomate2.vasp.sets.core import StaticSetGenerator
+from emmet.core.math import Matrix3D
+from jobflow import Flow, Maker
+from phonopy import Phonopy
+from pymatgen.core.structure import Species, Structure
+from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
+
 from autoplex.data.jobs import generate_randomized_structures
 
-
-__all__ = ["DataGenerator", "IsoAtomMaker"]
+__all__ = ["RandomStruturesDataGenerator", "IsoAtomMaker"]
 
 
 @dataclass
 class RandomStruturesDataGenerator(Maker):
     """
-    Maker to generate DFT data based on random displacements for ML potential fitting
+    Maker to generate DFT data based on random displacements for ML potential fitting.
 
     1. Randomizes Structures (with and without supercell).
     2. Performs DFT calculations.
@@ -48,7 +48,7 @@ class RandomStruturesDataGenerator(Maker):
         structures and add phonon computation jobs to the flow
     """
 
-    name: str = "DataGenerationML"
+    name: str = "RandomStruturesDataGeneratorForML"
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=PhononDisplacementMaker
     )
@@ -62,7 +62,7 @@ class RandomStruturesDataGenerator(Maker):
         mp_id: str,
         prev_vasp_dir: str | Path | None = None,
         supercell_matrix: Matrix3D
-        | None = None,  # with a simplier static vasp method this will be redundant
+        | None = None,  # with a simpler static vasp method this will be redundant
     ):
         """
         Make flow to generate the reference DFT data base.
@@ -127,7 +127,7 @@ class RandomStruturesDataGenerator(Maker):
 @dataclass
 class IsoAtomMaker(Maker):
     """
-    Maker to generate DFT data for ML potential fitting from isolated atoms
+    Maker to generate DFT data for ML potential fitting from isolated atoms.
 
     Parameters
     ----------
@@ -139,7 +139,7 @@ class IsoAtomMaker(Maker):
 
     def make(self, species: Species):
         """
-        Makes a flow to calculate the isolated atom's energy.
+        Make a flow to calculate the isolated atom's energy.
 
         Parameters
         ----------

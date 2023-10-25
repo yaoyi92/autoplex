@@ -15,12 +15,12 @@ from pymatgen.core.structure import Structure
 from autoplex.auto.jobs import get_phonon_ml_calculation_jobs
 from autoplex.benchmark.flows import PhononBenchmarkMaker
 from autoplex.benchmark.jobs import write_benchmark_metrics
-from autoplex.data.flows import DataGenerator, IsoAtomMaker
+from autoplex.data.flows import IsoAtomMaker, RandomStruturesDataGenerator
 from autoplex.fitting.flows import MLIPFitMaker
 
 __all__ = [
     "CompleteDFTvsMLBenchmarkWorkflow",
-    "PhononDFTMLDataGenerationFlow",
+    "DFTDataGenerationFlow",
     "PhononDFTMLBenchmarkFlow",
 ]
 
@@ -87,7 +87,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         collect = []
         isoatoms = []
         all_species = list(
-            set([specie for s in structure_list for specie in s.types_of_species])
+            {
+                specie for s in structure_list for specie in s.types_of_species
+            }  # PLEASE LEAVE THIS LIKE THIS FOR A WHILE
         )
 
         for species in all_species:
@@ -97,7 +99,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         for struc_i, structure in enumerate(structure_list):
             mp_id = mpids[struc_i]
-            autoplex_datagen = PhononDFTMLDataGenerationFlow(
+            autoplex_datagen = DFTDataGenerationFlow(
                 name="test",
                 phonon_displacement_maker=phonon_displacement_maker,
                 n_struct=self.n_struct,
@@ -166,7 +168,7 @@ class DFTDataGenerationFlow(Maker):
     Maker to generate DFT reference database to be used for fitting ML potentials.
 
     The maker will use phonopy to create displacements according to the finite displacement method.
-    In addition, random displacments are applied to the provided structures.
+    In addition, random displacements are applied to the provided structures.
 
     Parameters
     ----------
@@ -235,8 +237,8 @@ class DFTDataGenerationFlow(Maker):
             dft_phonons_dir_output.append(
                 dft_phonons.output.jobdirs.displacements_job_dirs
             )
-        datagen = DataGenerator(
-            name="DataGen",
+        datagen = RandomStruturesDataGenerator(
+            name="RandomDataGen",
             phonon_displacement_maker=self.phonon_displacement_maker,
             n_struct=self.n_struct,
             sc=self.sc,
