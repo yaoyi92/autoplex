@@ -24,7 +24,7 @@ __all__ = ["DataGenerator", "IsoAtomMaker"]
 
 
 @dataclass
-class DataGenerator(Maker):
+class RandomStruturesDataGenerator(Maker):
     """
     Maker to generate DFT data based on random displacements for ML potential fitting
 
