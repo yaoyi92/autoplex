@@ -12,10 +12,14 @@ from atomate2.vasp.powerups import (
 from jobflow import Flow, Maker
 from pymatgen.core.structure import Structure
 
-from autoplex.auto.jobs import get_phonon_ml_calculation_jobs
+from autoplex.auto.jobs import (
+    dft_phonon_data,
+    dft_random_data,
+    get_phonon_ml_calculation_jobs,
+)
 from autoplex.benchmark.flows import PhononBenchmarkMaker
 from autoplex.benchmark.jobs import write_benchmark_metrics
-from autoplex.data.flows import IsoAtomMaker, RandomStruturesDataGenerator
+from autoplex.data.flows import IsoAtomMaker
 from autoplex.fitting.flows import MLIPFitMaker
 
 __all__ = [
@@ -47,8 +51,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         (use_primitive_standard_structure, use_conventional_standard_structure)
         and to handle all symmetry-related tasks in phonopy
     sc: bool.
-        If True, will generate supercells of initial randomly displaced
-        structures and add phonon computation jobs to the flow
+        If True, will generate randomly distorted supercells structures
+        and add static computation jobs to the flow
 
     """
 
@@ -163,6 +167,111 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
 
 @dataclass
+class AddDataToDataset(Maker):
+    """
+    Maker to add more data to existing daaset (.xyz file).
+
+    Parameters
+    ----------
+    name : str
+        Name of the flow produced by this maker.
+    add_dft_phonon_struct: bool.
+        If True, will add displaced supercells via phonopy for DFT calculation.
+    add_dft_random_struct: bool.
+        If True, will add randomly distorted structures for DFT calculation.
+    add_rss_struct: bool.
+        If True, will add RSS generated structures for DFT calculation.
+    """
+
+    name: str = "adddata"
+    add_dft_phonon_struct: bool = True
+    add_dft_random_struct: bool = True
+    add_rss_struct: bool = False
+
+    phonon_displacement_maker: BaseVaspMaker = field(
+        default_factory=PhononDisplacementMaker
+    )
+    n_struct: int = 1
+    displacements: list[float] = field(
+        default_factory=lambda: [0.01]
+    )  # TODO Make sure that 0.01 is always included, no matter what the user does
+    min_length: int = 20
+    symprec: float = 1e-4
+    sc: bool = False
+
+    def make(self, structure_list: list[Structure], mp_id, xyz_directory):
+        """
+        Make flow for adding data to the dataset.
+
+        Parameters
+        ----------
+        structure_list: List[Structure]
+            list of pymatgen structures
+        mp_id:
+            materials project id
+        xyz_directory:
+            directory of the already existing training data xyz file
+
+        """
+        for structure in structure_list:
+            if self.add_dft_phonon_struct:
+                result = self.add_dft_phonons(
+                    structure,
+                    self.displacements,
+                    self.symprec,
+                    self.phonon_displacement_maker,
+                    self.min_length,
+                )
+            if self.add_dft_random_struct:
+                result = self.add_dft_random(
+                    structure,
+                    mp_id,
+                    self.phonon_displacement_maker,
+                    self.n_struct,
+                    self.sc,
+                )
+            if self.add_rss_struct:
+                raise NotImplementedError
+
+        # go to existing xyz_directory
+        # add data
+        # repeat gap fit and bm
+        return result  # have to add
+
+    def add_dft_phonons(
+        self,
+        structure: Structure,
+        displacements,
+        symprec,
+        phonon_displacement_maker,
+        min_length,
+    ):
+        additonal_dft_phonon = dft_phonon_data(
+            structure, displacements, symprec, phonon_displacement_maker, min_length
+        )
+
+        return Flow(
+            additonal_dft_phonon,  # flows
+            output={
+                "phonon_dir": additonal_dft_phonon.output[0],
+                "phonon_data": additonal_dft_phonon.output[1],
+            },
+        )
+
+    def add_dft_random(
+        self, structure: Structure, mp_id, phonon_displacement_maker, n_struct, sc
+    ):
+        additonal_dft_random = dft_random_data(
+            structure, mp_id, phonon_displacement_maker, n_struct, sc
+        )
+
+        return Flow(
+            additonal_dft_random,  # flows
+            output={"rand_struc_dir": additonal_dft_random.output},
+        )
+
+
+@dataclass
 class DFTDataGenerationFlow(Maker):
     """
     Maker to generate DFT reference database to be used for fitting ML potentials.
@@ -215,41 +324,24 @@ class DFTDataGenerationFlow(Maker):
         mp_id:
             materials project id
         """
-        flows = []
-        dft_phonons_output = []
-        dft_phonons_dir_output = []
-
         # TODO later adding: for i no. of potentials
-        for displacement in self.displacements:
-            dft_phonons = DFTPhononMaker(
-                symprec=self.symprec,
-                phonon_displacement_maker=self.phonon_displacement_maker,
-                born_maker=None,
-                displacement=displacement,
-                min_length=self.min_length,
-            ).make(structure=structure)
-            dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4})
-            flows.append(dft_phonons)
-            dft_phonons_output.append(
-                dft_phonons.output
-            )  # CE: I have no better solution to this now
-            dft_phonons_dir_output.append(
-                dft_phonons.output.jobdirs.displacements_job_dirs
-            )
-        datagen = RandomStruturesDataGenerator(
-            name="RandomDataGen",
-            phonon_displacement_maker=self.phonon_displacement_maker,
-            n_struct=self.n_struct,
-            sc=self.sc,
-        ).make(structure=structure, mp_id=mp_id)
-        flows.append(datagen)
+        dft_phonon = dft_phonon_data(
+            structure,
+            self.displacements,
+            self.symprec,
+            self.phonon_displacement_maker,
+            self.min_length,
+        )
+        dft_random = dft_random_data(
+            structure, mp_id, self.phonon_displacement_maker, self.n_struct, self.sc
+        )
 
         return Flow(
-            flows,
+            [dft_phonon, dft_random],  # flows
             output={
-                "rand_struc_dir": datagen.output,
-                "phonon_dir": dft_phonons_dir_output,
-                "phonon_data": dft_phonons_output,
+                "rand_struc_dir": dft_random.output,
+                "phonon_dir": dft_phonon.output[0],
+                "phonon_data": dft_phonon.output[1],
             },
         )
 
