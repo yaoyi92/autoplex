@@ -59,7 +59,7 @@ def get_phonon_ml_calculation_jobs(
 
 
 @job
-def dft_phonon_data(
+def dft_phononpy_gen_data(
     structure: Structure, displacements, symprec, phonon_displacement_maker, min_length
 ):
     """
@@ -105,7 +105,7 @@ def dft_phonon_data(
 
 
 @job
-def dft_random_data(
+def dft_random_gen_data(
     structure: Structure, mp_id, phonon_displacement_maker, n_struct, sc
 ):
     """

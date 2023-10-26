@@ -13,8 +13,8 @@ from jobflow import Flow, Maker
 from pymatgen.core.structure import Structure
 
 from autoplex.auto.jobs import (
-    dft_phonon_data,
-    dft_random_data,
+    dft_phononpy_gen_data,
+    dft_random_gen_data,
     get_phonon_ml_calculation_jobs,
 )
 from autoplex.benchmark.flows import PhononBenchmarkMaker
@@ -183,7 +183,7 @@ class AddDataToDataset(Maker):
         If True, will add RSS generated structures for DFT calculation.
     """
 
-    name: str = "adddata"
+    name: str = "add_data"
     add_dft_phonon_struct: bool = True
     add_dft_random_struct: bool = True
     add_rss_struct: bool = False
@@ -246,7 +246,7 @@ class AddDataToDataset(Maker):
         phonon_displacement_maker,
         min_length,
     ):
-        additonal_dft_phonon = dft_phonon_data(
+        additonal_dft_phonon = dft_phononpy_gen_data(
             structure, displacements, symprec, phonon_displacement_maker, min_length
         )
 
@@ -261,7 +261,7 @@ class AddDataToDataset(Maker):
     def add_dft_random(
         self, structure: Structure, mp_id, phonon_displacement_maker, n_struct, sc
     ):
-        additonal_dft_random = dft_random_data(
+        additonal_dft_random = dft_random_gen_data(
             structure, mp_id, phonon_displacement_maker, n_struct, sc
         )
 
@@ -325,14 +325,14 @@ class DFTDataGenerationFlow(Maker):
             materials project id
         """
         # TODO later adding: for i no. of potentials
-        dft_phonon = dft_phonon_data(
+        dft_phonon = dft_phononpy_gen_data(
             structure,
             self.displacements,
             self.symprec,
             self.phonon_displacement_maker,
             self.min_length,
         )
-        dft_random = dft_random_data(
+        dft_random = dft_random_gen_data(
             structure, mp_id, self.phonon_displacement_maker, self.n_struct, self.sc
         )
 
