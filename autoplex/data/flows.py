@@ -3,16 +3,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from atomate2.vasp.jobs.base import BaseVaspMaker
+    from emmet.core.math import Matrix3D
 
 from atomate2.common.jobs.phonons import (
     PhononDisplacementMaker,
     run_phonon_displacements,
 )
-from atomate2.vasp.jobs.base import BaseVaspMaker
 from atomate2.vasp.jobs.core import StaticMaker
 from atomate2.vasp.sets.core import StaticSetGenerator
-from emmet.core.math import Matrix3D
 from jobflow import Flow, Maker
 from phonopy import Phonopy
 from pymatgen.core.structure import Species, Structure
@@ -117,8 +121,7 @@ class RandomStruturesDataGenerator(Maker):
             outputs.append(vasp_random_sc_displacement_calcs.output["dirs"])
 
         # create a flow including all jobs
-        flow = Flow(jobs, outputs)
-        return flow
+        return Flow(jobs, outputs)
 
 
 @dataclass
@@ -157,5 +160,4 @@ class IsoAtomMaker(Maker):
         ).make(iso_atom)
         jobs.append(isoatom_calcs)
         # create a flow including all jobs
-        flow = Flow(jobs, isoatom_calcs.output.output.energy_per_atom)
-        return flow
+        return Flow(jobs, isoatom_calcs.output.output.energy_per_atom)

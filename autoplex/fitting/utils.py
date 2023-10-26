@@ -25,8 +25,7 @@ def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path):
        gap fit default parameters.
     """
     with open(gap_fit_parameter_file_path, encoding="utf-8") as f:
-        data = json.load(f)
-        return data
+        return json.load(f)
 
 
 def gap_hyperparameter_constructor(

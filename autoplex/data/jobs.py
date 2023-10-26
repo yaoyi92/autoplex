@@ -1,10 +1,14 @@
 """Jobs to create training data for ML potentials."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
 from jobflow import Flow, Response, job
-from pymatgen.core.structure import Structure
+
+if TYPE_CHECKING:
+    from pymatgen.core.structure import Structure
 from pymatgen.io.ase import AseAtomsAdaptor
 
 

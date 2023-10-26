@@ -1,12 +1,14 @@
-"""
-Complete AutoPLEX -- Automated machine-learned Potential Landscape explorer -- jobs.
-"""
+"""General AutoPLEX automation jobs."""
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from atomate2.forcefields.flows.phonons import PhononMaker
 from atomate2.forcefields.jobs import GAPRelaxMaker, GAPStaticMaker
 from jobflow import Flow, Response, job
-from pymatgen.core.structure import Structure
+
+if TYPE_CHECKING:
+    from pymatgen.core.structure import Structure
 
 
 @job
@@ -16,6 +18,7 @@ def get_phonon_ml_calculation_jobs(
     min_length: int = 20,
 ):
     """
+    Get the PhononMaker job for ML-based phonon calculations.
 
     Parameters
     ----------

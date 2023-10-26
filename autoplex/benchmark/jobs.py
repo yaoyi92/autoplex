@@ -1,11 +1,13 @@
-"""
-Atomistic Jobs to Benchmark Potentials.
-"""
+"""Atomistic Jobs to Benchmark Potentials."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from jobflow import Response, job
-from pymatgen.core.structure import Structure
-from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
+
+if TYPE_CHECKING:
+    from pymatgen.core.structure import Structure
+    from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 
 from autoplex.benchmark.utils import compare_plot, get_rmse, rmse_kdep_plot
 

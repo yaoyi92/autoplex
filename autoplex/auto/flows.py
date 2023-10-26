@@ -68,6 +68,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         mp_id,
     ):
         """
+        Make the complete workflow for DFT vs. ML benchmarking.
 
         Parameters
         ----------
@@ -158,8 +159,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         )
         flows.append(collect_bm)
 
-        flow = Flow(flows)
-        return flow
+        return Flow(flows)
 
 
 @dataclass
@@ -232,7 +232,7 @@ class DFTDataGenerationFlow(Maker):
             flows.append(dft_phonons)
             dft_phonons_output.append(
                 dft_phonons.output
-            )  # I have no better solution to this now
+            )  # CE: I have no better solution to this now
             dft_phonons_dir_output.append(
                 dft_phonons.output.jobdirs.displacements_job_dirs
             )
@@ -244,7 +244,7 @@ class DFTDataGenerationFlow(Maker):
         ).make(structure=structure, mp_id=mp_id)
         flows.append(datagen)
 
-        flow = Flow(
+        return Flow(
             flows,
             output={
                 "rand_struc_dir": datagen.output,
@@ -252,7 +252,6 @@ class DFTDataGenerationFlow(Maker):
                 "phonon_data": dft_phonons_output,
             },
         )
-        return flow
 
 
 @dataclass
@@ -294,8 +293,7 @@ class PhononDFTMLFitFlow(Maker):
         )
         flows.append(ml_fit_flow)
 
-        flow = Flow(flows, ml_fit_flow.output)
-        return flow
+        return Flow(flows, ml_fit_flow.output)
 
 
 @dataclass
@@ -342,5 +340,4 @@ class PhononDFTMLBenchmarkFlow(Maker):
         )
         flows.append(benchmark)
 
-        flow = Flow(flows, benchmark.output)
-        return flow
+        return Flow(flows, benchmark.output)

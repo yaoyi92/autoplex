@@ -1,12 +1,12 @@
-"""
-Flows consisting of jobs to fit ML potentials.
-"""
+"""Flows consisting of jobs to fit ML potentials."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from pathlib import Path
 from jobflow import Flow, Maker
 
 from autoplex.fitting.jobs import gapfit
@@ -63,5 +63,4 @@ class MLIPFitMaker(Maker):
         jobs.append(gap_fit_job)  # type: ignore
 
         # create a flow including all jobs
-        flow = Flow(jobs, gap_fit_job.output)
-        return flow
+        return Flow(jobs, gap_fit_job.output)

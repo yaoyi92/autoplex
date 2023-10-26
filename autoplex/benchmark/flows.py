@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from jobflow import Flow, Maker
-from pymatgen.core.structure import Structure
-from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
+
+if TYPE_CHECKING:
+    from pymatgen.core.structure import Structure
+    from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 
 from autoplex.benchmark.jobs import compute_bandstructure_benchmark_metrics
 
@@ -62,5 +65,4 @@ class PhononBenchmarkMaker(Maker):
         jobs.append(benchmark_job)
 
         # create a flow including all jobs
-        flow = Flow(jobs, benchmark_job.output)
-        return flow
+        return Flow(jobs, benchmark_job.output)
