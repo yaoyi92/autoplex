@@ -1,6 +1,4 @@
-"""
-Jobs to fit ML potentials.
-"""
+"""Jobs to fit ML potentials."""
 from __future__ import annotations
 
 import os
