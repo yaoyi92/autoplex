@@ -1,12 +1,11 @@
-"""Jobs to create training data for ML potentials"""
+"""Jobs to create training data for ML potentials."""
 from __future__ import annotations
 
-
+import numpy as np
+from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
 from jobflow import Flow, Response, job
 from pymatgen.core.structure import Structure
 from pymatgen.io.ase import AseAtomsAdaptor
-from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
-import numpy as np
 
 
 @job
@@ -15,7 +14,7 @@ def generate_randomized_structures(
     n_struct: int,
 ):
     """
-    Takes in a structure object and generates randomly displaced structure.
+    Take in a structure object and generates randomly displaced structure.
 
     Parameters
     ----------
@@ -42,7 +41,7 @@ def phonon_maker_random_structures(
     rattled_structures, displacements, symprec, phonon_displacement_maker
 ):
     """
-    Sets up phonon computations of the randomly displaced structure.
+    Set up phonon computations of the randomly displaced structure.
 
     Parameters
     ----------

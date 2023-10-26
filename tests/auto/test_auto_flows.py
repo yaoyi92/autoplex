@@ -3,7 +3,7 @@ from __future__ import annotations
 from pymatgen.core.structure import Structure
 from autoplex.auto.flows import (
     CompleteDFTvsMLBenchmarkWorkflow,
-    PhononDFTMLDataGenerationFlow,
+    DFTDataGenerationFlow,
 )
 
 
@@ -22,7 +22,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01]
     ).make(
         structure_list=[structure],
-        mpids=["test"],
+        mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         phonon_displacement_maker=PhononDisplacementMaker(),
@@ -93,7 +93,7 @@ def test_phonon_dft_ml_data_generation_flow(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    flow_data_generation = PhononDFTMLDataGenerationFlow(
+    flow_data_generation = DFTDataGenerationFlow(
         n_struct=3, min_length=10, symprec=1e-2
     ).make(structure=structure, mp_id="mp-22905")
 

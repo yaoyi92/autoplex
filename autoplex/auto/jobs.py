@@ -1,11 +1,12 @@
 """
-Complete AutoPLEX -- Automated machine-learned Potential Landscape explorer -- jobs
+Complete AutoPLEX -- Automated machine-learned Potential Landscape explorer -- jobs.
 """
 from __future__ import annotations
-from pymatgen.core.structure import Structure
-from jobflow import Flow, job, Response
-from atomate2.forcefields.jobs import GAPRelaxMaker, GAPStaticMaker
+
 from atomate2.forcefields.flows.phonons import PhononMaker
+from atomate2.forcefields.jobs import GAPRelaxMaker, GAPStaticMaker
+from jobflow import Flow, Response, job
+from pymatgen.core.structure import Structure
 
 
 @job

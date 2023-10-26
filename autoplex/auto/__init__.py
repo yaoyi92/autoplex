@@ -1,1 +1,1 @@
-"""AutoPLEX -- Automated machine-learned Potential Landscape explorer -- flows"""
+"""AutoPLEX -- Automated machine-learned Potential Landscape explorer -- flows."""

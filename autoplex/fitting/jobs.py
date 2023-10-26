@@ -1,16 +1,19 @@
 """
-Jobs to fit ML potentials
+Jobs to fit ML potentials.
 """
 from __future__ import annotations
-from dataclasses import field
+
 import os
-from pathlib import Path
 import subprocess
+from dataclasses import field
+from pathlib import Path
+
 from jobflow import Response, job
+
 from autoplex.fitting.utils import (
-    load_gap_hyperparameter_defaults,
     gap_hyperparameter_constructor,
     get_list_of_vasp_calc_dirs,
+    load_gap_hyperparameter_defaults,
     outcar_2_extended_xyz,
 )
 
@@ -27,10 +30,10 @@ def gapfit(
     include_two_body: bool = True,
     include_three_body: bool = False,
     include_soap: bool = True,
-    fit_kwargs: dict = field(default_factory=dict),  # pylint: disable=E3701
+    fit_kwargs=None,  # pylint: disable=E3701
 ):  # pylint: disable=R0913, R0914
     """
-    Prepares the GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
+    Prepare the GAP fit input and fits the data using GAP. More ML methods (e.g. ACE) to follow.
 
     Parameters
     ----------
@@ -56,6 +59,9 @@ def gapfit(
     Response.output
         Path to the gap fit file.
     """
+    if fit_kwargs is None:
+        fit_kwargs = field(default_factory=dict)
+
     list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
 
     outcar_2_extended_xyz(path_to_vasp_static_calcs=list_of_vasp_calc_dirs)
@@ -91,7 +97,7 @@ def gapfit(
     with open("std_out.log", "w", encoding="utf-8") as file_std, open(
         "std_err.log", "w", encoding="utf-8"
     ) as file_err:
-        subprocess.call(["gap_fit"] + gap_parameters, stdout=file_std, stderr=file_err)
+        subprocess.call(["gap_fit", *gap_parameters], stdout=file_std, stderr=file_err)
 
         directory = Path.cwd()
 

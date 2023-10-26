@@ -1,7 +1,7 @@
-"""Utility functions for benchmarking jobs"""
+"""Utility functions for benchmarking jobs."""
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 from pymatgen.phonon.plotter import PhononBSPlotter
 
@@ -12,7 +12,7 @@ def get_rmse(
     k_dependent_rmse: bool = False,
 ):
     """
-    Computes root mean squared error (rmse) between DFT and ML phonon band-structure
+    Compute root mean squared error (rmse) between DFT and ML phonon band-structure.
 
     Parameters
     ----------
@@ -46,7 +46,7 @@ def rmse_kdep_plot(
     img_format="eps",
 ):
     """
-    Saves k dependent root mean squared error plot between DFT and ML phonon band-structure
+    Save k dependent root mean squared error plot between DFT and ML phonon band-structure.
 
     Parameters
     ----------
@@ -96,7 +96,7 @@ def compare_plot(
     img_format="eps",
 ):
     """
-    Saves DFT and ML phonon band-structure overlay plot for visual comparison
+    Save DFT and ML phonon band-structure overlay plot for visual comparison.
 
     Parameters
     ----------

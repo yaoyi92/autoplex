@@ -1,4 +1,4 @@
-"""Flows to benchmark ML potentials"""
+"""Flows to benchmark ML potentials."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from jobflow import Flow, Maker
 from pymatgen.core.structure import Structure
 from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
-from autoplex.benchmark.jobs import compute_bandstructure_benchmark_metrics
 
+from autoplex.benchmark.jobs import compute_bandstructure_benchmark_metrics
 
 __all__ = ["PhononBenchmarkMaker"]
 
@@ -16,7 +16,7 @@ __all__ = ["PhononBenchmarkMaker"]
 @dataclass
 class PhononBenchmarkMaker(Maker):
     """
-    Maker to benchmark ML potentials on reference DFT data
+    Maker to benchmark ML potentials on reference DFT data.
 
     Parameters
     ----------

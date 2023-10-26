@@ -80,9 +80,6 @@ class RandomStruturesDataGenerator(Maker):
         """
         # TODO: clean up unused arguments: is prev_vasp_dir needed?
 
-        # ml_dir : str or Path or None
-        #  ML directory to use for copying inputs/outputs.(hab noch keine Ahnung)
-
         jobs = []  # initializing empty job list
         outputs = []
 

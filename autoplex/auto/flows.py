@@ -62,7 +62,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     def make(
         self,
         structure_list: list[Structure],
-        mpids,
+        mp_ids,
         phonon_displacement_maker,
         benchmark_structure: Structure,
         mp_id,
@@ -73,7 +73,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         ----------
         structure_list: List[Structure]
             list of pymatgen structures
-        mpids : list.
+        mp_ids : list.
             list of materials project ids
         phonon_displacement_maker : .BaseVaspMaker
             Maker used to compute the forces for a supercell.
@@ -89,7 +89,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         all_species = list(
             {
                 specie for s in structure_list for specie in s.types_of_species
-            }  # PLEASE LEAVE THIS LIKE THIS FOR A WHILE
+            }  # TODO add test for three element compound
         )
 
         for species in all_species:
@@ -98,7 +98,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             isoatoms.append(isoatom.output)
 
         for struc_i, structure in enumerate(structure_list):
-            mp_id = mpids[struc_i]
+            mp_id = mp_ids[struc_i]
             autoplex_datagen = DFTDataGenerationFlow(
                 name="test",
                 phonon_displacement_maker=phonon_displacement_maker,
@@ -125,7 +125,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             ml_dir=autoplex_fit.output,
         )
         flows.append(autoplex_ml_phonon)
-        if mp_id not in mpids:
+        if mp_id not in mp_ids:
             dft_phonons = DFTPhononMaker(
                 symprec=self.symprec,
                 phonon_displacement_maker=phonon_displacement_maker,
@@ -168,7 +168,7 @@ class DFTDataGenerationFlow(Maker):
     Maker to generate DFT reference database to be used for fitting ML potentials.
 
     The maker will use phonopy to create displacements according to the finite displacement method.
-    In addition, random displacements are applied to the provided structures.
+    In addition, randomly distorted structures are added to the dataset.
 
     Parameters
     ----------
@@ -188,8 +188,8 @@ class DFTDataGenerationFlow(Maker):
         (use_primitive_standard_structure, use_conventional_standard_structure)
         and to handle all symmetry-related tasks in phonopy
     sc: bool.
-        If True, will generate supercells of initial randomly displaced
-        structures and add phonon computation jobs to the flow
+        If True, will generate randomly distorted supercells structures
+        and add static computation jobs to the flow
     """
 
     name: str = "datagen"
@@ -228,7 +228,6 @@ class DFTDataGenerationFlow(Maker):
                 displacement=displacement,
                 min_length=self.min_length,
             ).make(structure=structure)
-            # TODO: move this to a different level (e.g., submission script)
             dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4})
             flows.append(dft_phonons)
             dft_phonons_output.append(

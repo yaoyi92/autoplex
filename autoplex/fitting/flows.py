@@ -1,5 +1,5 @@
 """
-Flows consisting of jobs to fit ML potentials
+Flows consisting of jobs to fit ML potentials.
 """
 
 from __future__ import annotations
@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from jobflow import Flow, Maker
+
 from autoplex.fitting.jobs import gapfit
 
 __all__ = ["MLIPFitMaker"]

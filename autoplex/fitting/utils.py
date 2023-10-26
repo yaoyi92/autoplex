@@ -1,9 +1,10 @@
-"""Utility functions for fitting jobs"""
+"""Utility functions for fitting jobs."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
+
 import numpy as np
 from ase.io import read, write
 from atomate2.utils.path import strip_hostname
@@ -11,7 +12,7 @@ from atomate2.utils.path import strip_hostname
 
 def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path):
     """
-    Loads gap fit default parameters from the json file
+    Load gap fit default parameters from the json file.
 
     Parameters
     ----------
@@ -23,7 +24,7 @@ def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path):
     dict
        gap fit default parameters.
     """
-    with open(gap_fit_parameter_file_path, "r", encoding="utf-8") as f:
+    with open(gap_fit_parameter_file_path, encoding="utf-8") as f:
         data = json.load(f)
         return data
 
@@ -37,7 +38,7 @@ def gap_hyperparameter_constructor(
     include_soap: bool = True,
 ):
     """
-    Constructs a list of arguments needed to execute gap potential from the parameters dict
+    Construct a list of arguments needed to execute gap potential from the parameters' dict.
 
     Parameters
     ----------
@@ -95,7 +96,7 @@ def gap_hyperparameter_constructor(
             if include_soap is True
         ]
     )
-    # add seperator between the arg types
+    # add separator between the arg types
     if include_two_body and include_three_body and include_soap:
         three_body_params = " :" + three_body_params
         soap_params = " :soap " + soap_params
@@ -108,12 +109,12 @@ def gap_hyperparameter_constructor(
 
     gap_hyperparameters = f"gap={{{two_body_params}{three_body_params}{soap_params}}}"
 
-    return general + [gap_hyperparameters]
+    return [*general, gap_hyperparameters]
 
 
 def get_list_of_vasp_calc_dirs(flow_output):
     """
-    Returns a list of vasp_calc_dirs from PhononDFTMLDataGenerationFlow output
+    Return a list of vasp_calc_dirs from PhononDFTMLDataGenerationFlow output.
 
     Parameters
     ----------
@@ -128,16 +129,15 @@ def get_list_of_vasp_calc_dirs(flow_output):
     list_of_vasp_calc_dirs = []
     for output in flow_output.values():
         for output_type, dirs in output.items():
-            if output_type != "phonon_data":
-                if isinstance(dirs, list):
-                    list_of_vasp_calc_dirs.extend(*dirs)
+            if output_type != "phonon_data" and isinstance(dirs, list):
+                list_of_vasp_calc_dirs.extend(*dirs)
 
     return list_of_vasp_calc_dirs
 
 
 def outcar_2_extended_xyz(path_to_vasp_static_calcs: list):
     """
-    Parses all VASP OUTCARs and generates a trainGAP.xyz
+    Parse all VASP OUTCARs and generates a trainGAP.xyz.
 
     Uses ase.io.read to parse the OUTCARs
     Adapted from http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html
