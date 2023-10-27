@@ -165,8 +165,6 @@ exclude_lines = [
 # omit everything in test directory from coverage
 [tool.coverage.run]
 include = ["autoplex/*"]
-parallel = true
-branch = true
 
 [tool.mypy]
 ignore_missing_imports = true
