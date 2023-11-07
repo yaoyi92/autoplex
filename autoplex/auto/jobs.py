@@ -14,7 +14,7 @@ from jobflow import Flow, Response, job
 if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
 
-from autoplex.data.flows import RandomStruturesDataGenerator
+from autoplex.data.flows import IsoAtomMaker, RandomStruturesDataGenerator
 
 
 @job
@@ -67,8 +67,8 @@ def dft_phononpy_gen_data(
 
     Parameters
     ----------
-    name : str
-        Name of the flow produced by this maker.
+    structure: Structure
+        pymatgen Structure object
     phonon_displacement_maker : .BaseVaspMaker or None
         Maker used to compute the forces for a supercell.
     displacements: list[float]
@@ -81,7 +81,7 @@ def dft_phononpy_gen_data(
         (use_primitive_standard_structure, use_conventional_standard_structure)
         and to handle all symmetry-related tasks in phonopy
     """
-    flows = []
+    jobs = []
     dft_phonons_output = []
     dft_phonons_dir_output = []
 
@@ -94,13 +94,13 @@ def dft_phononpy_gen_data(
             min_length=min_length,
         ).make(structure=structure)
         dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4})
-        flows.append(dft_phonons)
+        jobs.append(dft_phonons)
         dft_phonons_output.append(
             dft_phonons.output
         )  # CE: I have no better solution to this now
         dft_phonons_dir_output.append(dft_phonons.output.jobdirs.displacements_job_dirs)
 
-    flow = Flow(flows, (dft_phonons_dir_output, dft_phonons_output))
+    flow = Flow(jobs, (dft_phonons_dir_output, dft_phonons_output))
     return Response(replace=flow)
 
 
@@ -113,8 +113,8 @@ def dft_random_gen_data(
 
     Parameters
     ----------
-    name : str
-        Name of the flow produced by this maker.
+    structure: Structure
+        pymatgen Structure object
     phonon_displacement_maker : .BaseVaspMaker or None
         Maker used to compute the forces for a supercell.
     mp_id:
@@ -125,14 +125,41 @@ def dft_random_gen_data(
         If True, will generate randomly distorted supercells structures
         and add static computation jobs to the flow
     """
-    flows = []
+    jobs = []
     random_datagen = RandomStruturesDataGenerator(
         name="RandomDataGen",
         phonon_displacement_maker=phonon_displacement_maker,
         n_struct=n_struct,
         sc=sc,
     ).make(structure=structure, mp_id=mp_id)
-    flows.append(random_datagen)
+    jobs.append(random_datagen)
 
-    flow = Flow(flows, random_datagen.output)
+    flow = Flow(jobs, random_datagen.output)
+    return Response(replace=flow)
+
+
+@job
+def get_iso_atom(structure_list: list[Structure]):
+    """
+    Job to collect all atomic species of the structures and starting VASP calculation of isolated atoms.
+
+    Parameters
+    ----------
+    structure_list: list[Structure]
+        list of pymatgen Structure objects
+    """
+    jobs = []
+    isoatoms = []
+    all_species = list(
+        {
+            specie for s in structure_list for specie in s.types_of_species
+        }  # TODO add test for three element compound
+    )
+
+    for species in all_species:
+        isoatom = IsoAtomMaker().make(species=species)
+        jobs.append(isoatom)
+        isoatoms.append(isoatom.output)
+
+    flow = Flow(jobs, (all_species, isoatoms))
     return Response(replace=flow)
