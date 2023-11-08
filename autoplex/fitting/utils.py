@@ -139,8 +139,7 @@ def outcar_2_extended_xyz(path_to_vasp_static_calcs: list, xyz_file: str | None 
     Parse all VASP OUTCARs and generates a trainGAP.xyz.
 
     Uses ase.io.read to parse the OUTCARs
-    Adapted from http://home.ustc.edu.cn/~lipai/scripts/ml_scripts/outcar2xyz.html
-    (Link does not seem to work)
+    Adapted from https://lipai.github.io/scripts/ml_scripts/outcar2xyz.html
 
     Parameters
     ----------
