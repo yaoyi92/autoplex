@@ -35,6 +35,7 @@ class MLIPFitMaker(Maker):
         iso_atom_energy: list,
         fit_input: dict,
         ml_dir: str | Path | None = None,
+        xyz_file: str | None = None,
         **fit_kwargs,
     ):
         """
@@ -50,6 +51,8 @@ class MLIPFitMaker(Maker):
             PhononDFTMLDataGenerationFlow output
         ml_dir: str or Path or None
             path to the ML potential file
+        xyz_file: str or None
+            a possibly already existing xyz file
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
@@ -58,6 +61,7 @@ class MLIPFitMaker(Maker):
             fit_input=fit_input,
             isolated_atoms=species_list,
             isolated_atoms_energy=iso_atom_energy,
+            xyz_file=xyz_file,
             fit_kwargs=fit_kwargs,
         )
         jobs.append(gap_fit_job)  # type: ignore

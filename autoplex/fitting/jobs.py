@@ -28,6 +28,7 @@ def gapfit(
     include_two_body: bool = True,
     include_three_body: bool = False,
     include_soap: bool = True,
+    xyz_file: str | None = None,
     fit_kwargs=None,  # pylint: disable=E3701
 ):  # pylint: disable=R0913, R0914
     """
@@ -49,6 +50,8 @@ def gapfit(
         bool indicating whether to include three-body hyperparameters
     include_soap : bool.
         bool indicating whether to include soap hyperparameters
+    xyz_file: str or None
+        a possibly already existing xyz file
     fit_kwargs : dict.
         dict including gap fit keyword args.
 
@@ -62,7 +65,9 @@ def gapfit(
 
     list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
 
-    outcar_2_extended_xyz(path_to_vasp_static_calcs=list_of_vasp_calc_dirs)
+    outcar_2_extended_xyz(
+        path_to_vasp_static_calcs=list_of_vasp_calc_dirs, xyz_file=xyz_file
+    )
 
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
         gap_fit_parameter_file_path=path_to_default_hyperparameters

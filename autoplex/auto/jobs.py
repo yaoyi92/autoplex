@@ -82,7 +82,7 @@ def dft_phononpy_gen_data(
         and to handle all symmetry-related tasks in phonopy
     """
     jobs = []
-    dft_phonons_output = []
+    dft_phonons_output = {}
     dft_phonons_dir_output = []
 
     for displacement in displacements:
@@ -95,12 +95,12 @@ def dft_phononpy_gen_data(
         ).make(structure=structure)
         dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4})
         jobs.append(dft_phonons)
-        dft_phonons_output.append(
-            dft_phonons.output
-        )  # CE: I have no better solution to this now
+        dft_phonons_output[
+            f"{displacement}"
+        ] = dft_phonons.output  # CE: I have no better solution to this now
         dft_phonons_dir_output.append(dft_phonons.output.jobdirs.displacements_job_dirs)
 
-    flow = Flow(jobs, (dft_phonons_dir_output, dft_phonons_output))
+    flow = Flow(jobs, {"dirs": dft_phonons_dir_output, "data": dft_phonons_output})
     return Response(replace=flow)
 
 
@@ -161,5 +161,5 @@ def get_iso_atom(structure_list: list[Structure]):
         jobs.append(isoatom)
         isoatoms.append(isoatom.output)
 
-    flow = Flow(jobs, (all_species, isoatoms))
+    flow = Flow(jobs, {"species": all_species, "energies": isoatoms})
     return Response(replace=flow)

@@ -134,7 +134,7 @@ def get_list_of_vasp_calc_dirs(flow_output):
     return list_of_vasp_calc_dirs
 
 
-def outcar_2_extended_xyz(path_to_vasp_static_calcs: list):
+def outcar_2_extended_xyz(path_to_vasp_static_calcs: list, xyz_file: str | None = None):
     """
     Parse all VASP OUTCARs and generates a trainGAP.xyz.
 
@@ -146,6 +146,8 @@ def outcar_2_extended_xyz(path_to_vasp_static_calcs: list):
     ----------
     path_to_vasp_static_calcs : list.
         List of VASP static calculation directories.
+    xyz_file: str or None
+        a possibly already existing xyz file.
     """
     for path in path_to_vasp_static_calcs:
         # strip hostname if it exists in the path
@@ -157,4 +159,7 @@ def outcar_2_extended_xyz(path_to_vasp_static_calcs: list):
             i.info["virial"] = np.array([(xx, xy, xz), (xy, yy, yz), (xz, yz, zz)])
             del i.calc.results["stress"]
             i.pbc = True
+        if xyz_file is not None:
+            xyz = read(xyz_file)
+            write("trainGAP.xyz", xyz, append=True)
         write("trainGAP.xyz", file, append=True)
