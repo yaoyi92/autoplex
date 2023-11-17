@@ -6,8 +6,6 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from atomate2.vasp.jobs.base import BaseVaspMaker
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Species, Structure
@@ -65,7 +63,6 @@ class RandomStruturesDataGenerator(Maker):
         self,
         structure: Structure,
         mp_id: str,
-        prev_vasp_dir: str | Path | None = None,
         supercell_matrix: Matrix3D | None = None,
     ):
         """
@@ -77,13 +74,9 @@ class RandomStruturesDataGenerator(Maker):
             Pymatgen structures drawn from the Materials Project.
         mp_id: str
             Materials Project IDs
-        prev_vasp_dir: str or Path or None
-             A previous vasp calculation directory to use for copying outputs.
         supercell_matrix: Matrix3D.
             Matrix for obtaining the supercell
         """
-        # TODO: clean up unused arguments: is prev_vasp_dir needed?
-
         jobs = []  # initializing empty job list
         outputs = []
 
@@ -92,7 +85,6 @@ class RandomStruturesDataGenerator(Maker):
         )
         jobs.append(random_rattle)
         # perform the phonon displaced calculations for randomized displaced structures
-        # could be replaced with a simple static_vasp method
         # structure is only needed to keep track of the original structure
         vasp_random_displacement_calcs = run_phonon_displacements(
             displacements=random_rattle.output,  # pylint: disable=E1101
@@ -109,14 +101,12 @@ class RandomStruturesDataGenerator(Maker):
                 structure=get_pmg_structure(supercell), n_struct=self.n_struct
             )
             jobs.append(random_rattle_sc)
-            # could be replaced with a simple static_vasp method
             vasp_random_sc_displacement_calcs = run_phonon_displacements(
                 displacements=random_rattle_sc.output,  # pylint: disable=E1101
                 structure=structure,
                 supercell_matrix=supercell_matrix,
                 phonon_maker=self.phonon_displacement_maker,
             )
-            # line 126 structure is only needed to keep track of the original structure
             jobs.append(vasp_random_sc_displacement_calcs)
             outputs.append(vasp_random_sc_displacement_calcs.output["dirs"])
 
