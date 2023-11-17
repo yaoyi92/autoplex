@@ -34,8 +34,6 @@ def test_phonon_maker_random_structures(
     from atomate2.common.jobs.phonons import PhononDisplacementMaker
     from jobflow import run_locally
 
-    # TODO: replace with test data and it is currently a placeholder test
-
     ref_paths = {
         "static": "dft_ml_data_generation/static/",
         "phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",

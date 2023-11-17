@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -159,6 +161,5 @@ def outcar_2_extended_xyz(path_to_vasp_static_calcs: list, xyz_file: str | None 
             del i.calc.results["stress"]
             i.pbc = True
         if xyz_file is not None:
-            xyz = read(xyz_file)
-            write("trainGAP.xyz", xyz, append=True)
+            shutil.copy2(xyz_file, os.getcwd())
         write("trainGAP.xyz", file, append=True)

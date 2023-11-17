@@ -59,7 +59,7 @@ def get_phonon_ml_calculation_jobs(
 
 
 @job
-def dft_phononpy_gen_data(
+def dft_phonopy_gen_data(
     structure: Structure, displacements, symprec, phonon_displacement_maker, min_length
 ):
     """
@@ -93,11 +93,11 @@ def dft_phononpy_gen_data(
             displacement=displacement,
             min_length=min_length,
         ).make(structure=structure)
-        dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4})
+        dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4, "ISPIN": 1})
         jobs.append(dft_phonons)
         dft_phonons_output[
-            f"{displacement}"
-        ] = dft_phonons.output  # CE: I have no better solution to this now
+            f"{displacement}".replace(".", "")  # key must not contain '.'
+        ] = dft_phonons.output
         dft_phonons_dir_output.append(dft_phonons.output.jobdirs.displacements_job_dirs)
 
     flow = Flow(jobs, {"dirs": dft_phonons_dir_output, "data": dft_phonons_output})
@@ -151,9 +151,7 @@ def get_iso_atom(structure_list: list[Structure]):
     jobs = []
     isoatoms = []
     all_species = list(
-        {
-            specie for s in structure_list for specie in s.types_of_species
-        }  # TODO add test for three element compound
+        {specie for s in structure_list for specie in s.types_of_species}
     )
 
     for species in all_species:

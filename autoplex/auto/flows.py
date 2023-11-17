@@ -18,7 +18,7 @@ from atomate2.vasp.powerups import (
 from jobflow import Flow, Maker
 
 from autoplex.auto.jobs import (
-    dft_phononpy_gen_data,
+    dft_phonopy_gen_data,
     dft_random_gen_data,
     get_iso_atom,
     get_phonon_ml_calculation_jobs,
@@ -137,7 +137,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
             dft_reference = dft_phonons.output
         else:
-            dft_reference = datagen[mp_id]["phonon_data"]["0.1"]
+            dft_reference = datagen[mp_id]["phonon_data"]["001"]
 
         autoplex_bm = PhononDFTMLBenchmarkFlow(name="testBM").make(
             structure=benchmark_structure,
@@ -185,9 +185,7 @@ class AddDataToDataset(Maker):
         default_factory=PhononDisplacementMaker
     )
     n_struct: int = 1
-    displacements: list[float] = field(
-        default_factory=lambda: [0.01]
-    )  # TODO Make sure that 0.01 is always included, no matter what the user does
+    displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
     symprec: float = 1e-4
     sc: bool = False
@@ -219,6 +217,7 @@ class AddDataToDataset(Maker):
         """
         flows = []
         fit_input = {}
+        joined_data = {}
         collect = []
 
         if xyz_file is None:
@@ -227,15 +226,6 @@ class AddDataToDataset(Maker):
 
         for i, structure in enumerate(structure_list):
             mp_id = mp_ids[i]
-            if self.add_dft_phonon_struct:
-                addDFTphon = self.add_dft_phonons(
-                    structure,
-                    self.displacements,
-                    self.symprec,
-                    self.phonon_displacement_maker,
-                    self.min_length,
-                )
-                flows.append(addDFTphon)
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
                     structure,
@@ -245,16 +235,20 @@ class AddDataToDataset(Maker):
                     self.sc,
                 )
                 flows.append(addDFTrand)
+                joined_data.update(addDFTrand.output)
+            if self.add_dft_phonon_struct:
+                addDFTphon = self.add_dft_phonons(
+                    structure,
+                    self.displacements,
+                    self.symprec,
+                    self.phonon_displacement_maker,
+                    self.min_length,
+                )
+                flows.append(addDFTphon)
+                joined_data.update(addDFTphon.output)
             if self.add_rss_struct:
                 raise NotImplementedError
-            fit_input.update(
-                {
-                    mp_id: {
-                        "add_phonons": addDFTphon.output,
-                        "add_random": addDFTrand.output,
-                    }
-                }
-            )
+            fit_input.update({mp_id: joined_data})
 
         isoatoms = get_iso_atom(structure_list)
         flows.append(isoatoms)
@@ -274,21 +268,24 @@ class AddDataToDataset(Maker):
             ml_dir=add_data_fit.output,
         )
         flows.append(add_data_ml_phonon)
-        if mp_id not in mp_ids:
+        if mp_id not in mp_ids or self.add_dft_phonon_struct is False:
             dft_phonons = DFTPhononMaker(
                 symprec=self.symprec,
                 phonon_displacement_maker=self.phonon_displacement_maker,
                 born_maker=None,
                 min_length=self.min_length,
             ).make(structure=benchmark_structure)
-            dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4})
+            dft_phonons = update_user_incar_settings(
+                dft_phonons, {"NPAR": 4, "ISPIN": 1}
+            )
+
             flows.append(dft_phonons)
 
             dft_reference = dft_phonons.output
         else:
-            dft_reference = fit_input[mp_id]["add_phonons"]["phonon_data"]["0.1"]
+            dft_reference = fit_input[mp_id]["phonon_data"]["001"]
 
-        add_data_bm = PhononDFTMLBenchmarkFlow(name="testBM").make(
+        add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
             structure=benchmark_structure,
             mp_id=mp_id,
             ml_phonon_task_doc=add_data_ml_phonon.output,
@@ -315,7 +312,7 @@ class AddDataToDataset(Maker):
         phonon_displacement_maker,
         min_length,
     ):
-        additonal_dft_phonon = dft_phononpy_gen_data(
+        additonal_dft_phonon = dft_phonopy_gen_data(
             structure, displacements, symprec, phonon_displacement_maker, min_length
         )
 
@@ -392,7 +389,7 @@ class DFTDataGenerationFlow(Maker):
             materials project id
         """
         # TODO later adding: for i no. of potentials
-        dft_phonon = dft_phononpy_gen_data(
+        dft_phonon = dft_phonopy_gen_data(
             structure,
             self.displacements,
             self.symprec,

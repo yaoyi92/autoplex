@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
     from atomate2.vasp.jobs.base import BaseVaspMaker
     from emmet.core.math import Matrix3D
+    from pymatgen.core.structure import Species, Structure
 
 from atomate2.common.jobs.phonons import (
     PhononDisplacementMaker,
@@ -19,7 +20,7 @@ from atomate2.vasp.jobs.core import StaticMaker
 from atomate2.vasp.sets.core import StaticSetGenerator
 from jobflow import Flow, Maker
 from phonopy import Phonopy
-from pymatgen.core.structure import Species, Structure
+from pymatgen.core import Molecule, Site
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.jobs import generate_randomized_structures
@@ -65,8 +66,7 @@ class RandomStruturesDataGenerator(Maker):
         structure: Structure,
         mp_id: str,
         prev_vasp_dir: str | Path | None = None,
-        supercell_matrix: Matrix3D
-        | None = None,  # with a simpler static vasp method this will be redundant
+        supercell_matrix: Matrix3D | None = None,
     ):
         """
         Make flow to generate the reference DFT data base.
@@ -147,11 +147,9 @@ class IsoAtomMaker(Maker):
             pymatgen specie object.
         """
         jobs = []
-        iso_atom = Structure(
-            lattice=[[20, 0, 0], [0, 20, 0], [0, 0, 20]],  # TODO replace with boxed
-            species=[species],
-            coords=[[0, 0, 0]],
-        )
+        site = Site(species=species, coords=[0, 0, 0])
+        mol = Molecule.from_sites([site])
+        iso_atom = mol.get_boxed_structure(a=20, b=20, c=20)
         isoatom_calcs = StaticMaker(
             name=str(species) + "-statisoatom",
             input_set_generator=StaticSetGenerator(
