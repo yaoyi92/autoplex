@@ -12,9 +12,10 @@ from atomate2.vasp.powerups import (
 from jobflow import Flow, Response, job
 
 if TYPE_CHECKING:
+    from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
-from autoplex.data.flows import IsoAtomMaker, RandomStruturesDataGenerator
+from autoplex.data.flows import IsoAtomMaker, RandomStructuresDataGenerator
 
 
 @job
@@ -106,7 +107,12 @@ def dft_phonopy_gen_data(
 
 @job
 def dft_random_gen_data(
-    structure: Structure, mp_id, phonon_displacement_maker, n_struct, sc
+    structure: Structure,
+    mp_id,
+    phonon_displacement_maker,
+    n_struct,
+    sc,
+    supercell_matrix: Matrix3D | None = None,
 ):
     """
     Job to generate random structured DFT reference database to be used for fitting ML potentials.
@@ -124,14 +130,16 @@ def dft_random_gen_data(
     sc: bool.
         If True, will generate randomly distorted supercells structures
         and add static computation jobs to the flow
+    supercell_matrix: Matrix3D or None
+        The matrix to construct the supercell.
     """
     jobs = []
-    random_datagen = RandomStruturesDataGenerator(
+    random_datagen = RandomStructuresDataGenerator(
         name="RandomDataGen",
         phonon_displacement_maker=phonon_displacement_maker,
         n_struct=n_struct,
         sc=sc,
-    ).make(structure=structure, mp_id=mp_id)
+    ).make(structure=structure, mp_id=mp_id, supercell_matrix=supercell_matrix)
     jobs.append(random_datagen)
 
     flow = Flow(jobs, random_datagen.output)

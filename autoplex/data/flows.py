@@ -17,17 +17,17 @@ from atomate2.common.jobs.phonons import (
 from atomate2.vasp.jobs.core import StaticMaker
 from atomate2.vasp.sets.core import StaticSetGenerator
 from jobflow import Flow, Maker
-from phonopy import Phonopy
+from phonopy.structure.cells import get_supercell
 from pymatgen.core import Molecule, Site
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.jobs import generate_randomized_structures
 
-__all__ = ["RandomStruturesDataGenerator", "IsoAtomMaker"]
+__all__ = ["RandomStructuresDataGenerator", "IsoAtomMaker"]
 
 
 @dataclass
-class RandomStruturesDataGenerator(Maker):
+class RandomStructuresDataGenerator(Maker):
     """
     Maker to generate DFT data based on random displacements for ML potential fitting.
 
@@ -89,14 +89,17 @@ class RandomStruturesDataGenerator(Maker):
         vasp_random_displacement_calcs = run_phonon_displacements(
             displacements=random_rattle.output,  # pylint: disable=E1101
             structure=structure,
-            supercell_matrix=supercell_matrix,
+            supercell_matrix=None,
             phonon_maker=self.phonon_displacement_maker,
         )
         jobs.append(vasp_random_displacement_calcs)
         outputs.append(vasp_random_displacement_calcs.output["dirs"])
 
         if self.sc is True:
-            supercell = Phonopy(unitcell=get_phonopy_structure(structure)).supercell
+            supercell = get_supercell(
+                unitcell=get_phonopy_structure(structure),
+                supercell_matrix=supercell_matrix,
+            )
             random_rattle_sc = generate_randomized_structures(
                 structure=get_pmg_structure(supercell), n_struct=self.n_struct
             )
@@ -104,7 +107,7 @@ class RandomStruturesDataGenerator(Maker):
             vasp_random_sc_displacement_calcs = run_phonon_displacements(
                 displacements=random_rattle_sc.output,  # pylint: disable=E1101
                 structure=structure,
-                supercell_matrix=supercell_matrix,
+                supercell_matrix=None,
                 phonon_maker=self.phonon_displacement_maker,
             )
             jobs.append(vasp_random_sc_displacement_calcs)

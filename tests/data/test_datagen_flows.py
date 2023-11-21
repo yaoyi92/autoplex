@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pymatgen.core.structure import Structure
 from atomate2.vasp.powerups import update_user_incar_settings
-from autoplex.data.flows import RandomStruturesDataGenerator, IsoAtomMaker
+from autoplex.data.flows import RandomStructuresDataGenerator, IsoAtomMaker
 
 
 def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
@@ -34,7 +34,7 @@ def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
     }
-    data_gen = RandomStruturesDataGenerator(n_struct=3).make(structure=structure, mp_id=test_mpid)
+    data_gen = RandomStructuresDataGenerator(n_struct=3).make(structure=structure, mp_id=test_mpid)
 
     data_gen = update_user_incar_settings(data_gen, {"ISMEAR": 0})
 

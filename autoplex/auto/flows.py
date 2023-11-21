@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from atomate2.vasp.jobs.base import BaseVaspMaker
+    from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
 from atomate2.common.jobs.phonons import PhononDisplacementMaker
@@ -68,6 +69,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     min_length: int = 20
     symprec: float = 1e-4
     sc: bool = False
+    supercell_matrix: Matrix3D | None = None
 
     def make(
         self,
@@ -109,6 +111,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 min_length=self.min_length,
                 symprec=self.symprec,
                 sc=self.sc,
+                supercell_matrix=self.supercell_matrix,
             ).make(structure=structure, mp_id=mp_id)
             flows.append(autoplex_datagen)
             datagen.update({mp_id: autoplex_datagen.output})
@@ -190,6 +193,7 @@ class AddDataToDataset(Maker):
     min_length: int = 20
     symprec: float = 1e-4
     sc: bool = False
+    supercell_matrix: Matrix3D | None = None
 
     def make(
         self,
@@ -222,8 +226,7 @@ class AddDataToDataset(Maker):
         collect = []
 
         if xyz_file is None:
-            print("Error. Please provide an existing xyz file.")
-            return None
+            raise Exception("Error. Please provide an existing xyz file.")
 
         for i, structure in enumerate(structure_list):
             mp_id = mp_ids[i]
@@ -234,6 +237,7 @@ class AddDataToDataset(Maker):
                     self.phonon_displacement_maker,
                     self.n_struct,
                     self.sc,
+                    self.supercell_matrix,
                 )
                 flows.append(addDFTrand)
                 joined_data.update(addDFTrand.output)
@@ -326,10 +330,16 @@ class AddDataToDataset(Maker):
         )
 
     def add_dft_random(
-        self, structure: Structure, mp_id, phonon_displacement_maker, n_struct, sc
+        self,
+        structure: Structure,
+        mp_id,
+        phonon_displacement_maker,
+        n_struct,
+        sc,
+        supercell_matrix: Matrix3D | None = None,
     ):
         additonal_dft_random = dft_random_gen_data(
-            structure, mp_id, phonon_displacement_maker, n_struct, sc
+            structure, mp_id, phonon_displacement_maker, n_struct, sc, supercell_matrix
         )
 
         return Flow(
@@ -377,6 +387,7 @@ class DFTDataGenerationFlow(Maker):
     min_length: int = 20
     symprec: float = 1e-4
     sc: bool = False
+    supercell_matrix: Matrix3D | None = None
 
     def make(self, structure: Structure, mp_id):
         """
@@ -398,7 +409,12 @@ class DFTDataGenerationFlow(Maker):
             self.min_length,
         )
         dft_random = dft_random_gen_data(
-            structure, mp_id, self.phonon_displacement_maker, self.n_struct, self.sc
+            structure,
+            mp_id,
+            self.phonon_displacement_maker,
+            self.n_struct,
+            self.sc,
+            self.supercell_matrix,
         )
 
         return Flow(

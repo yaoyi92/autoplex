@@ -86,3 +86,5 @@ def test_phonon_maker_random_structures(
 
     for output in responses[random_phonon_job.output.uuid][2].output:
         assert isinstance(output.resolve(store=memory_jobstore), PhononBSDOSDoc)
+
+# TODO adding a unit test to check if the supercell rattled structures have been constructed properly
