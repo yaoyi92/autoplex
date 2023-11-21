@@ -78,6 +78,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         phonon_displacement_maker,
         benchmark_structure: Structure,
         mp_id,
+        **fit_kwargs,
     ):
         """
         Make the complete workflow for DFT vs. ML benchmarking.
@@ -120,6 +121,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             species=isoatoms.output["species"],
             isolated_atoms_energy=isoatoms.output["energies"],
             fit_input=datagen,
+            **fit_kwargs,
         )
         flows.append(autoplex_fit)
 
@@ -202,6 +204,7 @@ class AddDataToDataset(Maker):
         xyz_file,
         benchmark_structure: Structure,
         mp_id,
+        **fit_kwargs,
     ):
         """
         Make flow for adding data to the dataset.
@@ -222,7 +225,6 @@ class AddDataToDataset(Maker):
         """
         flows = []
         fit_input = {}
-        joined_data = {}
         collect = []
 
         if xyz_file is None:
@@ -240,7 +242,6 @@ class AddDataToDataset(Maker):
                     self.supercell_matrix,
                 )
                 flows.append(addDFTrand)
-                joined_data.update(addDFTrand.output)
             if self.add_dft_phonon_struct:
                 addDFTphon = self.add_dft_phonons(
                     structure,
@@ -250,10 +251,9 @@ class AddDataToDataset(Maker):
                     self.min_length,
                 )
                 flows.append(addDFTphon)
-                joined_data.update(addDFTphon.output)
+            fit_input.update({mp_id: {**addDFTrand.output, **addDFTphon.output}})
             if self.add_rss_struct:
                 raise NotImplementedError
-            fit_input.update({mp_id: joined_data})
 
         isoatoms = get_iso_atom(structure_list)
         flows.append(isoatoms)
@@ -263,6 +263,7 @@ class AddDataToDataset(Maker):
             isolated_atoms_energy=isoatoms.output["energies"],
             xyz_file=xyz_file,
             fit_input=fit_input,
+            **fit_kwargs,
         )
         flows.append(add_data_fit)
 
