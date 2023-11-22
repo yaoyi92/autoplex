@@ -286,7 +286,7 @@ class AddDataToDataset(Maker):
                 min_length=self.min_length,
             ).make(structure=benchmark_structure)
             dft_phonons = update_user_incar_settings(
-                dft_phonons, {"NPAR": 4, "ISPIN": 1}
+                dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False}
             )
 
             flows.append(dft_phonons)

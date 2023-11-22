@@ -94,7 +94,9 @@ def dft_phonopy_gen_data(
             displacement=displacement,
             min_length=min_length,
         ).make(structure=structure)
-        dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4, "ISPIN": 1})
+        dft_phonons = update_user_incar_settings(
+            dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False}
+        )
         jobs.append(dft_phonons)
         dft_phonons_output[
             f"{displacement}".replace(".", "")  # key must not contain '.'
@@ -157,15 +159,12 @@ def get_iso_atom(structure_list: list[Structure]):
         list of pymatgen Structure objects
     """
     jobs = []
-    isoatoms = []
     all_species = list(
         {specie for s in structure_list for specie in s.types_of_species}
     )
 
-    for species in all_species:
-        isoatom = IsoAtomMaker().make(species=species)
-        jobs.append(isoatom)
-        isoatoms.append(isoatom.output)
+    isoatoms = IsoAtomMaker().make(all_species=all_species)
+    jobs.append(isoatoms)
 
-    flow = Flow(jobs, {"species": all_species, "energies": isoatoms})
+    flow = Flow(jobs, {"species": all_species, "energies": isoatoms.output})
     return Response(replace=flow)

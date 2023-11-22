@@ -132,25 +132,28 @@ class IsoAtomMaker(Maker):
 
     name: str = "IsolatedAtomEnergyMaker"
 
-    def make(self, species: Species):
+    def make(self, all_species: list[Species]):
         """
         Make a flow to calculate the isolated atom's energy.
 
         Parameters
         ----------
-        species : Species
-            pymatgen specie object.
+        all_species : List of Species
+            list of pymatgen specie object.
         """
         jobs = []
-        site = Site(species=species, coords=[0, 0, 0])
-        mol = Molecule.from_sites([site])
-        iso_atom = mol.get_boxed_structure(a=20, b=20, c=20)
-        isoatom_calcs = StaticMaker(
-            name=str(species) + "-statisoatom",
-            input_set_generator=StaticSetGenerator(
-                user_kpoints_settings={"grid_density": 1},
-            ),
-        ).make(iso_atom)
-        jobs.append(isoatom_calcs)
+        isoatoms = []
+        for species in all_species:
+            site = Site(species=species, coords=[0, 0, 0])
+            mol = Molecule.from_sites([site])
+            iso_atom = mol.get_boxed_structure(a=20, b=20, c=20)
+            isoatom_calcs = StaticMaker(
+                name=str(species) + "-statisoatom",
+                input_set_generator=StaticSetGenerator(
+                    user_kpoints_settings={"grid_density": 1},
+                ),
+            ).make(iso_atom)
+            jobs.append(isoatom_calcs)
+            isoatoms.append(isoatom_calcs.output.output.energy_per_atom)
         # create a flow including all jobs
-        return Flow(jobs, isoatom_calcs.output.output.energy_per_atom)
+        return Flow(jobs, isoatoms)

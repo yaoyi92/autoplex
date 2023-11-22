@@ -69,7 +69,7 @@ def test_iso_atom_maker(mock_vasp, clean_dir):
     mock_vasp(ref_paths, fake_run_vasp_kwargs)
 
     # generate the flow
-    flow_iso = IsoAtomMaker().make(species=specie)
+    flow_iso = IsoAtomMaker().make(all_species=[specie])
 
     flow_iso = update_user_incar_settings(flow_iso, {"ISMEAR": 0})
 
