@@ -182,6 +182,7 @@ class AddDataToDataset(Maker):
         If True, will add RSS generated structures for DFT calculation.
     """
 
+    # TODO docstrings
     name: str = "add_data"
     add_dft_phonon_struct: bool = True
     add_dft_random_struct: bool = True
@@ -194,8 +195,8 @@ class AddDataToDataset(Maker):
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
     symprec: float = 1e-4
-    sc: bool = False
     supercell_matrix: Matrix3D | None = None
+    uc: bool = False
 
     def make(
         self,
@@ -238,7 +239,7 @@ class AddDataToDataset(Maker):
                     mp_ids[i],
                     self.phonon_displacement_maker,
                     self.n_struct,
-                    self.sc,
+                    self.uc,
                     self.supercell_matrix,
                 )
                 flows.append(addDFTrand)

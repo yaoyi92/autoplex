@@ -138,7 +138,7 @@ def dft_random_gen_data(
         name="RandomDataGen",
         phonon_displacement_maker=phonon_displacement_maker,
         n_struct=n_struct,
-        sc=sc,
+        uc=sc,
     ).make(structure=structure, mp_id=mp_id, supercell_matrix=supercell_matrix)
     jobs.append(random_datagen)
 

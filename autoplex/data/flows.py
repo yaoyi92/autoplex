@@ -46,9 +46,9 @@ class RandomStructuresDataGenerator(Maker):
         in the future
     n_struct: int.
         The total number of randomly displaced structures to be generated.
-    sc: bool.
-        If True, will generate supercells of initial randomly displaced
-        structures and add phonon computation jobs to the flow
+    uc: bool.
+        If True, will use the unit cells of initial randomly displaced
+        structures and add phonon static computation jobs to the flow
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
@@ -57,7 +57,7 @@ class RandomStructuresDataGenerator(Maker):
     )
     code: str = "vasp"
     n_struct: int = 1
-    sc: bool = False
+    uc: bool = False
 
     def make(
         self,
@@ -80,40 +80,40 @@ class RandomStructuresDataGenerator(Maker):
         jobs = []  # initializing empty job list
         outputs = []
 
-        random_rattle = generate_randomized_structures(
-            structure=structure, n_struct=self.n_struct
+        if supercell_matrix is None:
+            supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
+        supercell = get_supercell(
+            unitcell=get_phonopy_structure(structure),
+            supercell_matrix=supercell_matrix,
         )
-        jobs.append(random_rattle)
+        random_rattle_sc = generate_randomized_structures(
+            structure=get_pmg_structure(supercell), n_struct=self.n_struct
+        )
+        jobs.append(random_rattle_sc)
         # perform the phonon displaced calculations for randomized displaced structures
         # structure is only needed to keep track of the original structure
-        vasp_random_displacement_calcs = run_phonon_displacements(
-            displacements=random_rattle.output,  # pylint: disable=E1101
+        vasp_random_sc_displacement_calcs = run_phonon_displacements(
+            displacements=random_rattle_sc.output,  # pylint: disable=E1101
             structure=structure,
             supercell_matrix=None,
             phonon_maker=self.phonon_displacement_maker,
         )
-        jobs.append(vasp_random_displacement_calcs)
-        outputs.append(vasp_random_displacement_calcs.output["dirs"])
+        jobs.append(vasp_random_sc_displacement_calcs)
+        outputs.append(vasp_random_sc_displacement_calcs.output["dirs"])
 
-        if self.sc is True:
-            if supercell_matrix is None:
-                supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
-            supercell = get_supercell(
-                unitcell=get_phonopy_structure(structure),
-                supercell_matrix=supercell_matrix,
+        if self.uc is True:
+            random_rattle = generate_randomized_structures(
+                structure=structure, n_struct=self.n_struct
             )
-            random_rattle_sc = generate_randomized_structures(
-                structure=get_pmg_structure(supercell), n_struct=self.n_struct
-            )
-            jobs.append(random_rattle_sc)
-            vasp_random_sc_displacement_calcs = run_phonon_displacements(
-                displacements=random_rattle_sc.output,  # pylint: disable=E1101
+            jobs.append(random_rattle)
+            vasp_random_displacement_calcs = run_phonon_displacements(
+                displacements=random_rattle.output,  # pylint: disable=E1101
                 structure=structure,
                 supercell_matrix=None,
                 phonon_maker=self.phonon_displacement_maker,
             )
-            jobs.append(vasp_random_sc_displacement_calcs)
-            outputs.append(vasp_random_sc_displacement_calcs.output["dirs"])
+            jobs.append(vasp_random_displacement_calcs)
+            outputs.append(vasp_random_displacement_calcs.output["dirs"])
 
         # create a flow including all jobs
         return Flow(jobs, outputs)
