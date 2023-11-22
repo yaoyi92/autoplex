@@ -242,6 +242,7 @@ class AddDataToDataset(Maker):
                     self.supercell_matrix,
                 )
                 flows.append(addDFTrand)
+                fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
                 addDFTphon = self.add_dft_phonons(
                     structure,
@@ -251,7 +252,9 @@ class AddDataToDataset(Maker):
                     self.min_length,
                 )
                 flows.append(addDFTphon)
-            fit_input.update({mp_id: {**addDFTrand.output, **addDFTphon.output}})
+                fit_input.update({mp_id: addDFTphon.output})
+            if self.add_dft_random_struct and self.add_dft_phonon_struct:
+                fit_input.update({mp_id: {**addDFTrand.output, **addDFTphon.output}})
             if self.add_rss_struct:
                 raise NotImplementedError
 

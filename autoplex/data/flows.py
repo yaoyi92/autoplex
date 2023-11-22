@@ -96,6 +96,8 @@ class RandomStructuresDataGenerator(Maker):
         outputs.append(vasp_random_displacement_calcs.output["dirs"])
 
         if self.sc is True:
+            if supercell_matrix is None:
+                supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
             supercell = get_supercell(
                 unitcell=get_phonopy_structure(structure),
                 supercell_matrix=supercell_matrix,
