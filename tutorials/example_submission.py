@@ -23,7 +23,7 @@ phonon_stat = BaseVaspMaker(
     )
 )  # reduced the accuracy for test calculations
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    n_struc=1, displacements=[0.01], symprec=1e-4, sc=False
+    n_struc=1, displacements=[0.01], symprec=1e-4, uc=False
 ).make(structure_list=struc_list, mp_ids=mpids, phonon_displacement_maker=phonon_stat)
 
 autoplex_flow = Flow(

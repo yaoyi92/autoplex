@@ -57,8 +57,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         reduction of symmetry to find the primitive/conventional cell
         (use_primitive_standard_structure, use_conventional_standard_structure)
         and to handle all symmetry-related tasks in phonopy
-    sc: bool.
-        If True, will generate randomly distorted supercells structures
+    uc: bool.
+        If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow
 
     """
@@ -68,7 +68,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
     symprec: float = 1e-4
-    sc: bool = False
+    uc: bool = False
     supercell_matrix: Matrix3D | None = None
 
     def make(
@@ -111,7 +111,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 displacements=self.displacements,
                 min_length=self.min_length,
                 symprec=self.symprec,
-                sc=self.sc,
+                uc=self.uc,
                 supercell_matrix=self.supercell_matrix,
             ).make(structure=structure, mp_id=mp_id)
             flows.append(autoplex_datagen)
@@ -340,11 +340,11 @@ class AddDataToDataset(Maker):
         mp_id,
         phonon_displacement_maker,
         n_struct,
-        sc,
+        uc,
         supercell_matrix: Matrix3D | None = None,
     ):
         additonal_dft_random = dft_random_gen_data(
-            structure, mp_id, phonon_displacement_maker, n_struct, sc, supercell_matrix
+            structure, mp_id, phonon_displacement_maker, n_struct, uc, supercell_matrix
         )
 
         return Flow(
@@ -378,7 +378,7 @@ class DFTDataGenerationFlow(Maker):
         reduction of symmetry to find the primitive/conventional cell
         (use_primitive_standard_structure, use_conventional_standard_structure)
         and to handle all symmetry-related tasks in phonopy
-    sc: bool.
+    uc: bool.
         If True, will generate randomly distorted supercells structures
         and add static computation jobs to the flow
     """
@@ -391,7 +391,7 @@ class DFTDataGenerationFlow(Maker):
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
     symprec: float = 1e-4
-    sc: bool = False
+    uc: bool = False
     supercell_matrix: Matrix3D | None = None
 
     def make(self, structure: Structure, mp_id):
@@ -418,7 +418,7 @@ class DFTDataGenerationFlow(Maker):
             mp_id,
             self.phonon_displacement_maker,
             self.n_struct,
-            self.sc,
+            self.uc,
             self.supercell_matrix,
         )
 

@@ -111,7 +111,7 @@ def dft_random_gen_data(
     mp_id,
     phonon_displacement_maker,
     n_struct,
-    sc,
+    uc,
     supercell_matrix: Matrix3D | None = None,
 ):
     """
@@ -127,8 +127,8 @@ def dft_random_gen_data(
         materials project id
     n_struct: int.
         The total number of randomly displaced structures to be generated.
-    sc: bool.
-        If True, will generate randomly distorted supercells structures
+    uc: bool.
+        If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
@@ -138,7 +138,7 @@ def dft_random_gen_data(
         name="RandomDataGen",
         phonon_displacement_maker=phonon_displacement_maker,
         n_struct=n_struct,
-        uc=sc,
+        uc=uc,
     ).make(structure=structure, mp_id=mp_id, supercell_matrix=supercell_matrix)
     jobs.append(random_datagen)
 
