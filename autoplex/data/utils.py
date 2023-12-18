@@ -1,3 +1,1 @@
-"""
-Methods to create training data for ML potentials
-"""
+"""Utility functions for data generation jobs."""

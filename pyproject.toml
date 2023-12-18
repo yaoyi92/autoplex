@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autoplex"
-description = "Package for automatic ml potential generation"
+description = "Automated machine-learned Potential Landscape explorer"
 readme = "README.md"
 keywords = ["high-throughput", "automated", "mlpotential"]
 license = { text = "BSD 3-Clause" }
@@ -24,13 +24,48 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-     "pymatgen>=2023.1.20",
+     "pymatgen>=2023.9.10",
+     "atomate2[phonons]",
+     "FireWorks>=2.0.3",
+     "ase@git+https://gitlab.com/ase/ase.git@aae51d57721847624cea569f3a2d4bb6aa5032b4",
+     "quippy-ase==0.9.14",
      "numpy",
      "typing",
-     "Sphinx>=4",
-     "sphinx-argparse==0.4.0",
-     "sphinx-pdj-theme==0.2.1",
 ]
+
+[tool.setuptools.packages.find]
+exclude = ["tutorials", "tests"]
+
+[tool.setuptools.package-data]
+"autoplex.fitting" = ["gap-defaults.json"]
+
+[project.optional-dependencies]
+
+docs = ["Sphinx==4.5.0",
+    "jupyter",
+    "sphinx-argparse",
+    "sphinx-book-theme==0.3.3",
+    "m2r2",
+    "myst-parser",
+    "docutils",
+    "mendeleev==0.14.0",
+    "pymatgen>=2023.9.10",
+    "sphinx-argparse==0.4.0",
+    "typing"]
+
+strict = [
+     "pymatgen==2023.9.10",
+     "atomate2[phonons]",
+     "FireWorks==2.0.3",
+     "ase@git+https://gitlab.com/ase/ase.git@aae51d57721847624cea569f3a2d4bb6aa5032b4",
+     "quippy-ase==0.9.14",
+     "numpy",
+     "typing",
+     "jobflow==0.1.13",
+     "pydantic==1.10.9",
+     "pymatgen-analysis-defects==2023.8.22",
+]
+dev = ["pre-commit>=2.12.1"]
 
 [tool.versioningit.vcs]
 method = "git"
@@ -40,6 +75,9 @@ default-tag = "0.0.1"
 exclude = ".git,test"
 max-line-length = 120
 extend-ignore = "E203,W503,E501,F401,RST21,E741,W291,W293,E231"
+select = "C, E, F, W, B"
+min-python-version = "3.9.0"
+docstring-convention = "numpy"
 
 [tool.cibuildwheel.linux]
 archs = ["auto64"]
@@ -50,36 +88,52 @@ before-all = "ln -s /usr/lib64/libgfortran.so.5 /usr/lib64/libgfortran.so.3"
 repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} --ignore-missing-dependencies"
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 line-length = 120
 select = [
-  "B",   # flake8-bugbear
-  "C40", # flake8-comprehensions
-  "D",   # pydocstyle
-  "E",   # pycodestyle
-  "F",   # pyflakes
-  "I",   # isort
-  "PLE", # pylint error
-  "PLW", # pylint warning
-  "Q",   # flake8-quotes
-  "RUF", # Ruff-specific rules
-  "SIM", # flake8-simplify
-  "TID", # tidy imports
-  "UP",  # pyupgrade
-  "W",   # pycodestyle
-  "YTT", # flake8-2020
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "D",      # pydocstyle
+    "E",      # pycodestyle error
+    "EXE",    # flake8-executable
+    "F",      # pyflakes
+    "FA",     # flake8-future-annotations
+    "FBT003", # boolean-positional-value-in-call
+    "FLY",    # flynt
+    "I",      # isort
+    "ICN",    # flake8-import-conventions
+    "ISC",    # flake8-implicit-str-concat
+    "PD",     # pandas-vet
+    "PERF",   # perflint
+    "PIE",    # flake8-pie
+    "PL",     # pylint
+    "PT",     # flake8-pytest-style
+    "PYI",    # flakes8-pyi
+    "Q",      # flake8-quotes
+    "RET",    # flake8-return
+    "RSE",    # flake8-raise
+    "RUF",    # Ruff-specific rules
+    "SIM",    # flake8-simplify
+    "SLOT",   # flake8-slots
+    "TCH",    # flake8-type-checking
+    "TID",    # flake8-tidy-imports
+    "UP",     # pyupgrade
+    "W",      # pycodestyle warning
+    "YTT",    # flake8-2020
 ]
 ignore = [
-  "D100",    # Missing docstring in public module
-  "D104",    # Missing docstring in public package
-  "D105",    # Missing docstring in magic method
-  "D107",    # Missing docstring in __init__
-  "D200",    # One-line docstring should fit on one line with quotes
-  "D205",    # 1 blank line required between summary line and description
-  "D212",    # Multi-line docstring summary should start at the first line
-  "D415",    # First line should end with a period, question mark, or exclamation point
+    "PD011",   # pandas-use-of-dot-values
+    "PERF203", # try-except-in-loop
+    "PLR",     # pylint-refactor
+    "PT004",   # pytest-missing-fixture-name-underscore
+    "PT006",   # pytest-parametrize-names-wrong-type
+    "RUF013",  # implicit-optional
+    # TODO remove PT011, pytest.raises() should always check err msg
+    "PT011", # pytest-raises-too-broad
+    "PT013", # pytest-incorrect-pytest-import
 ]
-pydocstyle.convention = "google"
+pydocstyle.convention = "numpy"
+isort.known-first-party = ["autoplex"]
 
 [tool.pydocstyle]
 ignore = "D100,D104,D105,D106,D107,D200,D203,D205,D212,D213,D301,D400,D401,D402,D403,D404,D406,D407,D413,D415"
@@ -108,11 +162,16 @@ exclude_lines = [
   "show_plot",
 ]
 
+# omit everything in test directory from coverage
+[tool.coverage.run]
+include = ["autoplex/*"]
+
 [tool.mypy]
 ignore_missing_imports = true
 namespace_packages = true
 explicit_package_bases = true
 no_implicit_optional = false
+exclude = ['tutorials']
 
 
 [tool.codespell]
