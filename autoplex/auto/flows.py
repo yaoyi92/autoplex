@@ -17,6 +17,7 @@ from atomate2.vasp.powerups import (
     update_user_incar_settings,
 )
 from jobflow import Flow, Maker
+from pymatgen.io.phonopy import get_ph_bs_symm_line
 
 from autoplex.auto.jobs import (
     dft_phonopy_gen_data,
@@ -203,6 +204,7 @@ class AddDataToDataset(Maker):
         structure_list: list[Structure],
         mp_ids,
         xyz_file,
+        dft_reference_bs_file,
         benchmark_structure: Structure,
         mp_id,
         **fit_kwargs,
@@ -213,11 +215,13 @@ class AddDataToDataset(Maker):
         Parameters
         ----------
         structure_list: List[Structure]
-            list of pymatgen structures
+            list of pymatgen structures.
         mp_ids:
-            materials project id
+            materials project id.
         xyz_file:
-            the already existing training data xyz file
+            the already existing training data xyz file.
+        dft_reference_bs_file:
+            path to  the DFT phonon bandstructure file.
         benchmark_structure: Structure
             pymatgen structure for benchmarking.
         mp_id:
@@ -227,6 +231,8 @@ class AddDataToDataset(Maker):
         flows = []
         fit_input = {}
         collect = []
+
+        dft_reference = get_ph_bs_symm_line(dft_reference_bs_file)
 
         if xyz_file is None:
             raise Exception("Error. Please provide an existing xyz file.")
@@ -278,7 +284,11 @@ class AddDataToDataset(Maker):
             ml_dir=add_data_fit.output,
         )
         flows.append(add_data_ml_phonon)
-        if mp_id not in mp_ids or self.add_dft_phonon_struct is False:
+        if (
+            mp_id not in mp_ids
+            or dft_reference is None
+            or self.add_dft_phonon_struct is False
+        ):
             dft_phonons = DFTPhononMaker(
                 symprec=self.symprec,
                 phonon_displacement_maker=self.phonon_displacement_maker,
@@ -286,9 +296,8 @@ class AddDataToDataset(Maker):
                 min_length=self.min_length,
             ).make(structure=benchmark_structure)
             dft_phonons = update_user_incar_settings(
-                dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False}
+                dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
             )
-
             flows.append(dft_phonons)
 
             dft_reference = dft_phonons.output

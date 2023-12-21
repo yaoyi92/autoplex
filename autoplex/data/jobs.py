@@ -34,8 +34,8 @@ def generate_randomized_structures(
     """
     random_rattled = []
     ase_structure = AseAtomsAdaptor.get_atoms(structure)
-    for seed in np.random.permutation(100)[:n_struct]:
-        ase_structure.rattle(seed=seed, stdev=0.03)
+    for seed in np.random.permutation(100000)[:n_struct]:
+        ase_structure.rattle(seed=seed, stdev=0.01)
         random_rattled.append(AseAtomsAdaptor.get_structure(ase_structure))
     return random_rattled
 
