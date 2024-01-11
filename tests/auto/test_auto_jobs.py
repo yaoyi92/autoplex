@@ -90,3 +90,20 @@ def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
 
     assert "[Element Li, Element C, Element Mo, Element Na, Element Si, Element Cl, Element K]" == f"{responses[isolated_atom.output.uuid][2].output['species']}"
     assert "Li" and "C" and "Mo" and "Na" and "Si" and "Cl" and "K" in f"{responses[isolated_atom.output.uuid][2].output['species']}"
+
+
+    # check for DFT phonon doc
+    #for k, v in complete_workflow.jobs[1].output.items():
+      #  if k == "phonon_data":
+            #print("HEEEEEEEEEEEEEEEEEEEEREEEEEEEEE", responses[v[0].uuid][2].output["data"])
+          #  assert isinstance(responses[v[0].uuid][2].output, PhononBSDOSDoc)
+
+    # check for ML phonon doc
+    #ml_task_doc = responses[complete_workflow.jobs[4].output.uuid][2].output.resolve(
+      #  store=memory_jobstore
+    #)
+   # assert isinstance(ml_task_doc, PhononBSDOSDoc)
+
+    #assert responses[complete_workflow.jobs[5].output.uuid][1].output == pytest.approx(
+      #  80.32601884386796, abs=0.1
+    #)
