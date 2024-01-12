@@ -1,11 +1,13 @@
 from __future__ import annotations
-
+import os
+from unittest import mock
 from pymatgen.core.structure import Structure
-from autoplex.auto.jobs import get_phonon_ml_calculation_jobs, get_iso_atom
+from autoplex.auto.jobs import get_phonon_ml_calculation_jobs, get_iso_atom, dft_phonopy_gen_data, dft_random_gen_data
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 
 from jobflow import run_locally
 
+mock.patch.dict(os.environ, {"OMP_NUM_THREADS": 1, "OPENBLAS_OMP_THREADS": 2})
 
 def test_get_phonon_ml_calculation_jobs(test_dir, clean_dir, memory_jobstore):
     potential_file_dir = test_dir / "fitting" / "ref_files" / "gap.xml"
@@ -91,19 +93,24 @@ def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
     assert "[Element Li, Element C, Element Mo, Element Na, Element Si, Element Cl, Element K]" == f"{responses[isolated_atom.output.uuid][2].output['species']}"
     assert "Li" and "C" and "Mo" and "Na" and "Si" and "Cl" and "K" in f"{responses[isolated_atom.output.uuid][2].output['species']}"
 
+def test_dft_task_doc(
+            vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
+    ):
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+    dft_phonon_workflow = dft_phonopy_gen_data(structure, 0.01, None, 10)
+
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(
+        dft_phonon_workflow,
+        create_folders=True,
+        ensure_success=True,
+        store=memory_jobstore,
+    )
 
     # check for DFT phonon doc
-    #for k, v in complete_workflow.jobs[1].output.items():
-      #  if k == "phonon_data":
-            #print("HEEEEEEEEEEEEEEEEEEEEREEEEEEEEE", responses[v[0].uuid][2].output["data"])
-          #  assert isinstance(responses[v[0].uuid][2].output, PhononBSDOSDoc)
+    for k, v in dft_phonon_workflow.jobs[1].output.items():
+        if k == "phonon_data":
+            print(responses[v[0].uuid][2].output["data"])
+            assert isinstance(responses[v[0].uuid][2].output, PhononBSDOSDoc)
 
-    # check for ML phonon doc
-    #ml_task_doc = responses[complete_workflow.jobs[4].output.uuid][2].output.resolve(
-      #  store=memory_jobstore
-    #)
-   # assert isinstance(ml_task_doc, PhononBSDOSDoc)
-
-    #assert responses[complete_workflow.jobs[5].output.uuid][1].output == pytest.approx(
-      #  80.32601884386796, abs=0.1
-    #)
