@@ -98,7 +98,7 @@ def test_dft_task_doc(
     ):
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
-    dft_phonon_workflow = dft_phonopy_gen_data(structure, 0.01, None, 10)
+    dft_phonon_workflow = dft_phonopy_gen_data(structure, [0.01], 0.1, None, 10)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
