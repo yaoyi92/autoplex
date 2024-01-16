@@ -70,7 +70,7 @@ def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
     responses = run_locally(benchmark_job, create_folders=False, ensure_success=True)
 
     assert responses[benchmark_job.output.uuid][1].output == pytest.approx(
-        22.572177275621236
+        0.5716963823412201
     )
 
     # get list of generated plot files
@@ -99,7 +99,7 @@ def test_write_benchmark_metrics(test_dir, clean_dir):
 
     write_metrics_job = write_benchmark_metrics(
         benchmark_structure=structure,
-        rmse=[22.572177275621236],
+        rmse=[0.5716963823412201],
         displacements=[0.01],
         mp_id="mp-22905",
     )

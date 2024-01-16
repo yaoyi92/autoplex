@@ -90,7 +90,7 @@ def write_benchmark_metrics(
     ) as file:
         file.write(
             f"Pot Structure mpid displacements RMS imagmodes(pot) imagmodes(dft) "
-            f"\nGAP {structure_composition} {mp_id} {displacements} {rmse} "
+            f"\nGAP {structure_composition} {mp_id} {displacements} {rmse}"
         )
         # TODO include which pot. method has been used (GAP, ACE, etc.)
         # TODO has img modes + ' ' + ' ' + str(ml.has_imag_modes(0.1))
