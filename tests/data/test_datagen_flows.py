@@ -50,6 +50,7 @@ def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
         assert responses[data_gen.output[0].uuid][1].replace.jobs[inx].name == name
 
 
+
 def test_iso_atom_maker(mock_vasp, clean_dir):
     from jobflow import run_locally
     from pymatgen.core import Species

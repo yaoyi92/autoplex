@@ -42,7 +42,12 @@ def generate_randomized_structures(
 
 @job
 def phonon_maker_random_structures(
-    rattled_structures, displacements, symprec, phonon_displacement_maker
+    # this function might be redundant ==> rattled structures are only needed to generate more data,
+    # we don't need to calculate the phonon structure of them
+    rattled_structures,
+    displacements,
+    symprec,
+    phonon_displacement_maker,
 ):
     """
     Set up phonon computations of the randomly displaced structure.
