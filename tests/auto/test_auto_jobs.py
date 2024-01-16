@@ -100,6 +100,39 @@ def test_dft_task_doc(
     structure = Structure.from_file(path_to_struct)
     dft_phonon_workflow = dft_phonopy_gen_data(structure, [0.01], 0.1, None, 10)
 
+    ref_paths = {
+        "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
+        "static": "dft_ml_data_generation/static/",
+        "phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
+        "phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
+        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
+        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
+        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
+    }
+
+    fake_run_vasp_kwargs = {
+        "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "phonon static 1/2": {"incar_settings": ["NSW"]},
+        "phonon static 2/2": {"incar_settings": ["NSW"]},
+        "phonon static 1/3": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 2/3": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 3/3": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+    }
+
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths, fake_run_vasp_kwargs)
+
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
         dft_phonon_workflow,
@@ -109,8 +142,5 @@ def test_dft_task_doc(
     )
 
     # check for DFT phonon doc
-    for k, v in dft_phonon_workflow.jobs[1].output.items():
-        if k == "phonon_data":
-            print(responses[v[0].uuid][2].output["data"])
-            assert isinstance(responses[v[0].uuid][2].output, PhononBSDOSDoc)
+    assert isinstance(dft_phonon_workflow.output.resolve(store=memory_jobstore)["data"]["001"], PhononBSDOSDoc)
 
