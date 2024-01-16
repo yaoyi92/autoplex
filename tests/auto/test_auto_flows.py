@@ -80,9 +80,9 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     )
     assert isinstance(ml_task_doc, PhononBSDOSDoc)
 
-    #assert responses[complete_workflow.jobs[5].output.uuid][1].output == pytest.approx(
-    #    80.32601884386796, abs=0.1
-    #)
+    assert responses[complete_workflow.jobs[4].output.uuid][1].output == pytest.approx(
+        80.32601884386796, abs=0.1
+    )
 
 def test_add_data_to_dataset_workflow(
     vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
@@ -155,9 +155,9 @@ def test_add_data_to_dataset_workflow(
     )
     assert isinstance(ml_task_doc, PhononBSDOSDoc)
 
-    #assert responses[add_data_workflow.jobs[5].output.uuid][1].output == pytest.approx(
-    #    80.32601884386796, abs=0.1
-    #)
+    assert responses[add_data_workflow.jobs[5].output.uuid][1].output == pytest.approx(
+        80.32601884386796, abs=0.1
+    )
 
 def test_phonon_dft_ml_data_generation_flow(
     vasp_test_dir, mock_vasp, clean_dir, memory_jobstore
