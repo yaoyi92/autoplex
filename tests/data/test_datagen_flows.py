@@ -50,6 +50,7 @@ def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
         assert responses[data_gen.output[0].uuid][1].replace.jobs[inx].name == name
 
 
+
 def test_iso_atom_maker(mock_vasp, clean_dir):
     from jobflow import run_locally
     from pymatgen.core import Species
@@ -68,14 +69,14 @@ def test_iso_atom_maker(mock_vasp, clean_dir):
     # automatically use fake VASP and write POTCAR.spec during the test
     mock_vasp(ref_paths, fake_run_vasp_kwargs)
 
-    # generate the flow
-    flow_iso = IsoAtomMaker().make(all_species=[specie])
+    # generate the job
+    job_iso = IsoAtomMaker().make(all_species=[specie])
 
-    flow_iso = update_user_incar_settings(flow_iso, {"ISMEAR": 0})
+    job_iso = update_user_incar_settings(job_iso, {"ISMEAR": 0})
 
     # run the flow or job and ensure that it finished running successfully
-    responses = run_locally(flow_iso, create_folders=True, ensure_success=True)
+    responses = run_locally(job_iso, create_folders=True, ensure_success=True)
 
     assert (
-        responses[flow_iso.output.uuid][1].output.output.energy_per_atom == -0.25638457
+        responses[job_iso.job_uuids[0]][1].output.output.energy_per_atom == -0.2563903
     )

@@ -9,12 +9,14 @@ if TYPE_CHECKING:
     from atomate2.vasp.jobs.base import BaseVaspMaker
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Species, Structure
-
 from atomate2.common.jobs.phonons import (
     PhononDisplacementMaker,
     run_phonon_displacements,
 )
 from atomate2.vasp.jobs.core import StaticMaker
+from atomate2.vasp.powerups import (
+    update_user_incar_settings,
+)
 from atomate2.vasp.sets.core import StaticSetGenerator
 from jobflow import Flow, Maker
 from phonopy.structure.cells import get_supercell
@@ -97,6 +99,10 @@ class RandomStructuresDataGenerator(Maker):
             structure=structure,
             supercell_matrix=None,
             phonon_maker=self.phonon_displacement_maker,
+        )
+        vasp_random_sc_displacement_calcs = update_user_incar_settings(
+            vasp_random_sc_displacement_calcs,
+            {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0},
         )
         jobs.append(vasp_random_sc_displacement_calcs)
         outputs.append(vasp_random_sc_displacement_calcs.output["dirs"])

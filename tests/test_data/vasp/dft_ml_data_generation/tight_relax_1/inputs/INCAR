@@ -1,4 +1,4 @@
-ALGO = Normal
+ALGO = Fast
 EDIFF = 1e-07
 EDIFFG = -0.001
 ENAUG = 1360
@@ -17,7 +17,6 @@ LORBIT = 11
 LREAL = False
 LVTOT = True
 LWAVE = False
-MAGMOM = 8*0.6
 NELM = 200
 NPAR = 4
 NSW = 99

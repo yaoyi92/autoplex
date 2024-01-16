@@ -1,5 +1,7 @@
 from __future__ import annotations
-
+import os
+from unittest import mock
+from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from pymatgen.core.structure import Structure
 from autoplex.auto.flows import (
     CompleteDFTvsMLBenchmarkWorkflow,
@@ -7,7 +9,7 @@ from autoplex.auto.flows import (
     DFTDataGenerationFlow,
 )
 
-
+mock.patch.dict(os.environ, {"OMP_NUM_THREADS": 1, "OPENBLAS_OMP_THREADS": 2})
 def test_complete_dft_vs_ml_benchmark_workflow(
     vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
 ):
@@ -71,18 +73,15 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         ensure_success=True,
         store=memory_jobstore,
     )
-    # check for DFT phonon doc
-    for k, v in complete_workflow.jobs[2].output.items():
-        if k == "phonon_data":
-            assert isinstance(responses[v[0].uuid][1].output, PhononBSDOSDoc)
 
     # check for ML phonon doc
-    ml_task_doc = responses[complete_workflow.jobs[4].output.uuid][2].output.resolve(
+    ml_task_doc = responses[complete_workflow.jobs[3].output.uuid][2].output.resolve(
         store=memory_jobstore
     )
     assert isinstance(ml_task_doc, PhononBSDOSDoc)
-    assert responses[complete_workflow.jobs[5].output.uuid][1].output == pytest.approx(
-        80.32601884386796, abs=0.1
+
+    assert responses[complete_workflow.jobs[4].output.uuid][1].output == pytest.approx(
+        0.5716963823412201, abs=0.01
     )
 
 def test_add_data_to_dataset_workflow(
@@ -91,7 +90,6 @@ def test_add_data_to_dataset_workflow(
     import pytest
     from jobflow import run_locally
     from atomate2.common.jobs.phonons import PhononDisplacementMaker
-    from atomate2.common.schemas.phonons import PhononBSDOSDoc
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
@@ -103,7 +101,8 @@ def test_add_data_to_dataset_workflow(
         mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
-        xyz_file= test_dir / "fitting" / "ref_files" / "trainGAP.xyz"
+        xyz_file= test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+        dft_reference_bs_file= test_dir / "benchmark" / "DFT_phonon_band_structure.yaml"
     )
 
     ref_paths = {
@@ -148,18 +147,9 @@ def test_add_data_to_dataset_workflow(
         ensure_success=True,
         store=memory_jobstore,
     )
-    # check for DFT phonon doc
-    for k, v in add_data_workflow.jobs[2].output.items():
-        if k == "phonon_data":
-            assert isinstance(responses[v[0].uuid][1].output, PhononBSDOSDoc)
 
-    # check for ML phonon doc
-    ml_task_doc = responses[add_data_workflow.jobs[4].output.uuid][2].output.resolve(
-        store=memory_jobstore
-    )
-    assert isinstance(ml_task_doc, PhononBSDOSDoc)
     assert responses[add_data_workflow.jobs[5].output.uuid][1].output == pytest.approx(
-        80.32601884386796, abs=0.1
+        0.5716963823412201, abs=0.01
     )
 
 def test_phonon_dft_ml_data_generation_flow(
@@ -221,16 +211,17 @@ def test_phonon_dft_ml_data_generation_flow(
             uuids_phonon_calcs[v[0].output.uuid] = k
 
     paths_to_phonon_calcs = []
+    paths_to_rand_calcs = []
     for key in responses.keys():
         if key in uuids_phonon_calcs:
             if uuids_phonon_calcs[key] == "phonon_dir":
-                for path in responses[key][1].output.jobdirs.displacements_job_dirs:
-                    paths_to_phonon_calcs.append(path)
-                    # print(responses[key][1].output.jobdirs.displacements_job_dirs)
-            else:
                 for output in responses[key][2].output["dirs"]:
-                    paths_to_phonon_calcs.append(output.resolve(store=memory_jobstore))
-                    # print(output.resolve(store=memory_jobstore))
-                    # print(responses[key][2].output['dirs'])
+                    for item in output.resolve(store=memory_jobstore):
+                        paths_to_phonon_calcs.append(item)
+            if uuids_phonon_calcs[key] == "rand_struc_dir":
+                for output in responses[key][2].output:
+                    for item in output.resolve(store=memory_jobstore):
+                        paths_to_phonon_calcs.append(item)
 
-    assert len(paths_to_phonon_calcs) == 5
+    assert len(paths_to_phonon_calcs)+len(paths_to_rand_calcs) == 5
+

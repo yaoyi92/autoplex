@@ -34,15 +34,20 @@ def generate_randomized_structures(
     """
     random_rattled = []
     ase_structure = AseAtomsAdaptor.get_atoms(structure)
-    for seed in np.random.permutation(100)[:n_struct]:
-        ase_structure.rattle(seed=seed, stdev=0.03)
+    for seed in np.random.permutation(100000)[:n_struct]:
+        ase_structure.rattle(seed=seed, stdev=0.01)
         random_rattled.append(AseAtomsAdaptor.get_structure(ase_structure))
     return random_rattled
 
 
 @job
 def phonon_maker_random_structures(
-    rattled_structures, displacements, symprec, phonon_displacement_maker
+    # this function might be redundant ==> rattled structures are only needed to generate more data,
+    # we don't need to calculate the phonon structure of them
+    rattled_structures,
+    displacements,
+    symprec,
+    phonon_displacement_maker,
 ):
     """
     Set up phonon computations of the randomly displaced structure.

@@ -95,7 +95,7 @@ def dft_phonopy_gen_data(
             min_length=min_length,
         ).make(structure=structure)
         dft_phonons = update_user_incar_settings(
-            dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False}
+            dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
         )
         jobs.append(dft_phonons)
         dft_phonons_output[
