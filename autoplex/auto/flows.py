@@ -232,7 +232,11 @@ class AddDataToDataset(Maker):
         fit_input = {}
         collect = []
 
-        dft_reference = get_ph_bs_symm_line(dft_reference_bs_file)
+        dft_reference = (
+            get_ph_bs_symm_line(dft_reference_bs_file)
+            if dft_reference_bs_file is not None
+            else None
+        )
 
         if xyz_file is None:
             raise Exception("Error. Please provide an existing xyz file.")
