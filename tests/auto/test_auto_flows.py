@@ -166,8 +166,8 @@ def test_add_data_to_dataset_workflow(
         0.5716963823412201, abs=0.01
     )
 
-    for job in add_data_workflow.jobs: assert job.name is not "double relax"
-    assert add_data_workflow_without_dft_reference.jobs[5] is "double relax"
+    for job in add_data_workflow.jobs: assert job.name != "double relax"
+    assert add_data_workflow_without_dft_reference.jobs[5] == "double relax"
 
 def test_phonon_dft_ml_data_generation_flow(
     vasp_test_dir, mock_vasp, clean_dir, memory_jobstore
@@ -242,7 +242,7 @@ def test_phonon_dft_ml_data_generation_flow(
     for k, v in flow_data_generation_without_rattled_structures.output.items():
         if k in ("rand_struc_dir", "phonon_dir"):
             uuids_phonon_calcs_worattled[v[0].output.uuid] = k
-            assert k is not "rand_struc_dir"
+            assert k != "rand_struc_dir"
 
     paths_to_phonon_calcs = []
     paths_to_rand_calcs = []
