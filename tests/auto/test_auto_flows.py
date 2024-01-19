@@ -102,7 +102,21 @@ def test_add_data_to_dataset_workflow(
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file= test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference_bs_file= test_dir / "benchmark" / "DFT_phonon_band_structure.yaml"
+        dft_reference_bs_file= test_dir / "benchmark" / "DFT_phonon_band_structure.yaml",
+        dft_reference_dos_file= test_dir / "benchmark" / "DFT_phonon_dos.yaml"
+    )
+
+    add_data_workflow_without_dft_reference = AddDataToDataset(
+        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+        phonon_displacement_maker=PhononDisplacementMaker()
+    ).make(
+        structure_list=[structure],
+        mp_ids=["test"],
+        mp_id="mp-22905",
+        benchmark_structure=structure,
+        xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+        dft_reference_bs_file=None,
+        dft_reference_dos_file=None
     )
 
     ref_paths = {
@@ -151,6 +165,9 @@ def test_add_data_to_dataset_workflow(
     assert responses[add_data_workflow.jobs[5].output.uuid][1].output == pytest.approx(
         0.5716963823412201, abs=0.01
     )
+
+    for job in add_data_workflow.jobs: assert job.name is not "double relax"
+    assert add_data_workflow_without_dft_reference.jobs[5] is "double relax"
 
 def test_phonon_dft_ml_data_generation_flow(
     vasp_test_dir, mock_vasp, clean_dir, memory_jobstore

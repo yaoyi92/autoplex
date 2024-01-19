@@ -6,18 +6,18 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from atomate2.vasp.jobs.base import BaseVaspMaker
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
 from atomate2.common.jobs.phonons import PhononDisplacementMaker
+from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
 from atomate2.vasp.powerups import (
     update_user_incar_settings,
 )
 from jobflow import Flow, Maker
-from pymatgen.io.phonopy import get_ph_bs_symm_line
+from pymatgen.io.phonopy import get_ph_bs_symm_line, get_ph_dos
 
 from autoplex.auto.jobs import (
     dft_phonopy_gen_data,
@@ -205,6 +205,7 @@ class AddDataToDataset(Maker):
         mp_ids,
         xyz_file,
         dft_reference_bs_file,
+        dft_reference_dos_file,
         benchmark_structure: Structure,
         mp_id,
         **fit_kwargs,
@@ -222,6 +223,8 @@ class AddDataToDataset(Maker):
             the already existing training data xyz file.
         dft_reference_bs_file:
             path to  the DFT phonon bandstructure file.
+        dft_reference_dos_file:
+            path to  the DFT phonon DOS file.
         benchmark_structure: Structure
             pymatgen structure for benchmarking.
         mp_id:
@@ -232,9 +235,17 @@ class AddDataToDataset(Maker):
         fit_input = {}
         collect = []
 
-        dft_reference = (
+        dft_reference = PhononBSDOSDoc()
+
+        dft_reference.phonon_bandstructure = (
             get_ph_bs_symm_line(dft_reference_bs_file)
             if dft_reference_bs_file is not None
+            else None
+        )
+
+        dft_reference.phonon_dos = (
+            get_ph_dos(dft_reference_dos_file)
+            if dft_reference_dos_file is not None
             else None
         )
 
@@ -305,7 +316,7 @@ class AddDataToDataset(Maker):
             flows.append(dft_phonons)
 
             dft_reference = dft_phonons.output
-        else:
+        elif dft_reference_bs_file is None:
             dft_reference = fit_input[mp_id]["phonon_data"]["001"]
 
         add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
@@ -549,7 +560,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
         benchmark = PhononBenchmarkMaker(name="Benchmark").make(
             structure=structure,
             mp_id=mp_id,
-            ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,  # TODO take BS at top lvl
+            ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,  # TODO take BS at top lvl?
             dft_phonon_bs=dft_phonon_task_doc.phonon_bandstructure,
         )
         flows.append(benchmark)
