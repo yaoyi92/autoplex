@@ -69,7 +69,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
     symprec: float = 1e-4
-    uc: bool = False
+    uc: bool = False  # to get rattled unit cells
     supercell_matrix: Matrix3D | None = None
 
     def make(
@@ -419,6 +419,7 @@ class DFTDataGenerationFlow(Maker):
             materials project id
         """
         # TODO later adding: for i no. of potentials
+
         dft_phonon = dft_phonopy_gen_data(
             structure,
             self.displacements,
@@ -426,22 +427,34 @@ class DFTDataGenerationFlow(Maker):
             self.phonon_displacement_maker,
             self.min_length,
         )
-        dft_random = dft_random_gen_data(
-            structure,
-            mp_id,
-            self.phonon_displacement_maker,
-            self.n_struct,
-            self.uc,
-            self.supercell_matrix,
-        )
 
-        return Flow(
-            [dft_phonon, dft_random],  # flows
-            output={
+        if self.n_struct != 0:
+            dft_random = dft_random_gen_data(
+                structure,
+                mp_id,
+                self.phonon_displacement_maker,
+                self.n_struct,
+                self.uc,
+                self.supercell_matrix,
+            )
+
+            flows = [dft_phonon, dft_random]
+            output = {
                 "rand_struc_dir": dft_random.output,
                 "phonon_dir": dft_phonon.output["dirs"],
                 "phonon_data": dft_phonon.output["data"],
-            },
+            }
+
+        else:
+            flows = [dft_phonon]
+            output = {
+                "phonon_dir": dft_phonon.output["dirs"],
+                "phonon_data": dft_phonon.output["data"],
+            }
+
+        return Flow(
+            flows,  # flows
+            output=output,
         )
 
 
