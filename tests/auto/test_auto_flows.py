@@ -164,6 +164,10 @@ def test_phonon_dft_ml_data_generation_flow(
         n_struct=3, min_length=10, symprec=1e-2
     ).make(structure=structure, mp_id="mp-22905")
 
+    flow_data_generation_without_rattled_structures = DFTDataGenerationFlow(
+        n_struct=0, min_length=10, symprec=1e-2
+    ).make(structure=structure, mp_id="mp-22905")
+
     ref_paths = {
         "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
         "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
@@ -205,10 +209,23 @@ def test_phonon_dft_ml_data_generation_flow(
         store=memory_jobstore,
     )
 
+    responses_worattled = run_locally(
+        flow_data_generation_without_rattled_structures,
+        create_folders=True,
+        ensure_success=True,
+        store=memory_jobstore,
+    )
+
     uuids_phonon_calcs = {}
     for k, v in flow_data_generation.output.items():
         if k in ("rand_struc_dir", "phonon_dir"):
             uuids_phonon_calcs[v[0].output.uuid] = k
+
+    uuids_phonon_calcs_worattled = {}
+    for k, v in flow_data_generation_without_rattled_structures.output.items():
+        if k in ("rand_struc_dir", "phonon_dir"):
+            uuids_phonon_calcs_worattled[v[0].output.uuid] = k
+            assert k is not "rand_struc_dir"
 
     paths_to_phonon_calcs = []
     paths_to_rand_calcs = []
@@ -221,7 +238,22 @@ def test_phonon_dft_ml_data_generation_flow(
             if uuids_phonon_calcs[key] == "rand_struc_dir":
                 for output in responses[key][2].output:
                     for item in output.resolve(store=memory_jobstore):
-                        paths_to_phonon_calcs.append(item)
+                        paths_to_rand_calcs.append(item)
 
     assert len(paths_to_phonon_calcs)+len(paths_to_rand_calcs) == 5
+
+    paths_to_phonon_calcs_worattled = []
+    paths_to_rand_calcs_worattled = []
+    for key in responses_worattled.keys():
+        if key in uuids_phonon_calcs_worattled:
+            if uuids_phonon_calcs_worattled[key] == "phonon_dir":
+                for output in responses_worattled[key][2].output["dirs"]:
+                    for item in output.resolve(store=memory_jobstore):
+                        paths_to_phonon_calcs_worattled.append(item)
+            if uuids_phonon_calcs_worattled[key] == "rand_struc_dir":
+                for output in responses_worattled[key][2].output:
+                    for item in output.resolve(store=memory_jobstore):
+                        paths_to_rand_calcs_worattled.append(item)
+
+    assert len(paths_to_phonon_calcs_worattled) + len(paths_to_rand_calcs_worattled) == 2
 
