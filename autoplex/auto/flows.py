@@ -235,6 +235,9 @@ class AddDataToDataset(Maker):
         fit_input = {}
         collect = []
 
+        if dft_reference_bs_file or dft_reference_dos_file is not None:
+            self.add_dft_phonon_struct = False
+
         dft_reference = PhononBSDOSDoc()
 
         dft_reference.phonon_bandstructure = (
@@ -301,7 +304,7 @@ class AddDataToDataset(Maker):
         flows.append(add_data_ml_phonon)
         if (
             mp_id not in mp_ids
-            or dft_reference is None
+            or dft_reference is None  # this logic does not produce the right result
             or self.add_dft_phonon_struct is False
         ):
             dft_phonons = DFTPhononMaker(

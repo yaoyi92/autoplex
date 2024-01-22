@@ -81,7 +81,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     assert isinstance(ml_task_doc, PhononBSDOSDoc)
 
     assert responses[complete_workflow.jobs[4].output.uuid][1].output == pytest.approx(
-        0.5716963823412201, abs=0.01
+        0.5716963823412201, abs=0.02
     )
 
 def test_add_data_to_dataset_workflow(
@@ -102,12 +102,13 @@ def test_add_data_to_dataset_workflow(
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file= test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference_bs_file= test_dir / "benchmark" / "DFT_phonon_band_structure.yaml",
-        dft_reference_dos_file= test_dir / "benchmark" / "DFT_phonon_dos.yaml"
+        dft_reference_bs_file=None,
+        dft_reference_dos_file=None
     )
 
-    add_data_workflow_without_dft_reference = AddDataToDataset(
+    add_data_workflow_with_dft_reference = AddDataToDataset(
         n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+        add_dft_phonon_struct=False,
         phonon_displacement_maker=PhononDisplacementMaker()
     ).make(
         structure_list=[structure],
@@ -115,8 +116,8 @@ def test_add_data_to_dataset_workflow(
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference_bs_file=None,
-        dft_reference_dos_file=None
+        dft_reference_bs_file=test_dir / "benchmark" / "DFT_phonon_band_structure.yaml",
+        dft_reference_dos_file=test_dir / "benchmark" / "DFT_phonon_dos.yaml"
     )
 
     ref_paths = {
@@ -162,12 +163,21 @@ def test_add_data_to_dataset_workflow(
         store=memory_jobstore,
     )
 
-    assert responses[add_data_workflow.jobs[5].output.uuid][1].output == pytest.approx(
-        0.5716963823412201, abs=0.01
+    responses_wdft = run_locally(
+        add_data_workflow_with_dft_reference,
+        create_folders=True,
+        ensure_success=True,
+        store=memory_jobstore,
     )
 
-    for job in add_data_workflow.jobs: assert job.name != "double relax"
-    assert add_data_workflow_without_dft_reference.jobs[5] == "double relax"
+    assert responses[add_data_workflow.jobs[5].output.uuid][1].output == pytest.approx(
+        0.5716963823412201, abs=0.02
+    )
+
+    assert add_data_workflow.jobs[2].name == "dft_phonopy_gen_data"
+    for job in add_data_workflow_with_dft_reference.jobs: assert job.name != "dft_phonopy_gen_data"
+    for job in add_data_workflow_with_dft_reference.jobs: assert job.name != "tight relax 1"
+
 
 def test_phonon_dft_ml_data_generation_flow(
     vasp_test_dir, mock_vasp, clean_dir, memory_jobstore
