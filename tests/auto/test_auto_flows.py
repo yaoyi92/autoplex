@@ -202,15 +202,15 @@ def test_add_data_to_dataset_workflow(
         0.5716963823412201, abs=0.02
     )
 
-    for job, dummy in add_data_workflow.iterflow():
+    for job, uuid in add_data_workflow.iterflow():
         if "dft_phonopy_gen_data" in job.name: assert True
-    for job, dummy in add_data_workflow_with_dft_reference.iterflow():
+    for job, uuid in add_data_workflow_with_dft_reference.iterflow():
         assert job.name != "dft_phonopy_gen_data"
-    for job, dummy in add_data_workflow_add_phonon_false.iterflow():
+    for job, uuid in add_data_workflow_add_phonon_false.iterflow():
         assert job.name != "dft_phonopy_gen_data"
-    for job, dummy in add_data_workflow_add_random_false.iterflow():
+    for job, uuid in add_data_workflow_add_random_false.iterflow():
         assert job.name != "dft_random_gen_data"
-    for job, dummy in add_data_workflow_with_dft_reference.iterflow():
+    for job, uuid in add_data_workflow_with_dft_reference.iterflow():
         assert job.name != "tight relax 1"
 
 
