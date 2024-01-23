@@ -86,7 +86,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
 
 def test_add_data_to_dataset_workflow(
     vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
-):  # TODO: add test cases for add_dft_random_struct=False and add_dft_phonon_struct=False
+):
     import pytest
     from jobflow import run_locally
     from atomate2.common.jobs.phonons import PhononDisplacementMaker
@@ -118,6 +118,34 @@ def test_add_data_to_dataset_workflow(
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
         dft_reference_bs_file=test_dir / "benchmark" / "DFT_phonon_band_structure.yaml",
         dft_reference_dos_file=test_dir / "benchmark" / "DFT_phonon_dos.yaml"
+    )
+
+    add_data_workflow_add_phonon_false = AddDataToDataset(
+        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+        add_dft_phonon_struct=False,
+        phonon_displacement_maker=PhononDisplacementMaker()
+    ).make(
+        structure_list=[structure],
+        mp_ids=["test"],
+        mp_id="mp-22905",
+        benchmark_structure=structure,
+        xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+        dft_reference_bs_file=None,
+        dft_reference_dos_file=None
+    )
+
+    add_data_workflow_add_random_false = AddDataToDataset(
+        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+        add_dft_random_struct=False,
+        phonon_displacement_maker=PhononDisplacementMaker()
+    ).make(
+        structure_list=[structure],
+        mp_ids=["test"],
+        mp_id="mp-22905",
+        benchmark_structure=structure,
+        xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+        dft_reference_bs_file=None,
+        dft_reference_dos_file=None
     )
 
     ref_paths = {
@@ -174,9 +202,16 @@ def test_add_data_to_dataset_workflow(
         0.5716963823412201, abs=0.02
     )
 
-    assert add_data_workflow.jobs[2].name == "dft_phonopy_gen_data"
-    for job in add_data_workflow_with_dft_reference.jobs: assert job.name != "dft_phonopy_gen_data"
-    for job in add_data_workflow_with_dft_reference.jobs: assert job.name != "tight relax 1"
+    for job, dummy in add_data_workflow.iterflow():
+        if "dft_phonopy_gen_data" in job.name: assert True
+    for job, dummy in add_data_workflow_with_dft_reference.iterflow():
+        assert job.name != "dft_phonopy_gen_data"
+    for job, dummy in add_data_workflow_add_phonon_false.iterflow():
+        assert job.name != "dft_phonopy_gen_data"
+    for job, dummy in add_data_workflow_add_random_false.iterflow():
+        assert job.name != "dft_random_gen_data"
+    for job, dummy in add_data_workflow_with_dft_reference.iterflow():
+        assert job.name != "tight relax 1"
 
 
 def test_phonon_dft_ml_data_generation_flow(
