@@ -236,7 +236,7 @@ class AddDataToDataset(Maker):
         collect = []
         dft_reference = PhononBSDOSDoc()
 
-        if dft_reference_bs_file or dft_reference_dos_file is not None:
+        if (dft_reference_bs_file is not None) and (dft_reference_dos_file is not None):
             self.add_dft_phonon_struct = False
 
         if xyz_file is None:
