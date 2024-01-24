@@ -148,6 +148,19 @@ def test_add_data_to_dataset_workflow(
         dft_reference_dos_file=None
     )
 
+    add_data_workflow_with_same_mpid = AddDataToDataset(
+        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+        phonon_displacement_maker=PhononDisplacementMaker()
+    ).make(
+        structure_list=[structure],
+        mp_ids=["mp-22905"],
+        mp_id="mp-22905",
+        benchmark_structure=structure,
+        xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+        dft_reference_bs_file=None,
+        dft_reference_dos_file=None
+    )
+
     ref_paths = {
         "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
         "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
@@ -198,20 +211,21 @@ def test_add_data_to_dataset_workflow(
         store=memory_jobstore,
     )
 
-    assert responses[add_data_workflow.jobs[5].output.uuid][1].output == pytest.approx(
+    assert responses[add_data_workflow.jobs[6].output.uuid][1].output == pytest.approx(
         0.5716963823412201, abs=0.02
     )
-
     for job, uuid in add_data_workflow.iterflow():
-        if "dft_phonopy_gen_data" in job.name: assert True
+       if "dft_phonopy_gen_data" in job.name: assert True
     for job, uuid in add_data_workflow_with_dft_reference.iterflow():
-        assert job.name != "dft_phonopy_gen_data"
+       assert job.name != "dft_phonopy_gen_data"
     for job, uuid in add_data_workflow_add_phonon_false.iterflow():
-        assert job.name != "dft_phonopy_gen_data"
+       assert job.name != "dft_phonopy_gen_data"
     for job, uuid in add_data_workflow_add_random_false.iterflow():
-        assert job.name != "dft_random_gen_data"
+       assert job.name != "dft_random_gen_data"
     for job, uuid in add_data_workflow_with_dft_reference.iterflow():
-        assert job.name != "tight relax 1"
+       assert job.name != "tight relax 1"
+    for job, uuid in add_data_workflow_with_same_mpid.iterflow():
+       assert job.name != "tight relax 1"
 
 
 def test_phonon_dft_ml_data_generation_flow(
