@@ -291,7 +291,7 @@ class AddDataToDataset(Maker):
         )
         flows.append(add_data_ml_phonon)
 
-        if dft_reference_bs_file and dft_reference_dos_file is not None:
+        if (dft_reference_bs_file is not None) and (dft_reference_dos_file is not None):
             dft_reference.phonon_bandstructure = get_ph_bs_symm_line(
                 dft_reference_bs_file
             )
