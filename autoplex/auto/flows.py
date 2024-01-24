@@ -234,29 +234,15 @@ class AddDataToDataset(Maker):
         flows = []
         fit_input = {}
         collect = []
+        dft_reference = PhononBSDOSDoc()
 
         if dft_reference_bs_file or dft_reference_dos_file is not None:
             self.add_dft_phonon_struct = False
-
-        dft_reference = PhononBSDOSDoc()
-
-        dft_reference.phonon_bandstructure = (
-            get_ph_bs_symm_line(dft_reference_bs_file)
-            if dft_reference_bs_file is not None
-            else None
-        )
-
-        dft_reference.phonon_dos = (
-            get_ph_dos(dft_reference_dos_file)
-            if dft_reference_dos_file is not None
-            else None
-        )
 
         if xyz_file is None:
             raise Exception("Error. Please provide an existing xyz file.")
 
         for i, structure in enumerate(structure_list):
-            mp_id = mp_ids[i]
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
                     structure,
@@ -267,7 +253,7 @@ class AddDataToDataset(Maker):
                     self.supercell_matrix,
                 )
                 flows.append(addDFTrand)
-                fit_input.update({mp_id: addDFTrand.output})
+                fit_input.update({mp_ids[i]: addDFTrand.output})
             if self.add_dft_phonon_struct:
                 addDFTphon = self.add_dft_phonons(
                     structure,
@@ -277,9 +263,11 @@ class AddDataToDataset(Maker):
                     self.min_length,
                 )
                 flows.append(addDFTphon)
-                fit_input.update({mp_id: addDFTphon.output})
+                fit_input.update({mp_ids[i]: addDFTphon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
-                fit_input.update({mp_id: {**addDFTrand.output, **addDFTphon.output}})
+                fit_input.update(
+                    {mp_ids[i]: {**addDFTrand.output, **addDFTphon.output}}
+                )
             if self.add_rss_struct:
                 raise NotImplementedError
 
@@ -302,9 +290,17 @@ class AddDataToDataset(Maker):
             ml_dir=add_data_fit.output,
         )
         flows.append(add_data_ml_phonon)
-        if (
+
+        if dft_reference_bs_file and dft_reference_dos_file is not None:
+            dft_reference.phonon_bandstructure = get_ph_bs_symm_line(
+                dft_reference_bs_file
+            )
+            dft_reference.phonon_dos = get_ph_dos(dft_reference_dos_file)
+        elif mp_id in mp_ids:
+            dft_reference = fit_input[mp_id]["phonon_data"]["001"]
+        elif (
             mp_id not in mp_ids
-            or dft_reference is None  # this logic does not produce the right result
+            or dft_reference is None
             or self.add_dft_phonon_struct is False
         ):
             dft_phonons = DFTPhononMaker(
@@ -317,10 +313,7 @@ class AddDataToDataset(Maker):
                 dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
             )
             flows.append(dft_phonons)
-
             dft_reference = dft_phonons.output
-        elif dft_reference_bs_file is None:
-            dft_reference = fit_input[mp_id]["phonon_data"]["001"]
 
         add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
             structure=benchmark_structure,
