@@ -6,12 +6,12 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from atomate2.vasp.jobs.base import BaseVaspMaker
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
 from atomate2.common.jobs.phonons import PhononDisplacementMaker
-from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
 from atomate2.vasp.powerups import (
     update_user_incar_settings,
@@ -170,7 +170,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
 
 @dataclass
-class AddDataToDataset(Maker):  # another flag
+class AddDataToDataset(
+    Maker
+):  # merge with complete wf and set another flag for adding data
     """
     Maker to add more data to existing dataset (.xyz file).
 
@@ -207,7 +209,7 @@ class AddDataToDataset(Maker):  # another flag
         structure_list: list[Structure],
         mp_ids,
         xyz_file,
-        dft_reference: PhononBSDOSDoc,
+        dft_reference: PhononBSDOSDoc | None,
         benchmark_structure: Structure,
         mp_id,
         **fit_kwargs,
@@ -287,26 +289,23 @@ class AddDataToDataset(Maker):  # another flag
         )
         flows.append(add_data_ml_phonon)
 
-        if dft_reference is not None:
-            dft_reference = PhononBSDOSDoc()
-        elif (mp_id in mp_ids) and self.add_dft_phonon_struct:
-            dft_reference = fit_input[mp_id]["phonon_data"]["001"]
-        elif (  # else?
-            (mp_id not in mp_ids)
-            or (dft_reference is None)
-            or (self.add_dft_phonon_struct is False)
-        ):
-            dft_phonons = DFTPhononMaker(
-                symprec=self.symprec,
-                phonon_displacement_maker=self.phonon_displacement_maker,
-                born_maker=None,
-                min_length=self.min_length,
-            ).make(structure=benchmark_structure)
-            dft_phonons = update_user_incar_settings(
-                dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
-            )
-            flows.append(dft_phonons)
-            dft_reference = dft_phonons.output
+        if dft_reference is None:
+            if (mp_id in mp_ids) and self.add_dft_phonon_struct:
+                dft_reference = fit_input[mp_id]["phonon_data"]["001"]
+            elif (mp_id not in mp_ids) or (  # else?
+                self.add_dft_phonon_struct is False
+            ):
+                dft_phonons = DFTPhononMaker(
+                    symprec=self.symprec,
+                    phonon_displacement_maker=self.phonon_displacement_maker,
+                    born_maker=None,
+                    min_length=self.min_length,
+                ).make(structure=benchmark_structure)
+                dft_phonons = update_user_incar_settings(
+                    dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
+                )
+                flows.append(dft_phonons)
+                dft_reference = dft_phonons.output
 
         add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
             structure=benchmark_structure,
