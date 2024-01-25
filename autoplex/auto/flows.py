@@ -139,7 +139,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 born_maker=None,
                 min_length=self.min_length,
             ).make(structure=benchmark_structure)
-            dft_phonons = update_user_incar_settings(dft_phonons, {"NPAR": 4})
+            dft_phonons = update_user_incar_settings(
+                dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
+            )
             flows.append(dft_phonons)
 
             dft_reference = dft_phonons.output

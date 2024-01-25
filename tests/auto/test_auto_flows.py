@@ -82,7 +82,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     )
     assert isinstance(ml_task_doc, PhononBSDOSDoc)
 
-    assert responses[complete_workflow.jobs[4].output.uuid][1].output == pytest.approx(
+    assert responses[complete_workflow.jobs[5].output.uuid][1].output == pytest.approx(
         0.5716963823412201, abs=0.02
     )
 
