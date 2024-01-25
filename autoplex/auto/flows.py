@@ -17,7 +17,6 @@ from atomate2.vasp.powerups import (
     update_user_incar_settings,
 )
 from jobflow import Flow, Maker
-from pymatgen.io.phonopy import get_ph_bs_symm_line, get_ph_dos
 
 from autoplex.auto.jobs import (
     dft_phonopy_gen_data,
@@ -208,8 +207,7 @@ class AddDataToDataset(Maker):  # another flag
         structure_list: list[Structure],
         mp_ids,
         xyz_file,
-        dft_reference_bs_file,
-        dft_reference_dos_file,
+        dft_reference: PhononBSDOSDoc,
         benchmark_structure: Structure,
         mp_id,
         **fit_kwargs,
@@ -225,10 +223,8 @@ class AddDataToDataset(Maker):  # another flag
             materials project id.
         xyz_file:
             the already existing training data xyz file.
-        dft_reference_bs_file:
-            path to  the DFT phonon bandstructure file.
-        dft_reference_dos_file:
-            path to  the DFT phonon DOS file.
+        dft_reference:
+            DFT reference file containing the PhononBSDOCDoc object.
         benchmark_structure: Structure
             pymatgen structure for benchmarking.
         mp_id:
@@ -291,17 +287,13 @@ class AddDataToDataset(Maker):  # another flag
         )
         flows.append(add_data_ml_phonon)
 
-        if (dft_reference_bs_file is not None) and (dft_reference_dos_file is not None):
+        if dft_reference is not None:
             dft_reference = PhononBSDOSDoc()
-            dft_reference.phonon_bandstructure = get_ph_bs_symm_line(
-                dft_reference_bs_file
-            )
-            dft_reference.phonon_dos = get_ph_dos(dft_reference_dos_file)
         elif (mp_id in mp_ids) and self.add_dft_phonon_struct:
             dft_reference = fit_input[mp_id]["phonon_data"]["001"]
         elif (  # else?
             (mp_id not in mp_ids)
-            or ((dft_reference_bs_file is None) and (dft_reference_dos_file is None))
+            or (dft_reference is None)
             or (self.add_dft_phonon_struct is False)
         ):
             dft_phonons = DFTPhononMaker(
