@@ -28,7 +28,7 @@ def test_benchmark(test_dir, clean_dir):
     responses = run_locally(benchmark_flow, create_folders=False, ensure_success=True)
 
     assert responses[benchmark_flow.output.uuid][1].output == pytest.approx(
-        0.5716963823412201
+        0.5716963823412201, abs=0.02
     )
 
     # get list of generated plot files

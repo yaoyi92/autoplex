@@ -118,6 +118,10 @@ class RandomStructuresDataGenerator(Maker):
                 supercell_matrix=None,
                 phonon_maker=self.phonon_displacement_maker,
             )
+            vasp_random_displacement_calcs = update_user_incar_settings(
+                vasp_random_displacement_calcs,
+                {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0},
+            )
             jobs.append(vasp_random_displacement_calcs)
             outputs.append(vasp_random_displacement_calcs.output["dirs"])
 
@@ -159,6 +163,10 @@ class IsoAtomMaker(Maker):
                     user_kpoints_settings={"grid_density": 1},
                 ),
             ).make(iso_atom)
+            isoatom_calcs = update_user_incar_settings(
+                isoatom_calcs,
+                {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0},
+            )
             jobs.append(isoatom_calcs)
             isoatoms.append(isoatom_calcs.output.output.energy_per_atom)
         # create a flow including all jobs
