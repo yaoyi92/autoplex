@@ -90,7 +90,7 @@ class MLPhononMaker(PhononMaker):
         A maker to perform a tight relaxation on the bulk.
         Set to ``None`` to skip the
         bulk relaxation
-    static_energy_maker : .ForceFieldStaticMaker
+    static_energy_maker : .ForceFieldStaticMaker or None
         A maker to perform the computation of the DFT energy on the bulk.
         Set to ``None`` to skip the
         static energy computation
@@ -118,27 +118,51 @@ class MLPhononMaker(PhononMaker):
         if True, force constants will be stored
     """
 
-    ml_dir: str = "gapfit.xml"
+    ml_dir: str = field(default="gapfit.xml")
     min_length: float | None = 20.0
-    bulk_relax_maker: ForceFieldRelaxMaker | None = (
-        field(
-            default=GAPRelaxMaker(
-                potential_param_file_name=ml_dir,
-                relax_cell=True,
-                relax_kwargs={"interval": 500},
-            )
-        ),
+    bulk_relax_maker: ForceFieldRelaxMaker | None = field(
+        default_factory=lambda: GAPRelaxMaker(
+            relax_cell=True, relax_kwargs={"interval": 500}
+        )
     )
-    phonon_displacement_maker: ForceFieldStaticMaker | None = (
-        field(default=GAPStaticMaker(potential_param_file_name=ml_dir)),
+    phonon_displacement_maker: ForceFieldStaticMaker | None = field(
+        default_factory=lambda: GAPStaticMaker()
     )
-    static_energy_maker: ForceFieldStaticMaker = (
-        field(default=GAPStaticMaker(potential_param_file_name=ml_dir)),
+    static_energy_maker: ForceFieldStaticMaker | None = field(
+        default_factory=lambda: GAPStaticMaker()
     )
     store_force_constants: bool = False
     generate_frequencies_eigenvectors_kwargs: dict = field(
         default_factory=lambda: {"units": "THz"}
     )
+    relax_maker_kwargs: dict = field(default_factory=dict)
+    static_maker_kwargs: dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        """Update potential file path and keyword args if any."""
+        if self.bulk_relax_maker is not None:
+            br = self.bulk_relax_maker
+            self.bulk_relax_maker = br.update_kwargs(
+                update={
+                    "potential_param_file_name": self.ml_dir,
+                    **self.relax_maker_kwargs,
+                }
+            )
+        if self.phonon_displacement_maker is not None:
+            ph_disp = self.phonon_displacement_maker
+            self.phonon_displacement_maker = ph_disp.update_kwargs(
+                update={
+                    "potential_param_file_name": self.ml_dir**self.static_maker_kwargs
+                }
+            )
+        if self.static_energy_maker is not None:
+            stat_en = self.static_energy_maker
+            self.static_energy_maker = stat_en.update_kwargs(
+                update={
+                    "potential_param_file_name": self.ml_dir,
+                    **self.static_maker_kwargs,
+                }
+            )
 
 
 @job
