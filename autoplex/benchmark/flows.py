@@ -44,7 +44,7 @@ class PhononBenchmarkMaker(Maker):
         ----------
         structure :
             Pymatgen structures drawn from the Materials Project.
-        benchmark_mp_ids: str.
+        benchmark_mp_id: str.
             Materials project IDs for the structure
         ml_phonon_bs: PhononBandStructureSymmLine.
             ML potential generated pymatgen phonon band-structure object
