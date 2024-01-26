@@ -5,7 +5,6 @@ from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from pymatgen.core.structure import Structure
 from autoplex.auto.flows import (
     CompleteDFTvsMLBenchmarkWorkflow,
-    AddDataToDataset,
     DFTDataGenerationFlow,
 )
 
@@ -76,13 +75,13 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         store=memory_jobstore,
     )
 
-    # check for ML phonon doc
-    ml_task_doc = responses[complete_workflow.jobs[3].output.uuid][2].output.resolve(
+    ml_task_doc = responses[complete_workflow.jobs[4].output.uuid][2].output.resolve(
         store=memory_jobstore
     )
+
     assert isinstance(ml_task_doc, PhononBSDOSDoc)
 
-    assert responses[complete_workflow.jobs[5].output.uuid][1].output == pytest.approx(
+    assert responses[complete_workflow.jobs[6].output.uuid][1].output == pytest.approx(
         0.5716963823412201, abs=0.02
     )
 
@@ -100,7 +99,7 @@ def test_add_data_to_dataset_workflow(
     dft_data = loadfn(test_dir / "benchmark" / "PhononBSDOSDoc_LiCl.json")
     dft_reference: PhononBSDOSDoc = dft_data["output"]
 
-    add_data_workflow = AddDataToDataset(
+    add_data_workflow = CompleteDFTvsMLBenchmarkWorkflow(
         n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
         phonon_displacement_maker=PhononDisplacementMaker()
     ).make(
@@ -112,7 +111,7 @@ def test_add_data_to_dataset_workflow(
         dft_reference=None
     )
 
-    add_data_workflow_with_dft_reference = AddDataToDataset(
+    add_data_workflow_with_dft_reference = CompleteDFTvsMLBenchmarkWorkflow(
         n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
         add_dft_phonon_struct=False,
         phonon_displacement_maker=PhononDisplacementMaker()
@@ -125,7 +124,7 @@ def test_add_data_to_dataset_workflow(
         dft_reference=dft_reference
     )
 
-    add_data_workflow_add_phonon_false = AddDataToDataset(
+    add_data_workflow_add_phonon_false = CompleteDFTvsMLBenchmarkWorkflow(
         n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
         add_dft_phonon_struct=False,
         phonon_displacement_maker=PhononDisplacementMaker()
@@ -138,7 +137,7 @@ def test_add_data_to_dataset_workflow(
         dft_reference=None
     )
 
-    add_data_workflow_add_random_false = AddDataToDataset(
+    add_data_workflow_add_random_false = CompleteDFTvsMLBenchmarkWorkflow(
         n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
         add_dft_random_struct=False,
         phonon_displacement_maker=PhononDisplacementMaker()
@@ -151,7 +150,7 @@ def test_add_data_to_dataset_workflow(
         dft_reference=None
     )
 
-    add_data_workflow_with_same_mpid = AddDataToDataset(
+    add_data_workflow_with_same_mpid = CompleteDFTvsMLBenchmarkWorkflow(
         n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
         phonon_displacement_maker=PhononDisplacementMaker()
     ).make(
