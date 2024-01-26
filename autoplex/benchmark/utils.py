@@ -92,8 +92,7 @@ def rmse_kdep_plot(
 def compare_plot(
     ml_bs: PhononBandStructureSymmLine,
     dft_bs: PhononBandStructureSymmLine,
-    file_name="band_comparison.eps",
-    img_format="eps",
+    file_name: str = "band_comparison.eps",
 ):
     """
     Save DFT and ML phonon band-structure overlay plot for visual comparison.
@@ -106,8 +105,6 @@ def compare_plot(
         DFT generated pymatgen phonon band-structure object
     file_name: str.
         Name of the saved plot
-    img_format: str
-        File extension of plot to be saved, default is eps
 
     Returns
     -------
@@ -117,6 +114,6 @@ def compare_plot(
     plotter = PhononBSPlotter(bs=ml_bs)
     plotter2 = PhononBSPlotter(bs=dft_bs)
     new_plotter = plotter.plot_compare(plotter2)
-    new_plotter.figure.savefig(file_name, format=img_format)
+    new_plotter.figure.savefig(file_name)
 
     return new_plotter.figure
