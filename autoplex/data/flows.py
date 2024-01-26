@@ -30,10 +30,10 @@ __all__ = ["RandomStructuresDataGenerator", "IsoAtomMaker"]
 
 
 @dataclass
-class APPhononDisplacementMaker(PhononDisplacementMaker):
+class TightDFTStaticMaker(PhononDisplacementMaker):
     """Adapted phonon displacement maker for static calculation.
 
-    The input set is for a static run same as PhononDisplacementMaker.
+    The input set used is same as PhononDisplacementMaker.
     Only difference is Spin polarization is switched off and Gaussian smearing is used
 
     Parameters
