@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 from unittest import mock
 from pymatgen.core.structure import Structure
-from autoplex.auto.jobs import get_phonon_ml_calculation_jobs, get_iso_atom, dft_phonopy_gen_data, dft_random_gen_data
+from autoplex.auto.jobs import get_phonon_ml_calculation_jobs, get_iso_atom, dft_phonopy_gen_data, dft_random_gen_data, MLPhononMaker
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 
 from jobflow import run_locally
@@ -25,6 +25,23 @@ def test_get_phonon_ml_calculation_jobs(test_dir, clean_dir, memory_jobstore):
     ml_phonon_bs_doc = responses[gap_phonon_jobs.output.uuid][2].output.resolve(
         store=memory_jobstore
     )
+    assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
+
+
+def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
+    potential_file_dir = test_dir / "fitting" / "ref_files" / "gap.xml"
+    path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    gap_phonon_jobs = MLPhononMaker(
+        ml_dir=potential_file_dir, min_length=20
+    ).make(structure=structure)
+
+    responses = run_locally(
+        gap_phonon_jobs, create_folders=True, ensure_success=True, store=memory_jobstore
+    )
+
+    ml_phonon_bs_doc = responses[gap_phonon_jobs.jobs[-1].output.uuid][1].output
     assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
 
 def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
