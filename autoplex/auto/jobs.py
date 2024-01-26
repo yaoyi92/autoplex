@@ -152,7 +152,8 @@ class MLPhononMaker(PhononMaker):
             ph_disp = self.phonon_displacement_maker
             self.phonon_displacement_maker = ph_disp.update_kwargs(
                 update={
-                    "potential_param_file_name": self.ml_dir**self.static_maker_kwargs
+                    "potential_param_file_name": self.ml_dir,
+                    **self.static_maker_kwargs,
                 }
             )
         if self.static_energy_maker is not None:
