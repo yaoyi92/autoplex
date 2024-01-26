@@ -27,8 +27,8 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
-        mp_id="mp-22905",
-        benchmark_structure=structure,
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
         phonon_displacement_maker=PhononDisplacementMaker(),
     )
 
@@ -108,10 +108,10 @@ def test_add_data_to_dataset_workflow(
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
-        mp_id="mp-22905",
-        benchmark_structure=structure,
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None,
+        dft_references=None,
     )
 
     add_data_workflow_with_dft_reference = CompleteDFTvsMLBenchmarkWorkflow(
@@ -124,10 +124,10 @@ def test_add_data_to_dataset_workflow(
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
-        mp_id="mp-22905",
-        benchmark_structure=structure,
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=dft_reference,
+        dft_references=[dft_reference],
     )
 
     add_data_workflow_add_phonon_false = CompleteDFTvsMLBenchmarkWorkflow(
@@ -140,10 +140,10 @@ def test_add_data_to_dataset_workflow(
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
-        mp_id="mp-22905",
-        benchmark_structure=structure,
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None,
+        dft_references=None,
     )
 
     add_data_workflow_add_random_false = CompleteDFTvsMLBenchmarkWorkflow(
@@ -156,10 +156,10 @@ def test_add_data_to_dataset_workflow(
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
-        mp_id="mp-22905",
-        benchmark_structure=structure,
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None,
+        dft_references=None,
     )
 
     add_data_workflow_with_same_mpid = CompleteDFTvsMLBenchmarkWorkflow(
@@ -171,10 +171,10 @@ def test_add_data_to_dataset_workflow(
     ).make(
         structure_list=[structure],
         mp_ids=["mp-22905"],
-        mp_id="mp-22905",
-        benchmark_structure=structure,
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None,
+        dft_references=None,
     )
 
     ref_paths = {
