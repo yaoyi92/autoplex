@@ -5,7 +5,6 @@ from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from pymatgen.core.structure import Structure
 from autoplex.auto.flows import (
     CompleteDFTvsMLBenchmarkWorkflow,
-    AddDataToDataset,
     DFTDataGenerationFlow,
 )
 
@@ -13,7 +12,7 @@ mock.patch.dict(os.environ, {"OMP_NUM_THREADS": 1, "OPENBLAS_OMP_THREADS": 2})
 
 
 def test_complete_dft_vs_ml_benchmark_workflow(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
+    vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
 ):
     import pytest
     from jobflow import run_locally
@@ -76,19 +75,19 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         store=memory_jobstore,
     )
 
-    # check for ML phonon doc
-    ml_task_doc = responses[complete_workflow.jobs[3].output.uuid][2].output.resolve(
+    ml_task_doc = responses[complete_workflow.jobs[4].output.uuid][2].output.resolve(
         store=memory_jobstore
     )
+
     assert isinstance(ml_task_doc, PhononBSDOSDoc)
 
-    assert responses[complete_workflow.jobs[5].output.uuid][1].output == pytest.approx(
+    assert responses[complete_workflow.jobs[6].output.uuid][1].output == pytest.approx(
         0.5716963823412201, abs=0.02
     )
 
 
 def test_add_data_to_dataset_workflow(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
+    vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
 ):
     import pytest
     from monty.serialization import loadfn
@@ -100,67 +99,82 @@ def test_add_data_to_dataset_workflow(
     dft_data = loadfn(test_dir / "benchmark" / "PhononBSDOSDoc_LiCl.json")
     dft_reference: PhononBSDOSDoc = dft_data["output"]
 
-    add_data_workflow = AddDataToDataset(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
-        phonon_displacement_maker=PhononDisplacementMaker()
+    add_data_workflow = CompleteDFTvsMLBenchmarkWorkflow(
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None
+        dft_reference=None,
     )
 
-    add_data_workflow_with_dft_reference = AddDataToDataset(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+    add_data_workflow_with_dft_reference = CompleteDFTvsMLBenchmarkWorkflow(
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         add_dft_phonon_struct=False,
-        phonon_displacement_maker=PhononDisplacementMaker()
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=dft_reference
+        dft_reference=dft_reference,
     )
 
-    add_data_workflow_add_phonon_false = AddDataToDataset(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+    add_data_workflow_add_phonon_false = CompleteDFTvsMLBenchmarkWorkflow(
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         add_dft_phonon_struct=False,
-        phonon_displacement_maker=PhononDisplacementMaker()
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None
+        dft_reference=None,
     )
 
-    add_data_workflow_add_random_false = AddDataToDataset(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+    add_data_workflow_add_random_false = CompleteDFTvsMLBenchmarkWorkflow(
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         add_dft_random_struct=False,
-        phonon_displacement_maker=PhononDisplacementMaker()
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None
+        dft_reference=None,
     )
 
-    add_data_workflow_with_same_mpid = AddDataToDataset(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
-        phonon_displacement_maker=PhononDisplacementMaker()
+    add_data_workflow_with_same_mpid = CompleteDFTvsMLBenchmarkWorkflow(
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["mp-22905"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None
+        dft_reference=None,
     )
 
     ref_paths = {
@@ -217,7 +231,8 @@ def test_add_data_to_dataset_workflow(
         0.5716963823412201, abs=0.02
     )
     for job, uuid in add_data_workflow.iterflow():
-        if "dft_phonopy_gen_data" in job.name: assert True
+        if "dft_phonopy_gen_data" in job.name:
+            assert True
     for job, uuid in add_data_workflow_with_dft_reference.iterflow():
         assert job.name != "dft_phonopy_gen_data"
     for job, uuid in add_data_workflow_add_phonon_false.iterflow():
@@ -231,7 +246,7 @@ def test_add_data_to_dataset_workflow(
 
 
 def test_phonon_dft_ml_data_generation_flow(
-        vasp_test_dir, mock_vasp, clean_dir, memory_jobstore
+    vasp_test_dir, mock_vasp, clean_dir, memory_jobstore
 ):
     from jobflow import run_locally
 
@@ -333,4 +348,6 @@ def test_phonon_dft_ml_data_generation_flow(
                     for item in output.resolve(store=memory_jobstore):
                         paths_to_rand_calcs_worattled.append(item)
 
-    assert len(paths_to_phonon_calcs_worattled) + len(paths_to_rand_calcs_worattled) == 2
+    assert (
+        len(paths_to_phonon_calcs_worattled) + len(paths_to_rand_calcs_worattled) == 2
+    )
