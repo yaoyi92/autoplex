@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 from autoplex.data.flows import IsoAtomMaker, RandomStructuresDataGenerator
 
-
+# This should be a maker rather than a job in a job
 @job
 def get_phonon_ml_calculation_jobs(
     ml_dir: str,

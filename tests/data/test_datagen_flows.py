@@ -34,7 +34,7 @@ def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
     }
-    data_gen = RandomStructuresDataGenerator(n_struct=3).make(structure=structure, benchmark_mp_ids=test_mpid)
+    data_gen = RandomStructuresDataGenerator(n_struct=3).make(structure=structure, mp_id=test_mpid)
 
     data_gen = update_user_incar_settings(data_gen, {"ISMEAR": 0})
 
