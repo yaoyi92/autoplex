@@ -78,8 +78,8 @@ __all__ = [
 #         structure_list: list[Structure],
 #         mp_ids,
 #         phonon_displacement_maker,
-#         benchmark_structure: Structure,  # structures
-#         mp_id,  # benchmark_mp_ids
+#         benchmark_structures: Structure,  # structures
+#         benchmark_mp_ids,  # benchmark_mp_ids
 #         **fit_kwargs,
 #     ):
 #         """
@@ -93,9 +93,9 @@ __all__ = [
 #             list of materials project ids
 #         phonon_displacement_maker : .BaseVaspMaker
 #             Maker used to compute the forces for a supercell.
-#         benchmark_structure: Structure.
+#         benchmark_structures: Structure.
 #             Structure used for benchmarking.
-#         mp_id: str
+#         benchmark_mp_ids: str
 #             materials project ID corresponding to the benchmark structure
 #         """
 #         flows = []
@@ -114,7 +114,7 @@ __all__ = [
 #                 symprec=self.symprec,
 #                 uc=self.uc,
 #                 supercell_matrix=self.supercell_matrix,
-#             ).make(structure=structure, mp_id=mp_ids[struc_i])
+#             ).make(structure=structure, benchmark_mp_ids=mp_ids[struc_i])
 #             flows.append(autoplex_datagen)
 #             datagen.update({mp_ids[struc_i]: autoplex_datagen.output})
 #
@@ -127,42 +127,42 @@ __all__ = [
 #         flows.append(autoplex_fit)
 #
 #         autoplex_ml_phonon = get_phonon_ml_calculation_jobs(
-#             structure=benchmark_structure,
+#             structure=benchmark_structures,
 #             min_length=self.min_length,
 #             ml_dir=autoplex_fit.output,
 #         )
 #         flows.append(autoplex_ml_phonon)
-#         if mp_id not in mp_ids:
+#         if benchmark_mp_ids not in mp_ids:
 #             dft_phonons = DFTPhononMaker(
 #                 symprec=self.symprec,
 #                 phonon_displacement_maker=phonon_displacement_maker,
 #                 born_maker=None,
 #                 min_length=self.min_length,
-#             ).make(structure=benchmark_structure)
+#             ).make(structure=benchmark_structures)
 #             dft_phonons = update_user_incar_settings(
 #                 dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
 #             )
 #             flows.append(dft_phonons)
 #
-#             dft_reference = dft_phonons.output
+#             dft_references = dft_phonons.output
 #         else:
-#             dft_reference = datagen[mp_id]["phonon_data"][
+#             dft_references = datagen[benchmark_mp_ids]["phonon_data"][
 #                 "001"
 #             ]  # flag take all phonon runs
 #             # explanation for 001 = 0.01
 #
 #         autoplex_bm = PhononDFTMLBenchmarkFlow(name="testBM").make(
-#             structure=benchmark_structure,
-#             mp_id=mp_id,
+#             structure=benchmark_structures,
+#             benchmark_mp_ids=benchmark_mp_ids,
 #             ml_phonon_task_doc=autoplex_ml_phonon.output,
-#             dft_phonon_task_doc=dft_reference,
+#             dft_phonon_task_doc=dft_references,
 #         )
 #         flows.append(autoplex_bm)
 #         collect.append(autoplex_bm.output)
 #
 #         collect_bm = write_benchmark_metrics(
-#             benchmark_structure=benchmark_structure,
-#             mp_id=mp_id,
+#             benchmark_structures=benchmark_structures,
+#             benchmark_mp_ids=benchmark_mp_ids,
 #             rmse=collect,
 #             displacements=self.displacements,
 #         )
@@ -211,9 +211,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(
         structure_list: list[Structure],
         mp_ids,
         xyz_file: str | None = None,
-        dft_reference: PhononBSDOSDoc | None = None,
-        benchmark_structure: Structure | None = None,
-        mp_id: str | None = None,
+        dft_references: PhononBSDOSDoc | None = None,
+        benchmark_structures: Structure | None = None,
+        benchmark_mp_ids: str | None = None,
         **fit_kwargs,
     ):
         """
@@ -227,11 +227,11 @@ class CompleteDFTvsMLBenchmarkWorkflow(
             materials project id.
         xyz_file:
             the already existing training data xyz file.
-        dft_reference:
+        dft_references:
             DFT reference file containing the PhononBSDOCDoc object.
-        benchmark_structure: Structure
+        benchmark_structures: Structure
             pymatgen structure for benchmarking.
-        mp_id:
+        benchmark_mp_ids:
             Materials Project ID of the benchmarking structure.
 
         """
@@ -285,16 +285,16 @@ class CompleteDFTvsMLBenchmarkWorkflow(
 
         # not sure if it would make sense to put everything from here in its own flow?
         add_data_ml_phonon = get_phonon_ml_calculation_jobs(
-            structure=benchmark_structure,
+            structure=benchmark_structures,
             min_length=self.min_length,
             ml_dir=add_data_fit.output,
         )
         flows.append(add_data_ml_phonon)
 
-        if dft_reference is None:
-            if (mp_id in mp_ids) and self.add_dft_phonon_struct:
-                dft_reference = fit_input[mp_id]["phonon_data"]["001"]
-            elif (mp_id not in mp_ids) or (  # else?
+        if dft_references is None:
+            if (benchmark_mp_ids in mp_ids) and self.add_dft_phonon_struct:
+                dft_references = fit_input[benchmark_mp_ids]["phonon_data"]["001"]
+            elif (benchmark_mp_ids not in mp_ids) or (  # else?
                 self.add_dft_phonon_struct is False
             ):
                 dft_phonons = DFTPhononMaker(
@@ -302,25 +302,25 @@ class CompleteDFTvsMLBenchmarkWorkflow(
                     phonon_displacement_maker=self.phonon_displacement_maker,
                     born_maker=None,
                     min_length=self.min_length,
-                ).make(structure=benchmark_structure)
+                ).make(structure=benchmark_structures)
                 dft_phonons = update_user_incar_settings(
                     dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
                 )
                 flows.append(dft_phonons)
-                dft_reference = dft_phonons.output
+                dft_references = dft_phonons.output
 
         add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
-            structure=benchmark_structure,
-            mp_id=mp_id,
+            structure=benchmark_structures,
+            benchmark_mp_id=benchmark_mp_ids,
             ml_phonon_task_doc=add_data_ml_phonon.output,
-            dft_phonon_task_doc=dft_reference,
+            dft_phonon_task_doc=dft_references,
         )
         flows.append(add_data_bm)
         collect.append(add_data_bm.output)
 
         collect_bm = write_benchmark_metrics(
-            benchmark_structure=benchmark_structure,
-            mp_id=mp_id,
+            benchmark_structure=benchmark_structures,
+            mp_id=benchmark_mp_ids,
             rmse=collect,
             displacements=self.displacements,
         )
@@ -527,7 +527,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
     def make(
         self,
         structure: Structure,
-        mp_id,
+        benchmark_mp_id,
         ml_phonon_task_doc: PhononBSDOSDoc,
         dft_phonon_task_doc: PhononBSDOSDoc,
     ):
@@ -538,7 +538,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
         ----------
         structure: Structure
             Structure used for benchmark
-        mp_id: str.
+        benchmark_mp_id: str.
             Material project id string
         ml_phonon_task_doc: PhononBSDOSDoc
             Phonon task doc from ML potential consisting of pymatgen band-structure object
@@ -549,7 +549,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
 
         benchmark = PhononBenchmarkMaker(name="Benchmark").make(
             structure=structure,
-            mp_id=mp_id,
+            benchmark_mp_id=benchmark_mp_id,
             ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,  # TODO take BS at top lvl?
             dft_phonon_bs=dft_phonon_task_doc.phonon_bandstructure,
         )

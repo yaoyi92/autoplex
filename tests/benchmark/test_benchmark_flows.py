@@ -21,7 +21,7 @@ def test_benchmark(test_dir, clean_dir):
     ml_bs = get_ph_bs_symm_line(bands_path=ml_bs_file_path)
 
     benchmark_flow = PhononBenchmarkMaker().make(
-        structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, mp_id="test"
+        structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, benchmark_mp_ids="test"
     )
     assert len(benchmark_flow.jobs) == 1
 
