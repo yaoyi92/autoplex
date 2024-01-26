@@ -527,7 +527,7 @@ class PhononDFTMLBenchmarkFlow(Maker):
     def make(
         self,
         structure: Structure,
-        mp_id: str,
+        mp_id,
         ml_phonon_task_doc: PhononBSDOSDoc,
         dft_phonon_task_doc: PhononBSDOSDoc,
     ):
