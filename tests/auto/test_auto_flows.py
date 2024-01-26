@@ -12,7 +12,7 @@ mock.patch.dict(os.environ, {"OMP_NUM_THREADS": 1, "OPENBLAS_OMP_THREADS": 2})
 
 
 def test_complete_dft_vs_ml_benchmark_workflow(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
+    vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
 ):
     import pytest
     from jobflow import run_locally
@@ -87,7 +87,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
 
 
 def test_add_data_to_dataset_workflow(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
+    vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
 ):
     import pytest
     from monty.serialization import loadfn
@@ -100,66 +100,81 @@ def test_add_data_to_dataset_workflow(
     dft_reference: PhononBSDOSDoc = dft_data["output"]
 
     add_data_workflow = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
-        phonon_displacement_maker=PhononDisplacementMaker()
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None
+        dft_reference=None,
     )
 
     add_data_workflow_with_dft_reference = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         add_dft_phonon_struct=False,
-        phonon_displacement_maker=PhononDisplacementMaker()
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=dft_reference
+        dft_reference=dft_reference,
     )
 
     add_data_workflow_add_phonon_false = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         add_dft_phonon_struct=False,
-        phonon_displacement_maker=PhononDisplacementMaker()
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None
+        dft_reference=None,
     )
 
     add_data_workflow_add_random_false = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         add_dft_random_struct=False,
-        phonon_displacement_maker=PhononDisplacementMaker()
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None
+        dft_reference=None,
     )
 
     add_data_workflow_with_same_mpid = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
-        phonon_displacement_maker=PhononDisplacementMaker()
+        n_struct=3,
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        phonon_displacement_maker=PhononDisplacementMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["mp-22905"],
         mp_id="mp-22905",
         benchmark_structure=structure,
         xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
-        dft_reference=None
+        dft_reference=None,
     )
 
     ref_paths = {
@@ -216,7 +231,8 @@ def test_add_data_to_dataset_workflow(
         0.5716963823412201, abs=0.02
     )
     for job, uuid in add_data_workflow.iterflow():
-        if "dft_phonopy_gen_data" in job.name: assert True
+        if "dft_phonopy_gen_data" in job.name:
+            assert True
     for job, uuid in add_data_workflow_with_dft_reference.iterflow():
         assert job.name != "dft_phonopy_gen_data"
     for job, uuid in add_data_workflow_add_phonon_false.iterflow():
@@ -230,7 +246,7 @@ def test_add_data_to_dataset_workflow(
 
 
 def test_phonon_dft_ml_data_generation_flow(
-        vasp_test_dir, mock_vasp, clean_dir, memory_jobstore
+    vasp_test_dir, mock_vasp, clean_dir, memory_jobstore
 ):
     from jobflow import run_locally
 
@@ -332,4 +348,6 @@ def test_phonon_dft_ml_data_generation_flow(
                     for item in output.resolve(store=memory_jobstore):
                         paths_to_rand_calcs_worattled.append(item)
 
-    assert len(paths_to_phonon_calcs_worattled) + len(paths_to_rand_calcs_worattled) == 2
+    assert (
+        len(paths_to_phonon_calcs_worattled) + len(paths_to_rand_calcs_worattled) == 2
+    )

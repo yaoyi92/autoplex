@@ -207,14 +207,14 @@ class CompleteDFTvsMLBenchmarkWorkflow(
     uc: bool = False
 
     def make(
-            self,
-            structure_list: list[Structure],
-            mp_ids,
-            xyz_file: str | None = None,
-            dft_reference: PhononBSDOSDoc | None = None,
-            benchmark_structure: Structure | None = None,
-            mp_id: str | None = None,
-            **fit_kwargs,
+        self,
+        structure_list: list[Structure],
+        mp_ids,
+        xyz_file: str | None = None,
+        dft_reference: PhononBSDOSDoc | None = None,
+        benchmark_structure: Structure | None = None,
+        mp_id: str | None = None,
+        **fit_kwargs,
     ):
         """
         Make flow for adding data to the dataset.
@@ -295,7 +295,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(
             if (mp_id in mp_ids) and self.add_dft_phonon_struct:
                 dft_reference = fit_input[mp_id]["phonon_data"]["001"]
             elif (mp_id not in mp_ids) or (  # else?
-                    self.add_dft_phonon_struct is False
+                self.add_dft_phonon_struct is False
             ):
                 dft_phonons = DFTPhononMaker(
                     symprec=self.symprec,
@@ -329,12 +329,12 @@ class CompleteDFTvsMLBenchmarkWorkflow(
         return Flow(flows, collect_bm.output)
 
     def add_dft_phonons(
-            self,
-            structure: Structure,
-            displacements,
-            symprec,
-            phonon_displacement_maker,
-            min_length,
+        self,
+        structure: Structure,
+        displacements,
+        symprec,
+        phonon_displacement_maker,
+        min_length,
     ):
         additonal_dft_phonon = dft_phonopy_gen_data(
             structure, displacements, symprec, phonon_displacement_maker, min_length
@@ -349,13 +349,13 @@ class CompleteDFTvsMLBenchmarkWorkflow(
         )
 
     def add_dft_random(
-            self,
-            structure: Structure,
-            mp_id,
-            phonon_displacement_maker,
-            n_struct,
-            uc,
-            supercell_matrix: Matrix3D | None = None,
+        self,
+        structure: Structure,
+        mp_id,
+        phonon_displacement_maker,
+        n_struct,
+        uc,
+        supercell_matrix: Matrix3D | None = None,
     ):
         additonal_dft_random = dft_random_gen_data(
             structure, mp_id, phonon_displacement_maker, n_struct, uc, supercell_matrix
@@ -474,12 +474,12 @@ class PhononDFTMLFitFlow(Maker):
     name: str = "ML fit"
 
     def make(
-            self,
-            species,
-            isolated_atoms_energy,
-            fit_input: dict,
-            xyz_file: str | None = None,
-            **fit_kwargs,
+        self,
+        species,
+        isolated_atoms_energy,
+        fit_input: dict,
+        xyz_file: str | None = None,
+        **fit_kwargs,
     ):
         """
         Make flow for to fit potential.
@@ -525,11 +525,11 @@ class PhononDFTMLBenchmarkFlow(Maker):
     name: str = "ML DFT benchmark"
 
     def make(
-            self,
-            structure: Structure,
-            mp_id: str,
-            ml_phonon_task_doc: PhononBSDOSDoc,
-            dft_phonon_task_doc: PhononBSDOSDoc,
+        self,
+        structure: Structure,
+        mp_id: str,
+        ml_phonon_task_doc: PhononBSDOSDoc,
+        dft_phonon_task_doc: PhononBSDOSDoc,
     ):
         """
         Create flow to benchmark the ML potential.
