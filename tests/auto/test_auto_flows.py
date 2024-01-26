@@ -255,11 +255,11 @@ def test_phonon_dft_ml_data_generation_flow(
 
     flow_data_generation = DFTDataGenerationFlow(
         n_struct=3, min_length=10, symprec=1e-2
-    ).make(structure=structure, benchmark_mp_ids="mp-22905")
+    ).make(structure=structure, mp_id="mp-22905")
 
     flow_data_generation_without_rattled_structures = DFTDataGenerationFlow(
         n_struct=0, min_length=10, symprec=1e-2
-    ).make(structure=structure, benchmark_mp_ids="mp-22905")
+    ).make(structure=structure, mp_id="mp-22905")
 
     ref_paths = {
         "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
