@@ -215,6 +215,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             store=memory_jobstore,
         )
 
+        # TODO: add better tests
+
         for job, uuid in add_data_workflow_with_dft_reference.iterflow():
             assert job.name != "dft_phonopy_gen_data"
 
@@ -251,6 +253,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             dft_references=None,
         )
 
+        # TODO: add better tests
+
         for job, uuid in add_data_workflow_add_phonon_false.iterflow():
             assert job.name != "dft_phonopy_gen_data"
 
@@ -284,6 +288,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             dft_references=None,
         )
 
+        # TODO: add better tests
+
         for job, uuid in add_data_workflow_add_random_false.iterflow():
             assert job.name != "dft_random_gen_data"
 
@@ -315,6 +321,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
             dft_references=None,
         )
+
+        # TODO: add better tests
 
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
             assert job.name != "tight relax 1"
