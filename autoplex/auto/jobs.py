@@ -99,7 +99,7 @@ class MLPhononMaker(PhononMaker):
     generate_frequencies_eigenvectors_kwargs : dict
         Keyword arguments passed to :obj:`generate_frequencies_eigenvectors`.
     create_thermal_displacements: bool
-        Bool that determines if thermal_displacement_matrices are computed
+        Arg that determines if thermal_displacement_matrices are computed
     kpath_scheme: str
         scheme to generate kpoints. Please be aware that
         you can only use seekpath with any kind of cell
