@@ -25,6 +25,7 @@ from autoplex.auto.jobs import (
     get_phonon_ml_calculation_jobs,
 )
 from autoplex.benchmark.flows import PhononBenchmarkMaker
+from autoplex.data.flows import TightDFTStaticMaker
 from autoplex.benchmark.jobs import write_benchmark_metrics
 from autoplex.fitting.flows import MLIPFitMaker
 
@@ -65,7 +66,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(
     add_rss_struct: bool = False
 
     phonon_displacement_maker: BaseVaspMaker = field(
-        default_factory=PhononDisplacementMaker
+        default_factory=TightDFTStaticMaker
     )
     n_struct: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.01])
@@ -183,10 +184,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(
                             born_maker=None,
                             min_length=self.min_length,
                         ).make(structure=benchmark_structure)
-                        dft_phonons = update_user_incar_settings(
-                            dft_phonons,
-                            {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0},
-                        )
+
                         flows.append(dft_phonons)
                         dft_references = dft_phonons.output
 
@@ -289,7 +287,7 @@ class DFTDataGenerationFlow(Maker):
 
     name: str = "datagen"
     phonon_displacement_maker: BaseVaspMaker = field(
-        default_factory=PhononDisplacementMaker
+        default_factory=TightDFTStaticMaker
     )
     n_struct: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.01])

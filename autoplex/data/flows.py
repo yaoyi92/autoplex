@@ -15,9 +15,6 @@ from atomate2.common.jobs.phonons import (
     run_phonon_displacements,
 )
 from atomate2.vasp.jobs.core import StaticMaker
-from atomate2.vasp.powerups import (
-    update_user_incar_settings,
-)
 from atomate2.vasp.sets.core import StaticSetGenerator
 from jobflow import Flow, Maker
 from phonopy.structure.cells import get_supercell
@@ -26,7 +23,7 @@ from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.jobs import generate_randomized_structures
 
-__all__ = ["RandomStructuresDataGenerator", "IsoAtomMaker"]
+__all__ = ["IsoAtomMaker", "IsoAtomStaticMaker", "RandomStructuresDataGenerator", "TightDFTStaticMaker"]
 
 
 @dataclass
@@ -150,7 +147,7 @@ class RandomStructuresDataGenerator(Maker):
 
     name: str = "RandomStruturesDataGeneratorForML"
     phonon_displacement_maker: BaseVaspMaker = field(
-        default_factory=PhononDisplacementMaker
+        default_factory=TightDFTStaticMaker
     )
     code: str = "vasp"
     n_struct: int = 1
@@ -187,18 +184,15 @@ class RandomStructuresDataGenerator(Maker):
             structure=get_pmg_structure(supercell), n_struct=self.n_struct
         )
         jobs.append(random_rattle_sc)
-        # perform the phonon displaced calculations for randomized displaced structures
-        # structure is only needed to keep track of the original structure
+        # perform the phonon displaced calculations for randomized displaced structures.
+        #  The original structure is only needed to keep track of initial structure.
         vasp_random_sc_displacement_calcs = run_phonon_displacements(
             displacements=random_rattle_sc.output,  # pylint: disable=E1101
             structure=structure,
             supercell_matrix=None,
             phonon_maker=self.phonon_displacement_maker,
         )
-        vasp_random_sc_displacement_calcs = update_user_incar_settings(
-            vasp_random_sc_displacement_calcs,
-            {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0},
-        )
+
         jobs.append(vasp_random_sc_displacement_calcs)
         outputs.append(vasp_random_sc_displacement_calcs.output["dirs"])
 
@@ -213,10 +207,7 @@ class RandomStructuresDataGenerator(Maker):
                 supercell_matrix=None,
                 phonon_maker=self.phonon_displacement_maker,
             )
-            vasp_random_displacement_calcs = update_user_incar_settings(
-                vasp_random_displacement_calcs,
-                {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0},
-            )
+
             jobs.append(vasp_random_displacement_calcs)
             outputs.append(vasp_random_displacement_calcs.output["dirs"])
 
@@ -252,17 +243,13 @@ class IsoAtomMaker(Maker):
             site = Site(species=species, coords=[0, 0, 0])
             mol = Molecule.from_sites([site])
             iso_atom = mol.get_boxed_structure(a=20, b=20, c=20)
-            isoatom_calcs = StaticMaker(
+            isoatom_calcs = IsoAtomStaticMaker(
                 name=str(species) + "-statisoatom",
                 input_set_generator=StaticSetGenerator(
                     user_kpoints_settings={"grid_density": 1},
                 ),
             ).make(iso_atom)
 
-            isoatom_calcs = update_user_incar_settings(
-                isoatom_calcs,
-                {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0},
-            )
             jobs.append(isoatom_calcs)
             isoatoms.append(isoatom_calcs.output.output.energy_per_atom)
         # create a flow including all jobs
