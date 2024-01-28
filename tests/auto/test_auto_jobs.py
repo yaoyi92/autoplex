@@ -2,7 +2,12 @@ from __future__ import annotations
 import os
 from unittest import mock
 from pymatgen.core.structure import Structure
-from autoplex.auto.jobs import get_phonon_ml_calculation_jobs, get_iso_atom, dft_phonopy_gen_data, MLPhononMaker
+from autoplex.auto.jobs import (
+    get_phonon_ml_calculation_jobs,
+    get_iso_atom,
+    dft_phonopy_gen_data,
+    MLPhononMaker,
+)
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 
 from jobflow import run_locally
@@ -34,12 +39,12 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    gap_phonon_jobs = MLPhononMaker(
-        ml_dir=potential_file_dir, min_length=20
-    ).make(structure=structure)
+    gap_phonon_jobs = MLPhononMaker(ml_dir=potential_file_dir, min_length=20).make(
+        structure=structure
+    )
 
-    assert gap_phonon_jobs.jobs[0].name == 'GAP relax'
-    assert gap_phonon_jobs.jobs[4].name == 'GAP static'
+    assert gap_phonon_jobs.jobs[0].name == "GAP relax"
+    assert gap_phonon_jobs.jobs[4].name == "GAP static"
 
     responses = run_locally(
         gap_phonon_jobs, create_folders=True, ensure_success=True, store=memory_jobstore
@@ -48,8 +53,15 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     ml_phonon_bs_doc = responses[gap_phonon_jobs.jobs[-1].output.uuid][1].output
     assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
 
-    assert responses[gap_phonon_jobs.jobs[0].output.uuid][1].output.forcefield_name == 'GAP'
-    assert responses[gap_phonon_jobs.jobs[4].output.uuid][1].output.forcefield_name == 'GAP'
+    assert (
+        responses[gap_phonon_jobs.jobs[0].output.uuid][1].output.forcefield_name
+        == "GAP"
+    )
+    assert (
+        responses[gap_phonon_jobs.jobs[4].output.uuid][1].output.forcefield_name
+        == "GAP"
+    )
+
 
 def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
     structure_list = [
@@ -97,13 +109,34 @@ def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     fake_run_vasp_kwargs = {
-        "Li-statisoatom": {"incar_settings": ["NSW"], "check_inputs": ["incar", "kpoints"]},
-        "Cl-statisoatom": {"incar_settings": ["NSW"], "check_inputs": ["incar", "kpoints"]},
-        "C-statisoatom": {"incar_settings": ["NSW"], "check_inputs": ["incar", "kpoints"]},
-        "Mo-statisoatom": {"incar_settings": ["NSW"], "check_inputs": ["incar", "kpoints"]},
-        "K-statisoatom": {"incar_settings": ["NSW"], "check_inputs": ["incar", "kpoints"]},
-        "Si-statisoatom": {"incar_settings": ["NSW"], "check_inputs": ["incar", "kpoints"]},
-        "Na-statisoatom": {"incar_settings": ["NSW"], "check_inputs": ["incar", "kpoints"]},
+        "Li-statisoatom": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints"],
+        },
+        "Cl-statisoatom": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints"],
+        },
+        "C-statisoatom": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints"],
+        },
+        "Mo-statisoatom": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints"],
+        },
+        "K-statisoatom": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints"],
+        },
+        "Si-statisoatom": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints"],
+        },
+        "Na-statisoatom": {
+            "incar_settings": ["NSW"],
+            "check_inputs": ["incar", "kpoints"],
+        },
     }
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -114,13 +147,22 @@ def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(isolated_atom, create_folders=True, ensure_success=True)
 
-    assert "[Element Li, Element C, Element Mo, Element Na, Element Si, Element Cl, Element K]" == f"{responses[isolated_atom.output.uuid][2].output['species']}"
-    assert "Li" and "C" and "Mo" and "Na" and "Si" and "Cl" and "K" in f"{responses[isolated_atom.output.uuid][2].output['species']}"
+    assert (
+        "[Element Li, Element C, Element Mo, Element Na, Element Si, Element Cl, Element K]"
+        == f"{responses[isolated_atom.output.uuid][2].output['species']}"
+    )
+    assert (
+        "Li"
+        and "C"
+        and "Mo"
+        and "Na"
+        and "Si"
+        and "Cl"
+        and "K" in f"{responses[isolated_atom.output.uuid][2].output['species']}"
+    )
 
 
-def test_dft_task_doc(
-            vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
-    ):
+def test_dft_task_doc(vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir):
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
     dft_phonon_workflow = dft_phonopy_gen_data(structure, [0.01], 0.1, None, 10)
@@ -167,5 +209,7 @@ def test_dft_task_doc(
     )
 
     # check for DFT phonon doc
-    assert isinstance(dft_phonon_workflow.output.resolve(store=memory_jobstore)["data"]["001"], PhononBSDOSDoc)
-
+    assert isinstance(
+        dft_phonon_workflow.output.resolve(store=memory_jobstore)["data"]["001"],
+        PhononBSDOSDoc,
+    )
