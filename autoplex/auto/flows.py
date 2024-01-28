@@ -151,9 +151,11 @@ class CompleteDFTvsMLBenchmarkWorkflow(
         )
         flows.append(add_data_fit)
 
-        bm_outputs=[]
+        bm_outputs = []
 
-        for ibenchmark_structure, benchmark_structure in enumerate(benchmark_structures):
+        for ibenchmark_structure, benchmark_structure in enumerate(
+            benchmark_structures
+        ):
             # not sure if it would make sense to put everything from here in its own flow?
             add_data_ml_phonon = get_phonon_ml_calculation_jobs(
                 structure=benchmark_structure,
@@ -163,29 +165,36 @@ class CompleteDFTvsMLBenchmarkWorkflow(
             flows.append(add_data_ml_phonon)
 
             if dft_references is None and benchmark_mp_ids is not None:
-                    if (benchmark_mp_ids[ibenchmark_structure] in mp_ids) and self.add_dft_phonon_struct:
-                        dft_references = fit_input[benchmark_mp_ids[ibenchmark_structure]]["phonon_data"]["001"]
-                    elif (benchmark_mp_ids[ibenchmark_structure] not in mp_ids) or (  # else?
-                        self.add_dft_phonon_struct is False
-                    ):
-                        dft_phonons = DFTPhononMaker(
-                            symprec=self.symprec,
-                            phonon_displacement_maker=self.phonon_displacement_maker,
-                            born_maker=None,
-                            min_length=self.min_length,
-                        ).make(structure=benchmark_structure)
-                        dft_phonons = update_user_incar_settings(
-                            dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
-                        )
-                        flows.append(dft_phonons)
-                        dft_references = dft_phonons.output
-
-                    add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
-                        structure=benchmark_structure,
-                        benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
-                        ml_phonon_task_doc=add_data_ml_phonon.output,
-                        dft_phonon_task_doc=dft_references,
+                if (
+                    benchmark_mp_ids[ibenchmark_structure] in mp_ids
+                ) and self.add_dft_phonon_struct:
+                    dft_references = fit_input[benchmark_mp_ids[ibenchmark_structure]][
+                        "phonon_data"
+                    ]["001"]
+                elif (
+                    benchmark_mp_ids[ibenchmark_structure] not in mp_ids
+                ) or (  # else?
+                    self.add_dft_phonon_struct is False
+                ):
+                    dft_phonons = DFTPhononMaker(
+                        symprec=self.symprec,
+                        phonon_displacement_maker=self.phonon_displacement_maker,
+                        born_maker=None,
+                        min_length=self.min_length,
+                    ).make(structure=benchmark_structure)
+                    dft_phonons = update_user_incar_settings(
+                        dft_phonons,
+                        {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0},
                     )
+                    flows.append(dft_phonons)
+                    dft_references = dft_phonons.output
+
+                add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
+                    structure=benchmark_structure,
+                    benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
+                    ml_phonon_task_doc=add_data_ml_phonon.output,
+                    dft_phonon_task_doc=dft_references,
+                )
             else:
                 add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
                     structure=benchmark_structure,
