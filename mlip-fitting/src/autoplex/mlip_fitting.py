@@ -94,7 +94,7 @@ class mlip_fit(Maker):
     @job
     def make(self, 
              database_dir: str, 
-             gap_para={'two_body':True, 'three_body':True},
+             gap_para={'two_body':True, 'three_body':False},
              ace_para={'energy_name':"REF_energy",
                        'force_name':"REF_forces",
                        'virial_name':"REF_virials",
