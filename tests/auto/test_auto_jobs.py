@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 from unittest import mock
 from pymatgen.core.structure import Structure
-from autoplex.auto.jobs import get_phonon_ml_calculation_jobs, get_iso_atom, dft_phonopy_gen_data, dft_random_gen_data, MLPhononMaker
+from autoplex.auto.jobs import get_phonon_ml_calculation_jobs, get_iso_atom, dft_phonopy_gen_data, MLPhononMaker
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 
 from jobflow import run_locally
