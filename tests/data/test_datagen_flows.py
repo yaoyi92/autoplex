@@ -34,7 +34,9 @@ def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
     }
-    data_gen = RandomStructuresDataGenerator(n_struct=3).make(structure=structure, mp_id=test_mpid)
+    data_gen = RandomStructuresDataGenerator(n_struct=3).make(
+        structure=structure, mp_id=test_mpid
+    )
 
     data_gen = update_user_incar_settings(data_gen, {"ISMEAR": 0})
 
@@ -48,7 +50,6 @@ def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
     job_names = ["phonon static 1/3", "phonon static 2/3", "phonon static 3/3"]
     for inx, name in enumerate(job_names):
         assert responses[data_gen.output[0].uuid][1].replace.jobs[inx].name == name
-
 
 
 def test_iso_atom_maker(mock_vasp, clean_dir):
