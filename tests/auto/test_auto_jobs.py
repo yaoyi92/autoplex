@@ -9,6 +9,7 @@ from jobflow import run_locally
 
 mock.patch.dict(os.environ, {"OMP_NUM_THREADS": 1, "OPENBLAS_OMP_THREADS": 2})
 
+
 def test_get_phonon_ml_calculation_jobs(test_dir, clean_dir, memory_jobstore):
     potential_file_dir = test_dir / "fitting" / "ref_files" / "gap.xml"
     path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
@@ -37,12 +38,18 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
         ml_dir=potential_file_dir, min_length=20
     ).make(structure=structure)
 
+    assert gap_phonon_jobs.jobs[0].name == 'GAP relax'
+    assert gap_phonon_jobs.jobs[4].name == 'GAP static'
+
     responses = run_locally(
         gap_phonon_jobs, create_folders=True, ensure_success=True, store=memory_jobstore
     )
 
     ml_phonon_bs_doc = responses[gap_phonon_jobs.jobs[-1].output.uuid][1].output
     assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
+
+    assert responses[gap_phonon_jobs.jobs[0].output.uuid][1].output.forcefield_name == 'GAP'
+    assert responses[gap_phonon_jobs.jobs[4].output.uuid][1].output.forcefield_name == 'GAP'
 
 def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
     structure_list = [
@@ -109,6 +116,7 @@ def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
 
     assert "[Element Li, Element C, Element Mo, Element Na, Element Si, Element Cl, Element K]" == f"{responses[isolated_atom.output.uuid][2].output['species']}"
     assert "Li" and "C" and "Mo" and "Na" and "Si" and "Cl" and "K" in f"{responses[isolated_atom.output.uuid][2].output['species']}"
+
 
 def test_dft_task_doc(
             vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
