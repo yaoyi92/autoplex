@@ -11,11 +11,7 @@ if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
-from atomate2.common.jobs.phonons import PhononDisplacementMaker
 from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
-from atomate2.vasp.powerups import (
-    update_user_incar_settings,
-)
 from jobflow import Flow, Maker
 
 from autoplex.auto.jobs import (
@@ -25,8 +21,8 @@ from autoplex.auto.jobs import (
     get_phonon_ml_calculation_jobs,
 )
 from autoplex.benchmark.flows import PhononBenchmarkMaker
-from autoplex.data.flows import TightDFTStaticMaker
 from autoplex.benchmark.jobs import write_benchmark_metrics
+from autoplex.data.flows import TightDFTStaticMaker
 from autoplex.fitting.flows import MLIPFitMaker
 
 __all__ = [
@@ -217,12 +213,29 @@ class CompleteDFTvsMLBenchmarkWorkflow(
     def add_dft_phonons(
         self,
         structure: Structure,
-        displacements,
-        symprec,
-        phonon_displacement_maker,
-        min_length,
+        displacements: list[float],
+        symprec: float,
+        phonon_displacement_maker: BaseVaspMaker,
+        min_length: float,
     ):
-        """Add DFT phonon runs for reference structures."""
+        """Add DFT phonon runs for reference structures.
+
+        Parameters
+        ----------
+        structure: Structure
+            pymatgen Structure object
+        displacements:
+           displacement distance for phonons
+        symprec:
+            Symmetry precision to use in the
+            reduction of symmetry to find the primitive/conventional cell
+            (use_primitive_standard_structure, use_conventional_standard_structure)
+            and to handle all symmetry-related tasks in phonopy
+        phonon_displacement_maker:
+            Maker used to compute the forces for a supercell.
+        min_length:
+             min length of the supercell that will be built
+        """
         additonal_dft_phonon = dft_phonopy_gen_data(
             structure, displacements, symprec, phonon_displacement_maker, min_length
         )
@@ -238,13 +251,30 @@ class CompleteDFTvsMLBenchmarkWorkflow(
     def add_dft_random(
         self,
         structure: Structure,
-        mp_id,
-        phonon_displacement_maker,
-        n_struct,
-        uc,
+        mp_id: str,
+        phonon_displacement_maker: BaseVaspMaker,
+        n_struct: int,
+        uc: bool,
         supercell_matrix: Matrix3D | None = None,
     ):
-        """Add DFT phonon runs for randomly displaced structures."""
+        """Add DFT phonon runs for randomly displaced structures.
+
+        Parameters
+        ----------
+        structure: Structure
+            pymatgen Structure object
+        mp_id:
+            materials project id
+        n_struct: int.
+            The total number of randomly displaced structures to be generated.
+        phonon_displacement_maker:
+            Maker used to compute the forces for a supercell.
+        uc: bool.
+            If True, will generate randomly distorted structures (unitcells)
+            and add static computation jobs to the flow
+        supercell_matrix: Matrix3D or None
+            The matrix to construct the supercell.
+        """
         additonal_dft_random = dft_random_gen_data(
             structure, mp_id, phonon_displacement_maker, n_struct, uc, supercell_matrix
         )

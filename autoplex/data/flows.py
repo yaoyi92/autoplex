@@ -23,7 +23,12 @@ from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.jobs import generate_randomized_structures
 
-__all__ = ["IsoAtomMaker", "IsoAtomStaticMaker", "RandomStructuresDataGenerator", "TightDFTStaticMaker"]
+__all__ = [
+    "IsoAtomMaker",
+    "IsoAtomStaticMaker",
+    "RandomStructuresDataGenerator",
+    "TightDFTStaticMaker",
+]
 
 
 @dataclass
