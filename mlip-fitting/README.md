@@ -6,3 +6,7 @@ For using this code for fitting MLIPs, one could use the following two jobs:
 The "split_ratio" parameter is used to divide the training set and the test set. A value of 0.1 means that the ratio of the training set to the test set is 9:1.
 
 The name of the vasp reference dataset file needs to be "vasp_ref.extxyz". The energy of isolated atoms should already be included in "vasp_ref.extxyz", and the program will automatically read this information.
+
+Here 'isol_es' is for the ACE fitting, because the ACE model prefers to use cohesive energy for fitting instead of free energy. The format of 'isol_es' for Si is like isol_es={14: -0.81432699}.
+
+For GAP fitting, the isol_es will be automatically accepted in the "train.extxyz" as a configuration with the "config_type=isolated_atom".
