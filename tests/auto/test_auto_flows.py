@@ -85,8 +85,8 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     }
 
     fake_run_vasp_kwargs = {
-        "tight relax 1": {"incar_settings": ["NSW"]},
-        "tight relax 2": {"incar_settings": ["NSW"]},
+        "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/3": {
@@ -356,10 +356,10 @@ def test_phonon_dft_ml_data_generation_flow(
     }
 
     fake_run_vasp_kwargs = {
-        "tight relax 1": {"incar_settings": ["NSW"]},
-        "tight relax 2": {"incar_settings": ["NSW"]},
+        "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 2/2": {"incar_settings": ["NSW"]},
+        "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/3": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
