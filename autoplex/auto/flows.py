@@ -11,7 +11,6 @@ if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
-from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
 from jobflow import Flow, Maker
 
 from autoplex.auto.jobs import (
@@ -22,7 +21,7 @@ from autoplex.auto.jobs import (
 )
 from autoplex.benchmark.flows import PhononBenchmarkMaker
 from autoplex.benchmark.jobs import write_benchmark_metrics
-from autoplex.data.flows import TightDFTStaticMaker
+from autoplex.data.flows import DFTPhononMaker, TightDFTStaticMaker
 from autoplex.fitting.flows import MLIPFitMaker
 
 __all__ = [
