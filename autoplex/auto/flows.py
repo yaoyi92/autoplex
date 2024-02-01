@@ -36,9 +36,7 @@ __all__ = [
 
 
 @dataclass
-class CompleteDFTvsMLBenchmarkWorkflow(
-    Maker
-):  # merge with complete wf and set another flag for adding data
+class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     """
     Maker to add more data to existing dataset (.xyz file).
 
