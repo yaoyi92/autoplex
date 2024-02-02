@@ -3,9 +3,9 @@
 [31m[1m__________________ test_complete_dft_vs_ml_benchmark_workflow __________________[0m
 
 vasp_test_dir = PosixPath('/home/certural/git/autoplex/tests/test_data/vasp')
-mock_vasp = <function mock_vasp.<locals>._run at 0x7f47b6a30720>
+mock_vasp = <function mock_vasp.<locals>._run at 0x7fd687fbc9a0>
 test_dir = PosixPath('/home/certural/git/autoplex/tests/test_data')
-memory_jobstore = <jobflow.core.store.JobStore object at 0x7f47b70d6dd0>
+memory_jobstore = <jobflow.core.store.JobStore object at 0x7fd68c78f850>
 clean_dir = None
 
     [94mdef[39;49;00m [92mtest_complete_dft_vs_ml_benchmark_workflow[39;49;00m([90m[39;49;00m
@@ -73,10 +73,10 @@ clean_dir = None
 [1m[31m/home/certural/git/autoplex/tests/auto/test_auto_flows.py[0m:110:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-flow = Flow(name='Flow', uuid='6231c5b2-9963-40c3-ba2d-78932793b1aa')
-1. Flow(name='Flow', uuid='8414b11c-2ba7-4a26-b73e-2f75...63d4a-955e-43d3-85a1-4dcfbc5382ee')
-8. Job(name='write_benchmark_metrics', uuid='ec59492c-1684-4a1c-b862-c022356249df')
-log = True, store = <jobflow.core.store.JobStore object at 0x7f47b70d6dd0>
+flow = Flow(name='Flow', uuid='21073837-7669-4bb1-a9c5-9eaeff6caf84')
+1. Flow(name='Flow', uuid='045dda48-9fd1-4f13-a439-d081...f4e85-9a57-43cc-8fd7-129c49056074')
+8. Job(name='write_benchmark_metrics', uuid='e0123398-5236-4a97-bd29-5408a9c948e3')
+log = True, store = <jobflow.core.store.JobStore object at 0x7fd68c78f850>
 create_folders = True, ensure_success = True, allow_external_references = False
 
     [94mdef[39;49;00m [92mrun_locally[39;49;00m([90m[39;49;00m
@@ -227,88 +227,100 @@ create_folders = True, ensure_success = True, allow_external_references = False
 
 [1m[31m/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/managers/local.py[0m:161: RuntimeError
 ----------------------------- Captured stdout call -----------------------------
-2024-02-02 16:46:58,225 INFO Started executing jobs locally
-2024-02-02 16:46:58,245 INFO Starting job - dft_random_gen_data (97d1a96b-b48d-438b-9bc2-cf113587657a)
-2024-02-02 16:46:58,272 INFO Finished job - dft_random_gen_data (97d1a96b-b48d-438b-9bc2-cf113587657a)
-2024-02-02 16:46:58,290 INFO Starting job - generate_randomized_structures (05d86cae-3a4b-4807-a939-ed947952cec0)
-2024-02-02 16:46:58,369 INFO Finished job - generate_randomized_structures (05d86cae-3a4b-4807-a939-ed947952cec0)
-2024-02-02 16:46:58,370 INFO Starting job - run_phonon_displacements (1185adb4-e851-4ccc-a23c-f684cecd696d)
-2024-02-02 16:46:58,443 INFO Finished job - run_phonon_displacements (1185adb4-e851-4ccc-a23c-f684cecd696d)
-2024-02-02 16:46:58,482 INFO Starting job - phonon static 1/3 (857ef9a7-a209-4f3e-aa7e-418e5454c98b)
-2024-02-02 16:46:59,368 INFO Finished job - phonon static 1/3 (857ef9a7-a209-4f3e-aa7e-418e5454c98b)
-2024-02-02 16:46:59,369 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:46:59,369 INFO Starting job - phonon static 2/3 (cf1bb923-077b-4716-b563-282cd8289c70)
-2024-02-02 16:47:00,111 INFO Finished job - phonon static 2/3 (cf1bb923-077b-4716-b563-282cd8289c70)
-2024-02-02 16:47:00,111 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:00,111 INFO Starting job - phonon static 3/3 (c636b0b3-01ef-43cd-924e-6b0dfb1b18fc)
-2024-02-02 16:47:00,990 INFO Finished job - phonon static 3/3 (c636b0b3-01ef-43cd-924e-6b0dfb1b18fc)
-2024-02-02 16:47:00,991 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:00,991 INFO Starting job - store_inputs (1185adb4-e851-4ccc-a23c-f684cecd696d, 2)
-2024-02-02 16:47:00,992 INFO Finished job - store_inputs (1185adb4-e851-4ccc-a23c-f684cecd696d, 2)
-2024-02-02 16:47:00,992 INFO Starting job - store_inputs (97d1a96b-b48d-438b-9bc2-cf113587657a, 2)
-2024-02-02 16:47:00,993 INFO Finished job - store_inputs (97d1a96b-b48d-438b-9bc2-cf113587657a, 2)
-2024-02-02 16:47:00,993 INFO Starting job - dft_phonopy_gen_data (cbe34244-fac1-413c-b374-03a498563a41)
-2024-02-02 16:47:01,031 INFO Finished job - dft_phonopy_gen_data (cbe34244-fac1-413c-b374-03a498563a41)
-2024-02-02 16:47:01,037 INFO Starting job - tight relax 1 (c9a4e39c-1819-40fc-a954-975a65ef018f)
-2024-02-02 16:47:01,276 INFO Finished job - tight relax 1 (c9a4e39c-1819-40fc-a954-975a65ef018f)
-2024-02-02 16:47:01,276 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:01,277 INFO Starting job - tight relax 2 (3a4bcfac-82f9-49d3-b415-1037f2845b6b)
-2024-02-02 16:47:01,542 INFO Finished job - tight relax 2 (3a4bcfac-82f9-49d3-b415-1037f2845b6b)
-2024-02-02 16:47:01,542 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:01,542 INFO Starting job - get_supercell_size (e0fb7f76-8bb3-42bd-9925-48f6abfc165f)
-2024-02-02 16:47:01,562 INFO Finished job - get_supercell_size (e0fb7f76-8bb3-42bd-9925-48f6abfc165f)
-2024-02-02 16:47:01,562 INFO Starting job - static (0d15745c-7045-476e-b29e-93a819d43c7a)
-2024-02-02 16:47:01,947 INFO Finished job - static (0d15745c-7045-476e-b29e-93a819d43c7a)
-2024-02-02 16:47:01,947 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:01,947 INFO Starting job - generate_phonon_displacements (748bb38e-a3d2-4161-a70f-ecc3ec95c003)
-2024-02-02 16:47:02,526 INFO Finished job - generate_phonon_displacements (748bb38e-a3d2-4161-a70f-ecc3ec95c003)
-2024-02-02 16:47:02,527 INFO Starting job - run_phonon_displacements (bda86384-7a94-4914-9aa0-b9039d4dadcf)
-2024-02-02 16:47:02,607 INFO Finished job - run_phonon_displacements (bda86384-7a94-4914-9aa0-b9039d4dadcf)
-2024-02-02 16:47:02,633 INFO Starting job - phonon static 1/2 (b4b8c9e1-b54c-476c-b432-8949e4b3790b)
-2024-02-02 16:47:03,579 INFO Finished job - phonon static 1/2 (b4b8c9e1-b54c-476c-b432-8949e4b3790b)
-2024-02-02 16:47:03,580 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:03,580 INFO Starting job - phonon static 2/2 (f4255aa9-216e-4913-aee5-6914ad4792d1)
-2024-02-02 16:47:04,419 INFO Finished job - phonon static 2/2 (f4255aa9-216e-4913-aee5-6914ad4792d1)
-2024-02-02 16:47:04,420 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:04,420 INFO Starting job - store_inputs (bda86384-7a94-4914-9aa0-b9039d4dadcf, 2)
-2024-02-02 16:47:04,421 INFO Finished job - store_inputs (bda86384-7a94-4914-9aa0-b9039d4dadcf, 2)
-2024-02-02 16:47:04,421 INFO Starting job - generate_frequencies_eigenvectors (a8cc1f83-ba93-4c6c-b9e4-6faa474c1007)
-2024-02-02 16:47:13,147 INFO Finished job - generate_frequencies_eigenvectors (a8cc1f83-ba93-4c6c-b9e4-6faa474c1007)
-2024-02-02 16:47:13,149 INFO Starting job - store_inputs (cbe34244-fac1-413c-b374-03a498563a41, 2)
-2024-02-02 16:47:13,149 INFO Finished job - store_inputs (cbe34244-fac1-413c-b374-03a498563a41, 2)
-2024-02-02 16:47:13,149 INFO Starting job - get_iso_atom (ecb323a3-8296-43f0-a04a-e1d281782fb6)
-2024-02-02 16:47:13,160 INFO Finished job - get_iso_atom (ecb323a3-8296-43f0-a04a-e1d281782fb6)
-2024-02-02 16:47:13,162 INFO Starting job - Cl-statisoatom (7bad23c8-faba-42a6-8e8f-19f4915e8a54)
-2024-02-02 16:47:13,290 INFO Finished job - Cl-statisoatom (7bad23c8-faba-42a6-8e8f-19f4915e8a54)
-2024-02-02 16:47:13,290 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:13,290 INFO Starting job - Li-statisoatom (904ea058-1ffa-4631-97be-d51b6c6c322a)
-2024-02-02 16:47:13,416 INFO Finished job - Li-statisoatom (904ea058-1ffa-4631-97be-d51b6c6c322a)
-2024-02-02 16:47:13,417 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:13,417 INFO Starting job - store_inputs (ecb323a3-8296-43f0-a04a-e1d281782fb6, 2)
-2024-02-02 16:47:13,418 INFO Finished job - store_inputs (ecb323a3-8296-43f0-a04a-e1d281782fb6, 2)
-2024-02-02 16:47:13,418 INFO Starting job - tight relax 1 (c617bb3f-c6ad-43fd-923b-e6d63f41538a)
-2024-02-02 16:47:13,585 INFO Finished job - tight relax 1 (c617bb3f-c6ad-43fd-923b-e6d63f41538a)
-2024-02-02 16:47:13,585 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:13,585 INFO Starting job - gapfit (1d2f3f95-d379-4867-a88f-760f644dad65)
-OUT:  {'rand_struc_dir': [['sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-46-58-482557-66920', 'sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-46-59-369381-13977', 'sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-47-00-111427-30091']], 'phonon_dir': [['sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-47-02-633718-76629', 'sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-47-03-580141-53642']], 'phonon_data': {'001': PhononBSDOSDoc(structure=Structure Summary
-Lattice
-    abc : 5.061019144638489 5.061019144638489 5.061019144638489
- angles : 90.0 90.0 90.0
- volume : 129.63251308285152
-      A : 5.061019144638489 -0.0 3e-16
-      B : 8e-16 5.061019144638489 3e-16
-      C : 0.0 -0.0 5.061019144638489
-    pbc : True True True
-PeriodicSite: Li (0.0, 0.0, 0.0) [0.0, 0.0, 0.0]
-PeriodicSite: Li (4e-16, 2.531, 2.531) [0.0, 0.5, 0.5]
-PeriodicSite: Li (2.531, 0.0, 2.531) [0.5, 0.0, 0.5]
-PeriodicSite: Li (2.531, 2.531, 3e-16) [0.5, 0.5, 0.0]
-PeriodicSite: Cl (2.531, 0.0, 1.5e-16) [0.5, 0.0, 0.0]
-PeriodicSite: Cl (2.531, 2.531, 2.531) [0.5, 0.5, 0.5]
-PeriodicSite: Cl (0.0, 0.0, 2.531) [0.0, 0.0, 0.5]
-PeriodicSite: Cl (4e-16, 2.531, 1.5e-16) [0.0, 0.5, 0.0], phonon_bandstructure=<pymatgen.phonon.bandstructure.PhononBandStructureSymmLine object at 0x7f47b5acaf50>, phonon_dos=<pymatgen.phonon.dos.PhononDos object at 0x7f47b58308d0>, free_energies=[7080.976170080692, 7080.941036967962, 7080.240149382292, 7076.197390581886, 7063.614885453374, 7036.585753890066, 6990.007279728701, 6920.087180479229, 6824.315762511884, 6701.232094434082, 6550.157164797795, 6370.963808761129, 6163.899527440615, 5929.457379485983, 5668.284677996294, 5381.119583566412, 5068.747645071507, 4731.972374256276, 4371.595607630971, 3988.404659626955, 3583.164171053597, 3156.611191912704, 2709.452481364909, 2242.363316525258, 1755.9873166355226, 1250.9369388017826, 727.794405913802, 187.112900413953, -370.58209119350533, -944.7913622129477, -1535.0405518072278, -2140.878729203101, -2761.877019491729, -3397.627285665304, -4047.7408753826403, -4711.847436690735, -5389.593804001441, -6080.642953645942, -6784.673027028807, -7501.376418580683, -8230.4589252232, -8971.638953809792, -9724.646782919663, -10489.223875406182, -11265.122238199303, -12052.10382600643, -12849.93998572957, -13658.410938604637, -14477.305297262454, -15306.419615104036], heat_capacities=[0.0, 0.04968955302604406, 0.6171737476829713, 2.5484039891181425, 5.810068940757513, 9.83204819234165, 14.07031242775892, 18.15722799362496, 21.901530330008775, 25.232966459083716, 28.149107554148802, 30.680067161642153, 32.8684981371583, 34.7592781310546, 36.394664616790116, 37.812351644972466, 39.044990140584865, 40.1203987811624, 41.06206214559083, 41.88971275447328, 42.61989988152738, 43.26650345252743, 43.841179483440165, 44.353737121119664, 44.81245334765336, 45.22433351230496, 45.5953260502456, 45.93049908306072, 46.23418561276981, 46.510102986451535, 46.76145134543141, 46.990994929094015, 47.20112938883771, 47.393937675050644, 47.57123657472923, 47.73461558318303, 47.8854694746024, 48.02502567930662, 48.15436736851059, 48.274452980718394, 48.38613278943297, 48.49016300334845, 48.58721780241256, 48.67789964199621, 48.76274809959408, 48.842247491388264, 48.91683344754363, 48.98689860360294, 49.05279753948031, 49.114851076246175], internal_energies=[7080.976170080692, 7081.089979046579, 7083.598903231125, 7098.144723516882, 7139.0480714520045, 7216.873650103013, 7336.3884427066205, 7497.755164858037, 7698.377637665977, 7934.402282109466, 8201.649238427468, 8496.099225846137, 8814.108641109895, 9152.47734582312, 9508.443417048029, 9879.645541960082, 10264.074161721104, 10660.0217276052, 11066.036736244785, 11480.883280782311, 11903.506408591054, 12333.00291260868, 12768.596923415998, 13209.61961035062, 13655.492335014334, 14105.71267388708, 14559.842810426304, 15017.499877737544, 15478.347905060316, 15942.09108323382, 16408.46811617483, 16877.247468212765, 17348.223352148583, 17821.212331399955, 18296.050432714917, 18772.59068467259, 19250.70101237333, 19730.26243103797, 20211.16749124135, 20693.318936650267, 21176.62854178104, 21661.01610272657, 22146.408558260515, 22632.739222391607, 23119.94711246478, 23607.97635940632, 24096.775688785023, 24586.297963087243, 25076.49977704376, 25567.341099051555], entropies=[0.0, 0.014894320945629194, 0.16793774900365896, 0.731577802285239, 1.8858296784680928, 3.6057579473093657, 5.7730194024921255, 8.252399793945527, 10.92577345479392, 13.701890988249938, 16.51492074939461, 19.31941289492564, 22.085075958973974, 24.79246129075978, 27.42970528978727, 29.990173066476224, 32.4707907393047, 34.87087855912536, 37.191339613227996, 39.4340980157307, 41.601711197192124, 43.69710344126444, 45.7233838367737, 47.683723025803964, 49.58127091899823, 51.41910294935182, 53.20018618014493, 54.92735918415504, 56.60332142402032, 58.230629131009294, 59.81169556867488, 61.34879419390689, 62.84406367003373, 64.29951399973113, 65.71703326770414, 67.0983946410322, 68.44526338735854, 69.75920375090487, 71.04168558288906, 72.29409066291188, 73.51771867596528, 74.71379282925754, 75.88346510646886, 77.02782116607487, 78.14788489626432, 79.24462264262867, 80.31894712687566, 81.37172107578354, 82.40376057981435, 83.41583820048703], temperatures=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490], total_dft_energy=-7.6385171675, has_imaginary_modes=True, force_constants=<atomate2.common.schemas.phonons.ForceConstants object at 0x7f47b3602210>, born=None, epsilon_static=None, supercell_matrix=((2.0, 0.0, 0.0), (0.0, 2.0, 0.0), (0.0, 0.0, 2.0)), primitive_matrix=((0.0, 0.5000000000000001, 0.5000000000000001), (0.5000000000000001, 0.0, 0.5000000000000001), (0.5000000000000001, 0.5000000000000001, 1.8488927466117472e-32)), code='vasp', phonopy_settings=PhononComputationalSettings(npoints_band=101, kpath_scheme='seekpath', kpoint_density_dos=7000), thermal_displacement_data=ThermalDisplacementData(freq_min_thermal_displacements=0.0, thermal_displacement_matrix_cif=[[((0.011027359568223306, -0.0036757865227411085, -0.003675786522741106), (-0.0036757865227411085, 0.011027359568223306, -0.0036757865227410925), (-0.0036757865227411055, -0.003675786522741092, 0.011027359568223306)), ((0.003582835396175368, -0.0011942784653917876, -0.0011942784653917926), (-0.0011942784653917876, 0.003582835396175368, -0.0011942784653917885), (-0.0011942784653917926, -0.0011942784653917885, 0.0035828353961753676))], [((0.013041092644159012, -0.004347030881386296, -0.004347030881386356), (-0.004347030881386296, 0.013041092644159015, -0.004347030881386364), (-0.004347030881386355, -0.004347030881386365, 0.013041092644159015)), ((0.005443539484532444, -0.001814513161510814, -0.0018145131615108147), (-0.0018145131615108147, 0.0054435394845324435, -0.001814513161510815), (-0.0018145131615108147, -0.0018145131615108152, 0.005443539484532444))], [((0.01903284592280436, -0.0063442819742681395, -0.0063442819742681065), (-0.006344281974268141, 0.019032845922804364, -0.006344281974268117), (-0.0063442819742681065, -0.006344281974268116, 0.019032845922804364)), ((0.009327713454160806, -0.0031092378180536126, -0.003109237818053598), (-0.0031092378180536118, 0.009327713454160804, -0.0031092378180535957), (-0.0031092378180535975, -0.003109237818053596, 0.009327713454160808))], [((0.026291563457839638, -0.008763854485946623, -0.008763854485946493), (-0.008763854485946623, 0.026291563457839638, -0.008763854485946526), (-0.008763854485946493, -0.00876385448594653, 0.026291563457839645)), ((0.013530014535722022, -0.004510004845240688, -0.004510004845240667), (-0.004510004845240689, 0.013530014535722022, -0.004510004845240668), (-0.004510004845240667, -0.004510004845240666, 0.013530014535722027))], [((0.03396297760644068, -0.01132099253548023, -0.011320992535480221), (-0.01132099253548023, 0.03396297760644069, -0.011320992535480237), (-0.01132099253548022, -0.011320992535480238, 0.0339629776064407)), ((0.017821445997168818, -0.005940481999056256, -0.005940481999056287), (-0.0059404819990562545, 0.017821445997168818, -0.005940481999056277), (-0.0059404819990562865, -0.005940481999056277, 0.017821445997168825))], [((0.041812486618459266, -0.01393749553948641, -0.013937495539486467), (-0.01393749553948641, 0.041812486618459266, -0.013937495539486392), (-0.013937495539486469, -0.013937495539486394, 0.04181248661845928)), ((0.02214962653042126, -0.007383208843473761, -0.00738320884347375), (-0.007383208843473761, 0.022149626530421258, -0.007383208843473752), (-0.00738320884347375, -0.007383208843473751, 0.022149626530421268))]], thermal_displacement_matrix=[[((0.01102735956822332, -2.6020852139652105e-19, -1.1539123566127206e-19), (-2.6020852139652105e-19, 0.0110273595682233, -3.9718742698106003e-19), (-1.1539123566127206e-19, -3.9718742698106003e-19, 0.011027359568223295)), ((0.0035828353961753693, -7.596763688789822e-19, -4.715877893951764e-20), (-7.596763688789822e-19, 0.0035828353961753633, -8.045984788922983e-20), (-4.715877893951764e-20, -8.045984788922983e-20, 0.0035828353961753706))], [((0.013041092644158975, -4.629784210329212e-19, 2.7665626990948633e-19), (-4.629784210329212e-19, 0.01304109264415899, 2.284695066879084e-19), (2.7665626990948633e-19, 2.284695066879084e-19, 0.013041092644159077)), ((0.005443539484532443, -6.364668308850091e-20, 1.8783200303771095e-19), (-6.364668308850091e-20, 0.005443539484532444, 6.26243205954831e-19), (1.8783200303771095e-19, 6.26243205954831e-19, 0.005443539484532444))], [((0.019032845922804367, 1.5214167374492885e-19, 1.0228443606500284e-19), (1.5214167374492885e-19, 0.019032845922804385, 4.882925339786568e-21), (1.0228443606500284e-19, 4.882925339786568e-21, 0.019032845922804333)), ((0.009327713454160814, 2.0549084553297854e-18, 4.288541615448404e-19), (2.0549084553297854e-18, 0.009327713454160814, 1.300528614841575e-18), (4.288541615448404e-19, 1.300528614841575e-18, 0.00932771345416079))], [((0.026291563457839666, 5.150201253122254e-19, -2.5776705872662776e-19), (5.150201253122254e-19, 0.02629156345783972, 1.117932906740609e-18), (-2.5776705872662776e-19, 1.117932906740609e-18, 0.026291563457839527)), ((0.013530014535722036, 2.7212269860305623e-18, 5.13397837617099e-19), (2.7212269860305623e-18, 0.013530014535722038, 1.8599849669712992e-18), (5.13397837617099e-19, 1.8599849669712992e-18, 0.013530014535722001))], [((0.03396297760644068, 3.116334351065891e-18, 1.3034840696524986e-18), (3.116334351065891e-18, 0.03396297760644071, 1.1647061915743541e-18), (1.3034840696524986e-18, 1.1647061915743541e-18, 0.03396297760644068)), ((0.017821445997168815, 2.2511731419312725e-18, 7.075262443824294e-19), (2.2511731419312725e-18, 0.017821445997168804, 2.6873115358497747e-18), (7.075262443824294e-19, 2.6873115358497747e-18, 0.017821445997168846))], [((0.041812486618459314, -2.4296408506495903e-18, 1.1091950403430962e-18), (-2.4296408506495903e-18, 0.0418124866184592, -2.667619211946557e-19), (1.1091950403430962e-18, -2.667619211946557e-19, 0.04181248661845929)), ((0.022149626530421265, 3.505281841536061e-18, 9.563787519130653e-19), (3.505281841536061e-18, 0.02214962653042127, 2.8127416805155423e-18), (9.563787519130653e-19, 2.8127416805155423e-18, 0.02214962653042125))]], temperatures_thermal_displacements=[0, 100, 200, 300, 400]), jobdirs=PhononJobDirs(displacements_job_dirs=['sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-47-02-633718-76629', 'sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-47-03-580141-53642'], static_run_job_dir='sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-47-01-562154-34651', born_run_job_dir=None, optimization_run_job_dir='sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-47-01-277042-62796'), uuids=PhononUUIDs(optimization_run_uuid='3a4bcfac-82f9-49d3-b415-1037f2845b6b', displacements_uuids=['b4b8c9e1-b54c-476c-b432-8949e4b3790b', 'f4255aa9-216e-4913-aee5-6914ad4792d1'], static_run_uuid='0d15745c-7045-476e-b29e-93a819d43c7a', born_run_uuid=None))}}
-OUT:  {'iso_atoms_dir': ['sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-47-13-162202-86743', 'sv2000:/tmp/tmp1rzz6588/job_2024-02-02-15-47-13-290328-90039']}
-2024-02-02 16:47:14,222 INFO gapfit failed with exception:
+2024-02-02 18:20:18,939 INFO Started executing jobs locally
+2024-02-02 18:20:18,959 INFO Starting job - dft_random_gen_data (497b50e2-64bf-41b5-a372-933834622f48)
+2024-02-02 18:20:18,984 INFO Finished job - dft_random_gen_data (497b50e2-64bf-41b5-a372-933834622f48)
+2024-02-02 18:20:19,001 INFO Starting job - generate_randomized_structures (45e74670-4567-472d-95d8-5d6c87eb3cbf)
+2024-02-02 18:20:19,080 INFO Finished job - generate_randomized_structures (45e74670-4567-472d-95d8-5d6c87eb3cbf)
+2024-02-02 18:20:19,080 INFO Starting job - run_phonon_displacements (7fc24a65-91f8-4fbc-b9fb-86ed0e27b5bc)
+2024-02-02 18:20:19,153 INFO Finished job - run_phonon_displacements (7fc24a65-91f8-4fbc-b9fb-86ed0e27b5bc)
+2024-02-02 18:20:19,193 INFO Starting job - phonon static 1/3 (9ccb0851-c580-437a-a482-577c9f515b56)
+2024-02-02 18:20:20,080 INFO Finished job - phonon static 1/3 (9ccb0851-c580-437a-a482-577c9f515b56)
+2024-02-02 18:20:20,081 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:20,081 INFO Starting job - phonon static 2/3 (c399a3fa-6349-4ccc-aa09-c5bc5ca9c156)
+2024-02-02 18:20:20,837 INFO Finished job - phonon static 2/3 (c399a3fa-6349-4ccc-aa09-c5bc5ca9c156)
+2024-02-02 18:20:20,837 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:20,837 INFO Starting job - phonon static 3/3 (fad59111-9958-4617-9f10-601eeb33c43a)
+2024-02-02 18:20:21,710 INFO Finished job - phonon static 3/3 (fad59111-9958-4617-9f10-601eeb33c43a)
+2024-02-02 18:20:21,710 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:21,710 INFO Starting job - store_inputs (7fc24a65-91f8-4fbc-b9fb-86ed0e27b5bc, 2)
+2024-02-02 18:20:21,711 INFO Finished job - store_inputs (7fc24a65-91f8-4fbc-b9fb-86ed0e27b5bc, 2)
+2024-02-02 18:20:21,711 INFO Starting job - store_inputs (497b50e2-64bf-41b5-a372-933834622f48, 2)
+2024-02-02 18:20:21,712 INFO Finished job - store_inputs (497b50e2-64bf-41b5-a372-933834622f48, 2)
+2024-02-02 18:20:21,712 INFO Starting job - dft_phonopy_gen_data (a4b2e3a4-a60b-454e-b776-92cafaeb01a6)
+2024-02-02 18:20:21,747 INFO Finished job - dft_phonopy_gen_data (a4b2e3a4-a60b-454e-b776-92cafaeb01a6)
+2024-02-02 18:20:21,750 INFO Starting job - tight relax 1 (3922586d-6d54-4924-9ce8-004d0742770a)
+2024-02-02 18:20:21,980 INFO Finished job - tight relax 1 (3922586d-6d54-4924-9ce8-004d0742770a)
+2024-02-02 18:20:21,980 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:21,981 INFO Starting job - tight relax 2 (d3d98e22-bd3d-462c-9709-6261f29cd55f)
+2024-02-02 18:20:22,246 INFO Finished job - tight relax 2 (d3d98e22-bd3d-462c-9709-6261f29cd55f)
+2024-02-02 18:20:22,246 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:22,247 INFO Starting job - get_supercell_size (69a7d3ae-6090-4a86-a6f3-f00db83bfeb0)
+2024-02-02 18:20:22,264 INFO Finished job - get_supercell_size (69a7d3ae-6090-4a86-a6f3-f00db83bfeb0)
+2024-02-02 18:20:22,264 INFO Starting job - static (e834f938-936f-481a-8586-4cfa45351239)
+2024-02-02 18:20:22,647 INFO Finished job - static (e834f938-936f-481a-8586-4cfa45351239)
+2024-02-02 18:20:22,647 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:22,647 INFO Starting job - generate_phonon_displacements (9d8ee998-866e-4d5a-a881-ffaa8f807671)
+2024-02-02 18:20:23,204 INFO Finished job - generate_phonon_displacements (9d8ee998-866e-4d5a-a881-ffaa8f807671)
+2024-02-02 18:20:23,204 INFO Starting job - run_phonon_displacements (c79fb8e1-96c6-424c-a917-21e20a639792)
+2024-02-02 18:20:23,282 INFO Finished job - run_phonon_displacements (c79fb8e1-96c6-424c-a917-21e20a639792)
+2024-02-02 18:20:23,309 INFO Starting job - phonon static 1/2 (3b516fcf-71ef-4edd-9b7a-7ad824ac3508)
+2024-02-02 18:20:24,259 INFO Finished job - phonon static 1/2 (3b516fcf-71ef-4edd-9b7a-7ad824ac3508)
+2024-02-02 18:20:24,260 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:24,260 INFO Starting job - phonon static 2/2 (7fdc3796-6be6-486d-b4a2-64ba1b03c60c)
+2024-02-02 18:20:25,129 INFO Finished job - phonon static 2/2 (7fdc3796-6be6-486d-b4a2-64ba1b03c60c)
+2024-02-02 18:20:25,130 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:25,130 INFO Starting job - store_inputs (c79fb8e1-96c6-424c-a917-21e20a639792, 2)
+2024-02-02 18:20:25,131 INFO Finished job - store_inputs (c79fb8e1-96c6-424c-a917-21e20a639792, 2)
+2024-02-02 18:20:25,131 INFO Starting job - generate_frequencies_eigenvectors (5dd7045d-ccbe-4b11-99e3-9456678fcc75)
+2024-02-02 18:20:33,825 INFO Finished job - generate_frequencies_eigenvectors (5dd7045d-ccbe-4b11-99e3-9456678fcc75)
+2024-02-02 18:20:33,827 INFO Starting job - store_inputs (a4b2e3a4-a60b-454e-b776-92cafaeb01a6, 2)
+2024-02-02 18:20:33,827 INFO Finished job - store_inputs (a4b2e3a4-a60b-454e-b776-92cafaeb01a6, 2)
+2024-02-02 18:20:33,828 INFO Starting job - get_iso_atom (1cf6e87a-059e-425b-86d1-2f53a0538738)
+2024-02-02 18:20:33,838 INFO Finished job - get_iso_atom (1cf6e87a-059e-425b-86d1-2f53a0538738)
+2024-02-02 18:20:33,840 INFO Starting job - Cl-statisoatom (e225af73-da49-407c-b25d-30e09a8867c7)
+2024-02-02 18:20:33,978 INFO Finished job - Cl-statisoatom (e225af73-da49-407c-b25d-30e09a8867c7)
+2024-02-02 18:20:33,979 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:33,979 INFO Starting job - Li-statisoatom (0e2f6440-d331-4ff8-be29-fbf2324e5ac1)
+2024-02-02 18:20:34,114 INFO Finished job - Li-statisoatom (0e2f6440-d331-4ff8-be29-fbf2324e5ac1)
+2024-02-02 18:20:34,114 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:34,115 INFO Starting job - store_inputs (1cf6e87a-059e-425b-86d1-2f53a0538738, 2)
+2024-02-02 18:20:34,116 INFO Finished job - store_inputs (1cf6e87a-059e-425b-86d1-2f53a0538738, 2)
+2024-02-02 18:20:34,116 INFO Starting job - tight relax 1 (dcd3574d-5059-4d77-b16a-5ca995962c8d)
+2024-02-02 18:20:34,291 INFO Finished job - tight relax 1 (dcd3574d-5059-4d77-b16a-5ca995962c8d)
+2024-02-02 18:20:34,292 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:34,292 INFO Starting job - gapfit (0254beb1-2aa1-493c-94b6-904fffcac249)
+CONFIG test
+CONFIG test
+CONFIG test
+CONFIG test
+CONFIG test
+CONFIG isolated_atom
+CONFIG isolated_atom
+2024-02-02 18:20:38,045 INFO Finished job - gapfit (0254beb1-2aa1-493c-94b6-904fffcac249)
+2024-02-02 18:20:38,045 INFO Starting job - tight relax 2 (9d872593-6085-4732-9bcf-af64d75cafc7)
+2024-02-02 18:20:38,451 INFO Finished job - tight relax 2 (9d872593-6085-4732-9bcf-af64d75cafc7)
+2024-02-02 18:20:38,451 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:38,451 INFO Starting job - get_phonon_ml_calculation_jobs (298ea07d-62a1-405d-8ea0-f69adb6a55ed)
+2024-02-02 18:20:38,462 INFO Finished job - get_phonon_ml_calculation_jobs (298ea07d-62a1-405d-8ea0-f69adb6a55ed)
+2024-02-02 18:20:38,465 INFO Starting job - GAP relax (1fcd8166-1164-47f1-8257-ca2cbd76ec71)
+2024-02-02 18:20:39,330 INFO Finished job - GAP relax (1fcd8166-1164-47f1-8257-ca2cbd76ec71)
+2024-02-02 18:20:39,331 INFO Starting job - get_supercell_size (a794f79e-5a35-4f4d-b1e9-7cd100d3dce5)
+2024-02-02 18:20:39,339 INFO Finished job - get_supercell_size (a794f79e-5a35-4f4d-b1e9-7cd100d3dce5)
+2024-02-02 18:20:39,339 INFO Starting job - GAP static (6649d884-1ea8-4452-ac73-4f5ee26ae2e3)
+2024-02-02 18:20:40,158 INFO Finished job - GAP static (6649d884-1ea8-4452-ac73-4f5ee26ae2e3)
+2024-02-02 18:20:40,159 INFO Starting job - generate_phonon_displacements (924cfae9-3060-463b-9d97-2c25bf04eb07)
+2024-02-02 18:20:40,735 INFO Finished job - generate_phonon_displacements (924cfae9-3060-463b-9d97-2c25bf04eb07)
+2024-02-02 18:20:40,735 INFO Starting job - run_phonon_displacements (05808c79-b7ec-4c1f-8855-6377e3edd9f9)
+2024-02-02 18:20:40,785 INFO Finished job - run_phonon_displacements (05808c79-b7ec-4c1f-8855-6377e3edd9f9)
+2024-02-02 18:20:40,812 INFO Starting job - GAP static 1/2 (f07e9eb8-e8e3-4788-b45a-149c5d50fc6d)
+2024-02-02 18:20:42,027 INFO Finished job - GAP static 1/2 (f07e9eb8-e8e3-4788-b45a-149c5d50fc6d)
+2024-02-02 18:20:42,028 INFO Starting job - GAP static 2/2 (1b6b43f4-1fef-430b-a999-9736610ea294)
+2024-02-02 18:20:43,259 INFO Finished job - GAP static 2/2 (1b6b43f4-1fef-430b-a999-9736610ea294)
+2024-02-02 18:20:43,260 INFO Starting job - store_inputs (05808c79-b7ec-4c1f-8855-6377e3edd9f9, 2)
+2024-02-02 18:20:43,261 INFO Finished job - store_inputs (05808c79-b7ec-4c1f-8855-6377e3edd9f9, 2)
+2024-02-02 18:20:43,261 INFO Starting job - generate_frequencies_eigenvectors (21e87f67-7fbf-4b9a-9d0c-9697cdac022d)
+2024-02-02 18:20:46,577 INFO generate_frequencies_eigenvectors failed with exception:
 Traceback (most recent call last):
   File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/managers/local.py", line 102, in _run_job
     response = job.run(store=store)
@@ -316,133 +328,770 @@ Traceback (most recent call last):
   File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/job.py", line 583, in run
     response = function(*self.function_args, **self.function_kwargs)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/certural/git/autoplex/autoplex/fitting/jobs.py", line 69, in gapfit
-    list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
-                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/certural/git/autoplex/autoplex/fitting/utils.py", line 135, in get_list_of_vasp_calc_dirs
-    list_of_vasp_calc_dirs.extend(*dirs)
-TypeError: list.extend() takes exactly one argument (2 given)
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/atomate2/common/jobs/phonons.py", line 241, in generate_frequencies_eigenvectors
+    return PhononBSDOSDoc.from_forces_born(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/atomate2/common/schemas/phonons.py", line 356, in from_forces_born
+    phonon.run_total_dos()
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/phonopy/api_phonopy.py", line 2110, in run_total_dos
+    total_dos = TotalDos(
+                ^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/phonopy/phonon/dos.py", line 152, in __init__
+    super().__init__(
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/phonopy/phonon/dos.py", line 95, in __init__
+    self.set_draw_area()
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/phonopy/phonon/dos.py", line 144, in set_draw_area
+    self._frequency_points = np.arange(f_min, f_max + f_delta * 0.1, f_delta)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: arange: cannot compute length
 
-2024-02-02 16:47:14,222 INFO Starting job - tight relax 2 (83a9e086-da26-4d76-b5f7-d25fa25d4fa9)
-2024-02-02 16:47:14,457 INFO Finished job - tight relax 2 (83a9e086-da26-4d76-b5f7-d25fa25d4fa9)
-2024-02-02 16:47:14,457 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:14,457 INFO Starting job - get_supercell_size (69a69564-736f-41c5-a58b-2e9e083f434e)
-2024-02-02 16:47:14,475 INFO Finished job - get_supercell_size (69a69564-736f-41c5-a58b-2e9e083f434e)
-2024-02-02 16:47:14,476 INFO Starting job - static (29af6a3b-0e92-4e1a-a4a1-781fd3bfa85f)
-2024-02-02 16:47:14,707 INFO Finished job - static (29af6a3b-0e92-4e1a-a4a1-781fd3bfa85f)
-2024-02-02 16:47:14,707 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:14,708 INFO Starting job - generate_phonon_displacements (1fc2170e-e5cd-4a33-a9a0-6db7047b638a)
-2024-02-02 16:47:15,275 INFO Finished job - generate_phonon_displacements (1fc2170e-e5cd-4a33-a9a0-6db7047b638a)
-2024-02-02 16:47:15,275 INFO Starting job - run_phonon_displacements (a3703345-5f08-4efc-b2dc-5e3301340ce9)
-2024-02-02 16:47:15,356 INFO Finished job - run_phonon_displacements (a3703345-5f08-4efc-b2dc-5e3301340ce9)
-2024-02-02 16:47:15,383 INFO Starting job - phonon static 1/2 (89a521ee-f049-4b19-9cbd-35a57ba6bc3e)
-2024-02-02 16:47:16,326 INFO Finished job - phonon static 1/2 (89a521ee-f049-4b19-9cbd-35a57ba6bc3e)
-2024-02-02 16:47:16,326 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:16,327 INFO Starting job - phonon static 2/2 (9eba8fd2-4aee-4073-ab03-8f87eea4b2d9)
-2024-02-02 16:47:17,140 INFO Finished job - phonon static 2/2 (9eba8fd2-4aee-4073-ab03-8f87eea4b2d9)
-2024-02-02 16:47:17,141 WARNING Response.stored_data is not supported with local manager.
-2024-02-02 16:47:17,141 INFO Starting job - store_inputs (a3703345-5f08-4efc-b2dc-5e3301340ce9, 2)
-2024-02-02 16:47:17,142 INFO Finished job - store_inputs (a3703345-5f08-4efc-b2dc-5e3301340ce9, 2)
-2024-02-02 16:47:17,142 INFO Starting job - generate_frequencies_eigenvectors (9d7a500b-04ac-402b-ab07-e30b0a12e7dd)
-2024-02-02 16:47:25,613 INFO Finished job - generate_frequencies_eigenvectors (9d7a500b-04ac-402b-ab07-e30b0a12e7dd)
-2024-02-02 16:47:25,614 INFO Finished executing jobs locally
+2024-02-02 18:20:46,578 INFO Starting job - store_inputs (298ea07d-62a1-405d-8ea0-f69adb6a55ed, 2)
+2024-02-02 18:20:46,579 INFO Finished job - store_inputs (298ea07d-62a1-405d-8ea0-f69adb6a55ed, 2)
+2024-02-02 18:20:46,579 INFO Starting job - get_supercell_size (853992fd-eca6-43b8-96eb-43791e5a4542)
+2024-02-02 18:20:46,600 INFO Finished job - get_supercell_size (853992fd-eca6-43b8-96eb-43791e5a4542)
+2024-02-02 18:20:46,601 INFO Starting job - static (c27437ee-db5a-4527-8e1b-f3d256ad7150)
+2024-02-02 18:20:46,824 INFO Finished job - static (c27437ee-db5a-4527-8e1b-f3d256ad7150)
+2024-02-02 18:20:46,824 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:46,824 INFO Starting job - generate_phonon_displacements (c5aed2fc-cec3-4e60-b183-2fde42cf8be5)
+2024-02-02 18:20:47,395 INFO Finished job - generate_phonon_displacements (c5aed2fc-cec3-4e60-b183-2fde42cf8be5)
+2024-02-02 18:20:47,395 INFO Starting job - run_phonon_displacements (22630b16-2564-4313-ae89-d7b8008b6b71)
+2024-02-02 18:20:47,475 INFO Finished job - run_phonon_displacements (22630b16-2564-4313-ae89-d7b8008b6b71)
+2024-02-02 18:20:47,502 INFO Starting job - phonon static 1/2 (b6c60de3-4204-4d43-9122-0591148ce90d)
+2024-02-02 18:20:48,493 INFO Finished job - phonon static 1/2 (b6c60de3-4204-4d43-9122-0591148ce90d)
+2024-02-02 18:20:48,493 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:48,493 INFO Starting job - phonon static 2/2 (cdb1fe75-7486-49ff-a10c-8c133f44b750)
+2024-02-02 18:20:49,294 INFO Finished job - phonon static 2/2 (cdb1fe75-7486-49ff-a10c-8c133f44b750)
+2024-02-02 18:20:49,294 WARNING Response.stored_data is not supported with local manager.
+2024-02-02 18:20:49,295 INFO Starting job - store_inputs (22630b16-2564-4313-ae89-d7b8008b6b71, 2)
+2024-02-02 18:20:49,296 INFO Finished job - store_inputs (22630b16-2564-4313-ae89-d7b8008b6b71, 2)
+2024-02-02 18:20:49,296 INFO Starting job - generate_frequencies_eigenvectors (e75e94ff-9362-4f08-9253-e35fd2057d02)
+2024-02-02 18:20:57,894 INFO Finished job - generate_frequencies_eigenvectors (e75e94ff-9362-4f08-9253-e35fd2057d02)
+2024-02-02 18:20:57,896 INFO Starting job - compute_bandstructure_benchmark_metrics (303f4e85-9a57-43cc-8fd7-129c49056074)
+2024-02-02 18:20:58,174 INFO compute_bandstructure_benchmark_metrics failed with exception:
+Traceback (most recent call last):
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/managers/local.py", line 102, in _run_job
+    response = job.run(store=store)
+               ^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/job.py", line 572, in run
+    self.resolve_args(store=store)
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/job.py", line 684, in resolve_args
+    resolved_kwargs = find_and_resolve_references(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/reference.py", line 458, in find_and_resolve_references
+    resolved_references = resolve_references(
+                          ^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/reference.py", line 348, in resolve_references
+    cache[uuid][index] = store.get_output(
+                         ^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/store.py", line 521, in get_output
+    return find_and_resolve_references(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/reference.py", line 439, in find_and_resolve_references
+    return arg.resolve(store, cache=cache, on_missing=on_missing)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/reference.py", line 167, in resolve
+    raise ValueError(
+ValueError: Could not resolve reference - 21e87f67-7fbf-4b9a-9d0c-9697cdac022d not in store or cache
+
+2024-02-02 18:20:58,176 INFO Finished executing jobs locally
 ----------------------------- Captured stderr call -----------------------------
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-46-58-482557-66920
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-19-193297-58910
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-46-59-369381-13977
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-20-081474-65295
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-00-111427-30091
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-20-837521-77459
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-01-037695-62024
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-21-750812-11578
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-01-277042-62796
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-21-980968-71437
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-01-562154-34651
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-22-264904-30337
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-02-633718-76629
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-23-309057-89183
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-03-580141-53642
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-24-260134-54006
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-13-162202-86743
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-33-840151-86447
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-13-290328-90039
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-33-979276-92187
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-13-418363-38855
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-34-116838-66890
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-14-222503-23211
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-38-045554-46709
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-14-476054-12759
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/phonopy/phonon/dos.py:144: RuntimeWarning: invalid value encountered in scalar divide
+  self._frequency_points = np.arange(f_min, f_max + f_delta * 0.1, f_delta)
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-46-601010-45096
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-15-383575-30864
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-47-502236-80048
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
-/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmp1rzz6588/job_2024-02-02-15-47-16-326850-56392
+/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/pymatgen/io/vasp/outputs.py:995: UserWarning: No POTCAR file with matching TITEL fields was found in /tmp/tmppin5rlqr/job_2024-02-02-17-20-48-493827-36031
   warnings.warn(f"No POTCAR file with matching TITEL fields was found in {os.path.abspath(p)}")
 ------------------------------ Captured log call -------------------------------
 [32mINFO    [0m jobflow.managers.local:local.py:156 Started executing jobs locally
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - dft_random_gen_data (97d1a96b-b48d-438b-9bc2-cf113587657a)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - dft_random_gen_data (97d1a96b-b48d-438b-9bc2-cf113587657a)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_randomized_structures (05d86cae-3a4b-4807-a939-ed947952cec0)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_randomized_structures (05d86cae-3a4b-4807-a939-ed947952cec0)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - run_phonon_displacements (1185adb4-e851-4ccc-a23c-f684cecd696d)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - run_phonon_displacements (1185adb4-e851-4ccc-a23c-f684cecd696d)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 1/3 (857ef9a7-a209-4f3e-aa7e-418e5454c98b)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 1/3 (857ef9a7-a209-4f3e-aa7e-418e5454c98b)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - dft_random_gen_data (497b50e2-64bf-41b5-a372-933834622f48)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - dft_random_gen_data (497b50e2-64bf-41b5-a372-933834622f48)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_randomized_structures (45e74670-4567-472d-95d8-5d6c87eb3cbf)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_randomized_structures (45e74670-4567-472d-95d8-5d6c87eb3cbf)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - run_phonon_displacements (7fc24a65-91f8-4fbc-b9fb-86ed0e27b5bc)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - run_phonon_displacements (7fc24a65-91f8-4fbc-b9fb-86ed0e27b5bc)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 1/3 (9ccb0851-c580-437a-a482-577c9f515b56)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 1/3 (9ccb0851-c580-437a-a482-577c9f515b56)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 2/3 (cf1bb923-077b-4716-b563-282cd8289c70)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 2/3 (cf1bb923-077b-4716-b563-282cd8289c70)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 2/3 (c399a3fa-6349-4ccc-aa09-c5bc5ca9c156)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 2/3 (c399a3fa-6349-4ccc-aa09-c5bc5ca9c156)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 3/3 (c636b0b3-01ef-43cd-924e-6b0dfb1b18fc)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 3/3 (c636b0b3-01ef-43cd-924e-6b0dfb1b18fc)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 3/3 (fad59111-9958-4617-9f10-601eeb33c43a)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 3/3 (fad59111-9958-4617-9f10-601eeb33c43a)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (1185adb4-e851-4ccc-a23c-f684cecd696d, 2)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (1185adb4-e851-4ccc-a23c-f684cecd696d, 2)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (97d1a96b-b48d-438b-9bc2-cf113587657a, 2)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (97d1a96b-b48d-438b-9bc2-cf113587657a, 2)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - dft_phonopy_gen_data (cbe34244-fac1-413c-b374-03a498563a41)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - dft_phonopy_gen_data (cbe34244-fac1-413c-b374-03a498563a41)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - tight relax 1 (c9a4e39c-1819-40fc-a954-975a65ef018f)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - tight relax 1 (c9a4e39c-1819-40fc-a954-975a65ef018f)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (7fc24a65-91f8-4fbc-b9fb-86ed0e27b5bc, 2)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (7fc24a65-91f8-4fbc-b9fb-86ed0e27b5bc, 2)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (497b50e2-64bf-41b5-a372-933834622f48, 2)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (497b50e2-64bf-41b5-a372-933834622f48, 2)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - dft_phonopy_gen_data (a4b2e3a4-a60b-454e-b776-92cafaeb01a6)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - dft_phonopy_gen_data (a4b2e3a4-a60b-454e-b776-92cafaeb01a6)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - tight relax 1 (3922586d-6d54-4924-9ce8-004d0742770a)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - tight relax 1 (3922586d-6d54-4924-9ce8-004d0742770a)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - tight relax 2 (3a4bcfac-82f9-49d3-b415-1037f2845b6b)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - tight relax 2 (3a4bcfac-82f9-49d3-b415-1037f2845b6b)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - tight relax 2 (d3d98e22-bd3d-462c-9709-6261f29cd55f)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - tight relax 2 (d3d98e22-bd3d-462c-9709-6261f29cd55f)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - get_supercell_size (e0fb7f76-8bb3-42bd-9925-48f6abfc165f)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - get_supercell_size (e0fb7f76-8bb3-42bd-9925-48f6abfc165f)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - static (0d15745c-7045-476e-b29e-93a819d43c7a)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - static (0d15745c-7045-476e-b29e-93a819d43c7a)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - get_supercell_size (69a7d3ae-6090-4a86-a6f3-f00db83bfeb0)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - get_supercell_size (69a7d3ae-6090-4a86-a6f3-f00db83bfeb0)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - static (e834f938-936f-481a-8586-4cfa45351239)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - static (e834f938-936f-481a-8586-4cfa45351239)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_phonon_displacements (748bb38e-a3d2-4161-a70f-ecc3ec95c003)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_phonon_displacements (748bb38e-a3d2-4161-a70f-ecc3ec95c003)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - run_phonon_displacements (bda86384-7a94-4914-9aa0-b9039d4dadcf)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - run_phonon_displacements (bda86384-7a94-4914-9aa0-b9039d4dadcf)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 1/2 (b4b8c9e1-b54c-476c-b432-8949e4b3790b)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 1/2 (b4b8c9e1-b54c-476c-b432-8949e4b3790b)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_phonon_displacements (9d8ee998-866e-4d5a-a881-ffaa8f807671)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_phonon_displacements (9d8ee998-866e-4d5a-a881-ffaa8f807671)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - run_phonon_displacements (c79fb8e1-96c6-424c-a917-21e20a639792)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - run_phonon_displacements (c79fb8e1-96c6-424c-a917-21e20a639792)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 1/2 (3b516fcf-71ef-4edd-9b7a-7ad824ac3508)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 1/2 (3b516fcf-71ef-4edd-9b7a-7ad824ac3508)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 2/2 (f4255aa9-216e-4913-aee5-6914ad4792d1)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 2/2 (f4255aa9-216e-4913-aee5-6914ad4792d1)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 2/2 (7fdc3796-6be6-486d-b4a2-64ba1b03c60c)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 2/2 (7fdc3796-6be6-486d-b4a2-64ba1b03c60c)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (bda86384-7a94-4914-9aa0-b9039d4dadcf, 2)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (bda86384-7a94-4914-9aa0-b9039d4dadcf, 2)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_frequencies_eigenvectors (a8cc1f83-ba93-4c6c-b9e4-6faa474c1007)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (c79fb8e1-96c6-424c-a917-21e20a639792, 2)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (c79fb8e1-96c6-424c-a917-21e20a639792, 2)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_frequencies_eigenvectors (5dd7045d-ccbe-4b11-99e3-9456678fcc75)
 [33mWARNING [0m matplotlib.backends.backend_ps:backend_ps.py:301 The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_frequencies_eigenvectors (a8cc1f83-ba93-4c6c-b9e4-6faa474c1007)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (cbe34244-fac1-413c-b374-03a498563a41, 2)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (cbe34244-fac1-413c-b374-03a498563a41, 2)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - get_iso_atom (ecb323a3-8296-43f0-a04a-e1d281782fb6)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - get_iso_atom (ecb323a3-8296-43f0-a04a-e1d281782fb6)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - Cl-statisoatom (7bad23c8-faba-42a6-8e8f-19f4915e8a54)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - Cl-statisoatom (7bad23c8-faba-42a6-8e8f-19f4915e8a54)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_frequencies_eigenvectors (5dd7045d-ccbe-4b11-99e3-9456678fcc75)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (a4b2e3a4-a60b-454e-b776-92cafaeb01a6, 2)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (a4b2e3a4-a60b-454e-b776-92cafaeb01a6, 2)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - get_iso_atom (1cf6e87a-059e-425b-86d1-2f53a0538738)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - get_iso_atom (1cf6e87a-059e-425b-86d1-2f53a0538738)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - Cl-statisoatom (e225af73-da49-407c-b25d-30e09a8867c7)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - Cl-statisoatom (e225af73-da49-407c-b25d-30e09a8867c7)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - Li-statisoatom (904ea058-1ffa-4631-97be-d51b6c6c322a)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - Li-statisoatom (904ea058-1ffa-4631-97be-d51b6c6c322a)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - Li-statisoatom (0e2f6440-d331-4ff8-be29-fbf2324e5ac1)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - Li-statisoatom (0e2f6440-d331-4ff8-be29-fbf2324e5ac1)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (ecb323a3-8296-43f0-a04a-e1d281782fb6, 2)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (ecb323a3-8296-43f0-a04a-e1d281782fb6, 2)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - tight relax 1 (c617bb3f-c6ad-43fd-923b-e6d63f41538a)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - tight relax 1 (c617bb3f-c6ad-43fd-923b-e6d63f41538a)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (1cf6e87a-059e-425b-86d1-2f53a0538738, 2)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (1cf6e87a-059e-425b-86d1-2f53a0538738, 2)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - tight relax 1 (dcd3574d-5059-4d77-b16a-5ca995962c8d)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - tight relax 1 (dcd3574d-5059-4d77-b16a-5ca995962c8d)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - gapfit (1d2f3f95-d379-4867-a88f-760f644dad65)
-[32mINFO    [0m jobflow.managers.local:local.py:106 gapfit failed with exception:
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - gapfit (0254beb1-2aa1-493c-94b6-904fffcac249)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - gapfit (0254beb1-2aa1-493c-94b6-904fffcac249)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - tight relax 2 (9d872593-6085-4732-9bcf-af64d75cafc7)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - tight relax 2 (9d872593-6085-4732-9bcf-af64d75cafc7)
+[33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - get_phonon_ml_calculation_jobs (298ea07d-62a1-405d-8ea0-f69adb6a55ed)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - get_phonon_ml_calculation_jobs (298ea07d-62a1-405d-8ea0-f69adb6a55ed)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - GAP relax (1fcd8166-1164-47f1-8257-ca2cbd76ec71)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - GAP relax (1fcd8166-1164-47f1-8257-ca2cbd76ec71)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - get_supercell_size (a794f79e-5a35-4f4d-b1e9-7cd100d3dce5)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - get_supercell_size (a794f79e-5a35-4f4d-b1e9-7cd100d3dce5)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - GAP static (6649d884-1ea8-4452-ac73-4f5ee26ae2e3)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - GAP static (6649d884-1ea8-4452-ac73-4f5ee26ae2e3)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_phonon_displacements (924cfae9-3060-463b-9d97-2c25bf04eb07)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_phonon_displacements (924cfae9-3060-463b-9d97-2c25bf04eb07)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - run_phonon_displacements (05808c79-b7ec-4c1f-8855-6377e3edd9f9)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - run_phonon_displacements (05808c79-b7ec-4c1f-8855-6377e3edd9f9)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - GAP static 1/2 (f07e9eb8-e8e3-4788-b45a-149c5d50fc6d)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - GAP static 1/2 (f07e9eb8-e8e3-4788-b45a-149c5d50fc6d)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - GAP static 2/2 (1b6b43f4-1fef-430b-a999-9736610ea294)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - GAP static 2/2 (1b6b43f4-1fef-430b-a999-9736610ea294)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (05808c79-b7ec-4c1f-8855-6377e3edd9f9, 2)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (05808c79-b7ec-4c1f-8855-6377e3edd9f9, 2)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_frequencies_eigenvectors (21e87f67-7fbf-4b9a-9d0c-9697cdac022d)
+[32mINFO    [0m jobflow.managers.local:local.py:106 generate_frequencies_eigenvectors failed with exception:
 Traceback (most recent call last):
   File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/managers/local.py", line 102, in _run_job
     response = job.run(store=store)
@@ -450,41 +1099,77 @@ Traceback (most recent call last):
   File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/job.py", line 583, in run
     response = function(*self.function_args, **self.function_kwargs)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/certural/git/autoplex/autoplex/fitting/jobs.py", line 69, in gapfit
-    list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
-                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/certural/git/autoplex/autoplex/fitting/utils.py", line 135, in get_list_of_vasp_calc_dirs
-    list_of_vasp_calc_dirs.extend(*dirs)
-TypeError: list.extend() takes exactly one argument (2 given)
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/atomate2/common/jobs/phonons.py", line 241, in generate_frequencies_eigenvectors
+    return PhononBSDOSDoc.from_forces_born(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/atomate2/common/schemas/phonons.py", line 356, in from_forces_born
+    phonon.run_total_dos()
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/phonopy/api_phonopy.py", line 2110, in run_total_dos
+    total_dos = TotalDos(
+                ^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/phonopy/phonon/dos.py", line 152, in __init__
+    super().__init__(
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/phonopy/phonon/dos.py", line 95, in __init__
+    self.set_draw_area()
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/phonopy/phonon/dos.py", line 144, in set_draw_area
+    self._frequency_points = np.arange(f_min, f_max + f_delta * 0.1, f_delta)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: arange: cannot compute length
 
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - tight relax 2 (83a9e086-da26-4d76-b5f7-d25fa25d4fa9)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - tight relax 2 (83a9e086-da26-4d76-b5f7-d25fa25d4fa9)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (298ea07d-62a1-405d-8ea0-f69adb6a55ed, 2)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (298ea07d-62a1-405d-8ea0-f69adb6a55ed, 2)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - get_supercell_size (853992fd-eca6-43b8-96eb-43791e5a4542)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - get_supercell_size (853992fd-eca6-43b8-96eb-43791e5a4542)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - static (c27437ee-db5a-4527-8e1b-f3d256ad7150)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - static (c27437ee-db5a-4527-8e1b-f3d256ad7150)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - get_supercell_size (69a69564-736f-41c5-a58b-2e9e083f434e)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - get_supercell_size (69a69564-736f-41c5-a58b-2e9e083f434e)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - static (29af6a3b-0e92-4e1a-a4a1-781fd3bfa85f)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - static (29af6a3b-0e92-4e1a-a4a1-781fd3bfa85f)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_phonon_displacements (c5aed2fc-cec3-4e60-b183-2fde42cf8be5)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_phonon_displacements (c5aed2fc-cec3-4e60-b183-2fde42cf8be5)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - run_phonon_displacements (22630b16-2564-4313-ae89-d7b8008b6b71)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - run_phonon_displacements (22630b16-2564-4313-ae89-d7b8008b6b71)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 1/2 (b6c60de3-4204-4d43-9122-0591148ce90d)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 1/2 (b6c60de3-4204-4d43-9122-0591148ce90d)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_phonon_displacements (1fc2170e-e5cd-4a33-a9a0-6db7047b638a)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_phonon_displacements (1fc2170e-e5cd-4a33-a9a0-6db7047b638a)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - run_phonon_displacements (a3703345-5f08-4efc-b2dc-5e3301340ce9)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - run_phonon_displacements (a3703345-5f08-4efc-b2dc-5e3301340ce9)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 1/2 (89a521ee-f049-4b19-9cbd-35a57ba6bc3e)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 1/2 (89a521ee-f049-4b19-9cbd-35a57ba6bc3e)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 2/2 (cdb1fe75-7486-49ff-a10c-8c133f44b750)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 2/2 (cdb1fe75-7486-49ff-a10c-8c133f44b750)
 [33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - phonon static 2/2 (9eba8fd2-4aee-4073-ab03-8f87eea4b2d9)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - phonon static 2/2 (9eba8fd2-4aee-4073-ab03-8f87eea4b2d9)
-[33mWARNING [0m jobflow.managers.local:local.py:113 Response.stored_data is not supported with local manager.
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (a3703345-5f08-4efc-b2dc-5e3301340ce9, 2)
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (a3703345-5f08-4efc-b2dc-5e3301340ce9, 2)
-[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_frequencies_eigenvectors (9d7a500b-04ac-402b-ab07-e30b0a12e7dd)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - store_inputs (22630b16-2564-4313-ae89-d7b8008b6b71, 2)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - store_inputs (22630b16-2564-4313-ae89-d7b8008b6b71, 2)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - generate_frequencies_eigenvectors (e75e94ff-9362-4f08-9253-e35fd2057d02)
 [33mWARNING [0m matplotlib.backends.backend_ps:backend_ps.py:301 The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
-[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_frequencies_eigenvectors (9d7a500b-04ac-402b-ab07-e30b0a12e7dd)
+[32mINFO    [0m jobflow.core.job:job.py:648 Finished job - generate_frequencies_eigenvectors (e75e94ff-9362-4f08-9253-e35fd2057d02)
+[32mINFO    [0m jobflow.core.job:job.py:565 Starting job - compute_bandstructure_benchmark_metrics (303f4e85-9a57-43cc-8fd7-129c49056074)
+[32mINFO    [0m jobflow.managers.local:local.py:106 compute_bandstructure_benchmark_metrics failed with exception:
+Traceback (most recent call last):
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/managers/local.py", line 102, in _run_job
+    response = job.run(store=store)
+               ^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/job.py", line 572, in run
+    self.resolve_args(store=store)
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/job.py", line 684, in resolve_args
+    resolved_kwargs = find_and_resolve_references(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/reference.py", line 458, in find_and_resolve_references
+    resolved_references = resolve_references(
+                          ^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/reference.py", line 348, in resolve_references
+    cache[uuid][index] = store.get_output(
+                         ^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/store.py", line 521, in get_output
+    return find_and_resolve_references(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/reference.py", line 439, in find_and_resolve_references
+    return arg.resolve(store, cache=cache, on_missing=on_missing)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/certural/packages/miniconda3/envs/atomate2/lib/python3.11/site-packages/jobflow/core/reference.py", line 167, in resolve
+    raise ValueError(
+ValueError: Could not resolve reference - 21e87f67-7fbf-4b9a-9d0c-9697cdac022d not in store or cache
+
 [32mINFO    [0m jobflow.managers.local:local.py:158 Finished executing jobs locally
 ============================= slowest 30 durations =============================
-27.47s call     tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow
+39.31s call     tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow
 0.32s setup    tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow
 
 (1 durations < 0.005s hidden.  Use -vv to show these durations.)
 [31m!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!![0m
-[31m[31m[1m1 failed[0m[31m in 33.44s[0m[0m
+[31m[31m[1m1 failed[0m[31m in 45.43s[0m[0m

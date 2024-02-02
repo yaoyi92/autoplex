@@ -24,7 +24,6 @@ def gapfit(
     fit_input: dict,
     isolated_atoms: list,
     isolated_atoms_energy: list,
-    config_types: list[str] | None = None,
     path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
     include_two_body: bool = True,
     include_three_body: bool = False,
@@ -63,10 +62,19 @@ def gapfit(
     Response.output
         Path to the gap fit file.
     """
+    config_types = []
     if fit_kwargs is None:
         fit_kwargs = field(default_factory=dict)
 
     list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
+
+    config_types = [
+        key
+        for key, value in fit_input.items()
+        for key2, value2 in value.items()
+        if key2 != "phonon_data"
+        for _ in value2[0]
+    ]
 
     outcar_2_extended_xyz(
         path_to_vasp_static_calcs=list_of_vasp_calc_dirs,

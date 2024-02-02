@@ -159,12 +159,12 @@ def outcar_2_extended_xyz(
     if config_types is None:
         config_types = ["bulk"] * len(path_to_vasp_static_calcs)
 
-    for path in path_to_vasp_static_calcs:
+    for path, config_type in zip(path_to_vasp_static_calcs, config_types):
         # strip hostname if it exists in the path
         path_without_hostname = Path(strip_hostname(path)).joinpath("vasprun.xml.gz")
         # read the outcar
         file = read(path_without_hostname, index=":")
-        for i, config_type in zip(file, config_types):
+        for i in file:
             virial_list = -voigt_6_to_full_3x3_stress(i.get_stress()) * i.get_volume()
             i.info["REF_virial"] = " ".join(map(str, virial_list.flatten()))
             del i.calc.results["stress"]

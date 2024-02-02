@@ -100,10 +100,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         flows = []
         fit_input = {}
         collect = []
-        config_types = []
 
         for structure, mp_id in zip(structure_list, mp_ids):
-            config_types.append(mp_id)
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
                     structure,
@@ -141,7 +139,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             isolated_atoms_energy=isoatoms.output["energies"],
             xyz_file=xyz_file,
             fit_input=fit_input,
-            config_types=config_types,
             **fit_kwargs,
         )
         flows.append(add_data_fit)
@@ -395,7 +392,6 @@ class PhononDFTMLFitFlow(Maker):
         species,
         isolated_atoms_energy,
         fit_input: dict,
-        config_types: list[str] | None = None,
         xyz_file: str | None = None,
         **fit_kwargs,
     ):
@@ -412,8 +408,6 @@ class PhononDFTMLFitFlow(Maker):
             Mixed list of dictionary and lists
         xyz_file: str or None
             a possibly already existing xyz file
-        config_types: list[str] or None
-            list of config_types.
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
@@ -424,7 +418,6 @@ class PhononDFTMLFitFlow(Maker):
             iso_atom_energy=isolated_atoms_energy,
             fit_input=fit_input,
             xyz_file=xyz_file,
-            config_types=config_types,
             **fit_kwargs,
         )
         flows.append(ml_fit_flow)
