@@ -62,16 +62,16 @@ def gap_hyperparameter_constructor(
            gap fit input parameter string.
     """
     # convert gap_parameter_dict to representation compatible with gap
-    if atoms_energies and atoms_symbols is not None:
-        e0 = ":".join(
-            [
-                f"{iso_atom}:{iso_energy}"
-                for iso_atom, iso_energy in zip(atoms_symbols, atoms_energies)
-            ]
-        )
+    # if atoms_energies and atoms_symbols is not None:
+    #     e0 = ":".join(
+    #         [
+    #             f"{iso_atom}:{iso_energy}"
+    #             for iso_atom, iso_energy in zip(atoms_symbols, atoms_energies)
+    #         ]
+    #     )
 
-        # Update the isolated atom energy argument
-        gap_parameter_dict["general"].update({"e0": e0})
+    # Update the isolated atom energy argument
+    # gap_parameter_dict["general"].update({"e0": e0})
 
     general = [f"{key}={value}" for key, value in gap_parameter_dict["general"].items()]
 
