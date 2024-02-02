@@ -138,8 +138,8 @@ def get_list_of_vasp_calc_dirs(flow_output):
 
 def outcar_2_extended_xyz(
     path_to_vasp_static_calcs: list,
+    config_types: list[str],
     xyz_file: str | None = None,
-    config_type: str = "bulk",
 ):
     """
     Parse all VASP OUTCARs and generates a trainGAP.xyz.
@@ -153,15 +153,15 @@ def outcar_2_extended_xyz(
         List of VASP static calculation directories.
     xyz_file: str or None
         a possibly already existing xyz file.
-    config_type: str
-        specifies a config_type.
+    config_types: list[str]
+            list of config_types.
     """
     for path in path_to_vasp_static_calcs:
         # strip hostname if it exists in the path
         path_without_hostname = Path(strip_hostname(path)).joinpath("OUTCAR.gz")
         # read the outcar
         file = read(path_without_hostname, index=":")
-        for i in file:
+        for i, config_type in zip(file, config_types):
             xx, yy, zz, yz, xz, xy = -i.calc.results["stress"] * i.get_volume()
             i.info["virial"] = np.array([(xx, xy, xz), (xy, yy, yz), (xz, yz, zz)])
             i.info["config_type"] = config_type

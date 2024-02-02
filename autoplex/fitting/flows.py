@@ -36,6 +36,7 @@ class MLIPFitMaker(Maker):
         fit_input: dict,
         ml_dir: str | Path | None = None,
         xyz_file: str | None = None,
+        config_types=None,
         **fit_kwargs,
     ):
         """
@@ -53,15 +54,20 @@ class MLIPFitMaker(Maker):
             path to the ML potential file
         xyz_file: str or None
             a possibly already existing xyz file
+        config_types: list[str]
+            list of config_types.
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
+        if config_types is None:
+            config_types = ["bulk"]
         jobs = []
         gap_fit_job = gapfit(
             fit_input=fit_input,
             isolated_atoms=species_list,
             isolated_atoms_energy=iso_atom_energy,
             xyz_file=xyz_file,
+            config_types=config_types,
             fit_kwargs=fit_kwargs,
         )
         jobs.append(gap_fit_job)  # type: ignore

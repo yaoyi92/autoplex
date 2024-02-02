@@ -100,11 +100,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         flows = []
         fit_input = {}
         collect = []
-
-        # if xyz_file is None:
-        #    raise Exception("Error. Please provide an existing xyz file.")
+        config_types = []
 
         for i, structure in enumerate(structure_list):
+            config_types.append(mp_ids[i])
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
                     structure,
@@ -141,6 +140,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             isolated_atoms_energy=isoatoms.output["energies"],
             xyz_file=xyz_file,
             fit_input=fit_input,
+            config_types=config_types,
             **fit_kwargs,
         )
         flows.append(add_data_fit)
@@ -151,7 +151,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             for ibenchmark_structure, benchmark_structure in enumerate(
                 benchmark_structures
             ):
-                # not sure if it would make sense to put everything from here in its own flow?
                 add_data_ml_phonon = get_phonon_ml_calculation_jobs(
                     structure=benchmark_structure,
                     min_length=self.min_length,
@@ -394,6 +393,7 @@ class PhononDFTMLFitFlow(Maker):
         isolated_atoms_energy,
         fit_input: dict,
         xyz_file: str | None = None,
+        config_type: str = "bulk",
         **fit_kwargs,
     ):
         """
@@ -409,6 +409,8 @@ class PhononDFTMLFitFlow(Maker):
             Mixed list of dictionary and lists
         xyz_file: str or None
             a possibly already existing xyz file
+        config_type: str
+            specifies a config_type.
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
@@ -419,6 +421,7 @@ class PhononDFTMLFitFlow(Maker):
             iso_atom_energy=isolated_atoms_energy,
             fit_input=fit_input,
             xyz_file=xyz_file,
+            config_type=config_type,
             **fit_kwargs,
         )
         flows.append(ml_fit_flow)

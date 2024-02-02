@@ -29,6 +29,7 @@ def gapfit(
     include_three_body: bool = False,
     include_soap: bool = True,
     xyz_file: str | None = None,
+    config_types=None,
     fit_kwargs=None,  # pylint: disable=E3701
 ):  # pylint: disable=R0913, R0914
     """
@@ -52,6 +53,8 @@ def gapfit(
         bool indicating whether to include soap hyperparameters
     xyz_file: str or None
         a possibly already existing xyz file
+    config_types: list[str]
+            list of config_types.
     fit_kwargs : dict.
         dict including gap fit keyword args.
 
@@ -60,13 +63,17 @@ def gapfit(
     Response.output
         Path to the gap fit file.
     """
+    if config_types is None:
+        config_types = ["bulk"]
     if fit_kwargs is None:
         fit_kwargs = field(default_factory=dict)
 
     list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
 
     outcar_2_extended_xyz(
-        path_to_vasp_static_calcs=list_of_vasp_calc_dirs, xyz_file=xyz_file
+        path_to_vasp_static_calcs=list_of_vasp_calc_dirs,
+        config_types=config_types,
+        xyz_file=xyz_file,
     )
 
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
