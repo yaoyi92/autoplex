@@ -107,14 +107,14 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
                     structure,
-                    mp_ids[i],
+                    mp_id,
                     self.phonon_displacement_maker,
                     self.n_struct,
                     self.uc,
                     self.supercell_matrix,
                 )
                 flows.append(addDFTrand)
-                fit_input.update({mp_ids[i]: addDFTrand.output})
+                fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
                 addDFTphon = self.add_dft_phonons(
                     structure,
@@ -124,11 +124,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     self.min_length,
                 )
                 flows.append(addDFTphon)
-                fit_input.update({mp_ids[i]: addDFTphon.output})
+                fit_input.update({mp_id: addDFTphon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
-                fit_input.update(
-                    {mp_ids[i]: {**addDFTrand.output, **addDFTphon.output}}
-                )
+                fit_input.update({mp_id: {**addDFTrand.output, **addDFTphon.output}})
             if self.add_rss_struct:
                 raise NotImplementedError
 
