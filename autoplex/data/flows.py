@@ -357,7 +357,8 @@ class IsoAtomMaker(Maker):
             list of pymatgen specie object.
         """
         jobs = []
-        isoatoms = []
+        isoatoms_energy = []
+        isoatoms_dirs = []
         for species in all_species:
             site = Site(species=species, coords=[0, 0, 0])
             mol = Molecule.from_sites([site])
@@ -370,6 +371,8 @@ class IsoAtomMaker(Maker):
             ).make(iso_atom)
 
             jobs.append(isoatom_calcs)
-            isoatoms.append(isoatom_calcs.output.output.energy_per_atom)
+            isoatoms_energy.append(isoatom_calcs.output.output.energy_per_atom)
+            isoatoms_dirs.append(isoatom_calcs.output.dir_name)
+
         # create a flow including all jobs
-        return Flow(jobs, isoatoms)
+        return Flow(jobs, {"energies": isoatoms_energy, "dirs": isoatoms_dirs})

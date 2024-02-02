@@ -314,5 +314,12 @@ def get_iso_atom(structure_list: list[Structure]):
     isoatoms = IsoAtomMaker().make(all_species=all_species)
     jobs.append(isoatoms)
 
-    flow = Flow(jobs, {"species": all_species, "energies": isoatoms.output})
+    flow = Flow(
+        jobs,
+        {
+            "species": all_species,
+            "energies": isoatoms.output["energies"],
+            "dirs": isoatoms.output["dirs"],
+        },
+    )
     return Response(replace=flow)

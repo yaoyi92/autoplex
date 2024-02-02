@@ -1,7 +1,6 @@
 {
   "general": {
     "at_file": "trainGAP.xyz",
-    "e0": "2",
     "default_sigma": "{0.01 0.2 0.2 0.0}",
     "energy_parameter_name": "energy",
     "force_parameter_name": "forces",

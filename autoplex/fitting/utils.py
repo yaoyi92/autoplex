@@ -7,7 +7,7 @@ import os
 import shutil
 from pathlib import Path
 
-import numpy as np
+from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
 from atomate2.utils.path import strip_hostname
 
@@ -161,14 +161,19 @@ def outcar_2_extended_xyz(
 
     for path in path_to_vasp_static_calcs:
         # strip hostname if it exists in the path
-        path_without_hostname = Path(strip_hostname(path)).joinpath("OUTCAR.gz")
+        path_without_hostname = Path(strip_hostname(path)).joinpath("vasprun.xml.gz")
         # read the outcar
         file = read(path_without_hostname, index=":")
         for i, config_type in zip(file, config_types):
-            xx, yy, zz, yz, xz, xy = -i.calc.results["stress"] * i.get_volume()
-            i.info["virial"] = np.array([(xx, xy, xz), (xy, yy, yz), (xz, yz, zz)])
-            i.info["config_type"] = config_type
+            virial_list = -voigt_6_to_full_3x3_stress(i.get_stress()) * i.get_volume()
+            i.info["REF_virial"] = " ".join(map(str, virial_list.flatten()))
             del i.calc.results["stress"]
+            i.arrays["REF_forces"] = i.calc.results["forces"]
+            del i.calc.results["forces"]
+            i.info["REF_energy"] = i.calc.results["free_energy"]
+            del i.calc.results["energy"]
+            del i.calc.results["free_energy"]
+            i.info["config_type"] = config_type
             i.pbc = True
         if xyz_file is not None:
             shutil.copy2(xyz_file, os.getcwd())
