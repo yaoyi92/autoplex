@@ -73,6 +73,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
         species_list=["Li", "Cl"],
         iso_atom_energy=[-0.28649227, -0.25638457],
         fit_input=fit_input_dict,
+        config_types=["LiCl"]*len(fit_input_dict["mp-22905"]["rand_struc_dir"][0]+fit_input_dict["mp-22905"]["phonon_dir"][0])
     )
 
     responses = run_locally(
