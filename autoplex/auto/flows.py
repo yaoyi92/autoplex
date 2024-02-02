@@ -393,7 +393,7 @@ class PhononDFTMLFitFlow(Maker):
         isolated_atoms_energy,
         fit_input: dict,
         xyz_file: str | None = None,
-        config_type: str = "bulk",
+        config_types=None,
         **fit_kwargs,
     ):
         """
@@ -409,11 +409,13 @@ class PhononDFTMLFitFlow(Maker):
             Mixed list of dictionary and lists
         xyz_file: str or None
             a possibly already existing xyz file
-        config_type: str
-            specifies a config_type.
+        config_types: list[str]
+            list of config_types.
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
+        if config_types is None:
+            config_types = ["bulk"]
         flows = []
 
         ml_fit_flow = MLIPFitMaker(name="GAP").make(
@@ -421,7 +423,7 @@ class PhononDFTMLFitFlow(Maker):
             iso_atom_energy=isolated_atoms_energy,
             fit_input=fit_input,
             xyz_file=xyz_file,
-            config_type=config_type,
+            config_types=config_types,
             **fit_kwargs,
         )
         flows.append(ml_fit_flow)
