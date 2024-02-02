@@ -103,7 +103,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         config_types = []
 
         for i, structure in enumerate(structure_list):
-            config_types.append(mp_ids[i])
+            config_types.append(mp_id)
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
                     structure,
