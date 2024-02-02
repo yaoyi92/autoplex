@@ -24,12 +24,12 @@ def gapfit(
     fit_input: dict,
     isolated_atoms: list,
     isolated_atoms_energy: list,
+    config_types: list[str],
     path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
     include_two_body: bool = True,
     include_three_body: bool = False,
     include_soap: bool = True,
     xyz_file: str | None = None,
-    config_types=None,
     fit_kwargs=None,  # pylint: disable=E3701
 ):  # pylint: disable=R0913, R0914
     """
@@ -63,8 +63,6 @@ def gapfit(
     Response.output
         Path to the gap fit file.
     """
-    if config_types is None:
-        config_types = ["bulk"]
     if fit_kwargs is None:
         fit_kwargs = field(default_factory=dict)
 

@@ -376,6 +376,8 @@ class PhononDFTMLFitFlow(Maker):
     """
     Maker to fit several types of ML potentials (GAP, ACE etc.) based on DFT data.
 
+    (Currently only the subroutines for GAP are implemented).
+
     Parameters
     ----------
     name : str
@@ -390,8 +392,8 @@ class PhononDFTMLFitFlow(Maker):
         species,
         isolated_atoms_energy,
         fit_input: dict,
+        config_types: list[str],
         xyz_file: str | None = None,
-        config_types=None,
         **fit_kwargs,
     ):
         """
@@ -412,8 +414,6 @@ class PhononDFTMLFitFlow(Maker):
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
-        if config_types is None:
-            config_types = ["bulk"]
         flows = []
 
         ml_fit_flow = MLIPFitMaker(name="GAP").make(

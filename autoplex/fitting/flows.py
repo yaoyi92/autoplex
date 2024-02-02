@@ -34,9 +34,9 @@ class MLIPFitMaker(Maker):
         species_list: list,
         iso_atom_energy: list,
         fit_input: dict,
+        config_types: list[str],
         ml_dir: str | Path | None = None,
         xyz_file: str | None = None,
-        config_types=None,
         **fit_kwargs,
     ):
         """
@@ -59,8 +59,6 @@ class MLIPFitMaker(Maker):
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
-        if config_types is None:
-            config_types = ["bulk"]
         jobs = []
         gap_fit_job = gapfit(
             fit_input=fit_input,
