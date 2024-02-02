@@ -138,7 +138,7 @@ def get_list_of_vasp_calc_dirs(flow_output):
 
 def outcar_2_extended_xyz(
     path_to_vasp_static_calcs: list,
-    config_types: list[str],
+    config_types: list[str] | None = None,
     xyz_file: str | None = None,
 ):
     """
@@ -153,9 +153,12 @@ def outcar_2_extended_xyz(
         List of VASP static calculation directories.
     xyz_file: str or None
         a possibly already existing xyz file.
-    config_types: list[str]
+    config_types: list[str] or None
             list of config_types.
     """
+    if config_types is None:
+        config_types = ["bulk"] * len(path_to_vasp_static_calcs)
+
     for path in path_to_vasp_static_calcs:
         # strip hostname if it exists in the path
         path_without_hostname = Path(strip_hostname(path)).joinpath("OUTCAR.gz")

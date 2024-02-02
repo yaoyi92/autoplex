@@ -24,7 +24,7 @@ def gapfit(
     fit_input: dict,
     isolated_atoms: list,
     isolated_atoms_energy: list,
-    config_types: list[str],
+    config_types: list[str] | None = None,
     path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
     include_two_body: bool = True,
     include_three_body: bool = False,
@@ -53,7 +53,7 @@ def gapfit(
         bool indicating whether to include soap hyperparameters
     xyz_file: str or None
         a possibly already existing xyz file
-    config_types: list[str]
+    config_types: list[str] or None
             list of config_types.
     fit_kwargs : dict.
         dict including gap fit keyword args.

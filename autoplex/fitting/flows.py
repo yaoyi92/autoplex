@@ -34,7 +34,7 @@ class MLIPFitMaker(Maker):
         species_list: list,
         iso_atom_energy: list,
         fit_input: dict,
-        config_types: list[str],
+        config_types: list[str] | None = None,
         ml_dir: str | Path | None = None,
         xyz_file: str | None = None,
         **fit_kwargs,
@@ -54,7 +54,7 @@ class MLIPFitMaker(Maker):
             path to the ML potential file
         xyz_file: str or None
             a possibly already existing xyz file
-        config_types: list[str]
+        config_types: list[str] or None
             list of config_types.
         fit_kwargs : dict.
             dict including gap fit keyword args.
