@@ -376,7 +376,7 @@ class DFTDataGenerationFlow(Maker):
 @dataclass
 class PhononDFTMLFitFlow(Maker):
     """
-    Maker to fit ML potentials based on DFT data.
+    Maker to fit several types of ML potentials (GAP, ACE etc.) based on DFT data.
 
     Parameters
     ----------
