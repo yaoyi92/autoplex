@@ -130,9 +130,11 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         isoatoms = get_iso_atom(structure_list)
         flows.append(isoatoms)
-        fit_input.update(
-            {"isolated_atom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
-        )
+
+        if xyz_file is None:
+            fit_input.update(
+                {"isolated_atom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
+            )
 
         add_data_fit = PhononDFTMLFitFlow().make(
             species=isoatoms.output["species"],
