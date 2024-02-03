@@ -20,11 +20,10 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     # test if string for all possible args true
     ref_list = [
         "at_file=trainGAP.xyz",
-        "e0=2",
         "default_sigma={0.01 0.2 0.2 0.0}",
-        "energy_parameter_name=energy",
-        "force_parameter_name=forces",
-        "virial_parameter_name=virial",
+        "energy_parameter_name=REF_energy",
+        "force_parameter_name=REF_forces",
+        "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
@@ -54,11 +53,10 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     # test if string for include_soap==False
     ref_list = [
         "at_file=trainGAP.xyz",
-        "e0=2",
         "default_sigma={0.01 0.2 0.2 0.0}",
-        "energy_parameter_name=energy",
-        "force_parameter_name=forces",
-        "virial_parameter_name=virial",
+        "energy_parameter_name=REF_energy",
+        "force_parameter_name=REF_forces",
+        "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
@@ -86,11 +84,10 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
 
     ref_list_exp = [
         "at_file=trainGAP.xyz",
-        "e0=2",
         "default_sigma={0.01 0.2 0.2 0.0}",
-        "energy_parameter_name=energy",
-        "force_parameter_name=forces",
-        "virial_parameter_name=virial",
+        "energy_parameter_name=REF_energy",
+        "force_parameter_name=REF_forces",
+        "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
@@ -124,11 +121,10 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
 
     ref_list = [
         "at_file=trainGAP.xyz",
-        "e0=2",
         "default_sigma={0.01 0.2 0.2 0.0}",
-        "energy_parameter_name=energy",
-        "force_parameter_name=forces",
-        "virial_parameter_name=virial",
+        "energy_parameter_name=REF_energy",
+        "force_parameter_name=REF_forces",
+        "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
@@ -154,11 +150,10 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
 
     ref_list = [
         "at_file=trainGAP.xyz",
-        "e0=2",
         "default_sigma={0.01 0.2 0.2 0.0}",
-        "energy_parameter_name=energy",
-        "force_parameter_name=forces",
-        "virial_parameter_name=virial",
+        "energy_parameter_name=REF_energy",
+        "force_parameter_name=REF_forces",
+        "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
@@ -188,11 +183,10 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
 
     ref_list = [
         "at_file=trainGAP.xyz",
-        "e0=2",
         "default_sigma={0.01 0.2 0.2 0.0}",
-        "energy_parameter_name=energy",
-        "force_parameter_name=forces",
-        "virial_parameter_name=virial",
+        "energy_parameter_name=REF_energy",
+        "force_parameter_name=REF_forces",
+        "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",

@@ -36,9 +36,7 @@ __all__ = [
 
 
 @dataclass
-class CompleteDFTvsMLBenchmarkWorkflow(
-    Maker
-):  # merge with complete wf and set another flag for adding data
+class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     """
     Maker to add more data to existing dataset (.xyz file).
 
@@ -103,21 +101,18 @@ class CompleteDFTvsMLBenchmarkWorkflow(
         fit_input = {}
         collect = []
 
-        # if xyz_file is None:
-        #    raise Exception("Error. Please provide an existing xyz file.")
-
-        for i, structure in enumerate(structure_list):
+        for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
                     structure,
-                    mp_ids[i],
+                    mp_id,
                     self.phonon_displacement_maker,
                     self.n_struct,
                     self.uc,
                     self.supercell_matrix,
                 )
                 flows.append(addDFTrand)
-                fit_input.update({mp_ids[i]: addDFTrand.output})
+                fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
                 addDFTphon = self.add_dft_phonons(
                     structure,
@@ -127,16 +122,19 @@ class CompleteDFTvsMLBenchmarkWorkflow(
                     self.min_length,
                 )
                 flows.append(addDFTphon)
-                fit_input.update({mp_ids[i]: addDFTphon.output})
+                fit_input.update({mp_id: addDFTphon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
-                fit_input.update(
-                    {mp_ids[i]: {**addDFTrand.output, **addDFTphon.output}}
-                )
+                fit_input.update({mp_id: {**addDFTrand.output, **addDFTphon.output}})
             if self.add_rss_struct:
                 raise NotImplementedError
 
         isoatoms = get_iso_atom(structure_list)
         flows.append(isoatoms)
+
+        if xyz_file is None:
+            fit_input.update(
+                {"isolated_atom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
+            )
 
         add_data_fit = PhononDFTMLFitFlow().make(
             species=isoatoms.output["species"],
@@ -153,7 +151,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(
             for ibenchmark_structure, benchmark_structure in enumerate(
                 benchmark_structures
             ):
-                # not sure if it would make sense to put everything from here in its own flow?
                 add_data_ml_phonon = get_phonon_ml_calculation_jobs(
                     structure=benchmark_structure,
                     min_length=self.min_length,
@@ -379,7 +376,9 @@ class DFTDataGenerationFlow(Maker):
 @dataclass
 class PhononDFTMLFitFlow(Maker):
     """
-    Maker to fit ML potentials based on DFT data.
+    Maker to fit several types of ML potentials (GAP, ACE etc.) based on DFT data.
+
+    (Currently only the subroutines for GAP are implemented).
 
     Parameters
     ----------
