@@ -65,6 +65,25 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
                 ]
             ],
             "phonon_data": [],
+        },
+        "isolated_atom": {"iso_atoms_dir": [[
+            (
+                    vasp_test_dir
+                    / "Li_iso_atoms"
+                    / "Li-statisoatom"
+                    / "outputs"
+            )
+            .absolute()
+            .as_posix(),
+            (
+                    vasp_test_dir
+                    / "Cl_iso_atoms"
+                    / "Cl-statisoatom"
+                    / "outputs"
+            )
+            .absolute()
+            .as_posix(),
+        ]]
         }
     }
 
@@ -72,8 +91,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
     gapfit = MLIPFitMaker().make(
         species_list=["Li", "Cl"],
         iso_atom_energy=[-0.28649227, -0.25638457],
-        fit_input=fit_input_dict,
-        config_types=["LiCl"]*len(fit_input_dict["mp-22905"]["rand_struc_dir"][0]+fit_input_dict["mp-22905"]["phonon_dir"][0])
+        fit_input=fit_input_dict
     )
 
     responses = run_locally(
@@ -108,26 +126,26 @@ def test_mlip_fit_maker_with_kwargs(
             "rand_struc_dir": [
                 [
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_1"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_1"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_2"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_2"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_3"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_3"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
@@ -136,24 +154,43 @@ def test_mlip_fit_maker_with_kwargs(
             "phonon_dir": [
                 [
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "phonon_static_1"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "phonon_static_1"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "phonon_static_2"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "phonon_static_2"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                 ]
             ],
             "phonon_data": [],
+        },
+        "isolated_atom": {"iso_atoms_dir": [[
+            (
+                    vasp_test_dir
+                    / "Li_iso_atoms"
+                    / "Li-statisoatom"
+                    / "outputs"
+            )
+            .absolute()
+            .as_posix(),
+            (
+                    vasp_test_dir
+                    / "Cl_iso_atoms"
+                    / "Cl-statisoatom"
+                    / "outputs"
+            )
+            .absolute()
+            .as_posix(),
+        ]]
         }
     }
 
