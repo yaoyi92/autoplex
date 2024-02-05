@@ -5,8 +5,7 @@ name: Testing Linux
 
 on:
   push:
-    branches:
-      - '*'
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
