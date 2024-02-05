@@ -68,3 +68,23 @@ jobs:
           run: |
             coverage combine coverage*/.coverage*
             coverage report --show-missing
+
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[docs,strict]
+
+      - name: Build
+        run: sphinx-build -W docs _build
