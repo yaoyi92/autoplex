@@ -7,7 +7,7 @@ import os
 import shutil
 from pathlib import Path
 
-import numpy as np
+from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
 from atomate2.utils.path import strip_hostname
 
@@ -62,16 +62,16 @@ def gap_hyperparameter_constructor(
            gap fit input parameter string.
     """
     # convert gap_parameter_dict to representation compatible with gap
-    if atoms_energies and atoms_symbols is not None:
-        e0 = ":".join(
-            [
-                f"{iso_atom}:{iso_energy}"
-                for iso_atom, iso_energy in zip(atoms_symbols, atoms_energies)
-            ]
-        )
+    # if atoms_energies and atoms_symbols is not None:
+    #     e0 = ":".join(
+    #         [
+    #             f"{iso_atom}:{iso_energy}"
+    #             for iso_atom, iso_energy in zip(atoms_symbols, atoms_energies)
+    #         ]
+    #     )
 
-        # Update the isolated atom energy argument
-        gap_parameter_dict["general"].update({"e0": e0})
+    # Update the isolated atom energy argument
+    # gap_parameter_dict["general"].update({"e0": e0})
 
     general = [f"{key}={value}" for key, value in gap_parameter_dict["general"].items()]
 
@@ -136,7 +136,11 @@ def get_list_of_vasp_calc_dirs(flow_output):
     return list_of_vasp_calc_dirs
 
 
-def outcar_2_extended_xyz(path_to_vasp_static_calcs: list, xyz_file: str | None = None):
+def outcar_2_extended_xyz(
+    path_to_vasp_static_calcs: list,
+    config_types: list[str] | None = None,
+    xyz_file: str | None = None,
+):
     """
     Parse all VASP OUTCARs and generates a trainGAP.xyz.
 
@@ -149,16 +153,27 @@ def outcar_2_extended_xyz(path_to_vasp_static_calcs: list, xyz_file: str | None 
         List of VASP static calculation directories.
     xyz_file: str or None
         a possibly already existing xyz file.
+    config_types: list[str] or None
+            list of config_types.
     """
-    for path in path_to_vasp_static_calcs:
+    if config_types is None:
+        config_types = ["bulk"] * len(path_to_vasp_static_calcs)
+
+    for path, config_type in zip(path_to_vasp_static_calcs, config_types):
         # strip hostname if it exists in the path
-        path_without_hostname = Path(strip_hostname(path)).joinpath("OUTCAR.gz")
+        path_without_hostname = Path(strip_hostname(path)).joinpath("vasprun.xml.gz")
         # read the outcar
         file = read(path_without_hostname, index=":")
         for i in file:
-            xx, yy, zz, yz, xz, xy = -i.calc.results["stress"] * i.get_volume()
-            i.info["virial"] = np.array([(xx, xy, xz), (xy, yy, yz), (xz, yz, zz)])
+            virial_list = -voigt_6_to_full_3x3_stress(i.get_stress()) * i.get_volume()
+            i.info["REF_virial"] = " ".join(map(str, virial_list.flatten()))
             del i.calc.results["stress"]
+            i.arrays["REF_forces"] = i.calc.results["forces"]
+            del i.calc.results["forces"]
+            i.info["REF_energy"] = i.calc.results["free_energy"]
+            del i.calc.results["energy"]
+            del i.calc.results["free_energy"]
+            i.info["config_type"] = config_type
             i.pbc = True
         if xyz_file is not None:
             shutil.copy2(xyz_file, os.getcwd())

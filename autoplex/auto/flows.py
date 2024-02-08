@@ -11,11 +11,6 @@ if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
-from atomate2.common.jobs.phonons import PhononDisplacementMaker
-from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
-from atomate2.vasp.powerups import (
-    update_user_incar_settings,
-)
 from jobflow import Flow, Maker
 
 from autoplex.auto.jobs import (
@@ -26,6 +21,7 @@ from autoplex.auto.jobs import (
 )
 from autoplex.benchmark.flows import PhononBenchmarkMaker
 from autoplex.benchmark.jobs import write_benchmark_metrics
+from autoplex.data.flows import DFTPhononMaker, TightDFTStaticMaker
 from autoplex.fitting.flows import MLIPFitMaker
 
 __all__ = [
@@ -40,9 +36,7 @@ __all__ = [
 
 
 @dataclass
-class CompleteDFTvsMLBenchmarkWorkflow(
-    Maker
-):  # merge with complete wf and set another flag for adding data
+class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     """
     Maker to add more data to existing dataset (.xyz file).
 
@@ -65,7 +59,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(
     add_rss_struct: bool = False
 
     phonon_displacement_maker: BaseVaspMaker = field(
-        default_factory=PhononDisplacementMaker
+        default_factory=TightDFTStaticMaker
     )
     n_struct: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.01])
@@ -80,8 +74,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(
         mp_ids,
         xyz_file: str | None = None,
         dft_references: PhononBSDOSDoc | None = None,
-        benchmark_structures: Structure | None = None,
-        benchmark_mp_ids: str | None = None,
+        benchmark_structures: list[Structure] | None = None,
+        benchmark_mp_ids: list[str] | None = None,
         **fit_kwargs,
     ):
         """
@@ -89,7 +83,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(
 
         Parameters
         ----------
-        structure_list: List[Structure]
+        structure_list:
             list of pymatgen structures.
         mp_ids:
             materials project id.
@@ -97,7 +91,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(
             the already existing training data xyz file.
         dft_references:
             DFT reference file containing the PhononBSDOCDoc object.
-        benchmark_structures: Structure
+        benchmark_structures:
             pymatgen structure for benchmarking.
         benchmark_mp_ids:
             Materials Project ID of the benchmarking structure.
@@ -107,21 +101,18 @@ class CompleteDFTvsMLBenchmarkWorkflow(
         fit_input = {}
         collect = []
 
-        # if xyz_file is None:
-        #    raise Exception("Error. Please provide an existing xyz file.")
-
-        for i, structure in enumerate(structure_list):
+        for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
                     structure,
-                    mp_ids[i],
+                    mp_id,
                     self.phonon_displacement_maker,
                     self.n_struct,
                     self.uc,
                     self.supercell_matrix,
                 )
                 flows.append(addDFTrand)
-                fit_input.update({mp_ids[i]: addDFTrand.output})
+                fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
                 addDFTphon = self.add_dft_phonons(
                     structure,
@@ -131,16 +122,19 @@ class CompleteDFTvsMLBenchmarkWorkflow(
                     self.min_length,
                 )
                 flows.append(addDFTphon)
-                fit_input.update({mp_ids[i]: addDFTphon.output})
+                fit_input.update({mp_id: addDFTphon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
-                fit_input.update(
-                    {mp_ids[i]: {**addDFTrand.output, **addDFTphon.output}}
-                )
+                fit_input.update({mp_id: {**addDFTrand.output, **addDFTphon.output}})
             if self.add_rss_struct:
                 raise NotImplementedError
 
         isoatoms = get_iso_atom(structure_list)
         flows.append(isoatoms)
+
+        if xyz_file is None:
+            fit_input.update(
+                {"isolated_atom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
+            )
 
         add_data_fit = PhononDFTMLFitFlow().make(
             species=isoatoms.output["species"],
@@ -151,21 +145,29 @@ class CompleteDFTvsMLBenchmarkWorkflow(
         )
         flows.append(add_data_fit)
 
-        bm_outputs=[]
+        bm_outputs = []
 
-        for ibenchmark_structure, benchmark_structure in enumerate(benchmark_structures):
-            # not sure if it would make sense to put everything from here in its own flow?
-            add_data_ml_phonon = get_phonon_ml_calculation_jobs(
-                structure=benchmark_structure,
-                min_length=self.min_length,
-                ml_dir=add_data_fit.output,
-            )
-            flows.append(add_data_ml_phonon)
+        if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
+            for ibenchmark_structure, benchmark_structure in enumerate(
+                benchmark_structures
+            ):
+                add_data_ml_phonon = get_phonon_ml_calculation_jobs(
+                    structure=benchmark_structure,
+                    min_length=self.min_length,
+                    ml_dir=add_data_fit.output,
+                )
+                flows.append(add_data_ml_phonon)
 
-            if dft_references is None and benchmark_mp_ids is not None:
-                    if (benchmark_mp_ids[ibenchmark_structure] in mp_ids) and self.add_dft_phonon_struct:
-                        dft_references = fit_input[benchmark_mp_ids[ibenchmark_structure]]["phonon_data"]["001"]
-                    elif (benchmark_mp_ids[ibenchmark_structure] not in mp_ids) or (  # else?
+                if dft_references is None and benchmark_mp_ids is not None:
+                    if (
+                        benchmark_mp_ids[ibenchmark_structure] in mp_ids
+                    ) and self.add_dft_phonon_struct:
+                        dft_references = fit_input[
+                            benchmark_mp_ids[ibenchmark_structure]
+                        ]["phonon_data"]["001"]
+                    elif (
+                        benchmark_mp_ids[ibenchmark_structure] not in mp_ids
+                    ) or (  # else?
                         self.add_dft_phonon_struct is False
                     ):
                         dft_phonons = DFTPhononMaker(
@@ -174,9 +176,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(
                             born_maker=None,
                             min_length=self.min_length,
                         ).make(structure=benchmark_structure)
-                        dft_phonons = update_user_incar_settings(
-                            dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
-                        )
+
                         flows.append(dft_phonons)
                         dft_references = dft_phonons.output
 
@@ -186,34 +186,52 @@ class CompleteDFTvsMLBenchmarkWorkflow(
                         ml_phonon_task_doc=add_data_ml_phonon.output,
                         dft_phonon_task_doc=dft_references,
                     )
-            else:
-                add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
-                    structure=benchmark_structure,
-                    benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
-                    ml_phonon_task_doc=add_data_ml_phonon.output,
-                    dft_phonon_task_doc=dft_references[ibenchmark_structure],
-                )
-            flows.append(add_data_bm)
-            collect.append(add_data_bm.output)
+                else:
+                    add_data_bm = PhononDFTMLBenchmarkFlow(name="addDataBM").make(
+                        structure=benchmark_structure,
+                        benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
+                        ml_phonon_task_doc=add_data_ml_phonon.output,
+                        dft_phonon_task_doc=dft_references[ibenchmark_structure],
+                    )
+                flows.append(add_data_bm)
+                collect.append(add_data_bm.output)
 
-            collect_bm = write_benchmark_metrics(
-                benchmark_structure=benchmark_structure,
-                mp_id=benchmark_mp_ids[ibenchmark_structure],
-                rmse=collect,
-                displacements=self.displacements,
-            )
-            flows.append(collect_bm)
-            bm_outputs.append(collect_bm.output)
+                collect_bm = write_benchmark_metrics(
+                    benchmark_structure=benchmark_structure,
+                    mp_id=benchmark_mp_ids[ibenchmark_structure],
+                    rmse=collect,
+                    displacements=self.displacements,
+                )
+                flows.append(collect_bm)
+                bm_outputs.append(collect_bm.output)
         return Flow(flows, bm_outputs)
 
     def add_dft_phonons(
         self,
         structure: Structure,
-        displacements,
-        symprec,
-        phonon_displacement_maker,
-        min_length,
+        displacements: list[float],
+        symprec: float,
+        phonon_displacement_maker: BaseVaspMaker,
+        min_length: float,
     ):
+        """Add DFT phonon runs for reference structures.
+
+        Parameters
+        ----------
+        structure: Structure
+            pymatgen Structure object
+        displacements:
+           displacement distance for phonons
+        symprec:
+            Symmetry precision to use in the
+            reduction of symmetry to find the primitive/conventional cell
+            (use_primitive_standard_structure, use_conventional_standard_structure)
+            and to handle all symmetry-related tasks in phonopy
+        phonon_displacement_maker:
+            Maker used to compute the forces for a supercell.
+        min_length:
+             min length of the supercell that will be built
+        """
         additonal_dft_phonon = dft_phonopy_gen_data(
             structure, displacements, symprec, phonon_displacement_maker, min_length
         )
@@ -229,12 +247,30 @@ class CompleteDFTvsMLBenchmarkWorkflow(
     def add_dft_random(
         self,
         structure: Structure,
-        mp_id,
-        phonon_displacement_maker,
-        n_struct,
-        uc,
+        mp_id: str,
+        phonon_displacement_maker: BaseVaspMaker,
+        n_struct: int,
+        uc: bool,
         supercell_matrix: Matrix3D | None = None,
     ):
+        """Add DFT phonon runs for randomly displaced structures.
+
+        Parameters
+        ----------
+        structure: Structure
+            pymatgen Structure object
+        mp_id:
+            materials project id
+        n_struct: int.
+            The total number of randomly displaced structures to be generated.
+        phonon_displacement_maker:
+            Maker used to compute the forces for a supercell.
+        uc: bool.
+            If True, will generate randomly distorted structures (unitcells)
+            and add static computation jobs to the flow
+        supercell_matrix: Matrix3D or None
+            The matrix to construct the supercell.
+        """
         additonal_dft_random = dft_random_gen_data(
             structure, mp_id, phonon_displacement_maker, n_struct, uc, supercell_matrix
         )
@@ -277,7 +313,7 @@ class DFTDataGenerationFlow(Maker):
 
     name: str = "datagen"
     phonon_displacement_maker: BaseVaspMaker = field(
-        default_factory=PhononDisplacementMaker
+        default_factory=TightDFTStaticMaker
     )
     n_struct: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.01])
@@ -340,7 +376,9 @@ class DFTDataGenerationFlow(Maker):
 @dataclass
 class PhononDFTMLFitFlow(Maker):
     """
-    Maker to fit ML potentials based on DFT data.
+    Maker to fit several types of ML potentials (GAP, ACE etc.) based on DFT data.
+
+    (Currently only the subroutines for GAP are implemented).
 
     Parameters
     ----------

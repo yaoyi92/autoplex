@@ -54,7 +54,6 @@ def compute_bandstructure_benchmark_metrics(
         ml_bs=ml_phonon_bs,
         dft_bs=dft_phonon_bs,
         file_name=file_name,
-        img_format="eps",
     )
 
     return Response(output=overall_rmse)  # TODO TaskDoc

@@ -27,8 +27,8 @@ def test_generate_randomized_structures():
 
 
 # def test_phonon_maker_random_structures(
-    # this function might be redundant ==> rattled structres are only needed to generate more data,
-        # we don't need to calculate the phonon structure of them
+# this function might be redundant ==> rattled structres are only needed to generate more data,
+# we don't need to calculate the phonon structure of them
 #     vasp_test_dir, clean_dir, memory_jobstore, mock_vasp
 # ):
 #     from pymatgen.core import Structure
