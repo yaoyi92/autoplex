@@ -23,7 +23,7 @@ from phonopy.structure.cells import get_supercell
 from pymatgen.core import Molecule, Site
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
-from autoplex.data.jobs import generate_randomized_structures
+from autoplex.data.phonons.jobs import generate_randomized_structures
 
 __all__ = [
     "DFTPhononMaker",

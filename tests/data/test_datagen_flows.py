@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pymatgen.core.structure import Structure
 from atomate2.vasp.powerups import update_user_incar_settings
-from autoplex.data.flows import RandomStructuresDataGenerator, IsoAtomMaker
+from autoplex.data.phonons.flows import RandomStructuresDataGenerator, IsoAtomMaker
 
 
 def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
