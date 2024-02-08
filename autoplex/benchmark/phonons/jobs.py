@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
     from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 
-from autoplex.benchmark.utils import compare_plot, get_rmse, rmse_kdep_plot
+from autoplex.benchmark.phonons.utils import compare_plot, get_rmse, rmse_kdep_plot
 
 
 @job

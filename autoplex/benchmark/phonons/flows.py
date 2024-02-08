@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
     from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 
-from autoplex.benchmark.jobs import compute_bandstructure_benchmark_metrics
+from autoplex.benchmark.phonons.jobs import compute_bandstructure_benchmark_metrics
 
 __all__ = ["PhononBenchmarkMaker"]
 
