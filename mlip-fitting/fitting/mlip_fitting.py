@@ -146,18 +146,6 @@ class MLIPFitMaker(Maker):
                                                     two_body=gap_para['two_body'], 
                                                     three_body=gap_para['three_body'], 
                                                     soap=True)
-            
-        if self.mlip_type == 'ACE':
-            train_error, test_error = ace_fitting(dir=database_dir, 
-                                                  energy_name=ace_para['energy_name'], 
-                                                  force_name=ace_para['force_name'], 
-                                                  virial_name=ace_para['virial_name'],
-                                                  order=ace_para['order'],
-                                                  totaldegree=ace_para['totaldegree'],
-                                                  cutoff=ace_para['cutoff'],
-                                                  solver=ace_para['solver'],
-                                                  isol_es=isol_es,
-                                                  num_of_threads=num_of_threads)
 
         if test_error < 0.01:
             return {'mlip_path':mlip_path, 
