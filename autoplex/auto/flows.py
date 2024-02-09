@@ -407,7 +407,7 @@ class PhononDFTMLFitFlow(Maker):
         isolated_atoms_energy: list.
             Isolated atoms energy list
         fit_input: list.
-            Mixed list of dictionary and lists
+            Mixed list of dictionary and lists of the fit input data.
         xyz_file: str or None
             a possibly already existing xyz file
         fit_kwargs : dict.
