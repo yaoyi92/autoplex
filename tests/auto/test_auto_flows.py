@@ -5,8 +5,8 @@ from unittest import mock
 from monty.serialization import loadfn
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from pymatgen.core.structure import Structure
-from autoplex.data.flows import TightDFTStaticMaker
-from autoplex.auto.flows import (
+from autoplex.data.phonons.flows import TightDFTStaticMaker
+from autoplex.auto.phonons.flows import (
     CompleteDFTvsMLBenchmarkWorkflow,
     DFTDataGenerationFlow,
 )

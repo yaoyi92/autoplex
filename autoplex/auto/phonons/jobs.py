@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
-from autoplex.data.flows import IsoAtomMaker, RandomStructuresDataGenerator
+from autoplex.data.phonons.flows import IsoAtomMaker, RandomStructuresDataGenerator
 
 
 @dataclass

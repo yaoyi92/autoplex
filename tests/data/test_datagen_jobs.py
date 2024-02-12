@@ -1,5 +1,5 @@
 from pymatgen.core.structure import Structure
-from autoplex.data.jobs import (
+from autoplex.data.phonons.jobs import (
     generate_randomized_structures,
     phonon_maker_random_structures,
 )

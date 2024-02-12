@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pytest
-from autoplex.benchmark.flows import PhononBenchmarkMaker
+from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
 from pymatgen.io.phonopy import get_ph_bs_symm_line
 
 
