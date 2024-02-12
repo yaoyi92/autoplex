@@ -3,7 +3,7 @@ import pytest
 from pymatgen.core.structure import Structure
 from pymatgen.io.phonopy import get_ph_bs_symm_line
 from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
-from autoplex.benchmark.jobs import (
+from autoplex.benchmark.phonons.jobs import (
     compute_bandstructure_benchmark_metrics,
     write_benchmark_metrics,
 )

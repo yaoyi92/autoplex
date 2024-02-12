@@ -13,15 +13,15 @@ if TYPE_CHECKING:
 
 from jobflow import Flow, Maker
 
-from autoplex.auto.jobs import (
+from autoplex.auto.phonons.jobs import (
     dft_phonopy_gen_data,
     dft_random_gen_data,
     get_iso_atom,
     get_phonon_ml_calculation_jobs,
 )
-from autoplex.benchmark.flows import PhononBenchmarkMaker
-from autoplex.benchmark.jobs import write_benchmark_metrics
-from autoplex.data.flows import DFTPhononMaker, TightDFTStaticMaker
+from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
+from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
+from autoplex.data.phonons.flows import DFTPhononMaker, TightDFTStaticMaker
 from autoplex.fitting.flows import MLIPFitMaker
 
 __all__ = [
