@@ -66,11 +66,12 @@ class MLIPFitMaker(Maker):
         #     fit_kwargs=fit_kwargs,
         # )
         data_prep_job = data_preprocessing(
-            split_ratio=0.1, regularization=True, distillation=True, f_max=40
+            split_ratio=0.4, regularization=True, distillation=True, f_max=40
         ).make(fit_input=fit_input, pre_database_dir=None, xyz_file=xyz_file)
         jobs.append(data_prep_job)
         gap_fit_job = YbMLIPFitMaker(mlip_type="GAP").make(
-            database_dir=data_prep_job.output, isol_es=None
+            database_dir=data_prep_job.output,
+            isol_es=None,  # nequip={},
         )
         jobs.append(gap_fit_job)  # type: ignore
 

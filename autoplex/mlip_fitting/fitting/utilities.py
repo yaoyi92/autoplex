@@ -3,15 +3,11 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable
-from pathlib import Path
 
 import ase
 import numpy as np
 import pandas as pd
 from ase.atoms import Atoms
-from ase.constraints import voigt_6_to_full_3x3_stress
-from ase.io import read, write
-from atomate2.utils.path import strip_hostname
 from sklearn.model_selection import StratifiedShuffleSplit
 
 
@@ -31,9 +27,8 @@ class Species:
             for sym in syms:
                 if sym in sepcies_list:
                     continue
-                # else:
-                #     sepcies_list.append(sym)
-                # autoplex/mlip_fitting/fitting/utilities.py:34:17: RET507 Unnecessary `else` after `continue` statement
+
+                sepcies_list.append(sym)
 
         return sepcies_list
 
@@ -203,66 +198,66 @@ def extract_gap_label(xml_file_path):
     return root.tag
 
 
-def get_list_of_vasp_calc_dirs(flow_output):
-    """
-    Return a list of vasp_calc_dirs from PhononDFTMLDataGenerationFlow output.
-
-    Parameters
-    ----------
-    flow_output: dict.
-        PhononDFTMLDataGenerationFlow output
-
-    Returns
-    -------
-    list.
-        A list of vasp_calc_dirs
-    """
-    list_of_vasp_calc_dirs = []
-    for output in flow_output.values():
-        for output_type, dirs in output.items():
-            if output_type != "phonon_data" and isinstance(dirs, list):
-                list_of_vasp_calc_dirs.extend(*dirs)
-
-    return list_of_vasp_calc_dirs
-
-
-def outcar_2_extended_xyz(
-    path_to_vasp_static_calcs: list,
-    config_types: list[str] | None = None,
-    xyz_file: str | None = None,
-):
-    """
-    Parse all VASP OUTCARs and generates a trainGAP.xyz.
-
-    Uses ase.io.read to parse the OUTCARs
-    Adapted from https://lipai.github.io/scripts/ml_scripts/outcar2xyz.html
-
-    Parameters
-    ----------
-    path_to_vasp_static_calcs : list.
-        List of VASP static calculation directories.
-    xyz_file: str or None
-        a possibly already existing xyz file.
-    config_types: list[str] or None
-            list of config_types.
-    """
-    if config_types is None:
-        config_types = ["bulk"] * len(path_to_vasp_static_calcs)
-
-    for path, config_type in zip(path_to_vasp_static_calcs, config_types):
-        # strip hostname if it exists in the path
-        path_without_hostname = Path(strip_hostname(path)).joinpath("vasprun.xml.gz")
-        # read the outcar
-        file = read(path_without_hostname, index=":")
-        for i in file:
-            virial_list = -voigt_6_to_full_3x3_stress(i.get_stress()) * i.get_volume()
-            i.info["REF_virial"] = " ".join(map(str, virial_list.flatten()))
-            del i.calc.results["stress"]
-            i.arrays["REF_forces"] = i.calc.results["forces"]
-            del i.calc.results["forces"]
-            i.info["REF_energy"] = i.calc.results["free_energy"]
-            del i.calc.results["energy"]
-            del i.calc.results["free_energy"]
-            i.info["config_type"] = config_type
-            i.pbc = True
-        write(xyz_file, file, append=True)
+# def get_list_of_vasp_calc_dirs(flow_output):
+#     """
+#     Return a list of vasp_calc_dirs from PhononDFTMLDataGenerationFlow output.
+#
+#     Parameters
+#     ----------
+#     flow_output: dict.
+#         PhononDFTMLDataGenerationFlow output
+#
+#     Returns
+#     -------
+#     list.
+#         A list of vasp_calc_dirs
+#     """
+#     list_of_vasp_calc_dirs = []
+#     for output in flow_output.values():
+#         for output_type, dirs in output.items():
+#             if output_type != "phonon_data" and isinstance(dirs, list):
+#                 list_of_vasp_calc_dirs.extend(*dirs)
+#
+#     return list_of_vasp_calc_dirs
+#
+#
+# def outcar_2_extended_xyz(
+#     path_to_vasp_static_calcs: list,
+#     config_types: list[str] | None = None,
+#     xyz_file: str | None = None,
+# ):
+#     """
+#     Parse all VASP OUTCARs and generates a trainGAP.xyz.
+#
+#     Uses ase.io.read to parse the OUTCARs
+#     Adapted from https://lipai.github.io/scripts/ml_scripts/outcar2xyz.html
+#
+#     Parameters
+#     ----------
+#     path_to_vasp_static_calcs : list.
+#         List of VASP static calculation directories.
+#     xyz_file: str or None
+#         a possibly already existing xyz file.
+#     config_types: list[str] or None
+#             list of config_types.
+#     """
+#     if config_types is None:
+#         config_types = ["bulk"] * len(path_to_vasp_static_calcs)
+#
+#     for path, config_type in zip(path_to_vasp_static_calcs, config_types):
+#         # strip hostname if it exists in the path
+#         path_without_hostname = Path(strip_hostname(path)).joinpath("vasprun.xml.gz")
+#         # read the outcar
+#         file = read(path_without_hostname, index=":")
+#         for i in file:
+#             virial_list = -voigt_6_to_full_3x3_stress(i.get_stress()) * i.get_volume()
+#             i.info["REF_virial"] = " ".join(map(str, virial_list.flatten()))
+#             del i.calc.results["stress"]
+#             i.arrays["REF_forces"] = i.calc.results["forces"]
+#             del i.calc.results["forces"]
+#             i.info["REF_energy"] = i.calc.results["free_energy"]
+#             del i.calc.results["energy"]
+#             del i.calc.results["free_energy"]
+#             i.info["config_type"] = config_type
+#             i.pbc = True
+#         write(xyz_file, file, append=True)

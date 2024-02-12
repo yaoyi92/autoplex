@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import traceback
+from contextlib import suppress
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -59,12 +60,11 @@ def set_sigma(
         if at.info["config_type"] == "dimer":
             at.info["energy_sigma"] = 0.1
             at.info["force_sigma"] = 0.5
-            # try:
-            #     del at.info[virial_name]
-            # except:
-            #     pass
-            # atoms_modi.append(at)
-            # continue
+            with suppress(Exception):
+                del at.info[virial_name]
+
+            atoms_modi.append(at)
+            continue
 
     if scheme == "linear-hull":
         # Use this one for a simple single-composition system.

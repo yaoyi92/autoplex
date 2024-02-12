@@ -48,7 +48,7 @@ class data_preprocessing(Maker):
         self,
         fit_input: dict,
         pre_database_dir: str,
-        xyz_file: str | None = "vasp_ref.extxyz",
+        xyz_file: str | None = None,
     ):
         """
         Maker for data preprocessing.
@@ -83,13 +83,13 @@ class data_preprocessing(Maker):
 
         # reject structures with large force components
         atoms = (
-            data_distillation(xyz_file, self.f_max)
+            data_distillation("vasp_ref.extxyz", self.f_max)
             if self.distillation
-            else ase.io.read(xyz_file, index=":")
+            else ase.io.read("vasp_ref.extxyz", index=":")
         )
 
         # split dataset into training and testing datasets with a ratio of 9:1
-        train_structures, test_structures = split_dataset(atoms, self.split_ratio)
+        (train_structures, test_structures) = split_dataset(atoms, self.split_ratio)
 
         # Merging database
         if pre_database_dir and os.path.exists(pre_database_dir):
@@ -145,7 +145,7 @@ class MLIPFitMaker(Maker):
     def make(
         self,
         database_dir: str,
-        nequip: dict,
+        # nequip: dict,
         gap_para=None,
         # ace_para={
         #     "energy_name": "REF_energy",
@@ -178,7 +178,7 @@ class MLIPFitMaker(Maker):
 
         """
         if gap_para is None:
-            gap_para = {"two_body": True, "three_body": False}
+            gap_para = {"two_body": True, "three_body": False, "soap": True}
 
         database_path = database_dir
         mlip_path = Path.cwd()
@@ -207,7 +207,7 @@ class MLIPFitMaker(Maker):
                 dir=database_dir,
                 two_body=gap_para["two_body"],
                 three_body=gap_para["three_body"],
-                soap=True,
+                soap=["soap"],
             )
 
         convergence = False
