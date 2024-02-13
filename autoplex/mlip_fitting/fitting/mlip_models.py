@@ -103,7 +103,6 @@ def gap_fitting(dir, two_body=True, three_body=False, soap=True):
     if two_body:
         delta_2b = calculate_delta(db_atoms, "REF_energy")
 
-        print("DELTA", delta_2b)
         parameters.append(
             f"distance_Nb order=2 compact_clusters=T cutoff=5.0 add_species=T covariance_type=ARD_SE theta_uniform=0.5 "
             f"sparse_method=uniform n_sparse=15 delta={delta_2b} f0=0.0"
@@ -116,8 +115,6 @@ def gap_fitting(dir, two_body=True, three_body=False, soap=True):
             "gp_file=gap_file.xml".format(train_data_path, " : ".join(parameters))
         )
         run_command(gap_command)
-
-        print("DEBUG", train_data_path)
 
         quip_command = (
             f"export OMP_NUM_THREADS=32 && quip E=T F=T atoms_filename={train_data_path} "

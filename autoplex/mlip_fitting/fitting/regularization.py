@@ -110,72 +110,62 @@ def set_sigma(
     for group, atoms_group in p.items():
         print("group:", group)
 
-        for _i, val in enumerate(atoms_group):
+        for val in atoms_group:
             de = get_e_distance_func(
                 hull, val, energy_name=energy_name, isol_es=isol_es
             )
 
-            print("ATOMSMOD1", atoms_modi)
-
             if de > 20.0:
                 # don't even fit if too high
                 continue
+            if val.info["config_type"] != "isolated_atom":
+                if group == "initial":
+                    sigs[0].append(etup[1][1])
+                    sigs[1].append(etup[2][1])
+                    sigs[2].append(etup[3][1])
+                    val.info["energy_sigma"] = etup[1][1]
+                    val.info["force_sigma"] = etup[2][1]
+                    val.info["virial_sigma"] = etup[3][1]
+                    atoms_modi.append(val)
+                    continue
 
-            print("ATOMSMOD2", atoms_modi)
+                if de <= etup[0][0]:
+                    sigs[0].append(etup[1][0])
+                    sigs[1].append(etup[2][0])
+                    sigs[2].append(etup[3][0])
+                    val.info["energy_sigma"] = etup[1][0]
+                    val.info["force_sigma"] = etup[2][0]
+                    val.info["virial_sigma"] = etup[3][0]
+                    atoms_modi.append(val)
 
-            if group == "initial":
-                sigs[0].append(etup[1][1])
-                sigs[1].append(etup[2][1])
-                sigs[2].append(etup[3][1])
-                val.info["energy_sigma"] = etup[1][1]
-                val.info["force_sigma"] = etup[2][1]
-                val.info["virial_sigma"] = etup[3][1]
-                atoms_modi.append(val)
-                continue
+                elif de >= etup[0][1]:
+                    sigs[0].append(etup[1][1])
+                    sigs[1].append(etup[2][1])
+                    sigs[2].append(etup[3][1])
+                    val.info["energy_sigma"] = etup[1][1]
+                    val.info["force_sigma"] = etup[2][1]
+                    val.info["virial_sigma"] = etup[3][1]
+                    atoms_modi.append(val)
 
-            print("ATOMSMOD3", atoms_modi)
-
-            if de <= etup[0][0]:
-                sigs[0].append(etup[1][0])
-                sigs[1].append(etup[2][0])
-                sigs[2].append(etup[3][0])
-                val.info["energy_sigma"] = etup[1][0]
-                val.info["force_sigma"] = etup[2][0]
-                val.info["virial_sigma"] = etup[3][0]
-                atoms_modi.append(val)
-
-                print("ATOMSMOD4", atoms_modi)
-
-            elif de >= etup[0][1]:
-                sigs[0].append(etup[1][1])
-                sigs[1].append(etup[2][1])
-                sigs[2].append(etup[3][1])
-                val.info["energy_sigma"] = etup[1][1]
-                val.info["force_sigma"] = etup[2][1]
-                val.info["virial_sigma"] = etup[3][1]
-                atoms_modi.append(val)
-
-                print("ATOMSMOD5", atoms_modi)
-
-            else:
-                # rat = (de-etup[0][0]) / (etup[0][1]-etup[0][0])
-                # e = rat*(etup[1][1]-etup[1][0]) + etup[1][0]
-                # f = rat*(etup[2][1]-etup[2][0]) + etup[2][0]
-                # v = rat*(etup[3][1]-etup[3][0]) + etup[3][0]
-                [e, f, v] = piecewise_linear(
-                    de,
-                    [
-                        (0.1, [etup[1][0], etup[2][0], etup[3][0]]),
-                        (1.0, [etup[1][1], etup[2][1], etup[3][1]]),
-                    ],
-                )
-                sigs[0].append(e)
-                sigs[1].append(f)
-                sigs[2].append(v)
-                val.info["energy_sigma"] = e
-                val.info["force_sigma"] = f
-                val.info["virial_sigma"] = v
-                atoms_modi.append(val)
+                else:
+                    # rat = (de-etup[0][0]) / (etup[0][1]-etup[0][0])
+                    # e = rat*(etup[1][1]-etup[1][0]) + etup[1][0]
+                    # f = rat*(etup[2][1]-etup[2][0]) + etup[2][0]
+                    # v = rat*(etup[3][1]-etup[3][0]) + etup[3][0]
+                    [e, f, v] = piecewise_linear(
+                        de,
+                        [
+                            (0.1, [etup[1][0], etup[2][0], etup[3][0]]),
+                            (1.0, [etup[1][1], etup[2][1], etup[3][1]]),
+                        ],
+                    )
+                    sigs[0].append(e)
+                    sigs[1].append(f)
+                    sigs[2].append(v)
+                    val.info["energy_sigma"] = e
+                    val.info["force_sigma"] = f
+                    val.info["virial_sigma"] = v
+                    atoms_modi.append(val)
 
     e = np.array(sigs[0])
     f = np.array(sigs[1])
@@ -201,7 +191,6 @@ def set_sigma(
         )
     )
 
-    print("ATOMSMODFIN", atoms_modi)
     return atoms_modi
 
 
