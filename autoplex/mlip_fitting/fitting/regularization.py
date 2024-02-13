@@ -115,9 +115,13 @@ def set_sigma(
                 hull, val, energy_name=energy_name, isol_es=isol_es
             )
 
+            print("ATOMSMOD1", atoms_modi)
+
             if de > 20.0:
                 # don't even fit if too high
                 continue
+
+            print("ATOMSMOD2", atoms_modi)
 
             if group == "initial":
                 sigs[0].append(etup[1][1])
@@ -129,6 +133,8 @@ def set_sigma(
                 atoms_modi.append(val)
                 continue
 
+            print("ATOMSMOD3", atoms_modi)
+
             if de <= etup[0][0]:
                 sigs[0].append(etup[1][0])
                 sigs[1].append(etup[2][0])
@@ -138,6 +144,8 @@ def set_sigma(
                 val.info["virial_sigma"] = etup[3][0]
                 atoms_modi.append(val)
 
+                print("ATOMSMOD4", atoms_modi)
+
             elif de >= etup[0][1]:
                 sigs[0].append(etup[1][1])
                 sigs[1].append(etup[2][1])
@@ -146,6 +154,8 @@ def set_sigma(
                 val.info["force_sigma"] = etup[2][1]
                 val.info["virial_sigma"] = etup[3][1]
                 atoms_modi.append(val)
+
+                print("ATOMSMOD5", atoms_modi)
 
             else:
                 # rat = (de-etup[0][0]) / (etup[0][1]-etup[0][0])
@@ -191,6 +201,7 @@ def set_sigma(
         )
     )
 
+    print("ATOMSMODFIN", atoms_modi)
     return atoms_modi
 
 

@@ -168,7 +168,7 @@ class MLIPFitMaker(Maker):
         database_dir:
             the database directory.
         nequip:
-            nequip.
+            nequip parameters.
         gap_para: dict
             gap fit parameters.
         isol_es:
@@ -180,19 +180,18 @@ class MLIPFitMaker(Maker):
         if gap_para is None:
             gap_para = {"two_body": True, "three_body": False, "soap": True}
 
-        database_path = database_dir
         mlip_path = Path.cwd()
-        if os.path.join(database_path, "train_with_sigma.extxyz"):
+        if os.path.join(database_dir, "train_with_sigma.extxyz"):
             shutil.copy(
-                os.path.join(database_path, "train_with_sigma.extxyz"),
+                os.path.join(database_dir, "train_with_sigma.extxyz"),
                 os.path.join(mlip_path, "train_with_sigma.extxyz"),
             )
         shutil.copy(
-            os.path.join(database_path, "test.extxyz"),
+            os.path.join(database_dir, "test.extxyz"),
             os.path.join(mlip_path, "test.extxyz"),
         )
         shutil.copy(
-            os.path.join(database_path, "train.extxyz"),
+            os.path.join(database_dir, "train.extxyz"),
             os.path.join(mlip_path, "train.extxyz"),
         )
 

@@ -102,6 +102,8 @@ def gap_fitting(dir, two_body=True, three_body=False, soap=True):
 
     if two_body:
         delta_2b = calculate_delta(db_atoms, "REF_energy")
+
+        print("DELTA", delta_2b)
         parameters.append(
             f"distance_Nb order=2 compact_clusters=T cutoff=5.0 add_species=T covariance_type=ARD_SE theta_uniform=0.5 "
             f"sparse_method=uniform n_sparse=15 delta={delta_2b} f0=0.0"
@@ -114,6 +116,8 @@ def gap_fitting(dir, two_body=True, three_body=False, soap=True):
             "gp_file=gap_file.xml".format(train_data_path, " : ".join(parameters))
         )
         run_command(gap_command)
+
+        print("DEBUG", train_data_path)
 
         quip_command = (
             f"export OMP_NUM_THREADS=32 && quip E=T F=T atoms_filename={train_data_path} "
@@ -130,8 +134,8 @@ def gap_fitting(dir, two_body=True, three_body=False, soap=True):
 
         gap_command = (
             "export OMP_NUM_THREADS=32 && gap_fit energy_parameter_name=REF_energy "
-            "force_parameter_name=REF_forces virial_parameter_name=REF_virial do_copy_at_file=F at_file={} "
-            "gap={{ {} }} default_sigma={{0.0001 0.05 0.05 0}} sparse_jitter=1.0e-10 "
+            "force_parameter_name=REF_forces virial_parameter_name=REF_virial do_copy_at_file=F "
+            "at_file={} gap={{ {} }} default_sigma={{0.0001 0.05 0.05 0}} sparse_jitter=1.0e-10 "
             "gp_file=gap_file.xml".format(train_data_path, " : ".join(parameters))
         )
         run_command(gap_command)
@@ -152,15 +156,15 @@ def gap_fitting(dir, two_body=True, three_body=False, soap=True):
 
         gap_command = (
             "export OMP_NUM_THREADS=32 && gap_fit energy_parameter_name=REF_energy "
-            "force_parameter_name=REF_forces virial_parameter_name=REF_virial do_copy_at_file=F at_file={}"
-            " gap={{ {} }} default_sigma={{0.0001 0.05 0.05 0}} sparse_jitter=1.0e-10 "
+            "force_parameter_name=REF_forces virial_parameter_name=REF_virial do_copy_at_file=F at_file={} "
+            "gap={{ {} }} default_sigma={{0.0001 0.05 0.05 0}} sparse_jitter=1.0e-10 "
             "gp_file=gap_file.xml".format(train_data_path, " : ".join(parameters))
         )
         run_command(gap_command)
 
         quip_command = (
-            f"export OMP_NUM_THREADS=32 && quip E=T F=T atoms_filename={train_data_path}"
-            f" param_filename=gap_file.xml | grep AT | sed 's/AT//' > quip_train.extxyz"
+            f"export OMP_NUM_THREADS=32 && quip E=T F=T atoms_filename={train_data_path} "
+            f"param_filename=gap_file.xml | grep AT | sed 's/AT//' > quip_train.extxyz"
         )
         run_command(quip_command)
 
@@ -170,8 +174,8 @@ def gap_fitting(dir, two_body=True, three_body=False, soap=True):
 
     # Calculate testing error
     quip_command = (
-        f"export OMP_NUM_THREADS=32 && quip E=T F=T atoms_filename={test_data_path}"
-        f" param_filename=gap_file.xml | grep AT | sed 's/AT//' > quip_test.extxyz"
+        f"export OMP_NUM_THREADS=32 && quip E=T F=T atoms_filename={test_data_path} "
+        f"param_filename=gap_file.xml | grep AT | sed 's/AT//' > quip_test.extxyz"
     )
     run_command(quip_command)
     test_error = energy_remain("quip_test.extxyz")
