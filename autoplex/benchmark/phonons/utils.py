@@ -115,6 +115,6 @@ def compare_plot(
     plotter2 = PhononBSPlotter(bs=dft_bs)
     new_plotter = plotter.plot_compare(plotter2)
 
-    new_plotter.savefig(file_name)
+    new_plotter.figure.savefig(fname=file_name)
 
     return new_plotter.figure

@@ -215,6 +215,7 @@ class MLIPFitMaker(Maker):
 
         return {
             "mlip_path": mlip_path,
+            "mlip_xml": mlip_path.joinpath("gap_file.xml"),
             "train_error": train_error,
             "test_error": test_error,
             "convergence": convergence,

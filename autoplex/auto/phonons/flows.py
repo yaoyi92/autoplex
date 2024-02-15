@@ -154,7 +154,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 add_data_ml_phonon = get_phonon_ml_calculation_jobs(
                     structure=benchmark_structure,
                     min_length=self.min_length,
-                    ml_dir=add_data_fit.output,
+                    ml_dir=add_data_fit.output["mlip_xml"],
                 )
                 flows.append(add_data_ml_phonon)
 

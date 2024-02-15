@@ -68,7 +68,7 @@ class MLIPFitMaker(Maker):
         data_prep_job = data_preprocessing(
             split_ratio=0.4, regularization=True, distillation=True, f_max=40
         ).make(
-            fit_input=fit_input, pre_database_dir=xyz_file, xyz_file=xyz_file
+            fit_input=fit_input, pre_database_dir=None, xyz_file=xyz_file
         )  # CE: I think pre_database_dir and xyz_file
         # are meant to be the same
         jobs.append(data_prep_job)

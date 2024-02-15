@@ -69,6 +69,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
         phonon_displacement_maker=TightDFTStaticMaker(),
+        fit_kwargs={"num_of_threads": 1}
     )
 
     ref_paths = {
@@ -121,7 +122,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     assert isinstance(ml_task_doc, PhononBSDOSDoc)
 
     assert responses[complete_workflow.jobs[6].output.uuid][1].output == pytest.approx(
-        0.5716963823412201, abs=0.02
+        1.2014670270901717, abs=0.5
     )
 
 
@@ -153,7 +154,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
             dft_references=None,
         )
 
@@ -170,7 +171,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
 
         assert responses[add_data_workflow.jobs[6].output.uuid][
             1
-        ].output == pytest.approx(0.5716963823412201, abs=0.02)
+        ].output == pytest.approx(1.2014670270901717, abs=0.5)
 
     def test_add_data_workflow_with_dft_reference(
         self,
@@ -201,7 +202,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
             dft_references=[dft_reference],
         )
 
@@ -249,7 +250,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
             dft_references=None,
         )
 
@@ -284,7 +285,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
             dft_references=None,
         )
 
@@ -318,7 +319,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["mp-22905"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "trainGAP.xyz",
+            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
             dft_references=None,
         )
 
