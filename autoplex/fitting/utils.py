@@ -177,4 +177,4 @@ def outcar_2_extended_xyz(
             i.pbc = True
         if xyz_file is not None:
             shutil.copy2(xyz_file, os.getcwd())
-        write("trainGAP.xyz", file, append=True)
+        write("vasp_ref.extxyz", file, append=True)

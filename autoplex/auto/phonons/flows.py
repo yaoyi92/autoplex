@@ -154,7 +154,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 add_data_ml_phonon = get_phonon_ml_calculation_jobs(
                     structure=benchmark_structure,
                     min_length=self.min_length,
-                    ml_dir=add_data_fit.output,
+                    ml_dir=add_data_fit.output["mlip_xml"],
                 )
                 flows.append(add_data_ml_phonon)
 
@@ -407,7 +407,7 @@ class PhononDFTMLFitFlow(Maker):
         isolated_atoms_energy: list.
             Isolated atoms energy list
         fit_input: list.
-            Mixed list of dictionary and lists
+            Mixed list of dictionary and lists of the fit input data.
         xyz_file: str or None
             a possibly already existing xyz file
         fit_kwargs : dict.

@@ -9,7 +9,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 from jobflow import Flow, Maker
 
-from autoplex.fitting.jobs import gapfit
+from autoplex.mlip_fitting.fitting.mlip_fitting import MLIPFitMaker as YbMLIPFitMaker
+from autoplex.mlip_fitting.fitting.mlip_fitting import data_preprocessing
 
 __all__ = ["MLIPFitMaker"]
 
@@ -57,12 +58,23 @@ class MLIPFitMaker(Maker):
             dict including gap fit keyword args.
         """
         jobs = []
-        gap_fit_job = gapfit(
-            fit_input=fit_input,
-            isolated_atoms=species_list,
-            isolated_atoms_energy=iso_atom_energy,
-            xyz_file=xyz_file,
-            fit_kwargs=fit_kwargs,
+        # gap_fit_job = gapfit(
+        #     fit_input=fit_input,
+        #     isolated_atoms=species_list,
+        #     isolated_atoms_energy=iso_atom_energy,
+        #     xyz_file=xyz_file,
+        #     fit_kwargs=fit_kwargs,
+        # )
+        data_prep_job = data_preprocessing(
+            split_ratio=0.4, regularization=True, distillation=True, f_max=40
+        ).make(
+            fit_input=fit_input, pre_database_dir=None, xyz_file=xyz_file
+        )  # CE: I think pre_database_dir and xyz_file
+        # are meant to be the same
+        jobs.append(data_prep_job)
+        gap_fit_job = YbMLIPFitMaker(mlip_type="GAP").make(
+            database_dir=data_prep_job.output,
+            isol_es=None,  # nequip={},
         )
         jobs.append(gap_fit_job)  # type: ignore
 

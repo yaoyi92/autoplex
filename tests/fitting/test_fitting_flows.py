@@ -102,7 +102,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
     path_to_job_files = list(test_files_dir.glob("job*"))[0]
 
     # check if gap fit file is generated
-    assert Path(responses[gapfit.output.uuid][1].output).exists()
+    assert Path(responses[gapfit.output.uuid][1].output["mlip_path"]).exists()
 
     shutil.rmtree(path_to_job_files)
 
@@ -200,12 +200,15 @@ def test_mlip_fit_maker_with_kwargs(
         iso_atom_energy=[-0.28649227, -0.25638457],
         fit_input=fit_input_dict,
         **{
-            "include_soap": False,
-            "include_three_body": True,
-            "include_two_body": True,
-            "twob": {"cutoff": 8},
-            "threeb": {"n_sparse": 100},
-        },
+            "split_ratio": 0.4, "regularization": True, "distillation": True, "f_max": 40
+        }
+        # **{
+        #     "include_soap": False,
+        #     "include_three_body": True,
+        #     "include_two_body": True,
+        #     "twob": {"cutoff": 8},
+        #     "threeb": {"n_sparse": 100},
+        # },
     )
 
     responses = run_locally(
@@ -216,7 +219,7 @@ def test_mlip_fit_maker_with_kwargs(
     path_to_job_files = list(test_files_dir.glob("job*"))[0]
 
     # check if gap fit file is generated
-    assert Path(responses[gapfit.output.uuid][1].output).exists()
+    assert Path(responses[gapfit.output.uuid][1].output["mlip_path"]).exists()
 
     shutil.rmtree(path_to_job_files)
 
