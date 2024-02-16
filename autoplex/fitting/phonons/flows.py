@@ -9,8 +9,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 from jobflow import Flow, Maker
 
-from autoplex.fitting.rss.mlip_fitting import MLIPFitMaker as YbMLIPFitMaker
-from autoplex.fitting.rss.mlip_fitting import data_preprocessing
+from autoplex.fitting.rss.flows import MLIPFitMaker as YbMLIPFitMaker
+from autoplex.fitting.rss.flows import data_preprocessing
 
 __all__ = ["MLIPFitMaker"]
 
@@ -67,10 +67,7 @@ class MLIPFitMaker(Maker):
         # )
         data_prep_job = data_preprocessing(
             split_ratio=0.4, regularization=True, distillation=True, f_max=40
-        ).make(
-            fit_input=fit_input, pre_database_dir=None, xyz_file=xyz_file
-        )  # CE: I think pre_database_dir and xyz_file
-        # are meant to be the same
+        ).make(fit_input=fit_input, pre_database_dir=None, xyz_file=xyz_file)
         jobs.append(data_prep_job)
         gap_fit_job = YbMLIPFitMaker(mlip_type="GAP").make(
             database_dir=data_prep_job.output,

@@ -22,7 +22,7 @@ from autoplex.auto.phonons.jobs import (
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.data.phonons.flows import DFTPhononMaker, TightDFTStaticMaker
-from autoplex.fitting.phonons.flows import MLIPFitMaker
+from autoplex.fitting.common.flows import CompleteMLIPFitMaker
 
 __all__ = [
     "CompleteDFTvsMLBenchmarkWorkflow",
@@ -72,7 +72,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         self,
         structure_list: list[Structure],
         mp_ids,
+        split_ratio: float = 0.4,
+        f_max: float = 40.0,
         xyz_file: str | None = None,
+        pre_database_dir: str | None = None,
         dft_references: PhononBSDOSDoc | None = None,
         benchmark_structures: list[Structure] | None = None,
         benchmark_mp_ids: list[str] | None = None,
@@ -87,8 +90,15 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             list of pymatgen structures.
         mp_ids:
             materials project id.
-        xyz_file:
+        split_ratio: float.
+            Parameter to divide the training set and the test set.
+            A value of 0.1 means that the ratio of the training set to the test set is 9:1.
+        f_max: float
+            Maximally allowed force in the data set.
+        xyz_file: str or None
             the already existing training data xyz file.
+        pre_database_dir:
+            the pre-database directory.
         dft_references:
             DFT reference file containing the PhononBSDOCDoc object.
         benchmark_structures:
@@ -139,8 +149,11 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         add_data_fit = PhononDFTMLFitFlow().make(
             species=isoatoms.output["species"],
             isolated_atoms_energy=isoatoms.output["energies"],
-            xyz_file=xyz_file,
             fit_input=fit_input,
+            split_ratio=split_ratio,
+            f_max=f_max,
+            xyz_file=xyz_file,
+            pre_database_dir=pre_database_dir,
             **fit_kwargs,
         )
         flows.append(add_data_fit)
@@ -394,7 +407,10 @@ class PhononDFTMLFitFlow(Maker):
         species,
         isolated_atoms_energy,
         fit_input: dict,
+        split_ratio: float = 0.4,
+        f_max: float = 40.0,
         xyz_file: str | None = None,
+        pre_database_dir: str | None = None,
         **fit_kwargs,
     ):
         """
@@ -408,18 +424,28 @@ class PhononDFTMLFitFlow(Maker):
             Isolated atoms energy list
         fit_input: list.
             Mixed list of dictionary and lists of the fit input data.
+        split_ratio: float.
+            Parameter to divide the training set and the test set.
+            A value of 0.1 means that the ratio of the training set to the test set is 9:1.
+        f_max: float
+            Maximally allowed force in the data set.
         xyz_file: str or None
             a possibly already existing xyz file
+        pre_database_dir:
+            the pre-database directory.
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
         flows = []
 
-        ml_fit_flow = MLIPFitMaker(name="GAP").make(
+        ml_fit_flow = CompleteMLIPFitMaker(name="GAP").make(
             species_list=species,
             iso_atom_energy=isolated_atoms_energy,
             fit_input=fit_input,
+            split_ratio=split_ratio,
+            f_max=f_max,
             xyz_file=xyz_file,
+            pre_database_dir=pre_database_dir,
             **fit_kwargs,
         )
         flows.append(ml_fit_flow)

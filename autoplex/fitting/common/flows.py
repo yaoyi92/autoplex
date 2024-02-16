@@ -1,4 +1,4 @@
-"""The mlip_fitting part."""
+"""Flows consisting of jobs to fit ML potentials."""
 
 from __future__ import annotations
 
@@ -8,19 +8,90 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import ase.io
-from jobflow import Maker, job
+from jobflow import Flow, Maker, job
 
-from autoplex.fitting.phonons.utils import (
+from autoplex.fitting.common.jobs import gap_fitting
+from autoplex.fitting.common.regularization import set_sigma
+from autoplex.fitting.common.utils import (
+    data_distillation,
     get_list_of_vasp_calc_dirs,
     outcar_2_extended_xyz,
+    split_dataset,
 )
-from autoplex.fitting.rss.mlip_models import gap_fitting  # , ace_fitting
-from autoplex.fitting.rss.regularization import set_sigma
-from autoplex.fitting.rss.utilities import data_distillation, split_dataset
+
+__all__ = [
+    "CompleteMLIPFitMaker",
+    "DataPreprocessing",
+    "MLIPFitMaker",
+]
 
 
 @dataclass
-class data_preprocessing(Maker):
+class CompleteMLIPFitMaker(Maker):
+    """
+    Maker to fit ML potentials based on DFT data.
+
+    Parameters
+    ----------
+    name : str
+        Name of the flows produced by this maker.
+    """
+
+    name: str = "CompleteMLpotentialFit"
+
+    def make(
+        self,
+        species_list: list,
+        iso_atom_energy: list,
+        fit_input: dict,
+        split_ratio: float = 0.4,
+        f_max: float = 40.0,
+        xyz_file: str | None = None,
+        pre_database_dir: str | None = None,
+        **fit_kwargs,
+    ):
+        """
+        Make flow to create ML potential fits.
+
+        Parameters
+        ----------
+        species_list : list.
+            List of element names (str)
+        iso_atom_energy : list.
+            List of isolated atoms energy
+        fit_input : dict.
+            PhononDFTMLDataGenerationFlow output
+        split_ratio: float.
+            Parameter to divide the training set and the test set.
+            A value of 0.1 means that the ratio of the training set to the test set is 9:1.
+        f_max: float
+            Maximally allowed force in the data set.
+        xyz_file: str or None
+            a possibly already existing xyz file
+        pre_database_dir:
+            the pre-database directory.
+        fit_kwargs : dict.
+            dict including gap fit keyword args.
+        """
+        jobs = []
+        data_prep_job = DataPreprocessing(
+            split_ratio=split_ratio, regularization=True, distillation=True, f_max=f_max
+        ).make(
+            fit_input=fit_input, xyz_file=xyz_file, pre_database_dir=pre_database_dir
+        )
+        jobs.append(data_prep_job)
+        gap_fit_job = MLIPFitMaker(mlip_type="GAP").make(
+            database_dir=data_prep_job.output,
+            isol_es=None,
+        )
+        jobs.append(gap_fit_job)  # type: ignore
+
+        # create a flow including all jobs
+        return Flow(jobs, gap_fit_job.output)
+
+
+@dataclass
+class DataPreprocessing(Maker):
     """
     Data preprocessing function.
 
@@ -50,7 +121,7 @@ class data_preprocessing(Maker):
     def make(
         self,
         fit_input: dict,
-        pre_database_dir: str,
+        pre_database_dir: str | None = None,
         xyz_file: str | None = None,
     ):
         """
@@ -66,8 +137,6 @@ class data_preprocessing(Maker):
             the already existing training datasets labeled by VASP.
 
         """
-        config_types = []
-
         list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
 
         config_types = [
@@ -118,9 +187,7 @@ class data_preprocessing(Maker):
             )
             ase.io.write("train_with_sigma.extxyz", atom_with_sigma, format="extxyz")
 
-        # database_path = Path.cwd()
-
-        return Path.cwd()  # database_path
+        return Path.cwd()
 
 
 @dataclass
@@ -148,17 +215,7 @@ class MLIPFitMaker(Maker):
     def make(
         self,
         database_dir: str,
-        # nequip: dict,
         gap_para=None,
-        # ace_para={
-        #     "energy_name": "REF_energy",
-        #     "force_name": "REF_forces",
-        #     "virial_name": "REF_virials",
-        #     "order": 3,
-        #     "totaldegree": 6,
-        #     "cutoff": 2.0,
-        #     "solver": "BLR",
-        # },
         isol_es: None = None,
         num_of_threads: int = 128,
         **kwargs,
@@ -170,8 +227,6 @@ class MLIPFitMaker(Maker):
         ----------
         database_dir:
             the database directory.
-        nequip:
-            nequip parameters.
         gap_para: dict
             gap fit parameters.
         isol_es:

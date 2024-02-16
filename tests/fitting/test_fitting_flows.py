@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from autoplex.fitting.phonons.flows import MLIPFitMaker
+from autoplex.fitting.common.flows import CompleteMLIPFitMaker
 
 
 def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
@@ -88,7 +88,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
     }
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
-    gapfit = MLIPFitMaker().make(
+    gapfit = CompleteMLIPFitMaker().make(
         species_list=["Li", "Cl"],
         iso_atom_energy=[-0.28649227, -0.25638457],
         fit_input=fit_input_dict
@@ -195,7 +195,7 @@ def test_mlip_fit_maker_with_kwargs(
     }
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
-    gapfit = MLIPFitMaker().make(
+    gapfit = CompleteMLIPFitMaker().make(
         species_list=["Li", "Cl"],
         iso_atom_energy=[-0.28649227, -0.25638457],
         fit_input=fit_input_dict,

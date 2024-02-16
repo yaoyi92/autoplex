@@ -8,7 +8,7 @@ from pathlib import Path
 
 from jobflow import Response, job
 
-from autoplex.fitting.phonons.utils import (
+from autoplex.fitting.common.utils import (
     gap_hyperparameter_constructor,
     get_list_of_vasp_calc_dirs,
     load_gap_hyperparameter_defaults,
