@@ -10,10 +10,13 @@ from pathlib import Path
 import ase.io
 from jobflow import Maker, job
 
-from autoplex.fitting.utils import get_list_of_vasp_calc_dirs, outcar_2_extended_xyz
-from autoplex.mlip_fitting.fitting.mlip_models import gap_fitting  # , ace_fitting
-from autoplex.mlip_fitting.fitting.regularization import set_sigma
-from autoplex.mlip_fitting.fitting.utilities import data_distillation, split_dataset
+from autoplex.fitting.phonons.utils import (
+    get_list_of_vasp_calc_dirs,
+    outcar_2_extended_xyz,
+)
+from autoplex.fitting.rss.mlip_models import gap_fitting  # , ace_fitting
+from autoplex.fitting.rss.regularization import set_sigma
+from autoplex.fitting.rss.utilities import data_distillation, split_dataset
 
 
 @dataclass

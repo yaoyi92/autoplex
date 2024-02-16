@@ -22,7 +22,7 @@ from autoplex.auto.phonons.jobs import (
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.data.phonons.flows import DFTPhononMaker, TightDFTStaticMaker
-from autoplex.fitting.flows import MLIPFitMaker
+from autoplex.fitting.phonons.flows import MLIPFitMaker
 
 __all__ = [
     "CompleteDFTvsMLBenchmarkWorkflow",

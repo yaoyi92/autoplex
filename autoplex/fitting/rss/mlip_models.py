@@ -6,7 +6,7 @@ import ase.io
 import numpy as np
 from ase.neighborlist import NeighborList, natural_cutoffs
 
-from autoplex.mlip_fitting.fitting.utilities import energy_remain
+from autoplex.fitting.rss.utilities import energy_remain
 
 
 def calculate_delta(atoms_db, e_name):

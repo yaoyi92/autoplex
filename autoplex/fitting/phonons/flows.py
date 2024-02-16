@@ -9,8 +9,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 from jobflow import Flow, Maker
 
-from autoplex.mlip_fitting.fitting.mlip_fitting import MLIPFitMaker as YbMLIPFitMaker
-from autoplex.mlip_fitting.fitting.mlip_fitting import data_preprocessing
+from autoplex.fitting.rss.mlip_fitting import MLIPFitMaker as YbMLIPFitMaker
+from autoplex.fitting.rss.mlip_fitting import data_preprocessing
 
 __all__ = ["MLIPFitMaker"]
 

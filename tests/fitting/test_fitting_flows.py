@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from autoplex.fitting.flows import MLIPFitMaker
+from autoplex.fitting.phonons.flows import MLIPFitMaker
 
 
 def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):

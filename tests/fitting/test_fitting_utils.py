@@ -1,6 +1,6 @@
 from __future__ import annotations
-from autoplex.fitting.jobs import GAP_DEFAULTS_FILE_PATH
-from autoplex.fitting.utils import (
+from autoplex.fitting.phonons.jobs import GAP_DEFAULTS_FILE_PATH
+from autoplex.fitting.phonons.utils import (
     load_gap_hyperparameter_defaults,
     gap_hyperparameter_constructor,
 )
