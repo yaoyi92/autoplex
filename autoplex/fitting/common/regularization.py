@@ -5,7 +5,6 @@ from __future__ import annotations
 import traceback
 from contextlib import suppress
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial import ConvexHull, Delaunay
 
@@ -193,41 +192,6 @@ def set_sigma(
 
     return atoms_modi
 
-
-def plot_convex_hull(all_points, hull_points):
-    """
-    Plot convex hull.
-
-    Parameters
-    ----------
-    all_points
-    hull_points
-
-    Returns
-    -------
-    Plots.
-
-    """
-    hull = ConvexHull(hull_points)
-
-    plt.plot(all_points[:, 0], all_points[:, 1], "o", markersize=3, label="All Points")
-
-    for i, simplex in enumerate(hull.simplices):
-        if i == 0:
-            plt.plot(
-                hull_points[simplex, 0],
-                hull_points[simplex, 1],
-                "k-",
-                label="Convex Hull",
-            )
-        else:
-            plt.plot(hull_points[simplex, 0], hull_points[simplex, 1], "k-")
-
-    plt.xlabel("Volume")
-    plt.ylabel("Energy")
-    plt.title("Convex Hull with All Points")
-    plt.legend()
-    plt.show()
 
 
 def get_convex_hull(atoms, energy_name="energy", **kwargs):

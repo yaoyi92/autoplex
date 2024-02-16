@@ -14,13 +14,13 @@ from autoplex.fitting.common.utils import (
     get_list_of_vasp_calc_dirs,
     outcar_2_extended_xyz,
 )
-from autoplex.fitting.rss.jobs import gap_fitting  # , ace_fitting
-from autoplex.fitting.rss.regularization import set_sigma
-from autoplex.fitting.rss.utilities import data_distillation, split_dataset
+from autoplex.fitting.common.jobs import gap_fitting  # , ace_fitting
+from autoplex.fitting.common.regularization import set_sigma
+from autoplex.fitting.common.utils import data_distillation, split_dataset
 
 
 @dataclass
-class data_preprocessing(Maker):
+class DataPreprocessing(Maker):
     """
     Data preprocessing function.
 

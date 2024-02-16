@@ -12,6 +12,8 @@ from pathlib import Path
 import ase
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.spatial import ConvexHull
 from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
@@ -367,3 +369,41 @@ def extract_gap_label(xml_file_path):
     tree = ET.parse(xml_file_path)
     root = tree.getroot()
     return root.tag
+
+
+def plot_convex_hull(all_points, hull_points):
+    """
+    Plot convex hull.
+
+    Parameters
+    ----------
+    all_points : ndarray.
+        list of all points.
+    hull_points: ndarray
+        a possibly already existing xyz file.
+
+    Returns
+    -------
+    None.
+
+    """
+    hull = ConvexHull(hull_points)
+
+    plt.plot(all_points[:, 0], all_points[:, 1], "o", markersize=3, label="All Points")
+
+    for i, simplex in enumerate(hull.simplices):
+        if i == 0:
+            plt.plot(
+                hull_points[simplex, 0],
+                hull_points[simplex, 1],
+                "k-",
+                label="Convex Hull",
+            )
+        else:
+            plt.plot(hull_points[simplex, 0], hull_points[simplex, 1], "k-")
+
+    plt.xlabel("Volume")
+    plt.ylabel("Energy")
+    plt.title("Convex Hull with All Points")
+    plt.legend()
+    plt.show()

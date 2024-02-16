@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 from jobflow import Flow, Maker
 
 from autoplex.fitting.rss.flows import MLIPFitMaker as YbMLIPFitMaker
-from autoplex.fitting.rss.flows import data_preprocessing
+from autoplex.fitting.rss.flows import DataPreprocessing
 
 __all__ = ["MLIPFitMaker"]
 
@@ -65,7 +65,7 @@ class MLIPFitMaker(Maker):
         #     xyz_file=xyz_file,
         #     fit_kwargs=fit_kwargs,
         # )
-        data_prep_job = data_preprocessing(
+        data_prep_job = DataPreprocessing(
             split_ratio=0.4, regularization=True, distillation=True, f_max=40
         ).make(fit_input=fit_input, pre_database_dir=None, xyz_file=xyz_file)
         jobs.append(data_prep_job)
