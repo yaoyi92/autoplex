@@ -2,11 +2,15 @@
 
 import os
 
+from pathlib import Path
 import ase.io
 import numpy as np
 from ase.neighborlist import NeighborList, natural_cutoffs
 
 from autoplex.fitting.common.utils import energy_remain
+
+current_dir = Path(__file__).absolute().parent
+GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 
 
 def calculate_delta(atoms_db, e_name):
