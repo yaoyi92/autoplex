@@ -193,7 +193,6 @@ def set_sigma(
     return atoms_modi
 
 
-
 def get_convex_hull(atoms, energy_name="energy", **kwargs):
     """
     Calculate simple linear convex hull of volume vs. energy.

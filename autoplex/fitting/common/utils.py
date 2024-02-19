@@ -10,14 +10,14 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import ase
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.spatial import ConvexHull
 from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
 from atomate2.utils.path import strip_hostname
+from scipy.spatial import ConvexHull
 from sklearn.model_selection import StratifiedShuffleSplit
 
 

@@ -10,13 +10,14 @@ from pathlib import Path
 import ase.io
 from jobflow import Maker, job
 
-from autoplex.fitting.common.utils import (
-    get_list_of_vasp_calc_dirs,
-    outcar_2_extended_xyz,
-)
 from autoplex.fitting.common.jobs import gap_fitting  # , ace_fitting
 from autoplex.fitting.common.regularization import set_sigma
-from autoplex.fitting.common.utils import data_distillation, split_dataset
+from autoplex.fitting.common.utils import (
+    data_distillation,
+    get_list_of_vasp_calc_dirs,
+    outcar_2_extended_xyz,
+    split_dataset,
+)
 
 
 @dataclass
