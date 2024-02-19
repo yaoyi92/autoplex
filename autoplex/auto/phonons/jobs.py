@@ -51,6 +51,8 @@ class MLPhononMaker(PhononMaker):
     ----------
     name : str
         Name of the flows produced by this maker.
+    ml_dir : str
+        Complete path to gapfit.xml file including file name
     sym_reduce : bool
         Whether to reduce the number of deformations using symmetry.
     symprec : float
