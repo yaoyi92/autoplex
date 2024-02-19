@@ -37,7 +37,7 @@ dependencies = [
 exclude = ["tutorials", "tests"]
 
 [tool.setuptools.package-data]
-"autoplex.fitting" = ["gap-defaults.json"]
+"autoplex.fitting.common" = ["gap-defaults.json"]
 
 [project.optional-dependencies]
 
