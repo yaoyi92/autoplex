@@ -69,7 +69,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
         phonon_displacement_maker=TightDFTStaticMaker(),
-        fit_kwargs={"num_of_threads": 1}
+        fit_kwargs={"num_processes": 1}
     )
 
     ref_paths = {

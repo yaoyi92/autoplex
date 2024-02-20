@@ -217,7 +217,7 @@ class MLIPFitMaker(Maker):
         database_dir: str,
         gap_para=None,
         isol_es: None = None,
-        num_of_threads: int = 128,
+        num_processes: int = 32,
         **kwargs,
     ):
         """
@@ -231,8 +231,8 @@ class MLIPFitMaker(Maker):
             gap fit parameters.
         isol_es:
             isolated es.
-        num_of_threads: int
-            number of threads to be used.
+        num_processes: int
+            number of processes for fitting.
 
         """
         if gap_para is None:
@@ -261,10 +261,11 @@ class MLIPFitMaker(Maker):
 
         if self.mlip_type == "GAP":
             train_error, test_error = gap_fitting(
-                dir=database_dir,
-                two_body=gap_para["two_body"],
-                three_body=gap_para["three_body"],
-                soap=["soap"],
+                db_dir=database_dir,
+                include_two_body=gap_para["two_body"],
+                include_three_body=gap_para["three_body"],
+                include_soap=gap_para["soap"],
+                num_processes=num_processes,
             )
 
         convergence = False

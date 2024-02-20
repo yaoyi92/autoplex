@@ -99,12 +99,13 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
     )
 
     test_files_dir = Path(test_dir / "fitting").resolve()
-    path_to_job_files = list(test_files_dir.glob("job*"))[0]
+    path_to_job_files = list(test_files_dir.glob("job*"))
 
     # check if gap fit file is generated
     assert Path(responses[gapfit.output.uuid][1].output["mlip_path"]).exists()
 
-    shutil.rmtree(path_to_job_files)
+    for job_dir in path_to_job_files:
+        shutil.rmtree(job_dir)
 
     os.chdir(parent_dir)
 
@@ -216,11 +217,12 @@ def test_mlip_fit_maker_with_kwargs(
     )
 
     test_files_dir = Path(test_dir / "fitting").resolve()
-    path_to_job_files = list(test_files_dir.glob("job*"))[0]
+    path_to_job_files = list(test_files_dir.glob("job*"))
 
     # check if gap fit file is generated
     assert Path(responses[gapfit.output.uuid][1].output["mlip_path"]).exists()
 
-    shutil.rmtree(path_to_job_files)
+    for job_dir in path_to_job_files:
+        shutil.rmtree(job_dir)
 
     os.chdir(parent_dir)

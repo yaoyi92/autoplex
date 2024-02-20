@@ -43,9 +43,9 @@ def gap_hyperparameter_constructor(
     gap_parameter_dict: dict,
     atoms_symbols: list | None = None,
     atoms_energies: list | None = None,
-    include_two_body: bool = True,
+    include_two_body: bool = False,
     include_three_body: bool = False,
-    include_soap: bool = True,
+    include_soap: bool = False,
 ):
     """
     Construct a list of arguments needed to execute gap potential from the parameters' dict.
