@@ -260,13 +260,16 @@ class MLIPFitMaker(Maker):
             )
 
         if self.mlip_type == "GAP":
-            train_error, test_error = gap_fitting(
+            train_test_error = gap_fitting(
                 db_dir=database_dir,
                 include_two_body=gap_para["two_body"],
                 include_three_body=gap_para["three_body"],
                 include_soap=gap_para["soap"],
                 num_processes=num_processes,
             )
+
+            train_error = train_test_error["train_error"]
+            test_error = train_test_error["test_error"]
 
         convergence = False
         if test_error < 0.01:

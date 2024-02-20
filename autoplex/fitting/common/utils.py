@@ -16,6 +16,7 @@ import pandas as pd
 from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
+from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from scipy.spatial import ConvexHull
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -71,6 +72,7 @@ def gap_hyperparameter_constructor(
            gap fit input parameter string.
     """
     # convert gap_parameter_dict to representation compatible with gap
+
     # if atoms_energies and atoms_symbols is not None:
     #     e0 = ":".join(
     #         [
@@ -339,8 +341,23 @@ def data_distillation(vasp_ref_dir, f_max):
     return atoms_distilled
 
 
-def rms_dict(x_ref, x_pred):
-    """Take two datasets of the same shape and returns a dictionary containing RMS error data."""
+def rms_dict(x_ref: np.ndarray, x_pred: np.ndarray) -> dict:
+    """Compute RMSE and standard deviation of predictions with reference data.
+
+    x_ref and x_pred should be of same shape.
+
+    Parameters
+    ----------
+    x_ref : np.ndarray.
+        list of reference data.
+    x_pred: np.ndarray.
+        list of prediction.
+
+    Returns
+    -------
+    dict
+        Dict with rmse and std deviation of predictions
+    """
     x_ref = np.array(x_ref)
     x_pred = np.array(x_pred)
     if np.shape(x_pred) != np.shape(x_ref):
@@ -407,3 +424,78 @@ def plot_convex_hull(all_points, hull_points):
     plt.title("Convex Hull with All Points")
     plt.legend()
     plt.show()
+
+
+def calculate_delta(atoms_db: list[Atoms], e_name: str) -> float:
+    """
+    Calculate delta parameter used for gap-fit.
+
+    Parameters
+    ----------
+    atoms_db: list[Atoms]
+        list of Ase atoms objects
+    e_name: str
+        energy_parameter_name as defined in gap-defaults.json
+
+    Returns
+    -------
+    float
+        delta parameter used for gap-fit (es_var / avg_neigh)
+
+    """
+    at_ids = [atom.get_atomic_numbers() for atom in atoms_db]
+    isol_es = {
+        atom.get_atomic_numbers()[0]: atom.info[e_name]
+        for atom in atoms_db
+        if "config_type" in atom.info and "isol" in atom.info["config_type"]
+    }
+    es_visol = np.array(
+        [
+            (atom.info[e_name] - sum([isol_es[j] for j in at_ids[ct]])) / len(atom)
+            for ct, atom in enumerate(atoms_db)
+        ]
+    )
+    es_var = np.var(es_visol)
+    avg_neigh = np.mean([compute_average_coordination(atom) for atom in atoms_db])
+    return es_var / avg_neigh
+
+
+def compute_average_coordination(atoms: Atoms) -> float:
+    """
+    Compute average coordination.
+
+    Parameters
+    ----------
+    atoms: Atoms
+        Ase atoms object
+
+    Returns
+    -------
+    float
+        Average coordination - total_coordination / len(atoms)
+
+    """
+    cutoffs = natural_cutoffs(atoms)
+    neighbor_list = NeighborList(cutoffs, self_interaction=False, bothways=True)
+    neighbor_list.update(atoms)
+    total_coordination = sum(
+        len(neighbor_list.get_neighbors(index)[0]) for index in range(len(atoms))
+    )
+    return total_coordination / len(atoms)
+
+
+def run_command(command: str):
+    """
+    Run system commands.
+
+    Parameters
+    ----------
+    command: str.
+        system command to run in form of string
+
+    Returns
+    -------
+    os.system(command)
+
+    """
+    os.system(command)
