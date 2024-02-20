@@ -1,1 +1,1 @@
-"""Module containing flows and jobs for RSS."""
+"""Module containing automated flows and jobs for phonons and RSS."""
