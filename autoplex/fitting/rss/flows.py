@@ -207,10 +207,10 @@ class MLIPFitMaker(Maker):
 
         if self.mlip_type == "GAP":
             train_error, test_error = gap_fitting(
-                dir=database_dir,
+                db_dir=database_dir,
                 include_two_body=gap_para["two_body"],
                 include_three_body=gap_para["three_body"],
-                include_soap=["soap"],
+                include_soap=gap_para["soap"],
             )
 
         convergence = False

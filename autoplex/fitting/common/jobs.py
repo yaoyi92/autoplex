@@ -1,15 +1,15 @@
 """fitting using GAP."""
 from __future__ import annotations
-import os
 
+import os
 from pathlib import Path
+
 import ase.io
 import numpy as np
 from ase.neighborlist import NeighborList, natural_cutoffs
 
-from jobflow import job
-from autoplex.fitting.common.utils import energy_remain
 from autoplex.fitting.common.utils import (
+    energy_remain,
     gap_hyperparameter_constructor,
     load_gap_hyperparameter_defaults,
 )
@@ -87,13 +87,14 @@ def run_command(command):
     os.system(command)
 
 
-def gap_fitting(db_dir: str | Path,
-                include_two_body: bool = True,
-                include_three_body: bool = False,
-                include_soap: bool = True,
-                path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
-                num_processes: int = 32,
-                fit_kwargs: dict|None = None,  # pylint: disable=E3701
+def gap_fitting(
+    db_dir: str | Path,
+    include_two_body: bool = True,
+    include_three_body: bool = False,
+    include_soap: bool = True,
+    path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
+    num_processes: int = 32,
+    fit_kwargs: dict | None = None,  # pylint: disable=E3701
 ):
     """
     GAP fit and validation job.
@@ -124,8 +125,8 @@ def gap_fitting(db_dir: str | Path,
     test_data_path = os.path.join(db_dir, "test.extxyz")
 
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
-                gap_fit_parameter_file_path=path_to_default_hyperparameters
-            )
+        gap_fit_parameter_file_path=path_to_default_hyperparameters
+    )
 
     for parameter in gap_default_hyperparameters:
         if fit_kwargs:
@@ -135,8 +136,8 @@ def gap_fitting(db_dir: str | Path,
 
     if include_two_body:
         delta_2b = calculate_delta(db_atoms, "REF_energy")
-        gap_default_hyperparameters['general'].update({"at_file": train_data_path})
-        gap_default_hyperparameters['twob'].update({"delta": delta_2b})
+        gap_default_hyperparameters["general"].update({"at_file": train_data_path})
+        gap_default_hyperparameters["twob"].update({"delta": delta_2b})
 
         fit_parameters_list = gap_hyperparameter_constructor(
             gap_parameter_dict=gap_default_hyperparameters,
@@ -144,8 +145,10 @@ def gap_fitting(db_dir: str | Path,
         )
         fit_parameters_string = " ".join(fit_parameters_list)
 
-        gap_command = (f"export OMP_NUM_THREADS={num_processes} && "
-                       f"gap_fit {fit_parameters_string}")
+        gap_command = (
+            f"export OMP_NUM_THREADS={num_processes} && "
+            f"gap_fit {fit_parameters_string}"
+        )
         run_command(gap_command)
 
         quip_command = (
@@ -156,18 +159,20 @@ def gap_fitting(db_dir: str | Path,
 
     if include_three_body:
         delta_3b = energy_remain("quip_train.extxyz")
-        gap_default_hyperparameters['general'].update({"at_file": train_data_path})
-        gap_default_hyperparameters['threeb'].update({"delta": delta_3b})
+        gap_default_hyperparameters["general"].update({"at_file": train_data_path})
+        gap_default_hyperparameters["threeb"].update({"delta": delta_3b})
 
         fit_parameters = gap_hyperparameter_constructor(
             gap_parameter_dict=gap_default_hyperparameters,
             include_two_body=include_two_body,
-            include_three_body=include_three_body
+            include_three_body=include_three_body,
         )
         fit_parameters_string = " ".join(fit_parameters)
 
-        gap_command = (f"export OMP_NUM_THREADS={num_processes} && "
-                       f"gap_fit {fit_parameters_string}")
+        gap_command = (
+            f"export OMP_NUM_THREADS={num_processes} && "
+            f"gap_fit {fit_parameters_string}"
+        )
         run_command(gap_command)
 
         quip_command = (
@@ -177,10 +182,14 @@ def gap_fitting(db_dir: str | Path,
         run_command(quip_command)
 
     if include_soap:
-        delta_soap = energy_remain("quip_train.extxyz") if include_two_body or include_three_body else 1
+        delta_soap = (
+            energy_remain("quip_train.extxyz")
+            if include_two_body or include_three_body
+            else 1
+        )
 
-        gap_default_hyperparameters['general'].update({"at_file": train_data_path})
-        gap_default_hyperparameters['soap'].update({"delta": delta_soap})
+        gap_default_hyperparameters["general"].update({"at_file": train_data_path})
+        gap_default_hyperparameters["soap"].update({"delta": delta_soap})
 
         fit_parameters = gap_hyperparameter_constructor(
             gap_parameter_dict=gap_default_hyperparameters,
@@ -190,8 +199,10 @@ def gap_fitting(db_dir: str | Path,
         )
         fit_parameters_string = " ".join(fit_parameters)
 
-        gap_command = (f"export OMP_NUM_THREADS={num_processes} && "
-                       f"gap_fit {fit_parameters_string}")
+        gap_command = (
+            f"export OMP_NUM_THREADS={num_processes} && "
+            f"gap_fit {fit_parameters_string}"
+        )
         run_command(gap_command)
 
         quip_command = (
