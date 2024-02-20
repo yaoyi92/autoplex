@@ -1,1 +1,1 @@
-"""Module containing flows and jobs for benchmarking RSS workflows."""
+"""Module containing flows and jobs for benchmarking fitted potentials."""
