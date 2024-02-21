@@ -1,7 +1,6 @@
 from __future__ import annotations
 import os
 import pytest
-from unittest import mock
 from monty.serialization import loadfn
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from pymatgen.core.structure import Structure
@@ -11,7 +10,8 @@ from autoplex.auto.phonons.flows import (
     DFTDataGenerationFlow,
 )
 
-mock.patch.dict(os.environ, {"OMP_NUM_THREADS": 1, "OPENBLAS_OMP_THREADS": 2})
+os.environ["OMP_NUM_THREADS"] = "1"  # export OMP_NUM_THREADS=4
+os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
 
 @pytest.fixture(scope="class")

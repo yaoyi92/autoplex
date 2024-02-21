@@ -7,6 +7,7 @@ import os
 import shutil
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable
+from itertools import combinations
 from pathlib import Path
 
 import ase
@@ -198,50 +199,62 @@ class Species:
         self.atoms = atoms
 
     def get_species(self):
-        """Get species."""
-        sepcies_list = []
+        """
+        Get species.
 
-        for at in self.atoms:
-            sym_all = at.get_chemical_symbols()
-            syms = list(set(sym_all))
-            for sym in syms:
-                if sym in sepcies_list:
-                    continue
+        Returns
+        -------
+        species_list:
+            a list of species.
+        """
+        species_list = []
 
-                sepcies_list.append(sym)
+        for atom in self.atoms:
+            symbol_all = atom.get_chemical_symbols()
+            syms = list(set(symbol_all))
+            species_list.extend(sym for sym in syms if sym not in species_list)
 
-        return sepcies_list
+        return species_list
 
-    def find_element_pairs(self, symb_list=None):
+    def find_element_pairs(self, symbol_list=None):
         """
         Find element pairs.
 
         Parameters
         ----------
-        symb_list
+        symbol_list:
+            list of symbols.
 
         Returns
         -------
-        pairs
+        pairs:
+            pairs of elements.
 
         """
-        species_list = self.get_species() if symb_list is None else symb_list
+        species_list = self.get_species() if symbol_list is None else symbol_list
 
-        pairs = []
-
-        for i in range(len(species_list)):
-            for j in range(i, len(species_list)):
-                pair = (species_list[i], species_list[j])
-                pairs.append(pair)
-
-        return pairs
+        return list(combinations(species_list, 2))
 
     def get_number_of_species(self):
-        """Get number of species."""
+        """
+        Get number of species.
+
+        Returns
+        -------
+        number of species.
+
+        """
         return int(len(self.get_species()))
 
     def get_species_Z(self):
-        """Get species Z."""
+        """
+        Get species Z.
+
+        Returns
+        -------
+        species_Z:
+            species Z.
+        """
         atom_numbers = []
         for atom_type in self.get_species():
             atom = Atoms(atom_type, [(0, 0, 0)])
@@ -255,30 +268,70 @@ class Species:
         return species_Z
 
 
-def flatten(o, recursive=False):
-    """Flatten an iterable fully, but excluding Atoms objects."""
+def flatten(atoms_object, recursive=False):
+    """
+    Flatten an iterable fully, but excluding Atoms objects.
+
+    Parameters
+    ----------
+    atoms_object: Atoms object
+    recursive: bool
+        set the recursive boolean.
+
+    Returns
+    -------
+    a flattened object, excluding the Atoms objects.
+
+    """
     iteration_list = []
 
     if recursive:
-        for _ct, el in enumerate(o):
-            if isinstance(el, Iterable) and not isinstance(
-                el, (str, bytes, ase.atoms.Atoms, ase.Atoms)
+        for element in atoms_object:
+            if isinstance(element, Iterable) and not isinstance(
+                element, (str, bytes, ase.atoms.Atoms, ase.Atoms)
             ):
-                iteration_list += flatten(el, recursive=True)
+                iteration_list.extend(flatten(element, recursive=True))
             else:
-                iteration_list += [el]
+                iteration_list.append(element)
         return iteration_list
 
-    return [item for sublist in o for item in sublist]
+    return [item for sublist in atoms_object for item in sublist]
 
 
-def gcm3_to_Vm(gcm3, mr, natoms=1):
-    """Convert gcm3 to Vm."""
-    return 1 / (natoms * (gcm3 / mr) * 6.022e23 / (1e8) ** 3)
+def gcm3_to_Vm(gcm3, mr, n_atoms=1):
+    """
+    Convert gcm3 to Vm.
+
+    Parameters
+    ----------
+    gcm3:
+    mr:
+    n_atoms:
+        number of atoms.
+
+    Returns
+    -------
+    the converted unit.
+
+    """
+    return 1 / (n_atoms * (gcm3 / mr) * 6.022e23 / (1e8) ** 3)
 
 
 def get_atomic_numbers(species):
-    """Get atomic numbers."""
+    """
+    Get atomic numbers.
+
+    Parameters
+    ----------
+    species:
+        type of species
+
+    Returns
+    -------
+    atomic_numbers:
+        list of atomic numbers.
+
+    """
     atom_numbers = []
     for atom_type in species:
         atom = Atoms(atom_type, [(0, 0, 0)])
@@ -288,7 +341,21 @@ def get_atomic_numbers(species):
 
 
 def split_dataset(atoms, split_ratio):
-    """Split the dataset."""
+    """
+    Split the dataset.
+
+    Parameters
+    ----------
+    atoms:
+    split_ratio: float
+        Parameter to divide the training set and the test set.
+
+    Returns
+    -------
+    train_structures, test_structures:
+        split-up datasets of train structures and test structures.
+
+    """
     atom_bulk = []
     atom_isolated_and_dimer = []
     for at in atoms:
@@ -323,7 +390,22 @@ def split_dataset(atoms, split_ratio):
 
 
 def data_distillation(vasp_ref_dir, f_max):
-    """For data distillation."""
+    """
+    For data distillation.
+
+    Parameters
+    ----------
+    vasp_ref_dir:
+        VASP reference data directory.
+    f_max:
+        maximally allowed force.
+
+    Returns
+    -------
+    atoms_distilled:
+        list of distilled atoms.
+
+    """
     atoms = ase.io.read(vasp_ref_dir, index=":")
 
     atoms_distilled = []
@@ -356,7 +438,7 @@ def rms_dict(x_ref: np.ndarray, x_pred: np.ndarray) -> dict:
     Returns
     -------
     dict
-        Dict with rmse and std deviation of predictions
+        Dict with rmse and std deviation of predictions.
     """
     x_ref = np.array(x_ref)
     x_pred = np.array(x_pred)
@@ -369,19 +451,44 @@ def rms_dict(x_ref: np.ndarray, x_pred: np.ndarray) -> dict:
 
 
 def energy_remain(in_file):
-    """Plot the distribution of energy per atom on the output vs the input."""
+    """
+    Plot the distribution of energy per atom on the output vs. the input.
+
+    Parameters
+    ----------
+    in_file:
+        input file
+
+    Returns
+    -------
+    rms["rmse"]:
+        distribution of energy per atom RMSE of output vs. input.
+
+    """
     # read files
     in_atoms = ase.io.read(in_file, ":")
     ener_in = [
         at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in in_atoms
     ]
     ener_out = [at.info["energy"] / len(at.get_chemical_symbols()) for at in in_atoms]
-    _rms = rms_dict(ener_in, ener_out)
-    return _rms["rmse"]
+    rms = rms_dict(ener_in, ener_out)
+    return rms["rmse"]
 
 
 def extract_gap_label(xml_file_path):
-    """Extract GAP label."""
+    """
+    Extract GAP label.
+
+    Parameters
+    ----------
+    xml_file_path:
+        path to the GAP fit potential xml file.
+
+    Returns
+    -------
+    the extracted GAP label.
+
+    """
     # Parse the XML file
     tree = ET.parse(xml_file_path)
     root = tree.getroot()
