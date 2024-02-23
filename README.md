@@ -6,10 +6,10 @@ Software for automated fitting and benchmarking of ML potentials.
 Contributions are welcome. Please raise a pull request for contributions first. At least one person has to review the code. At the beginning, Janine will take care of the reviews.
 
 # General guidelines
-- variable names should use snake case.
-- please use numpy docstrings
-- please write unit tests (testing will be performed with pytest)
-- please ensure high coverage of the code based on the tests
+- variable names should be descriptive and should use snake case.
+- please use numpy docstrings (use an IDE and switch on thise docstring type; you can check examples in our code base)
+- please write unit tests (testing will be performed with pytest; please look into tests for examples)
+- please ensure high coverage of the code based on the tests (you can test this with `coverage`)
 
 # Commit guidelines
 1. `pip install pre-commit`.
