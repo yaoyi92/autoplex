@@ -7,7 +7,7 @@ Contributions are welcome. Please raise a pull request for contributions first. 
 
 # General guidelines
 - variable names should be descriptive and should use snake case.
-- please use numpy docstrings (use an IDE and switch on thise docstring type; you can check examples in our code base)
+- please use numpy docstrings (use an IDE and switch on thise docstring type; you can check examples in our code base; the doctring should be useful for other people)
 - please write unit tests (testing will be performed with pytest; please look into tests for examples)
 - please ensure high coverage of the code based on the tests (you can test this with `coverage`)
 
