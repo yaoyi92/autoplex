@@ -152,6 +152,7 @@ def outcar_2_extended_xyz(
     path_to_vasp_static_calcs: list,
     config_types: list[str] | None = None,
     xyz_file: str | None = None,
+    regularization: float = 0.1,
 ):
     """
     Parse all VASP OUTCARs and generates a trainGAP.xyz.
@@ -167,6 +168,8 @@ def outcar_2_extended_xyz(
         a possibly already existing xyz file.
     config_types: list[str] or None
             list of config_types.
+    regularization: float
+        regularization value for the atom-wise force components.
     """
     if config_types is None:
         config_types = ["bulk"] * len(path_to_vasp_static_calcs)
@@ -181,6 +184,10 @@ def outcar_2_extended_xyz(
             i.info["REF_virial"] = " ".join(map(str, virial_list.flatten()))
             del i.calc.results["stress"]
             i.arrays["REF_forces"] = i.calc.results["forces"]
+            atom_forces = np.array(i.arrays["REF_forces"])
+            i.arrays["REF_force_atom_sigma"] = regularization * np.linalg.norm(
+                atom_forces, axis=1
+            )  # add condition
             del i.calc.results["forces"]
             i.info["REF_energy"] = i.calc.results["free_energy"]
             del i.calc.results["energy"]
@@ -556,6 +563,9 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> float:
         for atom in atoms_db
         if "config_type" in atom.info and "isol" in atom.info["config_type"]
     }
+    for atom in atoms_db:
+        print("E_NAME", atom.info[e_name])
+        print("ISOL_ES", (isol_es))
     es_visol = np.array(
         [
             (atom.info[e_name] - sum([isol_es[j] for j in at_ids[ct]])) / len(atom)
