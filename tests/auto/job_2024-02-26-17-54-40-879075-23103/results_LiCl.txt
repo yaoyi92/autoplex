@@ -1,2 +1,0 @@
-Pot Structure mpid displacements RMS imagmodes(pot) imagmodes(dft) 
-GAP LiCl mp-22905 [0.01] [0.9717419121059256]
