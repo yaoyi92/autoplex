@@ -153,6 +153,8 @@ def outcar_2_extended_xyz(
     config_types: list[str] | None = None,
     xyz_file: str | None = None,
     regularization: float = 0.1,
+    f_min: float = 0.01,  # unit: eV Å-1
+    atom_wise_regularization: bool = True,
 ):
     """
     Parse all VASP OUTCARs and generates a trainGAP.xyz.
@@ -170,6 +172,10 @@ def outcar_2_extended_xyz(
             list of config_types.
     regularization: float
         regularization value for the atom-wise force components.
+    f_min: float
+        minimal force cutoff value.
+    atom_wise_regularization: bool
+        for including atom-wise regularization.
     """
     if config_types is None:
         config_types = ["bulk"] * len(path_to_vasp_static_calcs)
@@ -184,10 +190,13 @@ def outcar_2_extended_xyz(
             i.info["REF_virial"] = " ".join(map(str, virial_list.flatten()))
             del i.calc.results["stress"]
             i.arrays["REF_forces"] = i.calc.results["forces"]
-            atom_forces = np.array(i.arrays["REF_forces"])
-            i.arrays["REF_force_atom_sigma"] = regularization * np.linalg.norm(
-                atom_forces, axis=1
-            )  # add condition
+            if atom_wise_regularization:
+                atom_forces = np.array(i.arrays["REF_forces"])
+                atom_wise_force = np.linalg.norm(atom_forces, axis=1)
+                if atom_wise_force > f_min:
+                    i.arrays["REF_force_atom_sigma"] = regularization * atom_wise_force
+                else:
+                    i.arrays["REF_force_atom_sigma"] = regularization * f_min
             del i.calc.results["forces"]
             i.info["REF_energy"] = i.calc.results["free_energy"]
             del i.calc.results["energy"]
