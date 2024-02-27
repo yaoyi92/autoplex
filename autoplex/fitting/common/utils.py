@@ -192,11 +192,13 @@ def outcar_2_extended_xyz(
             i.arrays["REF_forces"] = i.calc.results["forces"]
             if atom_wise_regularization:
                 atom_forces = np.array(i.arrays["REF_forces"])
-                atom_wise_force = np.linalg.norm(atom_forces, axis=1)
-                if atom_wise_force > f_min:
-                    i.arrays["REF_force_atom_sigma"] = regularization * atom_wise_force
-                else:
-                    i.arrays["REF_force_atom_sigma"] = regularization * f_min
+                atom_wise_force = np.array(
+                    [
+                        f_min if force < f_min else force
+                        for force in np.linalg.norm(atom_forces, axis=1)
+                    ]
+                )
+                i.arrays["REF_force_atom_sigma"] = regularization * atom_wise_force
             del i.calc.results["forces"]
             i.info["REF_energy"] = i.calc.results["free_energy"]
             del i.calc.results["energy"]
