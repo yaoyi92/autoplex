@@ -194,7 +194,7 @@ def outcar_2_extended_xyz(
                 atom_forces = np.array(i.arrays["REF_forces"])
                 atom_wise_force = np.array(
                     [
-                        f_min if force < f_min else force
+                        force if force > f_min else f_min
                         for force in np.linalg.norm(atom_forces, axis=1)
                     ]
                 )
