@@ -48,6 +48,7 @@ class CompleteMLIPFitMaker(Maker):
         f_max: float = 40.0,
         xyz_file: str | None = None,
         pre_database_dir: str | None = None,
+        auto_delta: bool = True,
         **fit_kwargs,
     ):
         """
@@ -70,6 +71,8 @@ class CompleteMLIPFitMaker(Maker):
             a possibly already existing xyz file
         pre_database_dir:
             the pre-database directory.
+        auto_delta: bool
+            automatically determine delta for 2b, 3b and soap terms.
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
@@ -83,6 +86,8 @@ class CompleteMLIPFitMaker(Maker):
         gap_fit_job = MLIPFitMaker(mlip_type="GAP").make(
             database_dir=data_prep_job.output,
             isol_es=None,
+            auto_delta=auto_delta,
+            **fit_kwargs,
         )
         jobs.append(gap_fit_job)  # type: ignore
 
@@ -218,6 +223,7 @@ class MLIPFitMaker(Maker):
         gap_para=None,
         isol_es: None = None,
         num_processes: int = 32,
+        auto_delta: bool = True,
         **kwargs,
     ):
         """
@@ -233,7 +239,10 @@ class MLIPFitMaker(Maker):
             isolated es.
         num_processes: int
             number of processes for fitting.
-
+        auto_delta: bool
+            automatically determine delta for 2b, 3b and soap terms.
+        kwargs: dict.
+            optional dictionary with parameters for gap fitting.
         """
         if gap_para is None:
             gap_para = {"two_body": True, "three_body": False, "soap": True}
@@ -266,6 +275,8 @@ class MLIPFitMaker(Maker):
                 include_three_body=gap_para["three_body"],
                 include_soap=gap_para["soap"],
                 num_processes=num_processes,
+                auto_delta=auto_delta,
+                fit_kwargs=kwargs,
             )
 
             train_error = train_test_error["train_error"]

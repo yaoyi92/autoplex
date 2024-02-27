@@ -200,8 +200,9 @@ def test_mlip_fit_maker_with_kwargs(
         species_list=["Li", "Cl"],
         iso_atom_energy=[-0.28649227, -0.25638457],
         fit_input=fit_input_dict,
+        auto_delta=False,
         **{
-            "split_ratio": 0.4, "regularization": True, "distillation": True, "f_max": 40
+             "twob": {"delta": 2.0}, "split_ratio": 0.4, "regularization": True, "distillation": True, "f_max": 40,
         }
         # **{
         #     "include_soap": False,

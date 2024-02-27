@@ -198,7 +198,7 @@ def outcar_2_extended_xyz(
                         for force in np.linalg.norm(atom_forces, axis=1)
                     ]
                 )
-                i.arrays["REF_force_atom_sigma"] = regularization * atom_wise_force
+                i.arrays["force_atom_sigma"] = regularization * atom_wise_force
             del i.calc.results["forces"]
             i.info["REF_energy"] = i.calc.results["free_energy"]
             del i.calc.results["energy"]

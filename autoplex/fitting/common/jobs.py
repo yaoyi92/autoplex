@@ -25,6 +25,7 @@ def gap_fitting(
     include_soap: bool = True,
     path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
     num_processes: int = 32,
+    auto_delta: bool = True,
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
 ) -> dict:
     """
@@ -44,6 +45,8 @@ def gap_fitting(
         bool indicating whether to include soap hyperparameters
     num_processes: int.
         Number of processes used for gap_fit
+    auto_delta: bool
+        automatically determine delta for 2b, 3b and soap terms.
     fit_kwargs: dict.
         optional dictionary with parameters for gap fitting with keys same as
         gap-defaults.json.
@@ -69,9 +72,10 @@ def gap_fitting(
                     gap_default_hyperparameters[parameter].update(fit_kwargs[arg])
 
     if include_two_body:
-        delta_2b = calculate_delta(db_atoms, "REF_energy")
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
-        gap_default_hyperparameters["twob"].update({"delta": delta_2b})
+        if auto_delta:
+            delta_2b = calculate_delta(db_atoms, "REF_energy")
+            gap_default_hyperparameters["twob"].update({"delta": delta_2b})
 
         fit_parameters_list = gap_hyperparameter_constructor(
             gap_parameter_dict=gap_default_hyperparameters,
@@ -92,9 +96,10 @@ def gap_fitting(
         run_command(quip_command)
 
     if include_three_body:
-        delta_3b = energy_remain("quip_train.extxyz")
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
-        gap_default_hyperparameters["threeb"].update({"delta": delta_3b})
+        if auto_delta:
+            delta_3b = energy_remain("quip_train.extxyz")
+            gap_default_hyperparameters["threeb"].update({"delta": delta_3b})
 
         fit_parameters = gap_hyperparameter_constructor(
             gap_parameter_dict=gap_default_hyperparameters,
@@ -121,9 +126,9 @@ def gap_fitting(
             if include_two_body or include_three_body
             else 1
         )
-
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
-        gap_default_hyperparameters["soap"].update({"delta": delta_soap})
+        if auto_delta:
+            gap_default_hyperparameters["soap"].update({"delta": delta_soap})
 
         fit_parameters = gap_hyperparameter_constructor(
             gap_parameter_dict=gap_default_hyperparameters,
