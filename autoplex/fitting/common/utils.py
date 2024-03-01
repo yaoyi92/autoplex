@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import subprocess
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable
 from itertools import combinations
@@ -612,18 +613,50 @@ def compute_average_coordination(atoms: Atoms) -> float:
     return total_coordination / len(atoms)
 
 
-def run_command(command: str):
+def run_gap(num_processes: int, parameters):
     """
-    Run system commands.
+    GAP runner.
+
+    num_processes: int
+        number of threads to be used for the run.
 
     Parameters
     ----------
-    command: str.
-        system command to run in form of string
+        GAP fit parameters.
 
     Returns
     -------
-    os.system(command)
+    No return.
 
     """
-    os.system(command)
+    os.environ["OMP_NUM_THREADS"] = str(num_processes)
+
+    with open("std_gap_out.log", "w", encoding="utf-8") as file_std, open(
+        "std_gap_err.log", "w", encoding="utf-8"
+    ) as file_err:
+        subprocess.call(["gap_fit", *parameters], stdout=file_std, stderr=file_err)
+
+
+def run_quip(num_processes: int, data_path, xml_file: str, filename: str):
+    """
+    QUIP runner.
+
+    num_processes: int
+        number of threads to be used for the run.
+    data_path:
+        Path to the data file.
+    filename: str
+        Name of the output file.
+
+    Returns
+    -------
+    No return.
+    """
+    os.environ["OMP_NUM_THREADS"] = str(num_processes)
+
+    command = f"quip E=T F=T atoms_filename={data_path} param_filename={xml_file} | grep AT | sed 's/AT//' > {filename}"
+
+    with open("std_quip_out.log", "w", encoding="utf-8") as file_std, open(
+        "std_quip_err.log", "w", encoding="utf-8"
+    ) as file_err:
+        subprocess.call(command, stdout=file_std, stderr=file_err, shell=True)

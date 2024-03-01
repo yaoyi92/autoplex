@@ -11,14 +11,15 @@ from autoplex.fitting.common.utils import (
     energy_remain,
     gap_hyperparameter_constructor,
     load_gap_hyperparameter_defaults,
-    run_command,
+    run_gap,
+    run_quip,
 )
 
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 
 
-def gap_fitting(
+def gap_fitting(  # @job decorator?
     db_dir: str | Path,
     include_two_body: bool = True,
     include_three_body: bool = False,
@@ -93,18 +94,9 @@ def gap_fitting(
             gap_parameter_dict=gap_default_hyperparameters,
             include_two_body=include_two_body,
         )
-        fit_parameters_string = " ".join(fit_parameters_list)
-        gap_command = (
-            f"export OMP_NUM_THREADS={num_processes} && "
-            f"gap_fit {fit_parameters_string}"
-        )
-        run_command(gap_command)
 
-        quip_command = (
-            f"export OMP_NUM_THREADS={num_processes} && quip E=T F=T atoms_filename={train_data_path} "
-            f"param_filename=gap_file.xml | grep AT | sed 's/AT//' > quip_train.extxyz"
-        )
-        run_command(quip_command)
+        run_gap(num_processes, fit_parameters_list)
+        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_train.extxyz")
 
     if include_three_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -112,24 +104,14 @@ def gap_fitting(
             delta_3b = energy_remain("quip_train.extxyz")
             gap_default_hyperparameters["threeb"].update({"delta": delta_3b})
 
-        fit_parameters = gap_hyperparameter_constructor(
+        fit_parameters_list = gap_hyperparameter_constructor(
             gap_parameter_dict=gap_default_hyperparameters,
             include_two_body=include_two_body,
             include_three_body=include_three_body,
         )
-        fit_parameters_string = " ".join(fit_parameters)
 
-        gap_command = (
-            f"export OMP_NUM_THREADS={num_processes} && "
-            f"gap_fit {fit_parameters_string}"
-        )
-        run_command(gap_command)
-
-        quip_command = (
-            f"export OMP_NUM_THREADS={num_processes} && quip E=T F=T atoms_filename={train_data_path} "
-            f"param_filename=gap_file.xml | grep AT | sed 's/AT//' > quip_train.extxyz"
-        )
-        run_command(quip_command)
+        run_gap(num_processes, fit_parameters_list)
+        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_train.extxyz")
 
     if include_soap:
         delta_soap = (
@@ -141,37 +123,23 @@ def gap_fitting(
         if auto_delta:
             gap_default_hyperparameters["soap"].update({"delta": delta_soap})
 
-        fit_parameters = gap_hyperparameter_constructor(
+        fit_parameters_list = gap_hyperparameter_constructor(
             gap_parameter_dict=gap_default_hyperparameters,
             include_two_body=include_two_body,
             include_three_body=include_three_body,
             include_soap=include_soap,
         )
-        fit_parameters_string = " ".join(fit_parameters)
 
-        gap_command = (
-            f"export OMP_NUM_THREADS={num_processes} && "
-            f"gap_fit {fit_parameters_string}"
-        )
-        run_command(gap_command)
-
-        quip_command = (
-            f"export OMP_NUM_THREADS={num_processes} && quip E=T F=T atoms_filename={train_data_path} "
-            f"param_filename=gap_file.xml | grep AT | sed 's/AT//' > quip_train.extxyz"
-        )
-        run_command(quip_command)
+        run_gap(num_processes, fit_parameters_list)
+        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_train.extxyz")
 
     # Calculate training error
     train_error = energy_remain("quip_train.extxyz")
-    print("Training error of MLIP (eV/at.):", train_error)
+    print("Training error of MLIP (eV/at.):", round(train_error, 4))
 
     # Calculate testing error
-    quip_command = (
-        f"export OMP_NUM_THREADS={num_processes} && quip E=T F=T atoms_filename={test_data_path} "
-        f"param_filename=gap_file.xml | grep AT | sed 's/AT//' > quip_test.extxyz"
-    )
-    run_command(quip_command)
+    run_quip(num_processes, test_data_path, "gap_file.xml", "quip_test.extxyz")
     test_error = energy_remain("quip_test.extxyz")
-    print("Testing error of MLIP (eV/at.):", test_error)
+    print("Testing error of MLIP (eV/at.):", round(test_error, 4))
 
     return {"train_error": train_error, "test_error": test_error}

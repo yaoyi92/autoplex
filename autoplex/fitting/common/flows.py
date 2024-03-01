@@ -268,10 +268,11 @@ class MLIPFitMaker(Maker):
             os.path.join(database_dir, "train.extxyz"),
             os.path.join(mlip_path, "train.extxyz"),
         )
-        shutil.copy(
-            os.path.join(database_dir, "../glue.xml"),  # very improvised on purpose
-            os.path.join(mlip_path, "glue.xml"),
-        )
+        if glue_xml:
+            shutil.copy(
+                os.path.join(database_dir, "../glue.xml"),  # very improvised on purpose
+                os.path.join(mlip_path, "glue.xml"),
+            )
 
         if self.mlip_type is None:
             raise ValueError(
