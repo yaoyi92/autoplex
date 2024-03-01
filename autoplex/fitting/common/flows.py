@@ -49,6 +49,7 @@ class CompleteMLIPFitMaker(Maker):
         xyz_file: str | None = None,
         pre_database_dir: str | None = None,
         auto_delta: bool = True,
+        glue_xml: bool = False,
         **fit_kwargs,
     ):
         """
@@ -73,6 +74,8 @@ class CompleteMLIPFitMaker(Maker):
             the pre-database directory.
         auto_delta: bool
             automatically determine delta for 2b, 3b and soap terms.
+        glue_xml: bool
+            use the glue.xml core potential instead of fitting 2b terms.
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
@@ -87,6 +90,7 @@ class CompleteMLIPFitMaker(Maker):
             database_dir=data_prep_job.output,
             isol_es=None,
             auto_delta=auto_delta,
+            glue_xml=glue_xml,
             **fit_kwargs,
         )
         jobs.append(gap_fit_job)  # type: ignore
@@ -224,6 +228,7 @@ class MLIPFitMaker(Maker):
         isol_es: None = None,
         num_processes: int = 32,
         auto_delta: bool = True,
+        glue_xml: bool = False,
         **kwargs,
     ):
         """
@@ -241,6 +246,8 @@ class MLIPFitMaker(Maker):
             number of processes for fitting.
         auto_delta: bool
             automatically determine delta for 2b, 3b and soap terms.
+        glue_xml: bool
+            use the glue.xml core potential instead of fitting 2b terms.
         kwargs: dict.
             optional dictionary with parameters for gap fitting.
         """
@@ -261,6 +268,10 @@ class MLIPFitMaker(Maker):
             os.path.join(database_dir, "train.extxyz"),
             os.path.join(mlip_path, "train.extxyz"),
         )
+        shutil.copy(
+            os.path.join(database_dir, "../glue.xml"),  # very improvised on purpose
+            os.path.join(mlip_path, "glue.xml"),
+        )
 
         if self.mlip_type is None:
             raise ValueError(
@@ -276,6 +287,7 @@ class MLIPFitMaker(Maker):
                 include_soap=gap_para["soap"],
                 num_processes=num_processes,
                 auto_delta=auto_delta,
+                glue_xml=glue_xml,
                 fit_kwargs=kwargs,
             )
 

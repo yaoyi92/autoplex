@@ -26,6 +26,7 @@ def gap_fitting(
     path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
     num_processes: int = 32,
     auto_delta: bool = True,
+    glue_xml: bool = False,
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
 ) -> dict:
     """
@@ -47,6 +48,8 @@ def gap_fitting(
         Number of processes used for gap_fit
     auto_delta: bool
         automatically determine delta for 2b, 3b and soap terms.
+    glue_xml: bool
+        use the glue.xml core potential instead of fitting 2b terms.
     fit_kwargs: dict.
         optional dictionary with parameters for gap fitting with keys same as
         gap-defaults.json.
@@ -70,6 +73,15 @@ def gap_fitting(
             for arg in fit_kwargs:
                 if parameter == arg:
                     gap_default_hyperparameters[parameter].update(fit_kwargs[arg])
+                if glue_xml:
+                    for item in fit_kwargs["general"].items():
+                        if item == ("core_param_file", "glue.xml"):
+                            gap_default_hyperparameters["general"].update(
+                                {"core_param_file": "glue.xml"}
+                            )
+                            gap_default_hyperparameters["general"].update(
+                                {"core_ip_args": "{IP Glue}"}
+                            )
 
     if include_two_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -82,7 +94,6 @@ def gap_fitting(
             include_two_body=include_two_body,
         )
         fit_parameters_string = " ".join(fit_parameters_list)
-
         gap_command = (
             f"export OMP_NUM_THREADS={num_processes} && "
             f"gap_fit {fit_parameters_string}"

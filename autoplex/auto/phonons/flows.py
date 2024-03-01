@@ -76,7 +76,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         f_max: float = 40.0,
         xyz_file: str | None = None,
         pre_database_dir: str | None = None,
-        dft_references: PhononBSDOSDoc | None = None,
+        dft_references: list[PhononBSDOSDoc] | None = None,
         benchmark_structures: list[Structure] | None = None,
         benchmark_mp_ids: list[str] | None = None,
         **fit_kwargs,
