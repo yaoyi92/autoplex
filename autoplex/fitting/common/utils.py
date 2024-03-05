@@ -575,9 +575,7 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> float:
         for atom in atoms_db
         if "config_type" in atom.info and "isol" in atom.info["config_type"]
     }
-    for atom in atoms_db:
-        print("E_NAME", atom.info[e_name])
-        print("ISOL_ES", (isol_es))
+
     es_visol = np.array(
         [
             (atom.info[e_name] - sum([isol_es[j] for j in at_ids[ct]])) / len(atom)
