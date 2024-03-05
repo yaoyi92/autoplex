@@ -51,8 +51,6 @@ class MLPhononMaker(PhononMaker):
     ----------
     name : str
         Name of the flows produced by this maker.
-    ml_dir : str
-        Complete path to gapfit.xml file including file name
     sym_reduce : bool
         Whether to reduce the number of deformations using symmetry.
     symprec : float
@@ -120,7 +118,6 @@ class MLPhononMaker(PhononMaker):
         if True, force constants will be stored
     """
 
-    ml_dir: str = field(default="gapfit.xml")
     min_length: float | None = 20.0
     bulk_relax_maker: ForceFieldRelaxMaker | None = field(
         default_factory=lambda: GAPRelaxMaker(
@@ -140,13 +137,32 @@ class MLPhononMaker(PhononMaker):
     relax_maker_kwargs: dict = field(default_factory=dict)
     static_maker_kwargs: dict = field(default_factory=dict)
 
-    def __post_init__(self):
-        """Update potential file path and keyword args if any."""
+    @job
+    def make_from_ml_model(self, structure, ml_model, **make_kwargs):
+        """
+        Maker for GAP phonon jobs.
+
+        Parameters
+        ----------
+        structure : .Structure
+            A pymatgen structure. Please start with a structure
+            that is nearly fully optimized as the internal optimizers
+            have very strict settings!
+        ml_model : str
+            Complete path to gapfit.xml file including file name
+        make_kwargs :
+            Keyword arguments for the PhononMaker.
+
+        Returns
+        -------
+        PhononMaker jobs.
+
+        """
         if self.bulk_relax_maker is not None:
             br = self.bulk_relax_maker
             self.bulk_relax_maker = br.update_kwargs(
                 update={
-                    "potential_param_file_name": self.ml_dir,
+                    "potential_param_file_name": ml_model,
                     **self.relax_maker_kwargs,
                 }
             )
@@ -154,7 +170,7 @@ class MLPhononMaker(PhononMaker):
             ph_disp = self.phonon_displacement_maker
             self.phonon_displacement_maker = ph_disp.update_kwargs(
                 update={
-                    "potential_param_file_name": self.ml_dir,
+                    "potential_param_file_name": ml_model,
                     **self.static_maker_kwargs,
                 }
             )
@@ -162,51 +178,13 @@ class MLPhononMaker(PhononMaker):
             stat_en = self.static_energy_maker
             self.static_energy_maker = stat_en.update_kwargs(
                 update={
-                    "potential_param_file_name": self.ml_dir,
+                    "potential_param_file_name": ml_model,
                     **self.static_maker_kwargs,
                 }
             )
 
-
-@job
-def get_phonon_ml_calculation_jobs(
-    ml_dir: str,
-    structure: Structure,
-    min_length: int = 20,
-):
-    """
-    Get the PhononMaker job for ML-based phonon calculations.
-
-    Parameters
-    ----------
-    ml_dir : str
-        Path to gapfit.xml file
-    structure: Structure
-        pymatgen Structure object
-    min_length: float
-        min length of the supercell that will be built
-
-    Returns
-    -------
-    A flow with GAP fit phonon jobs
-    """
-    jobs = []
-    gap_phonons = PhononMaker(
-        bulk_relax_maker=GAPRelaxMaker(
-            potential_param_file_name=ml_dir,
-            relax_cell=True,
-            relax_kwargs={"interval": 500},
-        ),
-        phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
-        static_energy_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
-        store_force_constants=False,
-        generate_frequencies_eigenvectors_kwargs={"units": "THz"},
-        min_length=min_length,
-    ).make(structure=structure)
-    jobs.append(gap_phonons)
-
-    flow = Flow(jobs, gap_phonons.output)  # output for calculating RMS/benchmarking
-    return Response(replace=flow)
+        flow = self.make(structure=structure, **make_kwargs)
+        return Response(replace=flow, output=flow.output)
 
 
 @job

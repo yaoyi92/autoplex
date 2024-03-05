@@ -14,10 +14,10 @@ if TYPE_CHECKING:
 from jobflow import Flow, Maker
 
 from autoplex.auto.phonons.jobs import (
+    MLPhononMaker,
     dft_phonopy_gen_data,
     dft_random_gen_data,
     get_iso_atom,
-    get_phonon_ml_calculation_jobs,
 )
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
@@ -164,10 +164,11 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             for ibenchmark_structure, benchmark_structure in enumerate(
                 benchmark_structures
             ):
-                add_data_ml_phonon = get_phonon_ml_calculation_jobs(
-                    structure=benchmark_structure,
+                add_data_ml_phonon = MLPhononMaker(
                     min_length=self.min_length,
-                    ml_dir=add_data_fit.output["mlip_xml"],
+                ).make_from_ml_model(
+                    structure=benchmark_structure,
+                    ml_model=add_data_fit.output["mlip_xml"],
                 )
                 flows.append(add_data_ml_phonon)
 
@@ -189,7 +190,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             born_maker=None,
                             min_length=self.min_length,
                         ).make(structure=benchmark_structure)
-
                         flows.append(dft_phonons)
                         dft_references = dft_phonons.output
 

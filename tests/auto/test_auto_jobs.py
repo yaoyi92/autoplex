@@ -3,7 +3,6 @@ import os
 from unittest import mock
 from pymatgen.core.structure import Structure
 from autoplex.auto.phonons.jobs import (
-    get_phonon_ml_calculation_jobs,
     get_iso_atom,
     dft_phonopy_gen_data,
     MLPhononMaker,
@@ -12,17 +11,18 @@ from atomate2.common.schemas.phonons import PhononBSDOSDoc
 
 from jobflow import run_locally
 
-mock.patch.dict(os.environ, {"OMP_NUM_THREADS": 1, "OPENBLAS_OMP_THREADS": 2})
+os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
+os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
 
-def test_get_phonon_ml_calculation_jobs(test_dir, clean_dir, memory_jobstore):
+def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     potential_file_dir = test_dir / "fitting" / "ref_files" / "gap.xml"
     path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    gap_phonon_jobs = get_phonon_ml_calculation_jobs(
-        ml_dir=potential_file_dir, structure=structure, min_length=20
-    )
+    gap_phonon_jobs = MLPhononMaker(
+        ml_dir=potential_file_dir, min_length=20
+    ).make(structure=structure)
 
     responses = run_locally(
         gap_phonon_jobs, create_folders=True, ensure_success=True, store=memory_jobstore
@@ -39,28 +39,20 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    gap_phonon_jobs = MLPhononMaker(ml_dir=potential_file_dir, min_length=20).make(
-        structure=structure
+    gap_phonon_jobs = MLPhononMaker(min_length=20).make_from_ml_model(
+        structure=structure, ml_model=potential_file_dir,
     )
-
-    assert gap_phonon_jobs.jobs[0].name == "GAP relax"
-    assert gap_phonon_jobs.jobs[4].name == "GAP static"
 
     responses = run_locally(
         gap_phonon_jobs, create_folders=True, ensure_success=True, store=memory_jobstore
     )
 
-    ml_phonon_bs_doc = responses[gap_phonon_jobs.jobs[-1].output.uuid][1].output
-    assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
+    assert gap_phonon_jobs.name == "phonon"
+    assert responses[gap_phonon_jobs.output.uuid][1].replace[0].name == "GAP relax"
+    assert responses[gap_phonon_jobs.output.uuid][1].replace[4].name == "GAP static"
 
-    assert (
-        responses[gap_phonon_jobs.jobs[0].output.uuid][1].output.forcefield_name
-        == "GAP"
-    )
-    assert (
-        responses[gap_phonon_jobs.jobs[4].output.uuid][1].output.forcefield_name
-        == "GAP"
-    )
+    ml_phonon_bs_doc = responses[gap_phonon_jobs.output.uuid][1].output.resolve(store=memory_jobstore)
+    assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
 
 
 def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
