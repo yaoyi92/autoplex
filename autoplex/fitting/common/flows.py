@@ -48,6 +48,7 @@ class CompleteMLIPFitMaker(Maker):
         f_max: float = 40.0,
         xyz_file: str | None = None,
         pre_database_dir: str | None = None,
+        atom_wise_regularization: bool = True,
         auto_delta: bool = True,
         glue_xml: bool = False,
         **fit_kwargs,
@@ -72,6 +73,8 @@ class CompleteMLIPFitMaker(Maker):
             a possibly already existing xyz file
         pre_database_dir:
             the pre-database directory.
+        atom_wise_regularization: bool
+            for including atom-wise regularization.
         auto_delta: bool
             automatically determine delta for 2b, 3b and soap terms.
         glue_xml: bool
@@ -83,7 +86,10 @@ class CompleteMLIPFitMaker(Maker):
         data_prep_job = DataPreprocessing(
             split_ratio=split_ratio, regularization=True, distillation=True, f_max=f_max
         ).make(
-            fit_input=fit_input, xyz_file=xyz_file, pre_database_dir=pre_database_dir
+            fit_input=fit_input,
+            xyz_file=xyz_file,
+            pre_database_dir=pre_database_dir,
+            atom_wise_regularization=atom_wise_regularization,
         )
         jobs.append(data_prep_job)
         gap_fit_job = MLIPFitMaker(mlip_type="GAP").make(
@@ -132,6 +138,7 @@ class DataPreprocessing(Maker):
         fit_input: dict,
         pre_database_dir: str | None = None,
         xyz_file: str | None = None,
+        atom_wise_regularization: bool = True,
     ):
         """
         Maker for data preprocessing.
@@ -144,6 +151,8 @@ class DataPreprocessing(Maker):
             the pre-database directory.
         xyz_file:
             the already existing training datasets labeled by VASP.
+        atom_wise_regularization: bool
+            for including atom-wise regularization.
 
         """
         list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
@@ -156,10 +165,20 @@ class DataPreprocessing(Maker):
             for _ in value2[0]
         ]
 
+        data_types = [
+            key2
+            for key, value in fit_input.items()
+            for key2, value2 in value.items()
+            if key2 != "phonon_data"
+            for _ in value2[0]
+        ]
+
         outcar_2_extended_xyz(
             path_to_vasp_static_calcs=list_of_vasp_calc_dirs,
             config_types=config_types,
+            data_types=data_types,
             xyz_file=xyz_file,
+            atom_wise_regularization=atom_wise_regularization,
         )
 
         # reject structures with large force components

@@ -152,6 +152,7 @@ def get_list_of_vasp_calc_dirs(flow_output):
 def outcar_2_extended_xyz(
     path_to_vasp_static_calcs: list,
     config_types: list[str] | None = None,
+    data_types: list[str] | None = None,
     xyz_file: str | None = None,
     regularization: float = 0.1,
     f_min: float = 0.01,  # unit: eV Å-1
@@ -171,6 +172,8 @@ def outcar_2_extended_xyz(
         a possibly already existing xyz file.
     config_types: list[str] or None
             list of config_types.
+    data_types: list[str] or None
+            track the data type (phonon or random).
     regularization: float
         regularization value for the atom-wise force components.
     f_min: float
@@ -180,8 +183,12 @@ def outcar_2_extended_xyz(
     """
     if config_types is None:
         config_types = ["bulk"] * len(path_to_vasp_static_calcs)
+    if data_types is None:
+        data_types = ["other"] * len(path_to_vasp_static_calcs)
 
-    for path, config_type in zip(path_to_vasp_static_calcs, config_types):
+    for path, config_type, data_type in zip(
+        path_to_vasp_static_calcs, config_types, data_types
+    ):
         # strip hostname if it exists in the path
         path_without_hostname = Path(strip_hostname(path)).joinpath("vasprun.xml.gz")
         # read the outcar
@@ -191,7 +198,7 @@ def outcar_2_extended_xyz(
             i.info["REF_virial"] = " ".join(map(str, virial_list.flatten()))
             del i.calc.results["stress"]
             i.arrays["REF_forces"] = i.calc.results["forces"]
-            if atom_wise_regularization:
+            if atom_wise_regularization and (data_type == "phonon_dir"):
                 atom_forces = np.array(i.arrays["REF_forces"])
                 atom_wise_force = np.array(
                     [
