@@ -10,13 +10,11 @@ if TYPE_CHECKING:
     from atomate2.vasp.sets.base import VaspInputGenerator
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Species, Structure
-from atomate2.common.jobs.phonons import (
-    PhononDisplacementMaker,
-    run_phonon_displacements,
-)
+from atomate2.common.jobs.phonons import run_phonon_displacements
 from atomate2.vasp.flows.core import DoubleRelaxMaker
 from atomate2.vasp.flows.phonons import PhononMaker
 from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
+from atomate2.vasp.jobs.phonons import PhononDisplacementMaker
 from atomate2.vasp.sets.core import StaticSetGenerator, TightRelaxSetGenerator
 from jobflow import Flow, Maker
 from phonopy.structure.cells import get_supercell

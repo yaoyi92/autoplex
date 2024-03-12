@@ -295,7 +295,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
 
 @dataclass
-class DFTDataGenerationFlow(Maker):
+class DFTDataGenerationFlow(Maker):  # I think this class is obsolete
     """
     Maker to generate DFT reference database to be used for fitting ML potentials.
 
