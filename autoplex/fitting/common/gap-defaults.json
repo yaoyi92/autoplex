@@ -46,9 +46,6 @@
     "n_sparse": 1000,
     "delta": 0.50,
     "f0": 0.0,
-    "r_mix": "T",
-    "z_mix": "T",
-    "k": 5,
     "covariance_type": "dot_product",
     "sparse_method": "cur_points"
   }
