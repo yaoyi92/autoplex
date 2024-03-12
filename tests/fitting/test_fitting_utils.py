@@ -35,7 +35,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
         "delta=2.0 theta_uniform=1.0 sparse_method=uniform compact_clusters=T :soap add_species=T "
         "l_max=6 n_max=10 atom_sigma=0.5 zeta=4 cutoff=5.0 "
         "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=0.5 "
-        "f0=0.0 r_mix=T z_mix=T k=5 covariance_type=dot_product sparse_method=cur_points}",
+        "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 
     assert ref_list == gap_input_list
@@ -99,7 +99,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
         "delta=2.0 theta_uniform=1.0 sparse_method=uniform compact_clusters=T :soap "
         "add_species=T l_max=6 n_max=10 atom_sigma=0.5 zeta=2 cutoff=5.0 "
         "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=1.5 "
-        "f0=0.0 r_mix=T z_mix=T k=5 covariance_type=dot_product sparse_method=cur_points}",
+        "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 
     assert ref_list_exp == gap_input_list_updated
@@ -134,7 +134,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
         "sparse_method=uniform compact_clusters=T :soap "
         "add_species=T l_max=6 n_max=10 atom_sigma=0.5 zeta=4 cutoff=5.0 "
         "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=0.5 "
-        "f0=0.0 r_mix=T z_mix=T k=5 covariance_type=dot_product sparse_method=cur_points}",
+        "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 
     assert ref_list == gap_input_list
@@ -163,7 +163,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
         "delta=2.0 theta_uniform=1.0 sparse_method=uniform compact_clusters=T :soap "
         "add_species=T l_max=6 n_max=10 atom_sigma=0.5 zeta=4 cutoff=5.0 "
         "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=0.5 "
-        "f0=0.0 r_mix=T z_mix=T k=5 covariance_type=dot_product sparse_method=cur_points}",
+        "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 
     assert ref_list == gap_input_list
@@ -194,7 +194,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
         "gap={soap "
         "add_species=T l_max=6 n_max=10 atom_sigma=0.5 zeta=4 cutoff=5.0 "
         "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=0.5 "
-        "f0=0.0 r_mix=T z_mix=T k=5 covariance_type=dot_product sparse_method=cur_points}",
+        "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 
     assert ref_list == gap_input_list
