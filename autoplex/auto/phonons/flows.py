@@ -74,8 +74,12 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         mp_ids,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
-        xyz_file: str | None = None,
+        pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
+        regularization: float = 0.1,
+        f_min: float = 0.01,  # unit: eV Å-1
+        atom_wise_regularization: bool = True,
+        auto_delta: bool = True,
         dft_references: list[PhononBSDOSDoc] | None = None,
         benchmark_structures: list[Structure] | None = None,
         benchmark_mp_ids: list[str] | None = None,
@@ -95,10 +99,18 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             A value of 0.1 means that the ratio of the training set to the test set is 9:1.
         f_max: float
             Maximally allowed force in the data set.
-        xyz_file: str or None
-            the already existing training data xyz file.
+        pre_xyz_files: list[str] or None
+            names of the pre-database xyz files.
         pre_database_dir:
             the pre-database directory.
+        regularization: float
+            regularization value for the atom-wise force components.
+        f_min: float
+            minimal force cutoff value for atom-wise regularization.
+        atom_wise_regularization: bool
+            for including atom-wise regularization.
+        auto_delta: bool
+            automatically determine delta for 2b, 3b and soap terms.
         dft_references:
             DFT reference file containing the PhononBSDOCDoc object.
         benchmark_structures:
@@ -141,7 +153,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         isoatoms = get_iso_atom(structure_list)
         flows.append(isoatoms)
 
-        if xyz_file is None:
+        if pre_xyz_files is None:
             fit_input.update(
                 {"isolated_atom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
             )
@@ -152,8 +164,12 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             fit_input=fit_input,
             split_ratio=split_ratio,
             f_max=f_max,
-            xyz_file=xyz_file,
+            pre_xyz_files=pre_xyz_files,
             pre_database_dir=pre_database_dir,
+            regularization=regularization,
+            f_min=f_min,
+            atom_wise_regularization=atom_wise_regularization,
+            auto_delta=auto_delta,
             **fit_kwargs,
         )
         flows.append(add_data_fit)
@@ -409,8 +425,12 @@ class PhononDFTMLFitFlow(Maker):
         fit_input: dict,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
-        xyz_file: str | None = None,
+        pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
+        regularization: float = 0.1,
+        f_min: float = 0.01,  # unit: eV Å-1
+        atom_wise_regularization: bool = True,
+        auto_delta: bool = True,
         **fit_kwargs,
     ):
         """
@@ -429,10 +449,18 @@ class PhononDFTMLFitFlow(Maker):
             A value of 0.1 means that the ratio of the training set to the test set is 9:1.
         f_max: float
             Maximally allowed force in the data set.
-        xyz_file: str or None
-            a possibly already existing xyz file
+        pre_xyz_files: list[str] or None
+            names of the pre-database xyz files.
         pre_database_dir:
             the pre-database directory.
+        regularization: float
+            regularization value for the atom-wise force components.
+        f_min: float
+            minimal force cutoff value for atom-wise regularization.
+        atom_wise_regularization: bool
+            for including atom-wise regularization.
+        auto_delta: bool
+            automatically determine delta for 2b, 3b and soap terms.
         fit_kwargs : dict.
             dict including gap fit keyword args.
         """
@@ -444,8 +472,12 @@ class PhononDFTMLFitFlow(Maker):
             fit_input=fit_input,
             split_ratio=split_ratio,
             f_max=f_max,
-            xyz_file=xyz_file,
+            pre_xyz_files=pre_xyz_files,
             pre_database_dir=pre_database_dir,
+            regularization=regularization,
+            f_min=f_min,
+            atom_wise_regularization=atom_wise_regularization,
+            auto_delta=auto_delta,
             **fit_kwargs,
         )
         flows.append(ml_fit_flow)

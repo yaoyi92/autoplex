@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import subprocess
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable
@@ -153,7 +152,6 @@ def outcar_2_extended_xyz(
     path_to_vasp_static_calcs: list,
     config_types: list[str] | None = None,
     data_types: list[str] | None = None,
-    xyz_file: str | None = None,
     regularization: float = 0.1,
     f_min: float = 0.01,  # unit: eV Å-1
     atom_wise_regularization: bool = True,
@@ -168,8 +166,6 @@ def outcar_2_extended_xyz(
     ----------
     path_to_vasp_static_calcs : list.
         List of VASP static calculation directories.
-    xyz_file: str or None
-        a possibly already existing xyz file.
     config_types: list[str] or None
             list of config_types.
     data_types: list[str] or None
@@ -177,7 +173,7 @@ def outcar_2_extended_xyz(
     regularization: float
         regularization value for the atom-wise force components.
     f_min: float
-        minimal force cutoff value.
+        minimal force cutoff value for atom-wise regularization.
     atom_wise_regularization: bool
         for including atom-wise regularization.
     """
@@ -213,8 +209,6 @@ def outcar_2_extended_xyz(
             del i.calc.results["free_energy"]
             i.info["config_type"] = config_type
             i.pbc = True
-        if xyz_file is not None:
-            shutil.copy2(xyz_file, os.getcwd())
         write("vasp_ref.extxyz", file, append=True)
 
 

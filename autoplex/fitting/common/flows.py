@@ -46,8 +46,10 @@ class CompleteMLIPFitMaker(Maker):
         fit_input: dict,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
-        xyz_file: str | None = None,
+        pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
+        regularization: float = 0.1,
+        f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
         glue_xml: bool = False,
@@ -69,10 +71,14 @@ class CompleteMLIPFitMaker(Maker):
             A value of 0.1 means that the ratio of the training set to the test set is 9:1.
         f_max: float
             Maximally allowed force in the data set.
-        xyz_file: str or None
-            a possibly already existing xyz file
+        pre_xyz_files: list[str] or None
+            names of the pre-database xyz files.
         pre_database_dir:
             the pre-database directory.
+        regularization: float
+            regularization value for the atom-wise force components.
+        f_min: float
+            minimal force cutoff value for atom-wise regularization.
         atom_wise_regularization: bool
             for including atom-wise regularization.
         auto_delta: bool
@@ -87,8 +93,10 @@ class CompleteMLIPFitMaker(Maker):
             split_ratio=split_ratio, regularization=True, distillation=True, f_max=f_max
         ).make(
             fit_input=fit_input,
-            xyz_file=xyz_file,
+            pre_xyz_files=pre_xyz_files,
             pre_database_dir=pre_database_dir,
+            f_min=f_min,
+            regularization=regularization,
             atom_wise_regularization=atom_wise_regularization,
         )
         jobs.append(data_prep_job)
@@ -137,7 +145,9 @@ class DataPreprocessing(Maker):
         self,
         fit_input: dict,
         pre_database_dir: str | None = None,
-        xyz_file: str | None = None,
+        pre_xyz_files: list[str] | None = None,
+        regularization: float = 0.1,
+        f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
     ):
         """
@@ -147,14 +157,20 @@ class DataPreprocessing(Maker):
         ----------
         fit_input:
             Mixed list of dictionary and lists of the fit input data.
-        pre_database_dir:
+        pre_database_dir: str or None
             the pre-database directory.
-        xyz_file:
-            the already existing training datasets labeled by VASP.
+        pre_xyz_files: list[str] or None
+            names of the pre-database xyz files labeled by VASP.
+        regularization: float
+            regularization value for the atom-wise force components.
+        f_min: float
+            minimal force cutoff value for atom-wise regularization.
         atom_wise_regularization: bool
             for including atom-wise regularization.
 
         """
+        if pre_xyz_files is None:
+            pre_xyz_files = ["train.extxyz", "test.extxyz"]
         list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
 
         config_types = [
@@ -177,7 +193,8 @@ class DataPreprocessing(Maker):
             path_to_vasp_static_calcs=list_of_vasp_calc_dirs,
             config_types=config_types,
             data_types=data_types,
-            xyz_file=xyz_file,
+            f_min=f_min,
+            regularization=regularization,
             atom_wise_regularization=atom_wise_regularization,
         )
 
@@ -193,7 +210,7 @@ class DataPreprocessing(Maker):
 
         # Merging database
         if pre_database_dir and os.path.exists(pre_database_dir):
-            files_to_copy = ["train.extxyz", "test.extxyz"]
+            files_to_copy = pre_xyz_files
             current_working_directory = os.getcwd()
 
             for file_name in files_to_copy:
