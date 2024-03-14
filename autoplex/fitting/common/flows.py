@@ -72,7 +72,7 @@ class CompleteMLIPFitMaker(Maker):
         f_max: float
             Maximally allowed force in the data set.
         pre_xyz_files: list[str] or None
-            names of the pre-database xyz files.
+            names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
             the pre-database directory.
         regularization: float
@@ -160,7 +160,7 @@ class DataPreprocessing(Maker):
         pre_database_dir: str or None
             the pre-database directory.
         pre_xyz_files: list[str] or None
-            names of the pre-database xyz files labeled by VASP.
+            names of the pre-database train xyz file and test xyz file labeled by VASP.
         regularization: float
             regularization value for the atom-wise force components.
         f_min: float
@@ -171,6 +171,7 @@ class DataPreprocessing(Maker):
         """
         if pre_xyz_files is None:
             pre_xyz_files = ["train.extxyz", "test.extxyz"]
+
         list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
 
         config_types = [
@@ -210,16 +211,23 @@ class DataPreprocessing(Maker):
 
         # Merging database
         if pre_database_dir and os.path.exists(pre_database_dir):
-            files_to_copy = pre_xyz_files
             current_working_directory = os.getcwd()
 
-            for file_name in files_to_copy:
-                source_file_path = os.path.join(pre_database_dir, file_name)
-                destination_file_path = os.path.join(
-                    current_working_directory, file_name
+            if len(pre_xyz_files) == 2:
+                files_new = ["train.extxyz", "test.extxyz"]
+                for file_name, file_new in zip(pre_xyz_files, files_new):
+                    source_file_path = os.path.join(pre_database_dir, file_name)
+                    destination_file_path = os.path.join(
+                        current_working_directory, file_new
+                    )
+                    shutil.copy(source_file_path, destination_file_path)
+                    print(
+                        f"File {file_name} has been copied to {destination_file_path}"
+                    )
+            else:
+                raise ValueError(
+                    "Please provide a train and a test extxyz file (two files in total) for the pre_xyz_files."
                 )
-                shutil.copy(source_file_path, destination_file_path)
-                print(f"File {file_name} has been copied to {destination_file_path}")
 
         ase.io.write("train.extxyz", train_structures, format="extxyz", append=True)
         ase.io.write("test.extxyz", test_structures, format="extxyz", append=True)

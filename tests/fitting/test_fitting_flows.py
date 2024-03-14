@@ -302,7 +302,8 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, clean_dir, memory_jobsto
 
     # Test to check if gap fit runs with pre_database_dir
     gapfit = CompleteMLIPFitMaker().make(species_list=["Li", "Cl"], iso_atom_energy=[-0.28649227, -0.25638457],
-                                         fit_input=fit_input_dict, pre_database_dir=str(test_files_dir))
+                                         fit_input=fit_input_dict, pre_database_dir=str(test_files_dir),
+                                         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"])
 
     responses = run_locally(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore

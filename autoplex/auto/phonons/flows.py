@@ -100,7 +100,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         f_max: float
             Maximally allowed force in the data set.
         pre_xyz_files: list[str] or None
-            names of the pre-database xyz files.
+            names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
             the pre-database directory.
         regularization: float
@@ -450,7 +450,7 @@ class PhononDFTMLFitFlow(Maker):
         f_max: float
             Maximally allowed force in the data set.
         pre_xyz_files: list[str] or None
-            names of the pre-database xyz files.
+            names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
             the pre-database directory.
         regularization: float
