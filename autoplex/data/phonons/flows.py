@@ -259,7 +259,11 @@ class RandomStructuresDataGenerator(Maker):
         The total number of randomly displaced structures to be generated.
     uc: bool.
         If True, will use the unit cells of initial randomly displaced
-        structures and add phonon static computation jobs to the flow
+        structures and add phonon static computation jobs to the flow.
+    cell_factor: float
+        factor to resize cell parameters.
+    std_dev: float
+        Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
@@ -269,6 +273,8 @@ class RandomStructuresDataGenerator(Maker):
     code: str = "vasp"
     n_struct: int = 1
     uc: bool = False
+    cell_factor: float = 1.0
+    std_dev: float = 0.01
 
     def make(
         self,

@@ -48,6 +48,17 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         If True, will add randomly distorted structures for DFT calculation.
     add_rss_struct: bool.
         If True, will add RSS generated structures for DFT calculation.
+        n_struct: int.
+        The total number of randomly displaced structures to be generated.
+    uc: bool.
+        If True, will generate randomly distorted structures (unitcells)
+        and add static computation jobs to the flow.
+    cell_factor: float
+        factor to resize cell parameters.
+    std_dev: float
+        Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
+    supercell_matrix: Matrix3D or None
+        The matrix to construct the supercell.
     """
 
     name: str = "add_data"
@@ -62,8 +73,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
     symprec: float = 1e-4
-    supercell_matrix: Matrix3D | None = None
     uc: bool = False
+    cell_factor: float = 1.0
+    std_dev: float = 0.01
+    supercell_matrix: Matrix3D | None = None
 
     def make(
         self,
@@ -128,6 +141,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     self.phonon_displacement_maker,
                     self.n_struct,
                     self.uc,
+                    self.cell_factor,
+                    self.std_dev,
                     self.supercell_matrix,
                 )
                 flows.append(addDFTrand)
@@ -275,8 +290,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         structure: Structure,
         mp_id: str,
         phonon_displacement_maker: BaseVaspMaker,
-        n_struct: int,
-        uc: bool,
+        n_struct: int = 1,
+        uc: bool = False,
+        cell_factor: float = 1.0,
+        std_dev: float = 0.01,
         supercell_matrix: Matrix3D | None = None,
     ):
         """Add DFT phonon runs for randomly displaced structures.
@@ -293,12 +310,23 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             Maker used to compute the forces for a supercell.
         uc: bool.
             If True, will generate randomly distorted structures (unitcells)
-            and add static computation jobs to the flow
+            and add static computation jobs to the flow.
+        cell_factor: float
+            factor to resize cell parameters.
+        std_dev: float
+            Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
         supercell_matrix: Matrix3D or None
             The matrix to construct the supercell.
         """
         additonal_dft_random = dft_random_gen_data(
-            structure, mp_id, phonon_displacement_maker, n_struct, uc, supercell_matrix
+            structure,
+            mp_id,
+            phonon_displacement_maker,
+            n_struct,
+            uc,
+            cell_factor,
+            std_dev,
+            supercell_matrix,
         )
 
         return Flow(
