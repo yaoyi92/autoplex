@@ -26,13 +26,11 @@ from autoplex.fitting.common.flows import CompleteMLIPFitMaker
 
 __all__ = [
     "CompleteDFTvsMLBenchmarkWorkflow",
-    "DFTDataGenerationFlow",
     "PhononDFTMLBenchmarkFlow",
 ]
 
 
 # Volker's idea: provide several default flows with different setting/setups
-# TODO TaskDocs
 
 
 @dataclass
@@ -52,7 +50,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         If True, will add RSS generated structures for DFT calculation.
     """
 
-    # TODO docstrings
     name: str = "add_data"
     add_dft_phonon_struct: bool = True
     add_dft_random_struct: bool = True
@@ -307,98 +304,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         return Flow(
             additonal_dft_random,  # flows
             output={"rand_struc_dir": additonal_dft_random.output},
-        )
-
-
-@dataclass
-class DFTDataGenerationFlow(Maker):  # I think this class is obsolete
-    """
-    Maker to generate DFT reference database to be used for fitting ML potentials.
-
-    The maker will use phonopy to create displacements according to the finite displacement method.
-    In addition, randomly distorted structures are added to the dataset.
-
-    Parameters
-    ----------
-    name : str
-        Name of the flow produced by this maker.
-    phonon_displacement_maker : .BaseVaspMaker or None
-        Maker used to compute the forces for a supercell.
-    n_struct: int.
-        The total number of randomly displaced structures to be generated.
-    displacements: list[float]
-        list of phonon displacement
-    min_length: float
-        min length of the supercell that will be built
-    symprec : float
-        Symmetry precision to use in the
-        reduction of symmetry to find the primitive/conventional cell
-        (use_primitive_standard_structure, use_conventional_standard_structure)
-        and to handle all symmetry-related tasks in phonopy
-    uc: bool.
-        If True, will generate randomly distorted supercells structures
-        and add static computation jobs to the flow
-    """
-
-    name: str = "datagen"
-    phonon_displacement_maker: BaseVaspMaker = field(
-        default_factory=TightDFTStaticMaker
-    )
-    n_struct: int = 1
-    displacements: list[float] = field(default_factory=lambda: [0.01])
-    min_length: int = 20
-    symprec: float = 1e-4
-    uc: bool = False
-    supercell_matrix: Matrix3D | None = None
-
-    def make(self, structure: Structure, mp_id):
-        """
-        Make flow for data generation.
-
-        Parameters
-        ----------
-        structure: Structure
-            pymatgen Structure object
-        mp_id:
-            materials project id
-        """
-        # TODO later adding: for i no. of potentials
-
-        dft_phonon = dft_phonopy_gen_data(
-            structure,
-            self.displacements,
-            self.symprec,
-            self.phonon_displacement_maker,
-            self.min_length,
-        )
-
-        if self.n_struct != 0:
-            dft_random = dft_random_gen_data(
-                structure,
-                mp_id,
-                self.phonon_displacement_maker,
-                self.n_struct,
-                self.uc,
-                self.supercell_matrix,
-            )
-
-            flows = [dft_phonon, dft_random]
-            output = {
-                "rand_struc_dir": dft_random.output,
-                "phonon_dir": dft_phonon.output["dirs"],
-                "phonon_data": dft_phonon.output["data"],
-            }
-
-        else:
-            flows = [dft_phonon]
-            output = {
-                "phonon_dir": dft_phonon.output["dirs"],
-                "phonon_data": dft_phonon.output["data"],
-            }
-
-        return Flow(
-            flows,  # flows
-            output=output,
         )
 
 
