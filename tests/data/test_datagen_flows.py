@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import os
 from pymatgen.core.structure import Structure
 from atomate2.vasp.powerups import update_user_incar_settings
 from autoplex.data.phonons.flows import RandomStructuresDataGenerator, IsoAtomMaker
+from autoplex.data.common.flows import GenerateTrainingDataForTesting
+
+os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
+os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
 
 def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
@@ -79,5 +84,20 @@ def test_iso_atom_maker(mock_vasp, clean_dir):
     responses = run_locally(job_iso, create_folders=True, ensure_success=True)
 
     assert (
-        responses[job_iso.job_uuids[0]][1].output.output.energy_per_atom == -0.2563903
+            responses[job_iso.job_uuids[0]][1].output.output.energy_per_atom == -0.2563903
     )
+
+
+def test_generate_training_data_for_testing(
+        vasp_test_dir, test_dir, memory_jobstore, clean_dir
+    ):
+    from jobflow import run_locally
+
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    potential_file_dir = test_dir / "fitting" / "ref_files" / "gap.xml"
+    structure = Structure.from_file(path_to_struct)
+    generate_data = GenerateTrainingDataForTesting().make(train_structure_list=[structure], cell_factor_sequence=[0.95, 1.0, 1.05],
+                                          potential_filename=potential_file_dir, n_struct=1, steps=1)
+
+    responses = run_locally(generate_data, create_folders=False, ensure_success=True, store=memory_jobstore)
+    #TODO unit test only runs with create_Folders=False because ForceFieldTaskDocument.from_ase_compatible_result() has no attribute dir_name implemented
