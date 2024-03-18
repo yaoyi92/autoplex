@@ -10,7 +10,7 @@ from pathlib import Path
 import ase.io
 from jobflow import Flow, Maker, job
 
-from autoplex.fitting.common.jobs import gap_fitting
+from autoplex.fitting.common.jobs import check_convergence, gap_fitting
 from autoplex.fitting.common.regularization import set_sigma
 from autoplex.fitting.common.utils import (
     data_distillation,
@@ -278,7 +278,6 @@ class MLIPFitMaker(Maker):
     mlip_type: str | None = None
     HPO: bool = False
 
-    @job
     def make(
         self,
         database_dir: str,
@@ -309,28 +308,9 @@ class MLIPFitMaker(Maker):
         kwargs: dict.
             optional dictionary with parameters for gap fitting.
         """
+        jobs = []
         if gap_para is None:
             gap_para = {"two_body": True, "three_body": False, "soap": True}
-
-        mlip_path = Path.cwd()
-        if os.path.join(database_dir, "train_with_sigma.extxyz"):
-            shutil.copy(
-                os.path.join(database_dir, "train_with_sigma.extxyz"),
-                os.path.join(mlip_path, "train_with_sigma.extxyz"),
-            )
-        shutil.copy(
-            os.path.join(database_dir, "test.extxyz"),
-            os.path.join(mlip_path, "test.extxyz"),
-        )
-        shutil.copy(
-            os.path.join(database_dir, "train.extxyz"),
-            os.path.join(mlip_path, "train.extxyz"),
-        )
-        if glue_xml:
-            shutil.copy(
-                os.path.join(database_dir, "../glue.xml"),  # very improvised on purpose
-                os.path.join(mlip_path, "glue.xml"),
-            )
 
         if self.mlip_type is None:
             raise ValueError(
@@ -349,18 +329,17 @@ class MLIPFitMaker(Maker):
                 glue_xml=glue_xml,
                 fit_kwargs=kwargs,
             )
+            jobs.append(train_test_error)
 
-            train_error = train_test_error["train_error"]
-            test_error = train_test_error["test_error"]
+        check_conv = check_convergence(train_test_error.output["test_error"])
+        jobs.append(check_conv)
 
-        convergence = False
-        if test_error < 0.01:
-            convergence = True
-
-        return {
-            "mlip_path": mlip_path,
-            "mlip_xml": mlip_path.joinpath("gap_file.xml"),
-            "train_error": train_error,
-            "test_error": test_error,
-            "convergence": convergence,
-        }
+        return Flow(
+            jobs,
+            {
+                "mlip_path": train_test_error.output["mlip_path"],
+                "train_error": train_test_error.output["train_error"],
+                "test_error": train_test_error.output["test_error"],
+                "convergence": check_conv.output,
+            },
+        )

@@ -149,7 +149,7 @@ class MLPhononMaker(PhononMaker):
             that is nearly fully optimized as the internal optimizers
             have very strict settings!
         ml_model : str
-            Complete path to gapfit.xml file including file name
+            Complete path to gapfit.xml file including file name.
         make_kwargs :
             Keyword arguments for the PhononMaker.
 
@@ -158,6 +158,7 @@ class MLPhononMaker(PhononMaker):
         PhononMaker jobs.
 
         """
+        ml_model = ml_model + "/gap_file.xml"
         if self.bulk_relax_maker is not None:
             br = self.bulk_relax_maker
             self.bulk_relax_maker = br.update_kwargs(

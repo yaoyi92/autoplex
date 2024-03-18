@@ -5,12 +5,14 @@ import os
 from pathlib import Path
 
 import ase.io
+from jobflow import Response, job
 
 from autoplex.fitting.common.utils import (
     calculate_delta,
     energy_remain,
     gap_hyperparameter_constructor,
     load_gap_hyperparameter_defaults,
+    prepare_fit_environment,
     run_gap,
     run_quip,
 )
@@ -19,7 +21,8 @@ current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 
 
-def gap_fitting(  # @job decorator?
+@job
+def gap_fitting(
     db_dir: str | Path,
     include_two_body: bool = True,
     include_three_body: bool = False,
@@ -29,7 +32,7 @@ def gap_fitting(  # @job decorator?
     auto_delta: bool = True,
     glue_xml: bool = False,
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
-) -> dict:
+):
     """
     GAP fit and validation job.
 
@@ -61,6 +64,8 @@ def gap_fitting(  # @job decorator?
         A dictionary with train_error, test_error
 
     """
+    mlip_path = prepare_fit_environment(db_dir, Path.cwd(), glue_xml)
+
     db_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     train_data_path = os.path.join(db_dir, "train_with_sigma.extxyz")
     test_data_path = os.path.join(db_dir, "test.extxyz")
@@ -142,4 +147,30 @@ def gap_fitting(  # @job decorator?
     test_error = energy_remain("quip_test.extxyz")
     print("Testing error of MLIP (eV/at.):", round(test_error, 4))
 
-    return {"train_error": train_error, "test_error": test_error}
+    return Response(
+        output={
+            "train_error": train_error,
+            "test_error": test_error,
+            "mlip_path": mlip_path,
+        }
+    )
+
+
+@job
+def check_convergence(test_error):
+    """
+    Check the convergence of the fit.
+
+    Parameters
+    ----------
+    test_error
+
+    Returns
+    -------
+    The convergence bool.
+    """
+    convergence = False
+    if test_error < 0.01:
+        convergence = True
+
+    return convergence

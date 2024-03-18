@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable
@@ -659,3 +660,39 @@ def run_quip(num_processes: int, data_path, xml_file: str, filename: str):
         "std_quip_err.log", "w", encoding="utf-8"
     ) as file_err:
         subprocess.call(command, stdout=file_std, stderr=file_err, shell=True)
+
+
+def prepare_fit_environment(database_dir, mlip_path, glue_xml: bool):
+    """
+    Prepare the environment for the fit.
+
+    Parameters
+    ----------
+    database_dir
+    mlip_path
+    glue_xml
+
+    Returns
+    -------
+    the MLIP path.
+    """
+    if os.path.join(database_dir, "train_with_sigma.extxyz"):
+        shutil.copy(
+            os.path.join(database_dir, "train_with_sigma.extxyz"),
+            os.path.join(mlip_path, "train_with_sigma.extxyz"),
+        )
+    shutil.copy(
+        os.path.join(database_dir, "test.extxyz"),
+        os.path.join(mlip_path, "test.extxyz"),
+    )
+    shutil.copy(
+        os.path.join(database_dir, "train.extxyz"),
+        os.path.join(mlip_path, "train.extxyz"),
+    )
+    if glue_xml:
+        shutil.copy(
+            os.path.join(database_dir, "../glue.xml"),  # very improvised on purpose
+            os.path.join(mlip_path, "glue.xml"),
+        )
+
+    return mlip_path

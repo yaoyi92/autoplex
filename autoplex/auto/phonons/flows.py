@@ -196,7 +196,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     min_length=self.min_length,
                 ).make_from_ml_model(
                     structure=benchmark_structure,
-                    ml_model=add_data_fit.output["mlip_xml"],
+                    ml_model=add_data_fit.output["mlip_path"],
                 )
                 flows.append(add_data_ml_phonon)
 
