@@ -190,6 +190,20 @@ class DataPreprocessing(Maker):
             for _ in value2[0]
         ]
 
+        if pre_database_dir and os.path.exists(pre_database_dir):
+            current_working_directory = os.getcwd()
+
+            if len(pre_xyz_files) == 1:
+                for file_name in pre_xyz_files:
+                    source_file_path = os.path.join(pre_database_dir, file_name)
+                    destination_file_path = os.path.join(
+                        current_working_directory, "vasp_ref.extxyz"
+                    )
+                    shutil.copy(source_file_path, destination_file_path)
+                    print(
+                        f"File {file_name} has been copied to {destination_file_path}"
+                    )
+
         outcar_2_extended_xyz(
             path_to_vasp_static_calcs=list_of_vasp_calc_dirs,
             config_types=config_types,
@@ -224,7 +238,7 @@ class DataPreprocessing(Maker):
                     print(
                         f"File {file_name} has been copied to {destination_file_path}"
                     )
-            else:
+            elif len(pre_xyz_files) > 2:
                 raise ValueError(
                     "Please provide a train and a test extxyz file (two files in total) for the pre_xyz_files."
                 )

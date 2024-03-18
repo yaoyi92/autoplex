@@ -3,7 +3,7 @@
 
 Software for generating and benchmarking machine learning (ML) based interatomic potentials. The aim of **autoplex** is to provide a fully automated solution for creating high-quality ML potentials. The software is interfaced to multiple different ML potential fitting frameworks and to the atomate2 environment for efficient high-throughput computations. The vision of this project is to allow a wide community of researchers to create accurate and reliable ML potentials for materials simulations.
 
-`autoplex` is developed jointly by two research groups at BAM Berlin and the University of Oxford. 
+`autoplex` is developed jointly by two research groups at BAM Berlin and the University of Oxford.
 
 `autoplex` is an evolving project and **contributions are very welcome**! To ensure that the code remains of high quality, please raise a pull request for any contributions, which will be reviewed before integration into the main branch of the code. In the beginning, Janine will take care of the reviews.
 
@@ -18,7 +18,7 @@ Software for generating and benchmarking machine learning (ML) based interatomic
 - Please ensure high coverage of the code based on the tests (you can test this with `coverage`).
 - Please use numpy docstrings (use an IDE and switch on this docstring type; you can check examples in our code base; the docstring should be useful for other people)
 - Please ensure that type hints are added for each variable, function, class, and method (this helps code readability, especially if someone else wants to build on your code).
-- Plesae write the code in a way that gives users the option to change parameters (this is mainly applicable, for example, fitting protocols/flows). In other words, please avoid hardcoding settings or physical properties. Reasonable default values should be set, but the user needs to have the opportunity to modify them if they wish.
+- Please write the code in a way that gives users the option to change parameters (this is mainly applicable, for example, fitting protocols/flows). In other words, please avoid hardcoding settings or physical properties. Reasonable default values should be set, but the user needs to have the opportunity to modify them if they wish.
 
 # Formatting requirements
 - Variable names should be descriptive and should use snake case (`variable_name`, not `VariableName`).
