@@ -15,8 +15,8 @@ from autoplex.fitting.common.regularization import set_sigma
 from autoplex.fitting.common.utils import (
     data_distillation,
     get_list_of_vasp_calc_dirs,
-    outcar_2_extended_xyz,
     split_dataset,
+    vaspoutput_2_extended_xyz,
 )
 
 __all__ = [
@@ -29,20 +29,27 @@ __all__ = [
 @dataclass
 class CompleteMLIPFitMaker(Maker):
     """
-    Maker to fit ML potentials based on DFT data.
+    Maker to fit ML potentials based on DFT labelled reference data.
+
+    This Maker will filter the provided dataset in a data preprocessing step and then proceed
+    with the MLIP fit (default is GAP).
 
     Parameters
     ----------
     name : str
         Name of the flows produced by this maker.
+    mlip_type: str
+        Choose one specific MLIP type:
+        'GAP' | 'SNAP' | 'ACE' | 'Nequip' | 'Allegro' | 'MACE'
     """
 
     name: str = "CompleteMLpotentialFit"
+    mlip_type: str = "GAP"
 
     def make(
         self,
         species_list: list,
-        iso_atom_energy: list,
+        isolated_atoms_energy: list,
         fit_input: dict,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
@@ -56,13 +63,13 @@ class CompleteMLIPFitMaker(Maker):
         **fit_kwargs,
     ):
         """
-        Make flow to create ML potential fits.
+        Make a flow to create ML potential fits.
 
         Parameters
         ----------
         species_list : list.
             List of element names (str)
-        iso_atom_energy : list.
+        isolated_atoms_energy : list.
             List of isolated atoms energy
         fit_input : dict.
             PhononDFTMLDataGenerationFlow output
@@ -100,7 +107,7 @@ class CompleteMLIPFitMaker(Maker):
             atom_wise_regularization=atom_wise_regularization,
         )
         jobs.append(data_prep_job)
-        gap_fit_job = MLIPFitMaker(mlip_type="GAP").make(
+        gap_fit_job = MLIPFitMaker(mlip_type=self.mlip_type).make(
             database_dir=data_prep_job.output,
             isol_es=None,
             auto_delta=auto_delta,
@@ -116,7 +123,7 @@ class CompleteMLIPFitMaker(Maker):
 @dataclass
 class DataPreprocessing(Maker):
     """
-    Data preprocessing function.
+    Data preprocessing of the provided dataset.
 
     Parameters
     ----------
@@ -204,7 +211,7 @@ class DataPreprocessing(Maker):
                         f"File {file_name} has been copied to {destination_file_path}"
                     )
 
-        outcar_2_extended_xyz(
+        vaspoutput_2_extended_xyz(
             path_to_vasp_static_calcs=list_of_vasp_calc_dirs,
             config_types=config_types,
             data_types=data_types,
@@ -260,7 +267,7 @@ class DataPreprocessing(Maker):
 @dataclass
 class MLIPFitMaker(Maker):
     """
-    Maker to fitting potential.
+    Maker for fitting the potential(s) on the preprocessed data.
 
     Parameters
     ----------
@@ -289,11 +296,11 @@ class MLIPFitMaker(Maker):
         **kwargs,
     ):
         """
-        Maker for data preprocessing.
+        Maker for fitting potential(s).
 
         Parameters
         ----------
-        database_dir:
+        database_dir: str
             the database directory.
         gap_para: dict
             gap fit parameters.
@@ -302,7 +309,7 @@ class MLIPFitMaker(Maker):
         num_processes: int
             number of processes for fitting.
         auto_delta: bool
-            automatically determine delta for 2b, 3b and soap terms.
+            automatically determine delta for 2b, 3b and SOAP terms.
         glue_xml: bool
             use the glue.xml core potential instead of fitting 2b terms.
         kwargs: dict.

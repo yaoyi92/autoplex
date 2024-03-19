@@ -16,7 +16,7 @@ def generate_randomized_structures(
     structure: Structure, n_struct: int, cell_factor: float = 1.0, std_dev: float = 0.01
 ):
     """
-    Take in a structure object and generates randomly displaced structure.
+    Take in a pymatgen Structure object and generates randomly displaced structures.
 
     Parameters
     ----------

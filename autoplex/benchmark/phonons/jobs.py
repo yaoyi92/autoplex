@@ -19,11 +19,11 @@ def compute_bandstructure_benchmark_metrics(
     dft_phonon_bs: PhononBandStructureSymmLine,
 ):  # TODO include which pot. method has been used (GAP, ACE, etc.)
     """
-    Compute phonon band-structure benchmark metrics and associated plots.
+    Compute phonon band-structure benchmark metrics and generate associated plots.
 
     Parameters
     ----------
-    structure : .Structure
+    structure : Structure
      A structure object.
     ml_phonon_bs: PhononBandStructureSymmLine.
        ML generated pymatgen phonon band-structure object
@@ -60,9 +60,7 @@ def compute_bandstructure_benchmark_metrics(
 
 
 @job
-def write_benchmark_metrics(
-    benchmark_structure: Structure, mp_id, rmse, displacements
-):  # TODO put in flow
+def write_benchmark_metrics(benchmark_structure: Structure, mp_id, rmse, displacements):
     """
     Generate a text file with evaluated benchmark metrics.
 

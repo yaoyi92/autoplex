@@ -198,7 +198,7 @@ class DFTPhononMaker(PhononMaker):
 @dataclass
 class IsoAtomStaticMaker(StaticMaker):
     """
-    Maker to create Isolated atoms static jobs.
+    Maker to create Isolated atoms static (VASP) jobs.
 
     Parameters
     ----------
@@ -240,16 +240,18 @@ class IsoAtomStaticMaker(StaticMaker):
 @dataclass
 class RandomStructuresDataGenerator(Maker):
     """
-    Maker to generate DFT data based on random displacements for ML potential fitting.
+    Maker to generate DFT labelled training data for ML potential fitting based on random atomic displacements.
 
-    1. Randomizes Structures (with and without supercell).
-    2. Performs DFT calculations.
+    This Maker performs the two following steps:
+    1. Generates supercells from the provided structure and randomly displaces the atomic positions using ase rattle.
+    (randomized unit cells can be generated additionally).
+    2. Performs the static DFT (VASP) calculations on the randomized cells.
 
     Parameters
     ----------
     name : str
         Name of the flows produced by this maker.
-    phonon_displacement_maker : .BaseVaspMaker or None
+    phonon_displacement_maker : BaseVaspMaker or None
         Maker used to compute the forces for a supercell.
     code: str
         determines the dft code. currently only vasp is implemented.
@@ -283,7 +285,7 @@ class RandomStructuresDataGenerator(Maker):
         supercell_matrix: Matrix3D | None = None,
     ):
         """
-        Make flow to generate the reference DFT data base.
+        Make a flow to generate rattled structures reference DFT data.
 
         Parameters
         ----------

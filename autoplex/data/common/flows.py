@@ -29,6 +29,12 @@ __all__ = ["GenerateTrainingDataForTesting"]
 class GenerateTrainingDataForTesting(Maker):
     """Maker for generating training data to test it and check the forces.
 
+    This Maker will first generate training data based on the chosen ML model (default is GAP)
+    by randomizing (ase rattle) atomic displacements in supercells of the provided input structures.
+    Then it will proceed with MLIP-based Phonon calculations (based on atomate2 PhononMaker), collect
+    all structure data in extended xyz files and plot the forces in histograms (per rescaling cell_factor
+    and total).
+
     Parameters
     ----------
     name: str
@@ -61,7 +67,7 @@ class GenerateTrainingDataForTesting(Maker):
         **relax_kwargs,
     ):
         """
-        Generate ase.rattled structures out of the training data and returns plots of the forces.
+        Generate ase.rattled structures from the training data and returns histogram plots of the forces.
 
         Parameters
         ----------

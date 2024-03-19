@@ -26,15 +26,24 @@ def set_sigma(
 
     Parameters
     ----------
-        atoms :: (list of ase.Atoms) list of atoms objects to set reg. for. Usually fitting database
-        etup :: (list of tuples) list of tuples of (min, max) values for energy, force, virial sigmas
-        scheme :: (str) scheme to use for regularisation. Options are: linear_hull, volume-stoichiometry
-        energy_name :: (str) name of energy key in atoms.info
-        force_name :: (str) name of force key in atoms.arrays
-        virial_name :: (str) name of virial key in atoms.info
-        isol_es :: (dict) dictionary of isolated energies for each atomic number. Only needed for volume-x scheme
-                    e.g. {14: '-163.0', 8:'-75.0'} for SiO2
-        element_order: order of the elements.
+    atoms: (list of ase.Atoms)
+        list of atoms objects to set reg. for. Usually fitting database
+    etup: (list of tuples)
+        list of tuples of (min, max) values for energy, force, virial sigmas
+    scheme: (str)
+        scheme to use for regularisation. Options are: linear_hull, volume-stoichiometry
+    energy_name: (str)
+        name of energy key in atoms.info
+    force_name: (str)
+        name of force key in atoms.arrays
+    virial_name: (str)
+        name of virial key in atoms.info
+    isol_es: (dict)
+        dictionary of isolated energies for each atomic number.
+        Only needed for volume-x scheme e.g. {14: '-163.0', 8:'-75.0'}
+        for SiO2
+    element_order: (list)
+        list of atomic numbers in order of choice (e.g. [42, 16] for MoS2)
 
     e.g. etup = [(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)]
     [(emin, emax), (semin, semax), (sfmin, sfmax), (ssvmin, svmax)]
@@ -199,8 +208,10 @@ def get_convex_hull(atoms, energy_name="energy", **kwargs):
 
     Parameters
     ----------
-        atoms :: (list) list of atoms objects
-        energy_name :: (str) name of energy key in atoms.info (typically a DFT energy)
+    atoms: (list)
+        list of atoms objects
+    energy_name: (str)
+        name of energy key in atoms.info (typically a DFT energy)
 
     Returns
     -------
@@ -257,14 +268,17 @@ def get_e_distance_to_hull(hull, at, energy_name="energy", **kwargs):
 
     Parameters
     ----------
-                hull_ps :: (np.array) points in the convex hull
-                at :: (ase.Atoms) structure to calculate distance to hull
-    energy_name :: (str) name of energy key in atoms.info (typically a DFT energy)
+    hull: (np.array)
+        points in the convex hull
+    at: (ase.Atoms)
+        structure to calculate distance to hull
+    energy_name: (str)
+        name of energy key in atoms.info (typically a DFT energy)
 
     """
-    v = at.get_volume() / len(at)
-    e = at.info[energy_name] / len(at)
-    tp = np.array([v, e])
+    volume = at.get_volume() / len(at)
+    energy = at.info[energy_name] / len(at)
+    tp = np.array([volume, energy])
 
     hull_ps = hull.points if isinstance(hull, ConvexHull) else hull
 
@@ -278,7 +292,7 @@ def get_e_distance_to_hull(hull, at, energy_name="energy", **kwargs):
     ]  # find the nearest convex hull point
 
     return (
-        e
+        energy
         - get_intersect(
             tp,  # get intersection of the vertical line (energy axis) and the line between the nearest hull points
             tp + np.array([0, 1]),
@@ -292,10 +306,14 @@ def get_intersect(a1, a2, b1, b2):
     """
     Return the point of intersection of the lines passing through a2,a1 and b2,b1.
 
-    a1: [x, y] a point on the first line
-    a2: [x, y] another point on the first line
-    b1: [x, y] a point on the second line
-    b2: [x, y] another point on the second line
+    a1: [x, y]
+        a point on the first line
+    a2: [x, y]
+        another point on the first line
+    b1: [x, y]
+        a point on the second line
+    b2: [x, y]
+        another point on the second line
 
     """
     s = np.vstack([a1, a2, b1, b2])  # s for stacked
@@ -314,12 +332,15 @@ def get_x(at, element_order=None):
 
     Parameters
     ----------
-        at :: (ase.Atoms) structure to calculate mole-fraction of
-        element_order :: (list) list of atomic numbers in order of choice (e.g. [42, 16] for MoS2)
+    at: (ase.Atoms)
+        structure to calculate mole-fraction of
+    element_order: (list)
+        list of atomic numbers in order of choice (e.g. [42, 16] for MoS2)
 
     Returns
     -------
-        (x2, x3...) :: (array of float) reduced mole-fraction of structure - first element n = 1-sum(others)
+    (x2, x3...): (array of float)
+        reduced mole-fraction of structure - first element n = 1-sum(others)
 
     """
     el, cts = np.unique(at.get_atomic_numbers(), return_counts=True)
@@ -352,9 +373,14 @@ def label_stoichiometry_volume(ats, isol_es, e_name, element_order=None):
 
     Parameters
     ----------
-                ats :: (list) list of atoms objects
-                isol_es :: (dict) dictionary of isolated atom energies
-                e_name :: (str) name of energy key in atoms.info (typically a DFT energy)
+    ats: (list)
+        list of atoms objects
+    isol_es: (dict)
+        dictionary of isolated atom energies
+    e_name: (str)
+        name of energy key in atoms.info (typically a DFT energy)
+    element_order: (list)
+        list of atomic numbers in order of choice (e.g. [42, 16] for MoS2)
 
     """
     p = []
@@ -380,10 +406,14 @@ def point_in_triangle_2D(p1, p2, p3, pn):
 
     Parameters
     ----------
-                p1 :: (tuple) coordinates of first point
-                p2 :: (tuple) coordinates of second point
-                p3 :: (tuple) coordinates of third point
-                pn :: (tuple) coordinates of point to check
+    p1: (tuple)
+        coordinates of first point
+    p2: (tuple)
+        coordinates of second point
+    p3: (tuple)
+        coordinates of third point
+    pn: (tuple)
+        coordinates of point to check
 
     """
     ep = 1e-4
@@ -415,8 +445,10 @@ def point_in_triangle_ND(pn, *preg):
 
     Parameters
     ----------
-                pn: point to check (in ND)
-                *preg: list of points defining (in ND) to check against
+    pn:
+        point to check (in ND)
+    *preg:
+        list of points defining (in ND) to check against
 
     """
     hull = Delaunay(preg)
@@ -424,7 +456,19 @@ def point_in_triangle_ND(pn, *preg):
 
 
 def calculate_hull_3D(p):
-    """Calculate the convex hull in 3D."""
+    """
+    Calculate the convex hull in 3D.
+
+    Parameters
+    ----------
+    p:
+        point
+
+    Returns
+    -------
+    convex hull in 3D.
+
+    """
     p0 = np.array(
         [(p[:, i].max() - p[:, i].min()) / 2 + p[:, i].min() for i in range(2)] + [-1e6]
     )  # test point to get the visible facets from below
@@ -437,7 +481,19 @@ def calculate_hull_3D(p):
 
 
 def calculate_hull_ND(p):
-    """Calculate the convex hull in ND (N>=3)."""
+    """
+    Calculate the convex hull in ND (N>=3).
+
+    Parameters
+    ----------
+    p:
+        point
+
+    Returns
+    -------
+    convex hull in ND.
+
+    """
     p0 = np.array(
         [
             (p[:, i].max() - p[:, i].min()) / 2 + p[:, i].min()
@@ -465,7 +521,23 @@ def calculate_hull_ND(p):
 def get_e_distance_to_hull_3D(
     hull, at, isol_es=None, energy_name="energy", element_order=None
 ):
-    """Calculate the energy distance to the convex hull in 3D."""
+    """
+    Calculate the energy distance to the convex hull in 3D.
+
+    Parameters
+    ----------
+    hull:
+        convex hull.
+    at: (ase.Atoms)
+        structure to calculate mole-fraction of
+    isol_es: (dict)
+        dictionary of isolated atom energies
+    energy_name: (str)
+        name of energy key in atoms.info (typically a DFT energy)
+    element_order: (list)
+        list of atomic numbers in order of choice (e.g. [42, 16] for MoS2)
+
+    """
     x = get_x(at, element_order=element_order)
     e = (
         at.info[energy_name] - sum([isol_es[j] for j in at.get_atomic_numbers()])
@@ -504,12 +576,10 @@ def piecewise_linear(x, vals):
 
     Parameters
     ----------
-    x
-    vals
-
-    Returns
-    -------
-    f0
+    x:
+        x value.
+    vals:
+        values
 
     """
     i = np.searchsorted([v[0] for v in vals], x)

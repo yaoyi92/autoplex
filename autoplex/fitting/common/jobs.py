@@ -39,7 +39,7 @@ def gap_fitting(
     Parameters
     ----------
     db_dir: str or path.
-        Path to database directory
+        Path to database directory.
     path_to_default_hyperparameters : str or Path.
         Path to gap-defaults.json.
     include_two_body : bool.
@@ -163,7 +163,8 @@ def check_convergence(test_error):
 
     Parameters
     ----------
-    test_error
+    test_error:
+        The error of the test data.
 
     Returns
     -------

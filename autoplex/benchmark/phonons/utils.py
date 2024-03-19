@@ -46,7 +46,7 @@ def rmse_kdep_plot(
     img_format="eps",
 ):
     """
-    Save k dependent root mean squared error plot between DFT and ML phonon band-structure.
+    Save q dependent root mean squared error plot between DFT and ML phonon band-structure.
 
     Parameters
     ----------

@@ -149,7 +149,7 @@ def get_list_of_vasp_calc_dirs(flow_output):
     return list_of_vasp_calc_dirs
 
 
-def outcar_2_extended_xyz(
+def vaspoutput_2_extended_xyz(
     path_to_vasp_static_calcs: list,
     config_types: list[str] | None = None,
     data_types: list[str] | None = None,
@@ -158,7 +158,7 @@ def outcar_2_extended_xyz(
     atom_wise_regularization: bool = True,
 ):
     """
-    Parse all VASP OUTCARs and generates a trainGAP.xyz.
+    Parse all VASP output files (vasprun.xml/OUTCAR) and generates a vasp_ref.extxyz.
 
     Uses ase.io.read to parse the OUTCARs
     Adapted from https://lipai.github.io/scripts/ml_scripts/outcar2xyz.html
@@ -326,6 +326,7 @@ def gcm3_to_Vm(gcm3, mr, n_atoms=1):
     Parameters
     ----------
     gcm3:
+        g/cm3
     mr:
     n_atoms:
         number of atoms.
@@ -367,7 +368,8 @@ def split_dataset(atoms, split_ratio):
 
     Parameters
     ----------
-    atoms:
+    atoms: Atoms
+        Ase atoms object
     split_ratio: float
         Parameter to divide the training set and the test set.
 
@@ -527,10 +529,6 @@ def plot_convex_hull(all_points, hull_points):
     hull_points: ndarray
         a possibly already existing xyz file.
 
-    Returns
-    -------
-    None.
-
     """
     hull = ConvexHull(hull_points)
 
@@ -624,10 +622,6 @@ def run_gap(num_processes: int, parameters):
     ----------
         GAP fit parameters.
 
-    Returns
-    -------
-    No return.
-
     """
     os.environ["OMP_NUM_THREADS"] = str(num_processes)
 
@@ -648,9 +642,6 @@ def run_quip(num_processes: int, data_path, xml_file: str, filename: str):
     filename: str
         Name of the output file.
 
-    Returns
-    -------
-    No return.
     """
     os.environ["OMP_NUM_THREADS"] = str(num_processes)
 
@@ -668,9 +659,12 @@ def prepare_fit_environment(database_dir, mlip_path, glue_xml: bool):
 
     Parameters
     ----------
-    database_dir
-    mlip_path
-    glue_xml
+    database_dir:
+        Path to database directory.
+    mlip_path:
+        Path to the MLIP fit run (cwd).
+    glue_xml: bool
+            use the glue.xml core potential instead of fitting 2b terms.
 
     Returns
     -------
