@@ -251,7 +251,7 @@ class RandomStructuresDataGenerator(Maker):
     ----------
     name : str
         Name of the flows produced by this maker.
-    phonon_displacement_maker : BaseVaspMaker or None
+    phonon_displacement_maker : .BaseVaspMaker or None
         Maker used to compute the forces for a supercell.
     code: str
         determines the dft code. currently only vasp is implemented.

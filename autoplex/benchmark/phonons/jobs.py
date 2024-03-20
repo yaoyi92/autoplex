@@ -23,7 +23,7 @@ def compute_bandstructure_benchmark_metrics(
 
     Parameters
     ----------
-    structure : Structure
+    structure : .Structure
      A structure object.
     ml_phonon_bs: PhononBandStructureSymmLine.
        ML generated pymatgen phonon band-structure object
