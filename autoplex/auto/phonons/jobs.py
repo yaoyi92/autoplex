@@ -11,17 +11,17 @@ from atomate2.forcefields.jobs import (
     GAPRelaxMaker,
     GAPStaticMaker,
 )
-from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
-from atomate2.vasp.powerups import (
-    update_user_incar_settings,
-)
 from jobflow import Flow, Response, job
 
 if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
-from autoplex.data.phonons.flows import IsoAtomMaker, RandomStructuresDataGenerator
+from autoplex.data.phonons.flows import (
+    DFTPhononMaker,
+    IsoAtomMaker,
+    RandomStructuresDataGenerator,
+)
 
 
 @dataclass
@@ -223,9 +223,6 @@ def dft_phonopy_gen_data(
             displacement=displacement,
             min_length=min_length,
         ).make(structure=structure)
-        dft_phonons = update_user_incar_settings(
-            dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
-        )
         jobs.append(dft_phonons)
         dft_phonons_output[
             f"{displacement}".replace(".", "")  # key must not contain '.'
