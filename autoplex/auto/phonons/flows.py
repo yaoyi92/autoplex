@@ -71,8 +71,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
-    cell_factor: float
-        factor to resize cell parameters.
+    cell_factor_sequence: list[float]
+        list of factors to resize cell parameters. Default is [0.975, 1.0, 1.025, 1.05].
     std_dev: float
         Standard deviation std_dev for normal distribution to draw numbers from
         to generate the rattled structures.
@@ -95,7 +95,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     min_length: int = 20
     symprec: float = 1e-4
     uc: bool = False
-    cell_factor: float = 1.0
+    cell_factor_sequence: list[float] | None = None
     std_dev: float = 0.01
     supercell_matrix: Matrix3D | None = None
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
@@ -163,7 +163,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     self.phonon_displacement_maker,
                     self.n_struct,
                     self.uc,
-                    self.cell_factor,
+                    self.cell_factor_sequence,
                     self.std_dev,
                     self.supercell_matrix,
                 )
@@ -315,7 +315,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         phonon_displacement_maker: BaseVaspMaker,
         n_struct: int = 1,
         uc: bool = False,
-        cell_factor: float = 1.0,
+        cell_factor_sequence: list[float] | None = None,
         std_dev: float = 0.01,
         supercell_matrix: Matrix3D | None = None,
     ):
@@ -334,8 +334,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         uc: bool.
             If True, will generate randomly distorted structures (unitcells)
             and add static computation jobs to the flow.
-        cell_factor: float
-            factor to resize cell parameters.
+        cell_factor_sequence: list[float]
+            list of factors to resize cell parameters.
         std_dev: float
             Standard deviation std_dev for normal distribution to draw numbers from
             to generate the rattled structures.
@@ -348,12 +348,11 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             phonon_displacement_maker,
             n_struct,
             uc,
-            cell_factor,
+            cell_factor_sequence,
             std_dev,
             supercell_matrix,
         )
-
         return Flow(
-            additonal_dft_random,  # flows
+            additonal_dft_random,
             output={"rand_struc_dir": additonal_dft_random.output},
         )

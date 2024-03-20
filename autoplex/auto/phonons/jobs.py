@@ -240,7 +240,7 @@ def dft_random_gen_data(
     phonon_displacement_maker,
     n_struct: int = 1,
     uc: bool = False,
-    cell_factor: float = 1.0,
+    cell_factor_sequence: list[float] | None = None,
     std_dev: float = 0.01,
     supercell_matrix: Matrix3D | None = None,
 ):
@@ -260,22 +260,27 @@ def dft_random_gen_data(
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
-    cell_factor: float
-        factor to resize cell parameters.
+    cell_factor_sequence: list[float]
+        list of factors to resize cell parameters.
     std_dev: float
         Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
     """
     jobs = []
+
     random_datagen = RandomStructuresDataGenerator(
         name="RandomDataGen",
         phonon_displacement_maker=phonon_displacement_maker,
         n_struct=n_struct,
         uc=uc,
-        cell_factor=cell_factor,
         std_dev=std_dev,
-    ).make(structure=structure, mp_id=mp_id, supercell_matrix=supercell_matrix)
+    ).make(
+        structure=structure,
+        mp_id=mp_id,
+        supercell_matrix=supercell_matrix,
+        cell_factor_sequence=cell_factor_sequence,
+    )
     jobs.append(random_datagen)
 
     flow = Flow(jobs, random_datagen.output)
