@@ -213,6 +213,7 @@ def vaspoutput_2_extended_xyz(
             del i.calc.results["energy"]
             del i.calc.results["free_energy"]
             i.info["config_type"] = config_type
+            i.info["data_type"] = data_type.rstrip("_dir")
             i.pbc = True
         write("vasp_ref.extxyz", file, append=True)
 
