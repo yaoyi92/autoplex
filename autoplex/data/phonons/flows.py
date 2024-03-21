@@ -16,6 +16,17 @@ from atomate2.vasp.flows.phonons import PhononMaker
 from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
 from atomate2.vasp.jobs.phonons import PhononDisplacementMaker
 from atomate2.vasp.sets.core import StaticSetGenerator, TightRelaxSetGenerator
+from custodian.vasp.handlers import (  # turning off custodian
+    FrozenJobErrorHandler,
+    IncorrectSmearingHandler,
+    LargeSigmaHandler,
+    MeshSymmetryErrorHandler,
+    NonConvergingErrorHandler,
+    PotimErrorHandler,
+    StdErrHandler,
+    UnconvergedErrorHandler,
+    VaspErrorHandler,
+)
 from jobflow import Flow, Maker
 from phonopy.structure.cells import get_supercell
 from pymatgen.core import Molecule, Site
@@ -62,6 +73,22 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
         this, use the ":" character, which will automatically be converted to ".". E.g.
         ``{"my_file:txt": "contents of the file"}``.
     """
+
+    run_vasp_kwargs: dict = field(
+        default_factory=lambda: {
+            "handlers": (
+                VaspErrorHandler(),
+                MeshSymmetryErrorHandler(),
+                UnconvergedErrorHandler(),
+                NonConvergingErrorHandler(),
+                PotimErrorHandler(),
+                FrozenJobErrorHandler(),
+                StdErrHandler(),
+                LargeSigmaHandler(),
+                IncorrectSmearingHandler(),
+            )
+        }
+    )
 
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
