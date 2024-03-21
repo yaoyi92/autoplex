@@ -77,7 +77,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
     run_vasp_kwargs: dict = field(
         default_factory=lambda: {
             "handlers": (
-                VaspErrorHandler(),
+                VaspErrorHandler(is_terminating=False, raises_runtime_error=False),
                 MeshSymmetryErrorHandler(),
                 UnconvergedErrorHandler(),
                 NonConvergingErrorHandler(),
