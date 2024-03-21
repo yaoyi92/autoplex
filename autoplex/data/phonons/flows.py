@@ -16,17 +16,6 @@ from atomate2.vasp.flows.phonons import PhononMaker
 from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
 from atomate2.vasp.jobs.phonons import PhononDisplacementMaker
 from atomate2.vasp.sets.core import StaticSetGenerator, TightRelaxSetGenerator
-from custodian.vasp.handlers import (  # turning off custodian
-    FrozenJobErrorHandler,
-    IncorrectSmearingHandler,
-    LargeSigmaHandler,
-    MeshSymmetryErrorHandler,
-    NonConvergingErrorHandler,
-    PotimErrorHandler,
-    StdErrHandler,
-    UnconvergedErrorHandler,
-    VaspErrorHandler,
-)
 from jobflow import Flow, Maker
 from phonopy.structure.cells import get_supercell
 from pymatgen.core import Molecule, Site
@@ -74,21 +63,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
         ``{"my_file:txt": "contents of the file"}``.
     """
 
-    run_vasp_kwargs: dict = field(
-        default_factory=lambda: {
-            "handlers": (
-                VaspErrorHandler(is_terminating=False, raises_runtime_error=False),
-                MeshSymmetryErrorHandler(),
-                UnconvergedErrorHandler(),
-                NonConvergingErrorHandler(),
-                PotimErrorHandler(),
-                FrozenJobErrorHandler(),
-                StdErrHandler(),
-                LargeSigmaHandler(),
-                IncorrectSmearingHandler(),
-            )
-        }
-    )
+    run_vasp_kwargs: dict = field(default_factory=lambda: {"handlers": ()})
 
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
@@ -96,13 +71,13 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
             user_incar_settings={
                 "IBRION": 2,
                 "ISPIN": 1,
-                "ISMEAR": 0,
+                "ISMEAR": -5,
                 "ISIF": 3,
                 "ENCUT": 700,
                 "EDIFF": 1e-7,
                 "LAECHG": False,
                 "LREAL": False,
-                "ALGO": "Normal",
+                "ALGO": "Fast",
                 "NSW": 0,
                 "LCHARG": False,
                 "SIGMA": 0.05,
