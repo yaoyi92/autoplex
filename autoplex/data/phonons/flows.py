@@ -71,7 +71,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
             user_incar_settings={
                 "IBRION": 2,
                 "ISPIN": 1,
-                "ISMEAR": -5,
+                "ISMEAR": 0,
                 "ISIF": 3,
                 "ENCUT": 700,
                 "EDIFF": 1e-7,
@@ -301,8 +301,6 @@ class RandomStructuresDataGenerator(Maker):
         """
         jobs = []  # initializing empty job list
         outputs = []
-        if cell_factor_sequence is None:
-            cell_factor_sequence = [0.975, 1.0, 1.025, 1.05]
 
         if supercell_matrix is None:
             supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
@@ -310,43 +308,43 @@ class RandomStructuresDataGenerator(Maker):
             unitcell=get_phonopy_structure(structure),
             supercell_matrix=supercell_matrix,
         )
-        for cell_factor in cell_factor_sequence:
-            random_rattle_sc = generate_randomized_structures(
-                structure=get_pmg_structure(supercell),
+
+        random_rattle_sc = generate_randomized_structures(
+            structure=get_pmg_structure(supercell),
+            n_struct=self.n_struct,
+            cell_factor_sequence=cell_factor_sequence,
+            std_dev=self.std_dev,
+        )
+        jobs.append(random_rattle_sc)
+        # perform the phonon displaced calculations for randomized displaced structures.
+        #  The original structure is only needed to keep track of initial structure.
+        vasp_random_sc_displacement_calcs = run_phonon_displacements(
+            displacements=random_rattle_sc.output,  # pylint: disable=E1101
+            structure=structure,
+            supercell_matrix=None,
+            phonon_maker=self.phonon_displacement_maker,
+        )
+
+        jobs.append(vasp_random_sc_displacement_calcs)
+        outputs.append(vasp_random_sc_displacement_calcs.output["dirs"])
+
+        if self.uc is True:
+            random_rattle = generate_randomized_structures(
+                structure=structure,
                 n_struct=self.n_struct,
-                cell_factor=cell_factor,
+                cell_factor_sequence=cell_factor_sequence,
                 std_dev=self.std_dev,
             )
-            jobs.append(random_rattle_sc)
-            # perform the phonon displaced calculations for randomized displaced structures.
-            #  The original structure is only needed to keep track of initial structure.
-            vasp_random_sc_displacement_calcs = run_phonon_displacements(
-                displacements=random_rattle_sc.output,  # pylint: disable=E1101
+            jobs.append(random_rattle)
+            vasp_random_displacement_calcs = run_phonon_displacements(
+                displacements=random_rattle.output,  # pylint: disable=E1101
                 structure=structure,
                 supercell_matrix=None,
                 phonon_maker=self.phonon_displacement_maker,
             )
 
-            jobs.append(vasp_random_sc_displacement_calcs)
-            outputs.append(vasp_random_sc_displacement_calcs.output["dirs"])
-
-            if self.uc is True:
-                random_rattle = generate_randomized_structures(
-                    structure=structure,
-                    n_struct=self.n_struct,
-                    cell_factor=cell_factor,
-                    std_dev=self.std_dev,
-                )
-                jobs.append(random_rattle)
-                vasp_random_displacement_calcs = run_phonon_displacements(
-                    displacements=random_rattle.output,  # pylint: disable=E1101
-                    structure=structure,
-                    supercell_matrix=None,
-                    phonon_maker=self.phonon_displacement_maker,
-                )
-
-                jobs.append(vasp_random_displacement_calcs)
-                outputs.append(vasp_random_displacement_calcs.output["dirs"])
+            jobs.append(vasp_random_displacement_calcs)
+            outputs.append(vasp_random_displacement_calcs.output["dirs"])
 
         # create a flow including all jobs
         return Flow(jobs, outputs)
