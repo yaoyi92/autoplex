@@ -40,7 +40,7 @@ def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
         },
     }
     data_gen = RandomStructuresDataGenerator(n_struct=3).make(
-        structure=structure, mp_id=test_mpid
+        structure=structure, mp_id=test_mpid, cell_factor_sequence=[1.0]
     )
 
     data_gen = update_user_incar_settings(data_gen, {"ISMEAR": 0})

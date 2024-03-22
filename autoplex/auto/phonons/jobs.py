@@ -158,7 +158,6 @@ class MLPhononMaker(PhononMaker):
         PhononMaker jobs.
 
         """
-        ml_model = ml_model + "/gap_file.xml"
         if self.bulk_relax_maker is not None:
             br = self.bulk_relax_maker
             self.bulk_relax_maker = br.update_kwargs(

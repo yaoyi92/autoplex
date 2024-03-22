@@ -69,7 +69,7 @@ def gap_fitting(
         A dictionary with train_error, test_error
 
     """
-    mlip_path = prepare_fit_environment(db_dir, Path.cwd(), glue_xml)
+    mlip_path: Path = prepare_fit_environment(db_dir, Path.cwd(), glue_xml)
 
     db_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     train_data_path = os.path.join(db_dir, "train_with_sigma.extxyz")

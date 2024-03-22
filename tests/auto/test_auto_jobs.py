@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import os
 from unittest import mock
 from pymatgen.core.structure import Structure
@@ -8,30 +9,11 @@ from autoplex.auto.phonons.jobs import (
     MLPhononMaker,
 )
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
-
+from autoplex.data.phonons.flows import TightDFTStaticMaker
 from jobflow import run_locally
 
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
-
-
-def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
-    potential_file_dir = test_dir / "fitting" / "ref_files" / "gap.xml"
-    path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
-    structure = Structure.from_file(path_to_struct)
-
-    gap_phonon_jobs = MLPhononMaker(
-        ml_dir=potential_file_dir, min_length=20
-    ).make(structure=structure)
-
-    responses = run_locally(
-        gap_phonon_jobs, create_folders=True, ensure_success=True, store=memory_jobstore
-    )
-
-    ml_phonon_bs_doc = responses[gap_phonon_jobs.output.uuid][2].output.resolve(
-        store=memory_jobstore
-    )
-    assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
 
 
 def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
@@ -48,8 +30,8 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     )
 
     assert gap_phonon_jobs.name == "phonon"
-    assert responses[gap_phonon_jobs.output.uuid][1].replace[0].name == "GAP relax"
-    assert responses[gap_phonon_jobs.output.uuid][1].replace[4].name == "GAP static"
+    assert responses[gap_phonon_jobs.output.uuid][1].replace[0].name == "MLFF.GAP relax"
+    assert responses[gap_phonon_jobs.output.uuid][1].replace[2].name == "MLFF.GAP static"
 
     ml_phonon_bs_doc = responses[gap_phonon_jobs.output.uuid][1].output.resolve(store=memory_jobstore)
     assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
@@ -157,7 +139,7 @@ def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
 def test_dft_task_doc(vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir):
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
-    dft_phonon_workflow = dft_phonopy_gen_data(structure, [0.01], 0.1, None, 10)
+    dft_phonon_workflow = dft_phonopy_gen_data(structure, [0.01], 0.1, TightDFTStaticMaker(), 10)
 
     ref_paths = {
         "tight relax 1": "dft_ml_data_generation/tight_relax_1/",

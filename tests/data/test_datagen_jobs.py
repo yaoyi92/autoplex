@@ -11,7 +11,7 @@ def test_generate_randomized_structures():
         coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
     )
 
-    rand_structs_job = generate_randomized_structures(structure=structure, n_struct=10)
+    rand_structs_job = generate_randomized_structures(structure=structure, n_struct=10, cell_factor_sequence=[1.0])
 
     responses = run_locally(rand_structs_job, create_folders=False, ensure_success=True)
 

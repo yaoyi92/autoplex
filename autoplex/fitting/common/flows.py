@@ -42,7 +42,7 @@ class MLIPFitMaker(Maker):
         'GAP' | 'SNAP' | 'ACE' | 'Nequip' | 'Allegro' | 'MACE'
     """
 
-    name: str = "CompleteMLpotentialFit"
+    name: str = "MLpotentialFit"
     mlip_type: str = "GAP"
 
     def make(
