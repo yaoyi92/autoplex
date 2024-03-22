@@ -1,6 +1,6 @@
 from __future__ import annotations
-from autoplex.fitting.jobs import GAP_DEFAULTS_FILE_PATH
-from autoplex.fitting.utils import (
+from autoplex.fitting.common.jobs import GAP_DEFAULTS_FILE_PATH  # this will not be needed anymore
+from autoplex.fitting.common.utils import (
     load_gap_hyperparameter_defaults,
     gap_hyperparameter_constructor,
 )
@@ -20,21 +20,21 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     # test if string for all possible args true
     ref_list = [
         "at_file=trainGAP.xyz",
-        "default_sigma={0.01 0.2 0.2 0.0}",
+        "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
         "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
-        "gp_file=gap.xml",
-        "gap={distance_Nb order=2 f0=0.0 cutoff=6.5 cutoff_transition_width=0.5 "
-        "n_sparse=15 covariance_type=ard_se delta=2.0 theta_uniform=2.0 "
-        "sparse_method=uniform compact_clusters=T :distance_Nb order=3 f0=0.0 "
-        "cutoff=6.5 cutoff_transition_width=0.5 n_sparse=150 covariance_type=ard_se "
-        "delta=2.0 theta_uniform=2.0 sparse_method=uniform compact_clusters=T :soap "
-        "l_max=6 n_max=12 atom_sigma=0.5 zeta=4 cutoff=6.5 "
-        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=7000 delta=0.5 "
+        "gp_file=gap_file.xml",
+        "gap={distance_Nb order=2 f0=0.0 add_species=T cutoff=5.0 "
+        "n_sparse=15 covariance_type=ard_se delta=2.0 theta_uniform=0.5 "
+        "sparse_method=uniform compact_clusters=T :distance_Nb order=3 f0=0.0 add_species=T "
+        "cutoff=3.25 n_sparse=100 covariance_type=ard_se "
+        "delta=2.0 theta_uniform=1.0 sparse_method=uniform compact_clusters=T :soap add_species=T "
+        "l_max=6 n_max=10 atom_sigma=0.5 zeta=4 cutoff=5.0 "
+        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=0.5 "
         "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 
@@ -53,19 +53,19 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     # test if string for include_soap==False
     ref_list = [
         "at_file=trainGAP.xyz",
-        "default_sigma={0.01 0.2 0.2 0.0}",
+        "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
         "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
-        "gp_file=gap.xml",
-        "gap={distance_Nb order=2 f0=0.0 cutoff=6.5 cutoff_transition_width=0.5 "
-        "n_sparse=15 covariance_type=ard_se delta=2.0 theta_uniform=2.0 "
-        "sparse_method=uniform compact_clusters=T :distance_Nb order=3 f0=0.0 "
-        "cutoff=6.5 cutoff_transition_width=0.5 n_sparse=150 covariance_type=ard_se "
-        "delta=2.0 theta_uniform=2.0 sparse_method=uniform compact_clusters=T}",
+        "gp_file=gap_file.xml",
+        "gap={distance_Nb order=2 f0=0.0 add_species=T cutoff=5.0 "
+        "n_sparse=15 covariance_type=ard_se delta=2.0 theta_uniform=0.5 "
+        "sparse_method=uniform compact_clusters=T :distance_Nb order=3 f0=0.0 add_species=T "
+        "cutoff=3.25 n_sparse=100 covariance_type=ard_se "
+        "delta=2.0 theta_uniform=1.0 sparse_method=uniform compact_clusters=T}",
     ]
 
     assert ref_list == gap_input_list
@@ -84,21 +84,21 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
 
     ref_list_exp = [
         "at_file=trainGAP.xyz",
-        "default_sigma={0.01 0.2 0.2 0.0}",
+        "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
         "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
-        "gp_file=gap.xml",
-        "gap={distance_Nb order=2 f0=0.0 cutoff=8 cutoff_transition_width=0.5 "
-        "n_sparse=15 covariance_type=ard_se delta=2.0 theta_uniform=2.0 "
-        "sparse_method=uniform compact_clusters=T :distance_Nb order=3 f0=0.0 "
-        "cutoff=8 cutoff_transition_width=0.5 n_sparse=100 covariance_type=ard_se "
-        "delta=2.0 theta_uniform=2.0 sparse_method=uniform compact_clusters=T :soap "
-        "l_max=6 n_max=12 atom_sigma=0.5 zeta=2 cutoff=6.5 "
-        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=7000 delta=1.5 "
+        "gp_file=gap_file.xml",
+        "gap={distance_Nb order=2 f0=0.0 add_species=T cutoff=8 "
+        "n_sparse=15 covariance_type=ard_se delta=2.0 theta_uniform=0.5 "
+        "sparse_method=uniform compact_clusters=T :distance_Nb order=3 f0=0.0 add_species=T "
+        "cutoff=8 n_sparse=100 covariance_type=ard_se "
+        "delta=2.0 theta_uniform=1.0 sparse_method=uniform compact_clusters=T :soap "
+        "add_species=T l_max=6 n_max=10 atom_sigma=0.5 zeta=2 cutoff=5.0 "
+        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=1.5 "
         "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 
@@ -121,19 +121,19 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
 
     ref_list = [
         "at_file=trainGAP.xyz",
-        "default_sigma={0.01 0.2 0.2 0.0}",
+        "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
         "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
-        "gp_file=gap.xml",
-        "gap={distance_Nb order=2 f0=0.0 cutoff=6.5 cutoff_transition_width=0.5 "
-        "n_sparse=15 covariance_type=ard_se delta=2.0 theta_uniform=2.0 "
+        "gp_file=gap_file.xml",
+        "gap={distance_Nb order=2 f0=0.0 add_species=T cutoff=5.0 "
+        "n_sparse=15 covariance_type=ard_se delta=2.0 theta_uniform=0.5 "
         "sparse_method=uniform compact_clusters=T :soap "
-        "l_max=6 n_max=12 atom_sigma=0.5 zeta=4 cutoff=6.5 "
-        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=7000 delta=0.5 "
+        "add_species=T l_max=6 n_max=10 atom_sigma=0.5 zeta=4 cutoff=5.0 "
+        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=0.5 "
         "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 
@@ -150,19 +150,19 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
 
     ref_list = [
         "at_file=trainGAP.xyz",
-        "default_sigma={0.01 0.2 0.2 0.0}",
+        "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
         "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
-        "gp_file=gap.xml",
-        "gap={distance_Nb order=3 f0=0.0 "
-        "cutoff=6.5 cutoff_transition_width=0.5 n_sparse=150 covariance_type=ard_se "
-        "delta=2.0 theta_uniform=2.0 sparse_method=uniform compact_clusters=T :soap "
-        "l_max=6 n_max=12 atom_sigma=0.5 zeta=4 cutoff=6.5 "
-        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=7000 delta=0.5 "
+        "gp_file=gap_file.xml",
+        "gap={distance_Nb order=3 f0=0.0 add_species=T "
+        "cutoff=3.25 n_sparse=100 covariance_type=ard_se "
+        "delta=2.0 theta_uniform=1.0 sparse_method=uniform compact_clusters=T :soap "
+        "add_species=T l_max=6 n_max=10 atom_sigma=0.5 zeta=4 cutoff=5.0 "
+        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=0.5 "
         "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 
@@ -183,17 +183,17 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
 
     ref_list = [
         "at_file=trainGAP.xyz",
-        "default_sigma={0.01 0.2 0.2 0.0}",
+        "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
         "virial_parameter_name=REF_virial",
         "sparse_jitter=1e-08",
         "do_copy_at_file=F",
         "openmp_chunk_size=10000",
-        "gp_file=gap.xml",
+        "gp_file=gap_file.xml",
         "gap={soap "
-        "l_max=6 n_max=12 atom_sigma=0.5 zeta=4 cutoff=6.5 "
-        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=7000 delta=0.5 "
+        "add_species=T l_max=6 n_max=10 atom_sigma=0.5 zeta=4 cutoff=5.0 "
+        "cutoff_transition_width=0.5 central_weight=1.0 n_sparse=1000 delta=0.5 "
         "f0=0.0 covariance_type=dot_product sparse_method=cur_points}",
     ]
 

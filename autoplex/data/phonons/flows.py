@@ -10,13 +10,11 @@ if TYPE_CHECKING:
     from atomate2.vasp.sets.base import VaspInputGenerator
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Species, Structure
-from atomate2.common.jobs.phonons import (
-    PhononDisplacementMaker,
-    run_phonon_displacements,
-)
+from atomate2.common.jobs.phonons import run_phonon_displacements
 from atomate2.vasp.flows.core import DoubleRelaxMaker
 from atomate2.vasp.flows.phonons import PhononMaker
 from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
+from atomate2.vasp.jobs.phonons import PhononDisplacementMaker
 from atomate2.vasp.sets.core import StaticSetGenerator, TightRelaxSetGenerator
 from jobflow import Flow, Maker
 from phonopy.structure.cells import get_supercell
@@ -65,6 +63,8 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
         ``{"my_file:txt": "contents of the file"}``.
     """
 
+    run_vasp_kwargs: dict = field(default_factory=lambda: {"handlers": ()})
+
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
             user_kpoints_settings={"reciprocal_density": 100},
@@ -77,9 +77,10 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "EDIFF": 1e-7,
                 "LAECHG": False,
                 "LREAL": False,
-                "ALGO": "Normal",
+                "ALGO": "Fast",
                 "NSW": 0,
                 "LCHARG": False,
+                "SIGMA": 0.05,
             },
             auto_ispin=False,
         )
@@ -200,7 +201,7 @@ class DFTPhononMaker(PhononMaker):
 @dataclass
 class IsoAtomStaticMaker(StaticMaker):
     """
-    Maker to create Isolated atoms static jobs.
+    Maker to create Isolated atoms static (VASP) jobs.
 
     Parameters
     ----------
@@ -242,10 +243,12 @@ class IsoAtomStaticMaker(StaticMaker):
 @dataclass
 class RandomStructuresDataGenerator(Maker):
     """
-    Maker to generate DFT data based on random displacements for ML potential fitting.
+    Maker to generate DFT labelled training data for ML potential fitting based on random atomic displacements.
 
-    1. Randomizes Structures (with and without supercell).
-    2. Performs DFT calculations.
+    This Maker performs the two following steps:
+    1. Generates supercells from the provided structure and randomly displaces the atomic positions using ase rattle.
+    (randomized unit cells can be generated additionally).
+    2. Performs the static DFT (VASP) calculations on the randomized cells.
 
     Parameters
     ----------
@@ -262,6 +265,8 @@ class RandomStructuresDataGenerator(Maker):
     uc: bool.
         If True, will use the unit cells of initial randomly displaced
         structures and add phonon static computation jobs to the flow
+    std_dev: float
+        Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
@@ -271,15 +276,17 @@ class RandomStructuresDataGenerator(Maker):
     code: str = "vasp"
     n_struct: int = 1
     uc: bool = False
+    std_dev: float = 0.01
 
     def make(
         self,
         structure: Structure,
         mp_id: str,
         supercell_matrix: Matrix3D | None = None,
+        cell_factor_sequence: list[float] | None = None,
     ):
         """
-        Make flow to generate the reference DFT data base.
+        Make a flow to generate rattled structures reference DFT data.
 
         Parameters
         ----------
@@ -289,6 +296,8 @@ class RandomStructuresDataGenerator(Maker):
             Materials Project IDs
         supercell_matrix: Matrix3D.
             Matrix for obtaining the supercell
+        cell_factor_sequence: list[float]
+            list of factors to resize cell parameters.
         """
         jobs = []  # initializing empty job list
         outputs = []
@@ -299,8 +308,12 @@ class RandomStructuresDataGenerator(Maker):
             unitcell=get_phonopy_structure(structure),
             supercell_matrix=supercell_matrix,
         )
+
         random_rattle_sc = generate_randomized_structures(
-            structure=get_pmg_structure(supercell), n_struct=self.n_struct
+            structure=get_pmg_structure(supercell),
+            n_struct=self.n_struct,
+            cell_factor_sequence=cell_factor_sequence,
+            std_dev=self.std_dev,
         )
         jobs.append(random_rattle_sc)
         # perform the phonon displaced calculations for randomized displaced structures.
@@ -317,7 +330,10 @@ class RandomStructuresDataGenerator(Maker):
 
         if self.uc is True:
             random_rattle = generate_randomized_structures(
-                structure=structure, n_struct=self.n_struct
+                structure=structure,
+                n_struct=self.n_struct,
+                cell_factor_sequence=cell_factor_sequence,
+                std_dev=self.std_dev,
             )
             jobs.append(random_rattle)
             vasp_random_displacement_calcs = run_phonon_displacements(

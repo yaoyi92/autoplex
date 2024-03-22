@@ -11,17 +11,17 @@ from atomate2.forcefields.jobs import (
     GAPRelaxMaker,
     GAPStaticMaker,
 )
-from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
-from atomate2.vasp.powerups import (
-    update_user_incar_settings,
-)
 from jobflow import Flow, Response, job
 
 if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
-from autoplex.data.phonons.flows import IsoAtomMaker, RandomStructuresDataGenerator
+from autoplex.data.phonons.flows import (
+    DFTPhononMaker,
+    IsoAtomMaker,
+    RandomStructuresDataGenerator,
+)
 
 
 @dataclass
@@ -118,7 +118,6 @@ class MLPhononMaker(PhononMaker):
         if True, force constants will be stored
     """
 
-    ml_dir: str = field(default="gapfit.xml")
     min_length: float | None = 20.0
     bulk_relax_maker: ForceFieldRelaxMaker | None = field(
         default_factory=lambda: GAPRelaxMaker(
@@ -138,13 +137,32 @@ class MLPhononMaker(PhononMaker):
     relax_maker_kwargs: dict = field(default_factory=dict)
     static_maker_kwargs: dict = field(default_factory=dict)
 
-    def __post_init__(self):
-        """Update potential file path and keyword args if any."""
+    @job
+    def make_from_ml_model(self, structure, ml_model, **make_kwargs):
+        """
+        Maker for GAP phonon jobs.
+
+        Parameters
+        ----------
+        structure : .Structure
+            A pymatgen structure. Please start with a structure
+            that is nearly fully optimized as the internal optimizers
+            have very strict settings!
+        ml_model : str
+            Complete path to gapfit.xml file including file name.
+        make_kwargs :
+            Keyword arguments for the PhononMaker.
+
+        Returns
+        -------
+        PhononMaker jobs.
+
+        """
         if self.bulk_relax_maker is not None:
             br = self.bulk_relax_maker
             self.bulk_relax_maker = br.update_kwargs(
                 update={
-                    "potential_param_file_name": self.ml_dir,
+                    "potential_param_file_name": ml_model,
                     **self.relax_maker_kwargs,
                 }
             )
@@ -152,7 +170,7 @@ class MLPhononMaker(PhononMaker):
             ph_disp = self.phonon_displacement_maker
             self.phonon_displacement_maker = ph_disp.update_kwargs(
                 update={
-                    "potential_param_file_name": self.ml_dir,
+                    "potential_param_file_name": ml_model,
                     **self.static_maker_kwargs,
                 }
             )
@@ -160,51 +178,13 @@ class MLPhononMaker(PhononMaker):
             stat_en = self.static_energy_maker
             self.static_energy_maker = stat_en.update_kwargs(
                 update={
-                    "potential_param_file_name": self.ml_dir,
+                    "potential_param_file_name": ml_model,
                     **self.static_maker_kwargs,
                 }
             )
 
-
-@job
-def get_phonon_ml_calculation_jobs(
-    ml_dir: str,
-    structure: Structure,
-    min_length: int = 20,
-):
-    """
-    Get the PhononMaker job for ML-based phonon calculations.
-
-    Parameters
-    ----------
-    ml_dir : str
-        Path to gapfit.xml file
-    structure: Structure
-        pymatgen Structure object
-    min_length: float
-        min length of the supercell that will be built
-
-    Returns
-    -------
-    A flow with GAP fit phonon jobs
-    """
-    jobs = []
-    gap_phonons = PhononMaker(
-        bulk_relax_maker=GAPRelaxMaker(
-            potential_param_file_name=ml_dir,
-            relax_cell=True,
-            relax_kwargs={"interval": 500},
-        ),
-        phonon_displacement_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
-        static_energy_maker=GAPStaticMaker(potential_param_file_name=ml_dir),
-        store_force_constants=False,
-        generate_frequencies_eigenvectors_kwargs={"units": "THz"},
-        min_length=min_length,
-    ).make(structure=structure)
-    jobs.append(gap_phonons)
-
-    flow = Flow(jobs, gap_phonons.output)  # output for calculating RMS/benchmarking
-    return Response(replace=flow)
+        flow = self.make(structure=structure, **make_kwargs)
+        return Response(replace=flow, output=flow.output)
 
 
 @job
@@ -242,9 +222,6 @@ def dft_phonopy_gen_data(
             displacement=displacement,
             min_length=min_length,
         ).make(structure=structure)
-        dft_phonons = update_user_incar_settings(
-            dft_phonons, {"NPAR": 4, "ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
-        )
         jobs.append(dft_phonons)
         dft_phonons_output[
             f"{displacement}".replace(".", "")  # key must not contain '.'
@@ -260,8 +237,10 @@ def dft_random_gen_data(
     structure: Structure,
     mp_id,
     phonon_displacement_maker,
-    n_struct,
-    uc,
+    n_struct: int = 1,
+    uc: bool = False,
+    cell_factor_sequence: list[float] | None = None,
+    std_dev: float = 0.01,
     supercell_matrix: Matrix3D | None = None,
 ):
     """
@@ -279,17 +258,28 @@ def dft_random_gen_data(
         The total number of randomly displaced structures to be generated.
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
-        and add static computation jobs to the flow
+        and add static computation jobs to the flow.
+    cell_factor_sequence: list[float]
+        list of factors to resize cell parameters.
+    std_dev: float
+        Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
     """
     jobs = []
+
     random_datagen = RandomStructuresDataGenerator(
         name="RandomDataGen",
         phonon_displacement_maker=phonon_displacement_maker,
         n_struct=n_struct,
         uc=uc,
-    ).make(structure=structure, mp_id=mp_id, supercell_matrix=supercell_matrix)
+        std_dev=std_dev,
+    ).make(
+        structure=structure,
+        mp_id=mp_id,
+        supercell_matrix=supercell_matrix,
+        cell_factor_sequence=cell_factor_sequence,
+    )
     jobs.append(random_datagen)
 
     flow = Flow(jobs, random_datagen.output)

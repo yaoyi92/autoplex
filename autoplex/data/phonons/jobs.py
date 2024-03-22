@@ -4,8 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-from atomate2.vasp.flows.phonons import PhononMaker as DFTPhononMaker
-from jobflow import Flow, Response, job
+from jobflow import job
 
 if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
@@ -16,9 +15,11 @@ from pymatgen.io.ase import AseAtomsAdaptor
 def generate_randomized_structures(
     structure: Structure,
     n_struct: int,
+    cell_factor_sequence: list[float] | None = None,
+    std_dev: float = 0.01,
 ):
     """
-    Take in a structure object and generates randomly displaced structure.
+    Take in a pymatgen Structure object and generates randomly displaced structures.
 
     Parameters
     ----------
@@ -26,6 +27,10 @@ def generate_randomized_structures(
         Pymatgen structures object.
     n_struct : int.
         Total number of randomly displaced structures to be generated.
+    cell_factor_sequence: list[float]
+        list of factors to resize cell parameters.
+    std_dev: float
+        Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
 
     Returns
     -------
@@ -33,57 +38,12 @@ def generate_randomized_structures(
         Randomly displaced structures.
     """
     random_rattled = []
-    ase_structure = AseAtomsAdaptor.get_atoms(structure)
-    for seed in np.random.permutation(100000)[:n_struct]:
-        ase_structure.rattle(seed=seed, stdev=0.01)
-        random_rattled.append(AseAtomsAdaptor.get_structure(ase_structure))
+    if cell_factor_sequence is None:
+        cell_factor_sequence = [0.975, 1.0, 1.025, 1.05]
+    for cell_factor in cell_factor_sequence:
+        ase_structure = AseAtomsAdaptor.get_atoms(structure)
+        ase_structure.set_cell(ase_structure.get_cell() * cell_factor, scale_atoms=True)
+        for seed in np.random.permutation(100000)[:n_struct]:
+            ase_structure.rattle(seed=seed, stdev=std_dev)
+            random_rattled.append(AseAtomsAdaptor.get_structure(ase_structure))
     return random_rattled
-
-
-@job
-def phonon_maker_random_structures(
-    # this function might be redundant ==> rattled structures are only needed to generate more data,
-    # we don't need to calculate the phonon structure of them
-    rattled_structures,
-    displacements,
-    symprec,
-    phonon_displacement_maker,
-):
-    """
-    Set up phonon computations of the randomly displaced structure.
-
-    Parameters
-    ----------
-    rattled_structures : List[Structure].
-        list of randomly displaced pymatgen structures objects.
-    displacements : float.
-        displacement distance for phonons.
-    symprec : float
-        Symmetry precision to use in the
-        reduction of symmetry to find the primitive/conventional cell
-        (use_primitive_standard_structure, use_conventional_standard_structure)
-        and to handle all symmetry-related tasks in phonopy
-    phonon_displacement_maker : .BaseVaspMaker or None
-        Maker used to compute the forces for a supercell.
-
-    Returns
-    -------
-    list.
-        List of phonon jobs.
-    """
-    jobs = []
-    outputs = []
-    for rand_struc in rattled_structures:
-        for displacement in displacements:
-            random_phonon_maker = DFTPhononMaker(
-                symprec=symprec,
-                phonon_displacement_maker=phonon_displacement_maker,
-                born_maker=None,
-                bulk_relax_maker=None,
-                min_length=8,
-                displacement=displacement,
-            ).make(structure=rand_struc)
-            jobs.append(random_phonon_maker)
-            outputs.append(random_phonon_maker.output)
-    flow = Flow(jobs, outputs)
-    return Response(replace=flow)
