@@ -22,7 +22,7 @@ from autoplex.auto.phonons.jobs import (
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.data.phonons.flows import DFTPhononMaker, TightDFTStaticMaker
-from autoplex.fitting.common.flows import CompleteMLIPFitMaker
+from autoplex.fitting.common.flows import MLIPFitMaker
 
 __all__ = ["CompleteDFTvsMLBenchmarkWorkflow"]
 
@@ -193,7 +193,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             )
 
         for ml_model in self.ml_models:
-            add_data_fit = CompleteMLIPFitMaker(mlip_type=ml_model).make(
+            add_data_fit = MLIPFitMaker(mlip_type=ml_model).make(
                 species_list=isoatoms.output["species"],
                 isolated_atoms_energy=isoatoms.output["energies"],
                 fit_input=fit_input,

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from autoplex.fitting.common.flows import CompleteMLIPFitMaker
+from autoplex.fitting.common.flows import MLIPFitMaker
 
 
 def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
@@ -88,8 +88,8 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
     }
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
-    gapfit = CompleteMLIPFitMaker().make(species_list=["Li", "Cl"], iso_atom_energy=[-0.28649227, -0.25638457],
-                                         fit_input=fit_input_dict)
+    gapfit = MLIPFitMaker().make(species_list=["Li", "Cl"], iso_atom_energy=[-0.28649227, -0.25638457],
+                                 fit_input=fit_input_dict)
 
     responses = run_locally(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
@@ -192,8 +192,8 @@ def test_mlip_fit_maker_with_kwargs(
     }
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
-    gapfit = CompleteMLIPFitMaker().make(species_list=["Li", "Cl"], iso_atom_energy=[-0.28649227, -0.25638457],
-                                         fit_input=fit_input_dict, auto_delta=False, glue_xml=False, **{
+    gapfit = MLIPFitMaker().make(species_list=["Li", "Cl"], iso_atom_energy=[-0.28649227, -0.25638457],
+                                 fit_input=fit_input_dict, auto_delta=False, glue_xml=False, **{
             "twob": {"delta": 2.0, "cutoff": 8}, "threeb": {"n_sparse": 100},
             "split_ratio": 0.4, "regularization": True, "distillation": True, "f_max": 40,
             # "general": {"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"}
@@ -300,9 +300,9 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, clean_dir, memory_jobsto
     test_files_dir = Path(test_dir / "fitting").resolve()
 
     # Test to check if gap fit runs with pre_database_dir
-    gapfit = CompleteMLIPFitMaker().make(species_list=["Li", "Cl"], iso_atom_energy=[-0.28649227, -0.25638457],
-                                         fit_input=fit_input_dict, pre_database_dir=str(test_files_dir),
-                                         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"])
+    gapfit = MLIPFitMaker().make(species_list=["Li", "Cl"], iso_atom_energy=[-0.28649227, -0.25638457],
+                                 fit_input=fit_input_dict, pre_database_dir=str(test_files_dir),
+                                 pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"])
 
     responses = run_locally(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore

@@ -10,7 +10,7 @@ from pathlib import Path
 import ase.io
 from jobflow import Flow, Maker, job
 
-from autoplex.fitting.common.jobs import check_convergence, gap_fitting
+from autoplex.fitting.common.jobs import machine_learning_fit
 from autoplex.fitting.common.regularization import set_sigma
 from autoplex.fitting.common.utils import (
     data_distillation,
@@ -20,14 +20,13 @@ from autoplex.fitting.common.utils import (
 )
 
 __all__ = [
-    "CompleteMLIPFitMaker",
-    "DataPreprocessing",
     "MLIPFitMaker",
+    "DataPreprocessing",
 ]
 
 
 @dataclass
-class CompleteMLIPFitMaker(Maker):
+class MLIPFitMaker(Maker):
     """
     Maker to fit ML potentials based on DFT labelled reference data.
 
@@ -107,11 +106,12 @@ class CompleteMLIPFitMaker(Maker):
             atom_wise_regularization=atom_wise_regularization,
         )
         jobs.append(data_prep_job)
-        gap_fit_job = MLIPFitMaker(mlip_type=self.mlip_type).make(
+        gap_fit_job = machine_learning_fit(
             database_dir=data_prep_job.output,
             isol_es=None,
             auto_delta=auto_delta,
             glue_xml=glue_xml,
+            mlip_type=self.mlip_type,
             **fit_kwargs,
         )
         jobs.append(gap_fit_job)  # type: ignore
@@ -262,91 +262,3 @@ class DataPreprocessing(Maker):
             ase.io.write("train_with_sigma.extxyz", atom_with_sigma, format="extxyz")
 
         return Path.cwd()
-
-
-@dataclass
-class MLIPFitMaker(Maker):
-    """
-    Maker for fitting the potential(s) on the preprocessed data.
-
-    Parameters
-    ----------
-    name : str
-        Name of the flows produced by this maker.
-    mlip_type: str
-        Choose one specific MLIP type:
-        'GAP' | 'SNAP' | 'ACE' | 'Nequip' | 'Allegro' | 'MACE'
-    HPO: bool
-        call hyperparameter optimization (HPO) or not
-
-    """
-
-    name: str = "MLIP_FIT"
-    mlip_type: str | None = None
-    HPO: bool = False
-
-    def make(
-        self,
-        database_dir: str,
-        gap_para=None,
-        isol_es: None = None,
-        num_processes: int = 32,
-        auto_delta: bool = True,
-        glue_xml: bool = False,
-        **kwargs,
-    ):
-        """
-        Maker for fitting potential(s).
-
-        Parameters
-        ----------
-        database_dir: str
-            the database directory.
-        gap_para: dict
-            gap fit parameters.
-        isol_es:
-            isolated es.
-        num_processes: int
-            number of processes for fitting.
-        auto_delta: bool
-            automatically determine delta for 2b, 3b and SOAP terms.
-        glue_xml: bool
-            use the glue.xml core potential instead of fitting 2b terms.
-        kwargs: dict.
-            optional dictionary with parameters for gap fitting.
-        """
-        jobs = []
-        if gap_para is None:
-            gap_para = {"two_body": True, "three_body": False, "soap": True}
-
-        if self.mlip_type is None:
-            raise ValueError(
-                "MLIP type is not defined! "
-                "The current version supports the fitting of GAP, SNAP, ACE, Nequip, Allegro, or MACE."
-            )
-
-        if self.mlip_type == "GAP":
-            train_test_error = gap_fitting(
-                db_dir=database_dir,
-                include_two_body=gap_para["two_body"],
-                include_three_body=gap_para["three_body"],
-                include_soap=gap_para["soap"],
-                num_processes=num_processes,
-                auto_delta=auto_delta,
-                glue_xml=glue_xml,
-                fit_kwargs=kwargs,
-            )
-            jobs.append(train_test_error)
-
-        check_conv = check_convergence(train_test_error.output["test_error"])
-        jobs.append(check_conv)
-
-        return Flow(
-            jobs,
-            {
-                "mlip_path": train_test_error.output["mlip_path"],
-                "train_error": train_test_error.output["train_error"],
-                "test_error": train_test_error.output["test_error"],
-                "convergence": check_conv.output,
-            },
-        )
