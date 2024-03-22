@@ -53,7 +53,7 @@ class GenerateTrainingDataForTesting(Maker):
     def make(
         self,
         train_structure_list: list[Structure],
-        cell_factor_sequence: list[float],
+        cell_factor_sequence: list[float] | None = None,
         potential_filename: str = "gap.xml",
         n_struct: int = 50,
         std_dev: float = 0.01,
@@ -103,7 +103,8 @@ class GenerateTrainingDataForTesting(Maker):
         matplotlib plots "count vs. forces".
         """
         jobs = []
-
+        if cell_factor_sequence is None:
+            cell_factor_sequence = [0.975, 1.0, 1.025, 1.05]
         for structure in train_structure_list:
             if self.bulk_relax_maker is None:
                 self.bulk_relax_maker = GAPRelaxMaker(
@@ -126,7 +127,7 @@ class GenerateTrainingDataForTesting(Maker):
                 rand_struc_job = generate_randomized_structures(
                     supercell.output,
                     n_struct=n_struct,
-                    cell_factor=cell_factor,
+                    cell_factor_sequence=[cell_factor],
                     std_dev=std_dev,
                 )
                 jobs.append(rand_struc_job)

@@ -15,7 +15,7 @@ from pymatgen.io.ase import AseAtomsAdaptor
 def generate_randomized_structures(
     structure: Structure,
     n_struct: int,
-    cell_factor_sequence: list[float],
+    cell_factor_sequence: list[float] | None = None,
     std_dev: float = 0.01,
 ):
     """
@@ -40,8 +40,8 @@ def generate_randomized_structures(
     random_rattled = []
     if cell_factor_sequence is None:
         cell_factor_sequence = [0.975, 1.0, 1.025, 1.05]
-    ase_structure = AseAtomsAdaptor.get_atoms(structure)
     for cell_factor in cell_factor_sequence:
+        ase_structure = AseAtomsAdaptor.get_atoms(structure)
         ase_structure.set_cell(ase_structure.get_cell() * cell_factor, scale_atoms=True)
         for seed in np.random.permutation(100000)[:n_struct]:
             ase_structure.rattle(seed=seed, stdev=std_dev)
