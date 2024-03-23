@@ -78,7 +78,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         "phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
         "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
         "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
+        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",  # TODO updating the test data
     }
 
     fake_run_vasp_kwargs = {
