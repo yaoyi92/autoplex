@@ -21,9 +21,18 @@ def ref_paths():
         "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
         "phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
         "phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
+        "phonon static 1/12": "dft_ml_data_generation/rand_static_1/",
+        "phonon static 2/12": "dft_ml_data_generation/rand_static_2/",
+        "phonon static 3/12": "dft_ml_data_generation/rand_static_3/",
+        "phonon static 4/12": "dft_ml_data_generation/rand_static_4/",
+        "phonon static 5/12": "dft_ml_data_generation/rand_static_5/",
+        "phonon static 6/12": "dft_ml_data_generation/rand_static_6/",
+        "phonon static 7/12": "dft_ml_data_generation/rand_static_7/",
+        "phonon static 8/12": "dft_ml_data_generation/rand_static_8/",
+        "phonon static 9/12": "dft_ml_data_generation/rand_static_9/",
+        "phonon static 10/12": "dft_ml_data_generation/rand_static_10/",
+        "phonon static 11/12": "dft_ml_data_generation/rand_static_11/",
+        "phonon static 12/12": "dft_ml_data_generation/rand_static_12/",
     }
 
 
@@ -34,15 +43,55 @@ def fake_run_vasp_kwargs():
         "tight relax 2": {"incar_settings": ["NSW"]},
         "phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 1/3": {
+        "phonon static 1/12": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 2/3": {
+        "phonon static 1/12": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 3/3": {
+        "phonon static 2/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 3/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 4/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 5/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 6/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 7/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 8/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 9/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 10/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 11/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 12/12": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
@@ -59,13 +108,12 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     structure = Structure.from_file(path_to_struct)
 
     complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01], cell_factor_sequence=[1.0],
+        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01],
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        phonon_displacement_maker=TightDFTStaticMaker(),
     )
 
     ref_paths = {
@@ -76,9 +124,18 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
         "phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
         "phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",  # TODO updating the test data
+        "phonon static 1/12": "dft_ml_data_generation/rand_static_1/",
+        "phonon static 2/12": "dft_ml_data_generation/rand_static_2/",
+        "phonon static 3/12": "dft_ml_data_generation/rand_static_3/",
+        "phonon static 4/12": "dft_ml_data_generation/rand_static_4/",
+        "phonon static 5/12": "dft_ml_data_generation/rand_static_5/",
+        "phonon static 6/12": "dft_ml_data_generation/rand_static_6/",
+        "phonon static 7/12": "dft_ml_data_generation/rand_static_7/",
+        "phonon static 8/12": "dft_ml_data_generation/rand_static_8/",
+        "phonon static 9/12": "dft_ml_data_generation/rand_static_9/",
+        "phonon static 10/12": "dft_ml_data_generation/rand_static_10/",
+        "phonon static 11/12": "dft_ml_data_generation/rand_static_11/",
+        "phonon static 12/12": "dft_ml_data_generation/rand_static_12/",
     }
 
     fake_run_vasp_kwargs = {
@@ -86,15 +143,51 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 1/3": {
+        "phonon static 1/12": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 2/3": {
+        "phonon static 2/12": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 3/3": {
+        "phonon static 3/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 4/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 5/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 6/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 7/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 8/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 9/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 10/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 11/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 12/12": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
