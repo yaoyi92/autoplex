@@ -47,3 +47,6 @@ def generate_randomized_structures(
             ase_structure.rattle(seed=seed, stdev=std_dev)
             random_rattled.append(AseAtomsAdaptor.get_structure(ase_structure))
     return random_rattled
+
+
+
