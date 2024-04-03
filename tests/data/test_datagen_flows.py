@@ -99,5 +99,4 @@ def test_generate_training_data_for_testing(
     generate_data = GenerateTrainingDataForTesting().make(train_structure_list=[structure], cell_factor_sequence=[0.95, 1.0, 1.05],
                                           potential_filename=potential_file_dir, n_struct=1, steps=1)
 
-    responses = run_locally(generate_data, create_folders=False, ensure_success=True, store=memory_jobstore)
-    #TODO unit test only runs with create_Folders=False because ForceFieldTaskDocument.from_ase_compatible_result() has no attribute dir_name implemented
+    responses = run_locally(generate_data, create_folders=True, ensure_success=True, store=memory_jobstore)
