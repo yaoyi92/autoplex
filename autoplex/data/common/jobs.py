@@ -38,7 +38,7 @@ def convert_to_extxyz(job_output, pkl_file, config_type, factor):
             string of factor to resize cell parameters.
 
     """
-    with open(job_output.dir_name + "/" + pkl_file, "rb") as file:
+    with open(Path(job_output.dir_name) / Path(pkl_file), "rb") as file:
         traj_obj = pickle.load(file)
     # ForceFieldTaskDocument.from_ase_compatible_result() has no attribute dir_name implemented
     data = to_ase_trajectory(traj_obj=traj_obj)
