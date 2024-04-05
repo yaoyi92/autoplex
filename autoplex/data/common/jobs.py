@@ -139,7 +139,6 @@ def get_supercell_job(structure: Structure, supercell_matrix: Matrix3D):
 
 @job
 def generate_randomized_structures(
-    # leaving this here and adding the duplicate in common to avoid the respective unit tests from failing
     structure: Structure,
     n_struct: int,
     cell_factor_sequence: list[float] | None = None,
