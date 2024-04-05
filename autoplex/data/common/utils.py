@@ -105,7 +105,7 @@ def scale_cell(
     return distorted_cells
 
 
-def check_distances(structure: Structure, min_distance: float):
+def check_distances(structure: Structure, min_distance: float = 1.5):
     """
     Take in a pymatgen Structure object and checks distances between atoms using minimum image convention.
 
