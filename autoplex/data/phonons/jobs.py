@@ -10,8 +10,6 @@ if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
 from pymatgen.io.ase import AseAtomsAdaptor
 
-# TODO: move to utils.py
-
 
 @job
 def generate_randomized_structures(
