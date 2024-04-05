@@ -13,6 +13,7 @@ from pymatgen.io.ase import AseAtomsAdaptor
 
 @job
 def generate_randomized_structures(
+    # leaving this here and adding the duplicate in common to avoid the respective unit tests from failing
     structure: Structure,
     n_struct: int,
     cell_factor_sequence: list[float] | None = None,
