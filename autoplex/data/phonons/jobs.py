@@ -8,12 +8,11 @@ from jobflow import job
 
 if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
+import random
+
+from hiphive.structure_generation import generate_mc_rattled_structures
 from pymatgen.io.ase import AseAtomsAdaptor
 
-from ase.io import read, write
-import random
-from hiphive.structure_generation import generate_mc_rattled_structures
-from hiphive.structure_container import are_configurations_equal
 
 @job
 def generate_randomized_structures(
@@ -52,12 +51,12 @@ def generate_randomized_structures(
             random_rattled.append(AseAtomsAdaptor.get_structure(ase_structure))
     return random_rattled
 
+
 @job
 def scale_cell(
     structure: Structure,
     scale_factor_range: list[float] | None = None,
-    n_intervals: int=10,
-    scale_factors: [0.95, 0.98, 0.99, 1.01, 1.02, 1.05]
+    # n_intervals: int = 10,
 ):
     """
     Take in a pymatgen Structure object and generates stretched or compressed structures.
@@ -79,38 +78,35 @@ def scale_cell(
         Stretched or compressed structures.
     """
     atoms = AseAtomsAdaptor.get_atoms(structure)
-    distorted_cells=[]
+    distorted_cells = []
+    scale_factors = [0.95, 0.98, 0.99, 1.01, 1.02, 1.05]
 
     if scale_factor_range is None:
         # if haven't specified range, use default (or manually specified) scale_factors
-        scale_factors=scale_factors
+        scale_factor_range = scale_factors
         print("Using default lattice scale factors of", scale_factors)
     else:
         # if have specified range
-        step=(scale_factor_range[1]-scale_factor_range[0])/n_intervals
-        scale_factors=np.arange(scale_factor_range[0], scale_factor_range[1]+step, step)
-        print("Using custom lattice scale factors of", scale_factors)
+        print("Using custom lattice scale factors of", scale_factor_range)
 
-    for i in range(len(scale_factors)):
-            # make copy of ground state
-            cell=atoms.copy()
-            # set lattice parameter scale factor
-            lattice_scale_factor= (scale_factors[i])
-            # scale cell volume and atomic positions
-            cell.set_cell(lattice_scale_factor * atoms.get_cell(), scale_atoms=True)
-            # store scaled cell
-            distorted_cells.append(AseAtomsAdaptor.get_structure(cell))
+    for i in range(len(scale_factor_range)):
+        # make copy of ground state
+        cell = atoms.copy()
+        # set lattice parameter scale factor
+        lattice_scale_factor = scale_factor_range[i]
+        # scale cell volume and atomic positions
+        cell.set_cell(lattice_scale_factor * atoms.get_cell(), scale_atoms=True)
+        # store scaled cell
+        distorted_cells.append(AseAtomsAdaptor.get_structure(cell))
 
     return distorted_cells
 
 
 @job
-def check_distances(
-    structure: Structure, 
-    min_distance: float
-):
+def check_distances(structure: Structure, min_distance: float):
     """
     Take in a pymatgen Structure object and checks distances between atoms using minimum image convention.
+
     Useful after distorting cell angles and rattling to check atoms aren't too close.
 
     Parameters
@@ -126,7 +122,7 @@ def check_distances(
         "True" if atoms are sufficiently spaced out i.e. all pairwise interatomic distances > min_distance.
     """
     atoms = AseAtomsAdaptor.get_atoms(structure)
-    
+
     for i in range(len(atoms)):
         indices = [j for j in range(len(atoms)) if j != i]
         distances = atoms.get_distances(i, indices, mic=True)
@@ -137,13 +133,14 @@ def check_distances(
                 return False
     return True
 
+
 @job
 def random_vary_angle(
     structure: Structure,
     min_distance: float,
-    scale: float=10,
-    wangle: [0,1,2],
-    n_structures: int=8
+    scale: float = 10,
+    wangle: list[float] | None = None,
+    n_structures: int = 8,
 ):
     """
     Take in a pymatgen Structure object and generates angle-distorted structures.
@@ -169,14 +166,17 @@ def random_vary_angle(
     atoms = AseAtomsAdaptor.get_atoms(structure)
     distorted_angle_cells = []
     generated_structures = 0  # Counter to keep track of generated structures
-    
+
+    if wangle is None:
+        wangle = [0, 1, 2]
+
     while generated_structures < n_structures:
         # make copy of ground state
         atoms_copy = atoms.copy()
-    
+
         # stretch lattice parameters by 3% before changing angles
         # helps atoms to not be too close
-        distorted_cells = scale_cell(atoms_copy, scale_factors=[1.03]) 
+        distorted_cells = scale_cell(atoms_copy, scale_factors=[1.03])
 
         # getting stretched cell out of array
         newcell = distorted_cells[0].cell.cellpar()
@@ -210,18 +210,17 @@ def random_vary_angle(
             if check_distances(atoms_copy, min_distance):
                 # store scaled cell
                 distorted_angle_cells.append(AseAtomsAdaptor.get_structure(atoms_copy))
-                generated_structures += 1 
+                generated_structures += 1
                 break  # Break the inner loop if successful
 
     return distorted_angle_cells
 
+
 @job
-def std_rattle(
-    structure: Structure,
-    n_structures: int=5
-):
+def std_rattle(structure: Structure, n_structures: int = 5):
     """
     Take in a pymatgen Structure object and generates rattled structures.
+
     Uses standard ASE rattle.
 
     Parameters
@@ -237,34 +236,38 @@ def std_rattle(
         Rattled structures.
     """
     atoms = AseAtomsAdaptor.get_atoms(structure)
-    rattled_xtals=[]
-    seed=42
+    rattled_xtals = []
+    seed = 42
     for i in range(n_structures):
-        if i==0:
-            copy=atoms.copy()
-            copy.rattle(stdev=0.01, seed=seed) 
+        if i == 0:
+            copy = atoms.copy()
+            copy.rattle(stdev=0.01, seed=seed)
             rattled_xtals.append(copy)
-        if i>0:
-            seed=seed+1
-            copy=atoms.copy()
+        if i > 0:
+            seed = seed + 1
+            copy = atoms.copy()
             copy.rattle(stdev=0.01, seed=seed)
             rattled_xtals.append(AseAtomsAdaptor.get_structure(copy))
-    return(rattled_xtals)
+    return rattled_xtals
+
 
 @job
 def mc_rattle(
     structure: Structure,
-    n_structures: int=5,
-    rattle_std: float=0.003, 
-    min_distance: float=1.9, 
-    seed: int=42, 
-    n_iter: int=10
+    n_structures: int = 5,
+    rattle_std: float = 0.003,
+    min_distance: float = 1.9,
+    seed: int = 42,
+    n_iter: int = 10,
 ):
     """
     Take in a pymatgen Structure object and generates rattled structures.
-    Randomly draws displacements with a MC trial step that penalises displacements leading to very small interatomic distances.
+
+    Randomly draws displacements with a MC trial step that penalises displacements leading to very small interatomic
+    distances.
     Displacements generated will roughly be n_iter**0.5 * rattle_std for small values of n_iter.
-    See https://hiphive.materialsmodeling.org/moduleref/structures.html?highlight=generate_mc_rattled_structures for more details.
+    See https://hiphive.materialsmodeling.org/moduleref/structures.html?highlight=generate_mc_rattled_structures for
+    more details.
 
     Parameters
     ----------
@@ -273,24 +276,28 @@ def mc_rattle(
     n_structures: int.
         Number of rattled structures to generate.
     rattle_std: float.
-        Rattle amplitude (standard deviation in normal distribution). N.B. this value is not connected to the final average displacement for the structures.
+        Rattle amplitude (standard deviation in normal distribution). N.B. this value is not connected to the final
+        average displacement for the structures.
     min_distance: float.
-        Minimum separation of any two atoms in the rattled structures. Used for computing the probability for each rattle move. 
+        Minimum separation of any two atoms in the rattled structures. Used for computing the probability for each
+        rattle move.
     seed: int.
         Seed for setting up NumPy random state from which random numbers are generated.
     n_iter: int.
         Number of Monte Carlo iterations. Larger number of iterations will generate larger displacements.
-        
+
     Returns
     -------
     Response.output.
         Monte-Carlo rattled structures.
     """
     atoms = AseAtomsAdaptor.get_atoms(structure)
-    rattled_xtals=[]
-    mc_rattle=generate_mc_rattled_structures(atoms=atoms, n_structures=n_structures, rattle_std=rattle_std, d_min=d_min, seed=seed, n_iter=n_iter)
-    for xtal in mc_rattle:
-        rattled_xtals.append(AseAtomsAdaptor.get_structure(xtal))
-    return (rattled_xtals)
-        
-
+    mc_rattle = generate_mc_rattled_structures(
+        atoms=atoms,
+        n_structures=n_structures,
+        rattle_std=rattle_std,
+        d_min=min_distance,
+        seed=seed,
+        n_iter=n_iter,
+    )
+    return [AseAtomsAdaptor.get_structure(xtal) for xtal in mc_rattle]
