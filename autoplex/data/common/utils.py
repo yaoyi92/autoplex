@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import random
+import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -82,13 +83,16 @@ def scale_cell(
         scale_factors_defined = np.arange(
             scale_factor_range[0], scale_factor_range[1] + step, step
         )
-        print("Using custom lattice scale factors of", scale_factors_defined)
+        warnings.warn("Using your custom lattice scale factors", stacklevel=2)
 
     else:  # range is not specified
         if scale_factors is None:
             # use default scale_factors if not specified
             scale_factors_defined = [0.95, 0.98, 0.99, 1.01, 1.02, 1.05]
-            print("Using default lattice scale factors of", scale_factors_defined)
+            warnings.warn(
+                "Using default lattice scale factors of [0.95, 0.98, 0.99, 1.01, 1.02, 1.05]",
+                stacklevel=2,
+            )
         else:
             scale_factors_defined = scale_factors
 
@@ -128,10 +132,9 @@ def check_distances(structure: Structure, min_distance: float = 1.5):
     for i in range(len(atoms)):
         indices = [j for j in range(len(atoms)) if j != i]
         distances = atoms.get_distances(i, indices, mic=True)
-        # print(distances)
         for distance in distances:
             if distance < min_distance:
-                print("Atoms too close.")
+                warnings.warn("Atoms too close.", stacklevel=2)
                 return False
     return True
 
