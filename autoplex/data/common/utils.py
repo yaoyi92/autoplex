@@ -145,6 +145,7 @@ def random_vary_angle(
     scale: float = 10,
     wangle: list[float] | None = None,
     n_structures: int = 8,
+    max_attempts: int = 1000,
 ):
     """
     Take in a pymatgen Structure object and generates angle-distorted structures.
@@ -161,6 +162,8 @@ def random_vary_angle(
         List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
     n_structures: int.
         Number of angle-distorted structures to generate.
+    max_attempts: int.
+        Maximum number of attempts to distort structure before aborting.
 
     Returns
     -------
@@ -169,12 +172,13 @@ def random_vary_angle(
     """
     atoms = AseAtomsAdaptor.get_atoms(structure)
     distorted_angle_cells = []
-    generated_structures = 0  # Counter to keep track of generated structures
+    generated_structures = 0  # counter to keep track of generated structures
 
     if wangle is None:
         wangle = [0, 1, 2]
 
     while generated_structures < n_structures:
+        attempts = 0
         # make copy of ground state
         atoms_copy = atoms.copy()
 
@@ -195,7 +199,8 @@ def random_vary_angle(
         min_scale = 1 - scale
         max_scale = 1 + scale
 
-        while True:
+        while attempts < max_attempts:
+            attempts += 1
             # new random angles within +-10% (default) of current angle
             new_alpha = random.randint(int(alpha * min_scale), int(alpha * max_scale))
             new_beta = random.randint(int(beta * min_scale), int(beta * max_scale))
@@ -215,7 +220,11 @@ def random_vary_angle(
                 # store scaled cell
                 distorted_angle_cells.append(AseAtomsAdaptor.get_structure(atoms_copy))
                 generated_structures += 1
-                break  # Break the inner loop if successful
+                break  # break the inner loop if successful
+        else:
+            raise RuntimeError(
+                "Maximum attempts (1000) reached without distorting angles successfully."
+            )
 
     return distorted_angle_cells
 
