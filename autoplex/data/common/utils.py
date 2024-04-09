@@ -229,7 +229,12 @@ def random_vary_angle(
     return distorted_angle_cells
 
 
-def std_rattle(structure: Structure, n_structures: int = 5):
+def std_rattle(
+    structure: Structure,
+    n_structures: int = 5,
+    rattle_std: float = 0.01,
+    seed: int = 42,
+):
     """
     Take in a pymatgen Structure object and generates rattled structures.
 
@@ -241,6 +246,10 @@ def std_rattle(structure: Structure, n_structures: int = 5):
         Pymatgen structures object.
     n_structures: int.
         Number of rattled structures to generate.
+    rattle_std: float.
+        Rattle amplitude (standard deviation in normal distribution).
+    seed: int.
+        Seed for setting up NumPy random state from which random numbers are generated.
 
     Returns
     -------
@@ -249,16 +258,15 @@ def std_rattle(structure: Structure, n_structures: int = 5):
     """
     atoms = AseAtomsAdaptor.get_atoms(structure)
     rattled_xtals = []
-    seed = 42
     for i in range(n_structures):
         if i == 0:
             copy = atoms.copy()
-            copy.rattle(stdev=0.01, seed=seed)
+            copy.rattle(stdev=rattle_std, seed=seed)
             rattled_xtals.append(copy)
         if i > 0:
             seed = seed + 1
             copy = atoms.copy()
-            copy.rattle(stdev=0.01, seed=seed)
+            copy.rattle(stdev=rattle_std, seed=seed)
             rattled_xtals.append(AseAtomsAdaptor.get_structure(copy))
     return rattled_xtals
 

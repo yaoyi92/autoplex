@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
-    from pymatgen.core import Structure
 
 import pickle
 
@@ -15,10 +14,16 @@ from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
 from jobflow.core.job import job
 from phonopy.structure.cells import get_supercell
-from pymatgen.io.ase import AseAtomsAdaptor
+from pymatgen.core import Structure
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
-from autoplex.data.common.utils import to_ase_trajectory
+from autoplex.data.common.utils import (
+    mc_rattle,
+    random_vary_angle,
+    scale_cell,
+    std_rattle,
+    to_ase_trajectory,
+)
 
 
 @job
@@ -138,36 +143,89 @@ def get_supercell_job(structure: Structure, supercell_matrix: Matrix3D):
 @job
 def generate_randomized_structures(
     structure: Structure,
-    n_struct: int,
-    cell_factor_sequence: list[float] | None = None,
-    std_dev: float = 0.01,
+    distort_type: str = "volume",
+    n_structures: int = 5,
+    volume_n_intervals: int = 10,
+    min_distance: float = 1.5,
+    angle_percentage_scale: float = 10,
+    angle_max_attempts: int = 1000,
+    rattle_type: str = "standard",
+    rattle_std: float = 0.003,
+    rattle_seed: int = 42,
+    rattle_mc_n_iter: int = 10,
+    volume_scale_factor_range: list[float] | None = None,
+    volume_scale_factors: list[float] | None = None,
+    wangle: list[float] | None = None,
 ):
     """
-    Take in a pymatgen Structure object and generates randomly displaced structures.
+    Take in a pymatgen Structure object and generates angle/volume distorted + rattled structures.
 
     Parameters
     ----------
     structure : Structure.
         Pymatgen structures object.
     n_struct : int.
-        Total number of randomly displaced structures to be generated.
-    cell_factor_sequence: list[float]
-        list of factors to resize cell parameters.
-    std_dev: float
-        Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
+        Total number of distorted structures to be generated.
+
+    TODO: complete parameter list and relate to functions
+    scale_cell doesn't accept n_structures but n_intervals- can this be merged?
+    accept n_structures for distortion step and separate n_structures for rattling step
+    distort_type/rattle_type could accept 0/1 instead of strings
+    is it better if names are consistent between functions and this job?
 
     Returns
     -------
     Response.output.
-        Randomly displaced structures.
+        Distorted structures.
     """
-    random_rattled = []
-    if cell_factor_sequence is None:
-        cell_factor_sequence = [0.975, 1.0, 1.025, 1.05]
-    for cell_factor in cell_factor_sequence:
-        ase_structure = AseAtomsAdaptor.get_atoms(structure)
-        ase_structure.set_cell(ase_structure.get_cell() * cell_factor, scale_atoms=True)
-        for seed in np.random.permutation(100000)[:n_struct]:
-            ase_structure.rattle(seed=seed, stdev=std_dev)
-            random_rattled.append(AseAtomsAdaptor.get_structure(ase_structure))
-    return random_rattled
+    # distort cells by volume or angle
+    if distort_type == "volume":
+        distorted_cells = scale_cell(
+            structure=Structure,
+            scale_factor_range=volume_scale_factor_range,
+            n_intervals=volume_n_intervals,
+            scale_factors=volume_scale_factors,
+        )
+    elif distort_type == "angle":
+        distorted_cells = random_vary_angle(
+            structure=Structure,
+            min_distance=min_distance,
+            scale=angle_percentage_scale,
+            wangle=wangle,
+            n_structures=n_structures,
+            max_attempts=angle_max_attempts,
+        )
+    else:
+        raise TypeError("distort_type is not recognised")
+
+    # rattle cells by standard or mc
+    rattled_cells = (
+        [
+            std_rattle(
+                structure=cell,
+                n_structures=1,
+                rattle_std=rattle_std,
+                seed=rattle_seed,
+            )
+            for cell in distorted_cells
+        ]
+        if rattle_type == "standard"
+        else [
+            mc_rattle(
+                structure=cell,
+                n_structures=1,
+                rattle_std=rattle_std,
+                min_distance=min_distance,
+                seed=rattle_seed,
+                n_iter=rattle_mc_n_iter,
+            )
+            for cell in distorted_cells
+        ]
+        if rattle_type == "mc"
+        else None
+    )
+
+    if rattled_cells is None:
+        raise TypeError("rattle_type is not recognized")
+
+    return rattled_cells
