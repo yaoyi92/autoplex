@@ -143,18 +143,17 @@ def get_supercell_job(structure: Structure, supercell_matrix: Matrix3D):
 @job
 def generate_randomized_structures(
     structure: Structure,
-    distort_type: str = "volume",
-    n_structures: int = 5,
-    volume_n_intervals: int = 10,
+    distort_type: int = 0,
+    n_structures: int = 10,
+    volume_scale_factor_range: list[float] | None = None,
+    volume_custom_scale_factors: list[float] | None = None,
     min_distance: float = 1.5,
     angle_percentage_scale: float = 10,
     angle_max_attempts: int = 1000,
-    rattle_type: str = "standard",
-    rattle_std: float = 0.003,
+    rattle_type: int = 0,
+    rattle_std: float = 0.01,
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
-    volume_scale_factor_range: list[float] | None = None,
-    volume_scale_factors: list[float] | None = None,
     wangle: list[float] | None = None,
 ):
     """
@@ -164,36 +163,64 @@ def generate_randomized_structures(
     ----------
     structure : Structure.
         Pymatgen structures object.
-    n_struct : int.
+    distort_type : int.
+        0- volume distortion, 1- angle distortion. Default=0.
+    n_structures : int.
         Total number of distorted structures to be generated.
-
-    TODO: complete parameter list and relate to functions
-    scale_cell doesn't accept n_structures but n_intervals- can this be merged?
-    accept n_structures for distortion step and separate n_structures for rattling step
-    distort_type/rattle_type could accept 0/1 instead of strings
-    is it better if names are consistent between functions and this job?
+        Must be provided if distorting volume without specifying a range, or if distorting angles.
+        Default=10.
+    volume_scale_factor_range : list[float]
+        [min, max] of volume scale factors.
+    volume_custom_scale_factors : list[float]
+        Default volume scale factors if range is not specified.
+    min_distance: float
+        Minimum separation allowed between any two atoms.
+        Default= 1.5A.
+    angle_percentage_scale: float
+        Angle scaling factor.
+        Default= 10 will randomly distort angles by +-10% of original value.
+    angle_max_attempts: int.
+        Maximum number of attempts to distort structure before aborting.
+        Default=1000.
+    wangle: list[float]
+        List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
+        Default= [0, 1, 2].
+    rattle_type: int.
+        0- standard rattling, 1- Monte-Carlo rattling. Default=0.
+    rattle_std: float.
+        Rattle amplitude (standard deviation in normal distribution).
+        Default=0.01.
+        Note that for MC rattling, displacements generated will roughly be
+        rattle_mc_n_iter**0.5 * rattle_std for small values of n_iter.
+    rattle_seed: int.
+        Seed for setting up NumPy random state from which random numbers are generated.
+        Default=42.
+    rattle_mc_n_iter: int.
+        Number of Monte Carlo iterations.
+        Larger number of iterations will generate larger displacements.
+        Default=10.
 
     Returns
     -------
     Response.output.
-        Distorted structures.
+        Volume or angle-distorted structures with rattled atoms.
     """
     # distort cells by volume or angle
-    if distort_type == "volume":
+    if distort_type == 0:
         distorted_cells = scale_cell(
             structure=Structure,
-            scale_factor_range=volume_scale_factor_range,
-            n_intervals=volume_n_intervals,
-            scale_factors=volume_scale_factors,
+            volume_scale_factor_range=volume_scale_factor_range,
+            n_structures=n_structures,
+            volume_custom_scale_factors=volume_custom_scale_factors,
         )
-    elif distort_type == "angle":
+    elif distort_type == 1:
         distorted_cells = random_vary_angle(
             structure=Structure,
             min_distance=min_distance,
-            scale=angle_percentage_scale,
+            angle_percentage_scale=angle_percentage_scale,
             wangle=wangle,
             n_structures=n_structures,
-            max_attempts=angle_max_attempts,
+            angle_max_attempts=angle_max_attempts,
         )
     else:
         raise TypeError("distort_type is not recognised")
@@ -205,23 +232,23 @@ def generate_randomized_structures(
                 structure=cell,
                 n_structures=1,
                 rattle_std=rattle_std,
-                seed=rattle_seed,
+                rattle_seed=rattle_seed,
             )
             for cell in distorted_cells
         ]
-        if rattle_type == "standard"
+        if rattle_type == 0
         else [
             mc_rattle(
                 structure=cell,
                 n_structures=1,
                 rattle_std=rattle_std,
                 min_distance=min_distance,
-                seed=rattle_seed,
-                n_iter=rattle_mc_n_iter,
+                rattle_seed=rattle_seed,
+                rattle_mc_n_iter=rattle_mc_n_iter,
             )
             for cell in distorted_cells
         ]
-        if rattle_type == "mc"
+        if rattle_type == 1
         else None
     )
 

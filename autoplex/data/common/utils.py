@@ -51,9 +51,9 @@ def to_ase_trajectory(
 
 def scale_cell(
     structure: Structure,
-    scale_factor_range: list[float] | None = None,
-    n_intervals: int = 10,
-    scale_factors: list[float] | None = None,
+    volume_scale_factor_range: list[float] | None = None,
+    n_structures: int = 10,
+    volume_custom_scale_factors: list[float] | None = None,
 ):
     """
     Take in a pymatgen Structure object and generates stretched or compressed structures.
@@ -62,12 +62,14 @@ def scale_cell(
     ----------
     structure : Structure.
         Pymatgen structures object.
-    scale_factor_range: list[float]
-        [min, max] of lattice scale factors.
-    n_intervals: int.
-        Number of intervals between min and max scale factors.
-    scale_factors: list[float]
+    volume_scale_factor_range : list[float]
+        [min, max] of volume scale factors.
+    n_structures : int.
+        If specified a range, the number of structures to be generated with
+        volume distortions equally spaced between min and max.
+    volume_custom_scale_factors : list[float]
         Default scale factors if range is not specified.
+        If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
 
     Returns
     -------
@@ -77,30 +79,33 @@ def scale_cell(
     atoms = AseAtomsAdaptor.get_atoms(structure)
     distorted_cells = []
 
-    if scale_factor_range is not None:
+    if volume_scale_factor_range is not None:
         # range is specified
-        step = (scale_factor_range[1] - scale_factor_range[0]) / n_intervals
+        step = (
+            volume_scale_factor_range[1] - volume_scale_factor_range[0]
+        ) / n_structures
         scale_factors_defined = np.arange(
-            scale_factor_range[0], scale_factor_range[1] + step, step
+            volume_scale_factor_range[0], volume_scale_factor_range[1] + step, step
         )
-        warnings.warn("Using your custom lattice scale factors", stacklevel=2)
+        warnings.warn("Generated lattice scale factors within your range", stacklevel=2)
 
     else:  # range is not specified
-        if scale_factors is None:
-            # use default scale_factors if not specified
-            scale_factors_defined = [0.95, 0.98, 0.99, 1.01, 1.02, 1.05]
+        if volume_custom_scale_factors is None:
+            # use default scale factors if not specified
+            scale_factors_defined = [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10]
             warnings.warn(
-                "Using default lattice scale factors of [0.95, 0.98, 0.99, 1.01, 1.02, 1.05]",
+                "Using default lattice scale factors of [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10]",
                 stacklevel=2,
             )
         else:
-            scale_factors_defined = scale_factors
+            scale_factors_defined = volume_custom_scale_factors
+            warnings.warn("Using your custom lattice scale factors", stacklevel=2)
 
     for i in range(len(scale_factors_defined)):
         # make copy of ground state
         cell = atoms.copy()
         # set lattice parameter scale factor
-        lattice_scale_factor = scale_factors_defined[i]
+        lattice_scale_factor = (scale_factors_defined[i]) ** (1 / 3)
         # scale cell volume and atomic positions
         cell.set_cell(lattice_scale_factor * atoms.get_cell(), scale_atoms=True)
         # store scaled cell
@@ -142,10 +147,10 @@ def check_distances(structure: Structure, min_distance: float = 1.5):
 def random_vary_angle(
     structure: Structure,
     min_distance: float,
-    scale: float = 10,
+    angle_percentage_scale: float = 10,
     wangle: list[float] | None = None,
     n_structures: int = 8,
-    max_attempts: int = 1000,
+    angle_max_attempts: int = 1000,
 ):
     """
     Take in a pymatgen Structure object and generates angle-distorted structures.
@@ -156,13 +161,13 @@ def random_vary_angle(
         Pymatgen structures object.
     min_distance: float
         Minimum separation allowed between atoms.
-    scale: float
+    angle_percentage_scale: float
         Angle scaling factor i.e. scale=10 will randomly distort angles by +-10% of original value.
     wangle: list[float]
         List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
     n_structures: int.
         Number of angle-distorted structures to generate.
-    max_attempts: int.
+    angle_max_attempts: int.
         Maximum number of attempts to distort structure before aborting.
 
     Returns
@@ -184,7 +189,7 @@ def random_vary_angle(
 
         # stretch lattice parameters by 3% before changing angles
         # helps atoms to not be too close
-        distorted_cells = scale_cell(atoms_copy, scale_factors=[1.03])
+        distorted_cells = scale_cell(atoms_copy, volume_custom_scale_factors=[1.03])
 
         # getting stretched cell out of array
         newcell = distorted_cells[0].cell.cellpar()
@@ -195,11 +200,11 @@ def random_vary_angle(
         gamma = atoms_copy.cell.cellpar()[5]
 
         # convert angle distortion scale
-        scale = scale / 100
-        min_scale = 1 - scale
-        max_scale = 1 + scale
+        angle_percentage_scale = angle_percentage_scale / 100
+        min_scale = 1 - angle_percentage_scale
+        max_scale = 1 + angle_percentage_scale
 
-        while attempts < max_attempts:
+        while attempts < angle_max_attempts:
             attempts += 1
             # new random angles within +-10% (default) of current angle
             new_alpha = random.randint(int(alpha * min_scale), int(alpha * max_scale))
@@ -233,7 +238,7 @@ def std_rattle(
     structure: Structure,
     n_structures: int = 5,
     rattle_std: float = 0.01,
-    seed: int = 42,
+    rattle_seed: int = 42,
 ):
     """
     Take in a pymatgen Structure object and generates rattled structures.
@@ -248,7 +253,7 @@ def std_rattle(
         Number of rattled structures to generate.
     rattle_std: float.
         Rattle amplitude (standard deviation in normal distribution).
-    seed: int.
+    rattle_seed: int.
         Seed for setting up NumPy random state from which random numbers are generated.
 
     Returns
@@ -261,12 +266,12 @@ def std_rattle(
     for i in range(n_structures):
         if i == 0:
             copy = atoms.copy()
-            copy.rattle(stdev=rattle_std, seed=seed)
+            copy.rattle(stdev=rattle_std, seed=rattle_seed)
             rattled_xtals.append(copy)
         if i > 0:
-            seed = seed + 1
+            rattle_seed = rattle_seed + 1
             copy = atoms.copy()
-            copy.rattle(stdev=rattle_std, seed=seed)
+            copy.rattle(stdev=rattle_std, seed=rattle_seed)
             rattled_xtals.append(AseAtomsAdaptor.get_structure(copy))
     return rattled_xtals
 
@@ -276,8 +281,8 @@ def mc_rattle(
     n_structures: int = 5,
     rattle_std: float = 0.003,
     min_distance: float = 1.9,
-    seed: int = 42,
-    n_iter: int = 10,
+    rattle_seed: int = 42,
+    rattle_mc_n_iter: int = 10,
 ):
     """
     Take in a pymatgen Structure object and generates rattled structures.
@@ -300,9 +305,9 @@ def mc_rattle(
     min_distance: float.
         Minimum separation of any two atoms in the rattled structures. Used for computing the probability for each
         rattle move.
-    seed: int.
+    rattle_seed: int.
         Seed for setting up NumPy random state from which random numbers are generated.
-    n_iter: int.
+    rattle_mc_n_iter: int.
         Number of Monte Carlo iterations. Larger number of iterations will generate larger displacements.
 
     Returns
@@ -316,7 +321,7 @@ def mc_rattle(
         n_structures=n_structures,
         rattle_std=rattle_std,
         d_min=min_distance,
-        seed=seed,
-        n_iter=n_iter,
+        seed=rattle_seed,
+        n_iter=rattle_mc_n_iter,
     )
     return [AseAtomsAdaptor.get_structure(xtal) for xtal in mc_rattle]
