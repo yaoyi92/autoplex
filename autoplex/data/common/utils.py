@@ -68,7 +68,7 @@ def scale_cell(
         If specified a range, the number of structures to be generated with
         volume distortions equally spaced between min and max.
     volume_custom_scale_factors : list[float]
-        Default scale factors if range is not specified.
+        Specify explicit scale factors (if range is not specified).
         If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
 
     Returns
@@ -125,7 +125,7 @@ def check_distances(structure: Structure, min_distance: float = 1.5):
     structure : Structure.
         Pymatgen structures object.
     min_distance: float
-        Minimum separation allowed between any two atoms.
+        Minimum separation allowed between any two atoms. Default= 1.5A.
 
     Returns
     -------
@@ -160,15 +160,18 @@ def random_vary_angle(
     structure : Structure.
         Pymatgen structures object.
     min_distance: float
-        Minimum separation allowed between atoms.
+        Minimum separation allowed between atoms. Default= 1.5A.
     angle_percentage_scale: float
-        Angle scaling factor i.e. scale=10 will randomly distort angles by +-10% of original value.
+        Angle scaling factor.
+        Default= 10 will randomly distort angles by +-10% of original value.
     wangle: list[float]
         List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
+        Default= [0, 1, 2].
     n_structures: int.
         Number of angle-distorted structures to generate.
     angle_max_attempts: int.
         Maximum number of attempts to distort structure before aborting.
+        Default=1000.
 
     Returns
     -------
@@ -252,9 +255,9 @@ def std_rattle(
     n_structures: int.
         Number of rattled structures to generate.
     rattle_std: float.
-        Rattle amplitude (standard deviation in normal distribution).
+        Rattle amplitude (standard deviation in normal distribution). Default=0.01.
     rattle_seed: int.
-        Seed for setting up NumPy random state from which random numbers are generated.
+        Seed for setting up NumPy random state from which random numbers are generated. Default= 42.
 
     Returns
     -------
@@ -280,7 +283,7 @@ def mc_rattle(
     structure: Structure,
     n_structures: int = 5,
     rattle_std: float = 0.003,
-    min_distance: float = 1.9,
+    min_distance: float = 1.5,
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
 ):
@@ -301,14 +304,14 @@ def mc_rattle(
         Number of rattled structures to generate.
     rattle_std: float.
         Rattle amplitude (standard deviation in normal distribution). N.B. this value is not connected to the final
-        average displacement for the structures.
+        average displacement for the structures. Default= 0.003.
     min_distance: float.
         Minimum separation of any two atoms in the rattled structures. Used for computing the probability for each
-        rattle move.
+        rattle move. Default= 1.5A.
     rattle_seed: int.
-        Seed for setting up NumPy random state from which random numbers are generated.
+        Seed for setting up NumPy random state from which random numbers are generated. Default= 42.
     rattle_mc_n_iter: int.
-        Number of Monte Carlo iterations. Larger number of iterations will generate larger displacements.
+        Number of Monte Carlo iterations. Larger number of iterations will generate larger displacements. Default=10.
 
     Returns
     -------
