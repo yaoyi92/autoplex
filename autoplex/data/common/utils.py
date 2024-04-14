@@ -146,7 +146,7 @@ def check_distances(structure: Structure, min_distance: float = 1.5):
 
 def random_vary_angle(
     structure: Structure,
-    min_distance: float,
+    min_distance: float = 1.5,
     angle_percentage_scale: float = 10,
     wangle: list[float] | None = None,
     n_structures: int = 8,

@@ -171,8 +171,10 @@ def generate_randomized_structures(
         Default=10.
     volume_scale_factor_range : list[float]
         [min, max] of volume scale factors.
+        e.g. [0.90, 1.10] will distort volume +-10%.
     volume_custom_scale_factors : list[float]
-        Default volume scale factors if range is not specified.
+        Specify explicit scale factors (if range is not specified).
+        If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
     min_distance: float
         Minimum separation allowed between any two atoms.
         Default= 1.5A.
