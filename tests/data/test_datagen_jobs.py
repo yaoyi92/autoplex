@@ -1,5 +1,4 @@
 from pymatgen.core.structure import Structure
-#from autoplex.data.phonons.jobs import generate_randomized_structures
 from autoplex.data.common.jobs import generate_randomized_structures
 from autoplex.data.common.utils import (
     mc_rattle,
@@ -19,7 +18,12 @@ def test_generate_randomized_structures():
         coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
     )
 
-    rand_structs_job = generate_randomized_structures(structure=structure, distort_type=0, n_structures=10, volume_scale_factor_range=[0.90,1.10], rattle_type=0)
+    rand_structs_job = generate_randomized_structures(
+                        structure=structure, 
+                        distort_type=0, 
+                        n_structures=10, 
+                        volume_scale_factor_range=[0.90,1.10], 
+                        rattle_type=0)
 
     responses = run_locally(rand_structs_job, create_folders=False, ensure_success=True)
 

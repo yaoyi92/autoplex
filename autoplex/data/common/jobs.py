@@ -154,7 +154,7 @@ def generate_randomized_structures(
     rattle_std: float = 0.01,
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
-    wangle: list[float] | None = None,
+    w_angle: list[float] | None = None,
 ):
     """
     Take in a pymatgen Structure object and generates angle/volume distorted + rattled structures.
@@ -184,7 +184,7 @@ def generate_randomized_structures(
     angle_max_attempts: int.
         Maximum number of attempts to distort structure before aborting.
         Default=1000.
-    wangle: list[float]
+    w_angle: list[float]
         List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
         Default= [0, 1, 2].
     rattle_type: int.
@@ -220,7 +220,7 @@ def generate_randomized_structures(
             structure=Structure,
             min_distance=min_distance,
             angle_percentage_scale=angle_percentage_scale,
-            wangle=wangle,
+            w_angle=w_angle,
             n_structures=n_structures,
             angle_max_attempts=angle_max_attempts,
         )

@@ -101,11 +101,11 @@ def scale_cell(
             scale_factors_defined = volume_custom_scale_factors
             warnings.warn("Using your custom lattice scale factors", stacklevel=2)
 
-    for i in range(len(scale_factors_defined)):
+    for scale_factor in scale_factors_defined:
         # make copy of ground state
         cell = atoms.copy()
         # set lattice parameter scale factor
-        lattice_scale_factor = (scale_factors_defined[i]) ** (1 / 3)
+        lattice_scale_factor = scale_factor ** (1 / 3)
         # scale cell volume and atomic positions
         cell.set_cell(lattice_scale_factor * atoms.get_cell(), scale_atoms=True)
         # store scaled cell
@@ -148,7 +148,7 @@ def random_vary_angle(
     structure: Structure,
     min_distance: float = 1.5,
     angle_percentage_scale: float = 10,
-    wangle: list[float] | None = None,
+    w_angle: list[float] | None = None,
     n_structures: int = 8,
     angle_max_attempts: int = 1000,
 ):
@@ -164,7 +164,7 @@ def random_vary_angle(
     angle_percentage_scale: float
         Angle scaling factor.
         Default= 10 will randomly distort angles by +-10% of original value.
-    wangle: list[float]
+    w_angle: list[float]
         List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
         Default= [0, 1, 2].
     n_structures: int.
@@ -182,8 +182,8 @@ def random_vary_angle(
     distorted_angle_cells = []
     generated_structures = 0  # counter to keep track of generated structures
 
-    if wangle is None:
-        wangle = [0, 1, 2]
+    if w_angle is None:
+        w_angle = [0, 1, 2]
 
     while generated_structures < n_structures:
         attempts = 0
@@ -216,7 +216,7 @@ def random_vary_angle(
 
             newvalues = [new_alpha, new_beta, new_gamma]
 
-            for wang, newv in zip(wangle, newvalues):
+            for wang, newv in zip(w_angle, newvalues):
                 newcell[wang + 3] = newv
 
             # converting newcell back into an Atoms object so future functions work
