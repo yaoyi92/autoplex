@@ -210,7 +210,7 @@ def generate_randomized_structures(
     # distort cells by volume or angle
     if distort_type == 0:
         distorted_cells = scale_cell(
-            structure=Structure,
+            structure=structure,
             volume_scale_factor_range=volume_scale_factor_range,
             n_structures=n_structures,
             volume_custom_scale_factors=volume_custom_scale_factors,
@@ -256,5 +256,5 @@ def generate_randomized_structures(
 
     if rattled_cells is None:
         raise TypeError("rattle_type is not recognized")
-
+    print(type(rattled_cells))
     return rattled_cells

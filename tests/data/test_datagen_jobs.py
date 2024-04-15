@@ -43,6 +43,10 @@ def test_mc_rattle():
 
     mc_rattle_job=mc_rattle(structure=structure, n_structures=10)
 
+
+    responses = run_locally(mc_rattle_job, create_folders=False, ensure_success=True)
+
+
     for uuid, response_collection in responses.items():
         for k, response in response_collection.items():
             # check if correct number of structures are generated
@@ -59,7 +63,7 @@ def test_mc_rattle():
             
 
 def test_std_rattle():
-        from jobflow import run_locally
+    from jobflow import run_locally
 
     structure = Structure(
         lattice=[[0, 2.73, 2.73], [2.73, 0, 2.73], [2.73, 2.73, 0]],
@@ -68,6 +72,9 @@ def test_std_rattle():
     )
 
     std_rattle_job=std_rattle(structure=structure, n_structures=10)
+
+
+    responses = run_locally(std_rattle_job, create_folders=False, ensure_success=True)
 
     for uuid, response_collection in responses.items():
         for k, response in response_collection.items():
@@ -83,7 +90,7 @@ def test_std_rattle():
             # check if atom positions are reasonably close to positions before rattling
                 assert all(np.allclose(struct.frac_coords, structure.frac_coords), atol=0.05)
 
-def random_vary_angle():
+def test_random_vary_angle():
     from jobflow import run_locally
 
     structure = Structure(
@@ -93,6 +100,10 @@ def random_vary_angle():
     )
 
     random_vary_angle_job=random_vary_angle(structure=structure, n_structures=10)
+
+
+    responses = run_locally(random_vary_angle_job, create_folders=False, ensure_success=True)
+
 
     for uuid, response_collection in responses.items():
         for k, response in response_collection.items():
@@ -107,7 +118,7 @@ def random_vary_angle():
                 assert all(np.allclose(struct.lattice.matrix == structure.lattice.matrix, atol= 0.1))
 
 # adapt to check for each input possible e.g. inputting range/manual scale_factors?
-def scale_cell():
+def test_scale_cell():
     from jobflow import run_locally
 
     structure = Structure(
@@ -117,6 +128,10 @@ def scale_cell():
     )
 
     scale_cell_job=scale_cell(structure=structure, volume_scale_factor_range=[0.90, 1.10], n_structures=10)
+
+
+    responses = run_locally(scale_cell_job, create_folders=False, ensure_success=True)
+
 
     for uuid, response_collection in responses.items():
         for k, response in response_collection.items():

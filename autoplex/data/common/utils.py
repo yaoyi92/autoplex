@@ -270,7 +270,7 @@ def std_rattle(
         if i == 0:
             copy = atoms.copy()
             copy.rattle(stdev=rattle_std, seed=rattle_seed)
-            rattled_xtals.append(copy)
+            rattled_xtals.append(AseAtomsAdaptor.get_structure(copy))
         if i > 0:
             rattle_seed = rattle_seed + 1
             copy = atoms.copy()
