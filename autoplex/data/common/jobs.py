@@ -164,7 +164,7 @@ def generate_randomized_structures(
     structure : Structure.
         Pymatgen structures object.
     distort_type : int.
-        0- volume distortion, 1- angle distortion. Default=0.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     n_structures : int.
         Total number of distorted structures to be generated.
         Must be provided if distorting volume without specifying a range, or if distorting angles.
@@ -224,6 +224,24 @@ def generate_randomized_structures(
             n_structures=n_structures,
             angle_max_attempts=angle_max_attempts,
         )
+    elif distort_type == 2:
+        initial_distorted_cells = scale_cell(
+            structure=structure,
+            volume_scale_factor_range=volume_scale_factor_range,
+            n_structures=n_structures,
+            volume_custom_scale_factors=volume_custom_scale_factors,
+        )
+        distorted_cells = []
+        for cell in initial_distorted_cells:
+            distorted_cell = random_vary_angle(
+                structure=cell,
+                min_distance=min_distance,
+                angle_percentage_scale=angle_percentage_scale,
+                w_angle=w_angle,
+                n_structures=1,
+                angle_max_attempts=angle_max_attempts,
+            )
+            distorted_cells.append(distorted_cell)
     else:
         raise TypeError("distort_type is not recognised")
 
