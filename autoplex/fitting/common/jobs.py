@@ -5,7 +5,7 @@ from pathlib import Path
 
 from jobflow import job
 
-from autoplex.fitting.common.utils import check_convergence, gap_fitting
+from autoplex.fitting.common.utils import check_convergence, gap_fitting, ace_fitting, nequip_fitting
 
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
@@ -14,13 +14,15 @@ GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 @job
 def machine_learning_fit(
     database_dir: str,
-    gap_para=None,
     isol_es: None = None,
     num_processes: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
     mlip_type: str | None = None,
     HPO: bool = False,
+    gap_para: dict = gap_para,
+    j-ace_para: dict = j-ace_para,
+    nequip_para: dict = nequip_para,
     **kwargs,
 ):
     """
@@ -44,18 +46,12 @@ def machine_learning_fit(
         optional dictionary with parameters for gap fitting.
     mlip_type: str
         Choose one specific MLIP type:
-        'GAP' | 'SNAP' | 'ACE' | 'Nequip' | 'Allegro' | 'MACE'
+        'GAP' | 'ACE' | 'Nequip' | 'M3GNet' | 'MACE'
     HPO: bool
         call hyperparameter optimization (HPO) or not
     """
     if gap_para is None:
         gap_para = {"two_body": True, "three_body": False, "soap": True}
-
-    if mlip_type is None:
-        raise ValueError(
-            "MLIP type is not defined! "
-            "The current version supports the fitting of GAP, SNAP, ACE, Nequip, Allegro, or MACE."
-        )
 
     if mlip_type == "GAP":
         train_test_error = gap_fitting(
@@ -68,6 +64,31 @@ def machine_learning_fit(
             glue_xml=glue_xml,
             fit_kwargs=kwargs,
         )
+
+    if self.mlip_type == 'ACE':
+        train_test_error = ace_fitting(dir=database_dir, 
+                                      energy_name=ace_para['energy_name'], 
+                                      force_name=ace_para['force_name'], 
+                                      virial_name=ace_para['virial_name'],
+                                      order=ace_para['order'],
+                                      totaldegree=ace_para['totaldegree'],
+                                      cutoff=ace_para['cutoff'],
+                                      solver=ace_para['solver'],
+                                      isol_es=isol_es,
+                                      num_of_threads=num_of_threads)
+
+    if self.mlip_type == 'NEQUIP':
+        train_test_error = nequip_fitting(dir=database_dir,
+                                         r_max=nequip_para['r_max'],
+                                         num_layers=nequip_para['num_layers'],
+                                         l_max=nequip_para['l_max'],
+                                         num_features=nequip_para['num_features'],
+                                         num_basis=nequip_para['num_basis'],
+                                         invariant_layers=nequip_para['invariant_layers'],
+                                         invariant_neurons=nequip_para['invariant_neurons'],
+                                         batch_size=nequip_para['batch_size'],
+                                         learning_rate=nequip_para['learning_rate'],
+                                         default_dtype=nequip_para['default_dtype'])
 
     check_conv = check_convergence(train_test_error["test_error"])
 
