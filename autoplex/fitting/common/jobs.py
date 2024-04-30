@@ -5,7 +5,7 @@ from pathlib import Path
 
 from jobflow import job
 
-from autoplex.fitting.common.utils import check_convergence, gap_fitting
+from autoplex.fitting.common.utils import check_convergence, gap_fitting, ace_fitting, nequip_fitting
 
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
