@@ -39,7 +39,7 @@ class MLIPFitMaker(Maker):
         Name of the flows produced by this maker.
     mlip_type: str
         Choose one specific MLIP type:
-        'GAP' | 'SNAP' | 'ACE' | 'Nequip' | 'Allegro' | 'MACE'
+        'GAP' | 'ACE' | 'Nequip' | 'M3GNet' | 'MACE'
     """
 
     name: str = "MLpotentialFit"
@@ -59,6 +59,20 @@ class MLIPFitMaker(Maker):
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
         glue_xml: bool = False,
+        j-ace_para: dict = {'order':3, 
+                            'totaldegree':6, 
+                            'cutoff':2.0, 
+                            'solver':'BLR',},
+        nequip_para: dict = {'r_max': 4.0,
+                             'num_layers': 4,
+                             'l_max': 2,
+                             'num_features': 32,
+                             'num_basis': 8,
+                             'invariant_layers': 2,
+                             'invariant_neurons': 64,
+                             'batch_size': 5,
+                             'learning_rate': 0.005,
+                             'default_dtype': "float32"},
         **fit_kwargs,
     ):
         """
@@ -106,15 +120,22 @@ class MLIPFitMaker(Maker):
             atom_wise_regularization=atom_wise_regularization,
         )
         jobs.append(data_prep_job)
-        gap_fit_job = machine_learning_fit(
-            database_dir=data_prep_job.output,
-            isol_es=None,
-            auto_delta=auto_delta,
-            glue_xml=glue_xml,
-            mlip_type=self.mlip_type,
-            **fit_kwargs,
-        )
-        jobs.append(gap_fit_job)  # type: ignore
+
+        if self.mlip_type is None:   
+            raise ValueError("MLIP type is not defined! The current version supports the following models: GAP, ACE, Nequip, M3GNet, and MACE.")
+
+        else:
+            mlip_fit_job = machine_learning_fit(
+                database_dir=data_prep_job.output,
+                isol_es=None,
+                auto_delta=auto_delta,
+                glue_xml=glue_xml,
+                mlip_type=self.mlip_type,
+                j-ace_para=j-ace_para,
+                nequip_para=nequip_para,
+                **fit_kwargs,
+            )
+            jobs.append(gap_fit_job)  # type: ignore
 
         # create a flow including all jobs
         return Flow(jobs, gap_fit_job.output)
