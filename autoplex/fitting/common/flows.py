@@ -59,6 +59,9 @@ class MLIPFitMaker(Maker):
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
         glue_xml: bool = False,
+        gap_para: dict = {"two_body": True, 
+                          "three_body": False, 
+                          "soap": True}
         j-ace_para: dict = {'order':3, 
                             'totaldegree':6, 
                             'cutoff':2.0, 
@@ -131,6 +134,7 @@ class MLIPFitMaker(Maker):
                 auto_delta=auto_delta,
                 glue_xml=glue_xml,
                 mlip_type=self.mlip_type,
+                gap_para=gap_para,
                 j-ace_para=j-ace_para,
                 nequip_para=nequip_para,
                 **fit_kwargs,
