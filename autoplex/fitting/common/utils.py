@@ -17,11 +17,13 @@ import numpy as np
 import pandas as pd
 from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
+from ase.data import chemical_symbols
 from ase.io import read, write
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from scipy.spatial import ConvexHull
 from sklearn.model_selection import StratifiedShuffleSplit
+from nequip.ase import NequIPCalculator
 
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
@@ -97,7 +99,7 @@ def gap_fitting(
     if include_two_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
         if auto_delta:
-            delta_2b = calculate_delta(db_atoms, "REF_energy")
+            delta_2b, num_triplet = calculate_delta(db_atoms, 'REF_energy')
             gap_default_hyperparameters["twob"].update({"delta": delta_2b})
 
         fit_parameters_list = gap_hyperparameter_constructor(
@@ -112,6 +114,7 @@ def gap_fitting(
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
         if auto_delta:
             delta_3b = energy_remain("quip_train.extxyz")
+            delta_3b = delta_3b / num_triplet
             gap_default_hyperparameters["threeb"].update({"delta": delta_3b})
 
         fit_parameters_list = gap_hyperparameter_constructor(
@@ -156,6 +159,97 @@ def gap_fitting(
         "train_error": train_error,
         "test_error": test_error,
         "mlip_path": mlip_path,
+    }
+
+
+def ace_fitting(db_dir: str | Path,
+                order: int = 4,
+                totaldegree: int = 16,
+                cutoff: float = 5.0,
+                solver: str = 'BLR',
+                isol_es: dict | None = None,
+                num_processes: int = 32):
+                   
+    train_atoms = ase.io.read(os.path.join(db_dir, 'train.extxyz'), index=':')
+    isol_es_update = {}
+
+    if isol_es:
+        for e_num, e_energy in isol_es.items():
+            isol_es_update[chemical_symbols[int(e_num)]] = e_energy
+    else:
+        raise ValueError("isol_es is empty or not defined!")
+
+    formatted_isol_es = '[' + ', '.join([f":{key} => {value}" for key, value in isol_es_update.items()]) + ']'
+    formatted_species = '[' + ', '.join([f":{key}" for key, value in isol_es_update.items()]) + ']'
+
+    train_ace = [at for at in train_atoms if 'isolated_atom' not in at.info['config_type']]
+    ase.io.write('train_ace.extxyz', train_ace, format='extxyz')
+
+    ace_text = f'''using ACEpotentials
+using LinearAlgebra: norm, Diagonal
+using CSV, DataFrames
+using Distributed
+addprocs({num_processes-1}, exeflags="--project=$(Base.active_project())")
+@everywhere using ACEpotentials
+
+data_file = "train_ace.extxyz"
+data = read_extxyz(data_file)
+test_data = read_extxyz(os.path.join({db_dir}, test_data_file))
+data_keys = (energy_key = "{energy_name}", force_key = "{force_name}", virial_key = "{virial_name}")
+
+model = acemodel(elements={formatted_species}, 
+                order={order}, 
+                totaldegree={totaldegree}, 
+                rcut={cutoff},
+                Eref={formatted_isol_es})
+
+weights = Dict(
+            "bulk" => Dict("E" => 10.0, "F" => 1.0 , "V" => 1.0 ),
+            "initial" => Dict("E" => 5.0, "F" => 0.5 , "V" => 0.5 ),
+            "dimer" => Dict("E" => 5.0, "F" => 0.5 , "V" => 0.5 )
+            )
+
+P = smoothness_prior(model; p = 4)
+
+solver = ACEfit.{solver}()
+
+acefit!(model, data; solver=solver, weights=weights, prior = P, data_keys...)
+
+@info("Training Error Table")
+ACEpotentials.linear_errors(data, model; data_keys...)
+
+@info("Testing Error Table")
+ACEpotentials.linear_errors(test_data, model; data_keys...)
+
+@info("Manual RMSE Test")
+potential = model.potential
+train_energies = [ JuLIP.get_data(at, "{energy_name}") / length(at) for at in data]
+model_energies_train = [energy(potential, at) / length(at) for at in data]
+rmse_energy_train = norm(train_energies - model_energies_train) / sqrt(length(data))
+test_energies = [ JuLIP.get_data(at, "{energy_name}") / length(at) for at in test_data]
+model_energies_pred = [energy(potential, at) / length(at) for at in test_data]
+rmse_energy_test = norm(test_energies - model_energies_pred) / sqrt(length(test_data))
+
+df = DataFrame(rmse_energy_train = rmse_energy_train, rmse_energy_test = rmse_energy_test)
+CSV.write("rmse_energies.csv", df)
+
+save_potential("acemodel.json", model)
+export2lammps("acemodel.yace", model)
+    '''
+    
+    with open('ace.jl', "w") as file:
+        file.write(ace_text)
+
+    os.system(f'export OMP_NUM_THREADS={num_processes} && julia ace.jl')
+
+    df = pd.read_csv("rmse_energies.csv")
+    train_error = df['rmse_energy_train'][0]
+    test_error = df['rmse_energy_test'][0]
+    
+    return {
+        "train_error": train_error,
+        "test_error": test_error,
+        "mlip_path": Path.cwd(),
     }
 
 
@@ -743,32 +837,28 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> float:
         ]
     )
     es_var = np.var(es_visol)
-    avg_neigh = np.mean([compute_average_coordination(atom) for atom in atoms_db])
-    return es_var / avg_neigh
+    avg_neigh = np.mean([compute_pairs_triplets(atom)[0] for atom in atoms_db])
+    num_triplet = np.mean([compute_pairs_triplets(atom)[1] for atom in atoms_db])
+
+    return es_var / avg_neigh, num_triplet
 
 
-def compute_average_coordination(atoms: Atoms) -> float:
-    """
-    Compute average coordination.
-
-    Parameters
-    ----------
-    atoms: Atoms
-        Ase atoms object
-
-    Returns
-    -------
-    float
-        Average coordination - total_coordination / len(atoms)
-
-    """
+def compute_pairs_triplets(atoms):
     cutoffs = natural_cutoffs(atoms)
-    neighbor_list = NeighborList(cutoffs, self_interaction=False, bothways=True)
+    neighbor_list = NeighborList(cutoffs=cutoffs, skin=0.15, self_interaction=False, bothways=True)
     neighbor_list.update(atoms)
-    total_coordination = sum(
-        len(neighbor_list.get_neighbors(index)[0]) for index in range(len(atoms))
-    )
-    return total_coordination / len(atoms)
+    counts_list = []
+    for index in range(len(atoms)):
+        counts_list.append(len(neighbor_list.get_neighbors(index)[0]))
+    num_pair = sum(counts_list)/len(atoms)
+    
+    triplets = []
+    for count in counts_list:
+        if count > 1:
+            triplets.append(comb(count,2))
+    num_triplet = sum(triplets)/len(atoms)
+    
+    return [num_pair, num_triplet]
 
 
 def run_gap(num_processes: int, parameters):
