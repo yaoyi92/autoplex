@@ -253,6 +253,186 @@ export2lammps("acemodel.yace", model)
     }
 
 
+def nequip_fitting(dir=None,
+                  r_max=4.0,
+                  num_layers=4,
+                  l_max=2,
+                  num_features=32,
+                  num_basis=8,
+                  invariant_layers=2,
+                  invariant_neurons=64,
+                  batch_size=5,
+                  learning_rate=0.005,
+                  default_dtype="float32",
+                  isol_es={},
+                  device="GPU",
+                  ):
+    
+    run_command('cat train.extxyz test.extxyz > nequip_train.extxyz')
+    train_data = ase.io.read('train.extxyz',index=':')
+    test_data = ase.io.read('test.extxyz',index=':')
+    num_of_train = len(train_data)
+    num_of_val = len(test_data)
+
+    isol_es_update=''
+    ele_syms = []
+    if isol_es:
+        for e_num, _ in isol_es.items():
+          ele_sym = '  - ' + chemical_symbols[int(e_num)] + '\n'
+          isol_es_update += ele_sym
+          ele_syms.extend(chemical_symbols[int(e_num)])
+    else:
+        raise ValueError("isol_es is empty or not defined!")
+
+    nequip_text = f'''root: results
+run_name: autoplex
+seed: 123
+dataset_seed: 456            
+append: true 
+default_dtype: {default_dtype}
+
+# network
+r_max: {r_max}
+num_layers: {num_layers}
+l_max: {l_max}
+parity: true
+num_features: {num_features}
+nonlinearity_type: gate
+
+nonlinearity_scalars:
+  e: silu
+  o: tanh
+
+nonlinearity_gates:
+  e: silu
+  o: tanh
+
+num_basis: {num_basis}
+BesselBasis_trainable: true
+PolynomialCutoff_p: 6
+
+invariant_layers: {invariant_layers}
+invariant_neurons: {invariant_neurons}
+avg_num_neighbors: auto
+
+use_sc: true
+dataset: ase
+dataset_file_name: ./nequip_train.extxyz
+
+ase_args:
+  format: extxyz
+dataset_key_mapping:                                                              
+  REF_energy: total_energy                                                                  
+  REF_forces: forces
+
+chemical_symbols:
+{isol_es_update}
+wandb: True
+wandb_project: autoplex
+
+verbose: info
+log_batch_freq: 10
+log_epoch_freq: 1
+save_checkpoint_freq: -1
+save_ema_checkpoint_freq: -1
+
+n_train: {num_of_train}
+n_val: {num_of_val}
+learning_rate: 0.005
+batch_size: {batch_size}
+validation_batch_size: 10
+max_epochs: 10000
+train_val_split: sequential
+shuffle: true
+metrics_key: validation_loss
+use_ema: true
+ema_decay: 0.99
+ema_use_num_updates: true
+report_init_validation: true
+
+early_stopping_patiences:
+  validation_loss: 50
+
+early_stopping_lower_bounds: 
+  LR: 1.0e-5
+
+loss_coeffs:
+  forces: 1
+  total_energy:
+    - 1
+    - PerAtomMSELoss
+
+metrics_components:
+  - - forces
+    - mae
+  - - forces
+    - rmse
+  - - forces
+    - mae
+    - PerSpecies: True
+      report_per_component: False          
+  - - forces                                
+    - rmse                                  
+    - PerSpecies: True                     
+      report_per_component: False    
+  - - total_energy
+    - mae    
+  - - total_energy
+    - mae
+    - PerAtom: True
+
+optimizer_name: Adam
+optimizer_amsgrad: true
+
+lr_scheduler_name: ReduceLROnPlateau
+lr_scheduler_patience: 100
+lr_scheduler_factor: 0.5
+
+per_species_rescale_shifts_trainable: false
+per_species_rescale_scales_trainable: false
+
+per_species_rescale_shifts: dataset_per_atom_total_energy_mean
+per_species_rescale_scales: dataset_forces_rms
+    '''
+
+    with open('nequip.yaml', "w") as file:
+        file.write(nequip_text)
+
+    run_command('nequip-train config.yaml')
+    run_command('nequip-deploy build --train-dir results/autoplex ./deployed_nequip_model.pth')
+
+    calc = NequIPCalculator.from_deployed_model(
+            deployed_path="deployed_nequip_model.pth",
+            device=device,
+            species_to_type_name={s: s for s in ele_syms},
+            set_global_options=False,
+            )
+    
+    ener_out_train = []
+    for at in train_data:
+        at.calc = calc
+        ener_out_train.append(at.get_potential_energy()/len(at)) 
+         
+    ener_in_train = [at.info['REF_energy'] / len(at.get_chemical_symbols()) for at in train_data]
+
+    train_error = rms_dict(ener_in_train, ener_out_train)
+
+    ener_out_test = []
+    for at in test_data:
+        at.calc = calc
+        ener_out_test.append(at.get_potential_energy()/len(at))
+
+    ener_in_test = [at.info['REF_energy'] / len(at.get_chemical_symbols()) for at in test_data]
+
+    test_error = rms_dict(ener_in_test, ener_out_test)
+                      
+    return {
+        "train_error": train_error,
+        "test_error": test_error,
+        "mlip_path": Path.cwd(),
+    }
+
+
 def check_convergence(test_error):
     """
     Check the convergence of the fit.
