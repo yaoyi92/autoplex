@@ -108,7 +108,7 @@ class MLIPFitMaker(Maker):
         )
         jobs.append(data_prep_job)
 
-        if self.mlip_type is not in ["GAP", "J-ACE", "P-ACE", "NEQUIP", "M3GNET", "MACE"]:
+        if self.mlip_type not in ["GAP", "J-ACE", "P-ACE", "NEQUIP", "M3GNET", "MACE"]:
             raise ValueError("Please correct the MLIP name! The current version ONLY supports the following models: GAP, J-ACE, P-ACE, NEQUIP, M3GNET, and MACE.")
 
         else:
