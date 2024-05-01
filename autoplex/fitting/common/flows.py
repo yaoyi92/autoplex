@@ -44,6 +44,7 @@ class MLIPFitMaker(Maker):
 
     name: str = "MLpotentialFit"
     mlip_type: str = "GAP"
+    mlip_hyper: dict|None = None
 
     def make(
         self,
@@ -59,23 +60,6 @@ class MLIPFitMaker(Maker):
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
         glue_xml: bool = False,
-        gap_para: dict = {"two_body": True, 
-                          "three_body": False, 
-                          "soap": True}
-        j-ace_para: dict = {'order':3, 
-                            'totaldegree':6, 
-                            'cutoff':2.0, 
-                            'solver':'BLR',},
-        nequip_para: dict = {'r_max': 4.0,
-                             'num_layers': 4,
-                             'l_max': 2,
-                             'num_features': 32,
-                             'num_basis': 8,
-                             'invariant_layers': 2,
-                             'invariant_neurons': 64,
-                             'batch_size': 5,
-                             'learning_rate': 0.005,
-                             'default_dtype': "float32"},
         **fit_kwargs,
     ):
         """
@@ -124,7 +108,7 @@ class MLIPFitMaker(Maker):
         )
         jobs.append(data_prep_job)
 
-        if self.mlip_type is not in ["GAP", "J-ACE", "P-ACE", "NEQUIP", "M3GNET", "MACE"]:   
+        if self.mlip_type is not in ["GAP", "J-ACE", "P-ACE", "NEQUIP", "M3GNET", "MACE"]:
             raise ValueError("Please correct the MLIP name! The current version ONLY supports the following models: GAP, J-ACE, P-ACE, NEQUIP, M3GNET, and MACE.")
 
         else:
@@ -134,15 +118,13 @@ class MLIPFitMaker(Maker):
                 auto_delta=auto_delta,
                 glue_xml=glue_xml,
                 mlip_type=self.mlip_type,
-                gap_para=gap_para,
-                j-ace_para=j-ace_para,
-                nequip_para=nequip_para,
+                mlip_hyper=self.mlip_hyper,
                 **fit_kwargs,
             )
             jobs.append(gap_fit_job)  # type: ignore
 
         # create a flow including all jobs
-        return Flow(jobs, gap_fit_job.output)
+        return Flow(jobs, mlip_fit_job.output)
 
 
 @dataclass

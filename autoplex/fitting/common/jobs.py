@@ -20,9 +20,7 @@ def machine_learning_fit(
     glue_xml: bool = False,
     mlip_type: str | None = None,
     HPO: bool = False,
-    gap_para: dict = gap_para,
-    j-ace_para: dict = j-ace_para,
-    nequip_para: dict = nequip_para,
+    mlip_hyper: dict|None=None,
     **kwargs,
 ):
     """
@@ -50,45 +48,51 @@ def machine_learning_fit(
     HPO: bool
         call hyperparameter optimization (HPO) or not
     """
-    if gap_para is None:
-        gap_para = {"two_body": True, "three_body": False, "soap": True}
+    if mlip_type == "GAP":
+        mlip_hyper = {"two_body": True, "three_body": False, "soap": True},
+    elif mlip_type == "J-ACE":
+        mlip_hyper = {'order': 3, 'totaldegree': 6, 'cutoff': 2.0, 'solver': 'BLR'},
+    elif mlip_type == "NEQUIP":
+        mlip_hyper = {'r_max': 4.0, 'num_layers': 4, 'l_max': 2, 'num_features': 32, 'num_basis': 8,
+                      'invariant_layers': 2, 'invariant_neurons': 64, 'batch_size': 5, 'learning_rate': 0.005,
+                      'default_dtype': "float32"}
 
     if mlip_type == "GAP":
         train_test_error = gap_fitting(
             db_dir=database_dir,
-            include_two_body=gap_para["two_body"],
-            include_three_body=gap_para["three_body"],
-            include_soap=gap_para["soap"],
+            include_two_body=mlip_hyper["two_body"],
+            include_three_body=mlip_hyper["three_body"],
+            include_soap=mlip_hyper["soap"],
             num_processes=num_processes,
             auto_delta=auto_delta,
             glue_xml=glue_xml,
             fit_kwargs=kwargs,
         )
 
-    if self.mlip_type == 'ACE':
+    elif mlip_type == 'ACE':
         train_test_error = ace_fitting(dir=database_dir, 
-                                      energy_name=ace_para['energy_name'], 
-                                      force_name=ace_para['force_name'], 
-                                      virial_name=ace_para['virial_name'],
-                                      order=ace_para['order'],
-                                      totaldegree=ace_para['totaldegree'],
-                                      cutoff=ace_para['cutoff'],
-                                      solver=ace_para['solver'],
+                                      energy_name=mlip_hyper['energy_name'],
+                                      force_name=mlip_hyper['force_name'],
+                                      virial_name=mlip_hyper['virial_name'],
+                                      order=mlip_hyper['order'],
+                                      totaldegree=mlip_hyper['totaldegree'],
+                                      cutoff=mlip_hyper['cutoff'],
+                                      solver=mlip_hyper['solver'],
                                       isol_es=isol_es,
-                                      num_of_threads=num_of_threads)
+                                      num_of_threads=num_processes)
 
-    if self.mlip_type == 'NEQUIP':
+    elif mlip_type == 'NEQUIP':
         train_test_error = nequip_fitting(dir=database_dir,
-                                         r_max=nequip_para['r_max'],
-                                         num_layers=nequip_para['num_layers'],
-                                         l_max=nequip_para['l_max'],
-                                         num_features=nequip_para['num_features'],
-                                         num_basis=nequip_para['num_basis'],
-                                         invariant_layers=nequip_para['invariant_layers'],
-                                         invariant_neurons=nequip_para['invariant_neurons'],
-                                         batch_size=nequip_para['batch_size'],
-                                         learning_rate=nequip_para['learning_rate'],
-                                         default_dtype=nequip_para['default_dtype'])
+                                         r_max=mlip_hyper['r_max'],
+                                         num_layers=mlip_hyper['num_layers'],
+                                         l_max=mlip_hyper['l_max'],
+                                         num_features=mlip_hyper['num_features'],
+                                         num_basis=mlip_hyper['num_basis'],
+                                         invariant_layers=mlip_hyper['invariant_layers'],
+                                         invariant_neurons=mlip_hyper['invariant_neurons'],
+                                         batch_size=mlip_hyper['batch_size'],
+                                         learning_rate=mlip_hyper['learning_rate'],
+                                         default_dtype=mlip_hyper['default_dtype'])
 
     check_conv = check_convergence(train_test_error["test_error"])
 
