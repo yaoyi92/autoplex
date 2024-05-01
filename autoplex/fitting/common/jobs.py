@@ -48,15 +48,16 @@ def machine_learning_fit(
     HPO: bool
         call hyperparameter optimization (HPO) or not
     """
-    if mlip_type == "GAP":
-        mlip_hyper = {"two_body": True, "three_body": False, "soap": True},
-    elif mlip_type == "J-ACE":
-        mlip_hyper = {'order': 3, 'totaldegree': 6, 'cutoff': 2.0, 'solver': 'BLR'},
-    elif mlip_type == "NEQUIP":
-        mlip_hyper = {'r_max': 4.0, 'num_layers': 4, 'l_max': 2, 'num_features': 32, 'num_basis': 8,
-                      'invariant_layers': 2, 'invariant_neurons': 64, 'batch_size': 5, 'learning_rate': 0.005,
-                      'default_dtype': "float32"}
-
+    if mlip_hyper is None:
+        if mlip_type == "GAP":
+            mlip_hyper = {"two_body": True, "three_body": False, "soap": True}
+        elif mlip_type == "J-ACE":
+            mlip_hyper = {'order': 3, 'totaldegree': 6, 'cutoff': 2.0, 'solver': 'BLR'}
+        elif mlip_type == "NEQUIP":
+            mlip_hyper = {'r_max': 4.0, 'num_layers': 4, 'l_max': 2, 'num_features': 32, 'num_basis': 8,
+                          'invariant_layers': 2, 'invariant_neurons': 64, 'batch_size': 5, 'learning_rate': 0.005,
+                          'default_dtype': "float32"}
+    print(mlip_hyper["two_body"])
     if mlip_type == "GAP":
         train_test_error = gap_fitting(
             db_dir=database_dir,

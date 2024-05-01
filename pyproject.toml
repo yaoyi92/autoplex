@@ -31,6 +31,7 @@ dependencies = [
      #"quippy-ase==0.9.14",
      "numpy",
      "typing",
+     "nequip",
 ]
 
 [tool.setuptools.packages.find]

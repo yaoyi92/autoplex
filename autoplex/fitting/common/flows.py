@@ -121,7 +121,7 @@ class MLIPFitMaker(Maker):
                 mlip_hyper=self.mlip_hyper,
                 **fit_kwargs,
             )
-            jobs.append(gap_fit_job)  # type: ignore
+            jobs.append(mlip_fit_job)  # type: ignore
 
         # create a flow including all jobs
         return Flow(jobs, mlip_fit_job.output)
