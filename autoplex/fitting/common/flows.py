@@ -124,8 +124,8 @@ class MLIPFitMaker(Maker):
         )
         jobs.append(data_prep_job)
 
-        if self.mlip_type is None:   
-            raise ValueError("MLIP type is not defined! The current version supports the following models: GAP, ACE, Nequip, M3GNet, and MACE.")
+        if self.mlip_type is not in ["GAP", "J-ACE", "P-ACE", "NEQUIP", "M3GNET", "MACE"]:   
+            raise ValueError("Please correct the MLIP name! The current version ONLY supports the following models: GAP, J-ACE, P-ACE, NEQUIP, M3GNET, and MACE.")
 
         else:
             mlip_fit_job = machine_learning_fit(
