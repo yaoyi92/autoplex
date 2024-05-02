@@ -81,12 +81,16 @@ def scale_cell(
 
     if volume_scale_factor_range is not None:
         # range is specified
-        step = (
-            volume_scale_factor_range[1] - volume_scale_factor_range[0]
-        ) / n_structures
         scale_factors_defined = np.arange(
-            volume_scale_factor_range[0], volume_scale_factor_range[1] + step, step
+            volume_scale_factor_range[0],
+            volume_scale_factor_range[1]
+            + (volume_scale_factor_range[1] - volume_scale_factor_range[0])
+            / (n_structures - 1),
+            (volume_scale_factor_range[1] - volume_scale_factor_range[0])
+            / (n_structures - 1),
         )
+
+        # numbers = np.arange(0.9, 1.1 + (1.1 - 0.9) / (num_points - 1), (1.1 - 0.9) / (num_points - 1))
         warnings.warn("Generated lattice scale factors within your range", stacklevel=2)
 
     else:  # range is not specified
@@ -110,7 +114,6 @@ def scale_cell(
         cell.set_cell(lattice_scale_factor * atoms.get_cell(), scale_atoms=True)
         # store scaled cell
         distorted_cells.append(AseAtomsAdaptor.get_structure(cell))
-
     return distorted_cells
 
 
