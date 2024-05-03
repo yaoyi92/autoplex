@@ -194,10 +194,15 @@ def random_vary_angle(
 
         # stretch lattice parameters by 3% before changing angles
         # helps atoms to not be too close
-        distorted_cells = scale_cell(atoms_copy, volume_custom_scale_factors=[1.03])
+        distorted_cells = scale_cell(
+            AseAtomsAdaptor.get_structure(atoms_copy),
+            volume_custom_scale_factors=[1.03],
+        )
+
+        distorted_cells = AseAtomsAdaptor.get_atoms(distorted_cells[0])
 
         # getting stretched cell out of array
-        newcell = distorted_cells[0].cell.cellpar()
+        newcell = distorted_cells.cell.cellpar()
 
         # current angles
         alpha = atoms_copy.cell.cellpar()[3]
@@ -226,7 +231,7 @@ def random_vary_angle(
             atoms_copy.set_cell(newcell, scale_atoms=True)
 
             # if successful structure generated, i.e. atoms are not too close, then break loop
-            if check_distances(atoms_copy, min_distance):
+            if check_distances(AseAtomsAdaptor.get_structure(atoms_copy), min_distance):
                 # store scaled cell
                 distorted_angle_cells.append(AseAtomsAdaptor.get_structure(atoms_copy))
                 generated_structures += 1
