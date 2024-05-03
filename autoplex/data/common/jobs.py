@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
 
 import pickle
+from itertools import chain
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -274,5 +275,4 @@ def generate_randomized_structures(
 
     if rattled_cells is None:
         raise TypeError("rattle_type is not recognized")
-    print(type(rattled_cells))
-    return rattled_cells
+    return list(chain.from_iterable(rattled_cells))
