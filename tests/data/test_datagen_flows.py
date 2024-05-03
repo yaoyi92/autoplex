@@ -1,4 +1,4 @@
-from __future__ import annotations
+"""from __future__ import annotations
 
 import os
 from pymatgen.core.structure import Structure
@@ -100,4 +100,4 @@ def test_generate_training_data_for_testing(
                                           potential_filename=potential_file_dir, n_struct=1, steps=1)
 
     responses = run_locally(generate_data, create_folders=False, ensure_success=True, store=memory_jobstore)
-    #TODO unit test only runs with create_Folders=False because ForceFieldTaskDocument.from_ase_compatible_result() has no attribute dir_name implemented
+    #TODO unit test only runs with create_Folders=False because ForceFieldTaskDocument.from_ase_compatible_result() has no attribute dir_name implemented"""

@@ -275,4 +275,5 @@ def generate_randomized_structures(
 
     if rattled_cells is None:
         raise TypeError("rattle_type is not recognized")
+
     return list(chain.from_iterable(rattled_cells))

@@ -90,7 +90,6 @@ def scale_cell(
             / (n_structures - 1),
         )
 
-        # numbers = np.arange(0.9, 1.1 + (1.1 - 0.9) / (num_points - 1), (1.1 - 0.9) / (num_points - 1))
         warnings.warn("Generated lattice scale factors within your range", stacklevel=2)
 
     else:  # range is not specified
