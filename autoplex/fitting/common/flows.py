@@ -44,13 +44,14 @@ class MLIPFitMaker(Maker):
 
     name: str = "MLpotentialFit"
     mlip_type: str = "GAP"
-    mlip_hyper: dict|None = None
+    mlip_hyper: dict | None = None
 
     def make(
         self,
-        species_list: list,
-        isolated_atoms_energy: list,
         fit_input: dict,
+        species_list: list | None = None,
+        isolated_atoms_energy: list | None = None,
+        isol_es: dict | None = None,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
         pre_xyz_files: list[str] | None = None,
@@ -60,6 +61,7 @@ class MLIPFitMaker(Maker):
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
         glue_xml: bool = False,
+        num_processes: int = 32,
         **fit_kwargs,
     ):
         """
@@ -109,19 +111,22 @@ class MLIPFitMaker(Maker):
         jobs.append(data_prep_job)
 
         if self.mlip_type not in ["GAP", "J-ACE", "P-ACE", "NEQUIP", "M3GNET", "MACE"]:
-            raise ValueError("Please correct the MLIP name! The current version ONLY supports the following models: GAP, J-ACE, P-ACE, NEQUIP, M3GNET, and MACE.")
-
-        else:
-            mlip_fit_job = machine_learning_fit(
-                database_dir=data_prep_job.output,
-                isol_es=None,
-                auto_delta=auto_delta,
-                glue_xml=glue_xml,
-                mlip_type=self.mlip_type,
-                mlip_hyper=self.mlip_hyper,
-                **fit_kwargs,
+            raise ValueError(
+                "Please correct the MLIP name!"
+                "The current version ONLY supports the following models: GAP, J-ACE, P-ACE, NEQUIP, M3GNET, and MACE."
             )
-            jobs.append(mlip_fit_job)  # type: ignore
+
+        mlip_fit_job = machine_learning_fit(
+            database_dir=data_prep_job.output,
+            isol_es=isol_es,
+            auto_delta=auto_delta,
+            glue_xml=glue_xml,
+            mlip_type=self.mlip_type,
+            mlip_hyper=self.mlip_hyper,
+            num_processes=num_processes,
+            **fit_kwargs,
+        )
+        jobs.append(mlip_fit_job)  # type: ignore
 
         # create a flow including all jobs
         return Flow(jobs, mlip_fit_job.output)

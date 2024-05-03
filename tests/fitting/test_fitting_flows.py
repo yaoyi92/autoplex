@@ -299,19 +299,40 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, clean_dir, memory_jobsto
 
     test_files_dir = Path(test_dir / "fitting").resolve()
 
-    # Test to check if gap fit runs with pre_database_dir
-    gapfit = MLIPFitMaker().make(species_list=["Li", "Cl"], isolated_atoms_energy=[-0.28649227, -0.25638457],
+    # # Test to check if gap fit runs with pre_database_dir
+    # gapfit = MLIPFitMaker().make(species_list=["Li", "Cl"], isolated_atoms_energy=[-0.28649227, -0.25638457],
+    #                              fit_input=fit_input_dict, pre_database_dir=str(test_files_dir),
+    #                              pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"])
+
+    # responses = run_locally(
+    #     gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
+    # )
+
+    # path_to_job_files = list(test_files_dir.glob("job*"))
+
+    # # check if gap fit file is generated
+    # assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+
+    # for job_dir in path_to_job_files:
+    #     shutil.rmtree(job_dir)
+
+    # os.chdir(parent_dir)
+
+
+    # Test to check if julia-ace fit runs with pre_database_dir
+    jacefit = MLIPFitMaker(mlip_type="J-ACE", mlip_hyper={'order':3, 'totaldegree':6, 'cutoff':2.0, 
+                                 'solver':'BLR',}).make(isol_es={3: -0.28649227, 17:-0.25638457},
                                  fit_input=fit_input_dict, pre_database_dir=str(test_files_dir),
-                                 pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"])
+                                 pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],num_processes=4)
 
     responses = run_locally(
-        gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
+        jacefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
     path_to_job_files = list(test_files_dir.glob("job*"))
 
     # check if gap fit file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(jacefit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
     for job_dir in path_to_job_files:
         shutil.rmtree(job_dir)
