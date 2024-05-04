@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
@@ -231,7 +232,7 @@ def ace_fitting(
     )
 
     train_ace = [
-        at for at in train_atoms if "isolated_atom" not in at.info["config_type"]
+        at for at in train_atoms if "IsolatedAtom" not in at.info["config_type"]
     ]
     ase.io.write("train_ace.extxyz", train_ace, format="extxyz")
 
@@ -318,9 +319,10 @@ def nequip_fitting(
     invariant_neurons: int = 64,
     batch_size: int = 5,
     learning_rate: float = 0.005,
+    max_epochs: int = 10000,
     default_dtype: str = "float32",
     isol_es: dict | None = None,
-    device: str = "GPU",
+    device: str = "cuda",
 ):
     """
     Perform the NequIP potential fitting.
@@ -356,7 +358,7 @@ def nequip_fitting(
     isol_es: dict
         mandatory dictionary mapping element numbers to isolated energies.
     device: str
-        specify device to use GPUs or CPUs
+        specify device to use cuda or cpu
 
     Returns
     -------
@@ -368,8 +370,13 @@ def nequip_fitting(
     - ValueError: If the `isol_es` dictionary is empty or not provided when required.
     """
     train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
+    train_nequip = [
+        at for at in train_data if "IsolatedAtom" not in at.info["config_type"]
+    ]
+    ase.io.write("train_nequip.extxyz", train_nequip, format="extxyz")
+
     test_data = ase.io.read(os.path.join(db_dir, "test.extxyz"), index=":")
-    num_of_train = len(train_data)
+    num_of_train = len(train_nequip)
     num_of_val = len(test_data)
 
     isol_es_update = ""
@@ -378,7 +385,7 @@ def nequip_fitting(
         for e_num in isol_es:
             ele_sym = "  - " + chemical_symbols[int(e_num)] + "\n"
             isol_es_update += ele_sym
-            ele_syms.extend(chemical_symbols[int(e_num)])
+            ele_syms.append(chemical_symbols[int(e_num)])
     else:
         raise ValueError("isol_es is empty or not defined!")
 
@@ -416,18 +423,21 @@ avg_num_neighbors: auto
 use_sc: true
 dataset: ase
 validation_dataset: ase
-dataset_file_name: ./train.extxyz
-validation_dataset_file_name: ./test.extxyz
+dataset_file_name: ./train_nequip.extxyz
+validation_dataset_file_name: {db_dir}/test.extxyz
 
 ase_args:
   format: extxyz
 dataset_key_mapping:
   REF_energy: total_energy
   REF_forces: forces
+validation_dataset_key_mapping:
+  REF_energy: total_energy
+  REF_forces: forces
 
 chemical_symbols:
 {isol_es_update}
-wandb: True
+wandb: False
 wandb_project: autoplex
 
 verbose: info
@@ -441,7 +451,7 @@ n_val: {num_of_val}
 learning_rate: {learning_rate}
 batch_size: {batch_size}
 validation_batch_size: 10
-max_epochs: 10000
+max_epochs: {max_epochs}
 shuffle: true
 metrics_key: validation_loss
 use_ema: true
@@ -497,29 +507,29 @@ per_species_rescale_scales: dataset_forces_rms
     with open("nequip.yaml", "w") as file:
         file.write(nequip_text)
 
-    run_nequip("nequip-train config.yaml", "nequip_train")
+    run_nequip("nequip-train nequip.yaml", "nequip_train")
     run_nequip(
         "nequip-deploy build --train-dir results/autoplex ./deployed_nequip_model.pth",
         "nequip_deploy",
     )
 
     calc = NequIPCalculator.from_deployed_model(
-        deployed_path="deployed_nequip_model.pth",
+        model_path="deployed_nequip_model.pth",
         device=device,
         species_to_type_name={s: s for s in ele_syms},
         set_global_options=False,
     )
 
     ener_out_train = []
-    for at in train_data:
+    for at in train_nequip:
         at.calc = calc
         ener_out_train.append(at.get_potential_energy() / len(at))
 
     ener_in_train = [
-        at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in train_data
+        at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in train_nequip
     ]
 
-    train_error = rms_dict(ener_in_train, ener_out_train)
+    train_error = rms_dict(ener_in_train, ener_out_train)["rmse"]
 
     ener_out_test = []
     for at in test_data:
@@ -530,11 +540,107 @@ per_species_rescale_scales: dataset_forces_rms
         at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in test_data
     ]
 
-    test_error = rms_dict(ener_in_test, ener_out_test)
+    test_error = rms_dict(ener_in_test, ener_out_test)["rmse"]
 
     return {
         "train_error": train_error,
         "test_error": test_error,
+        "mlip_path": Path.cwd(),
+    }
+
+
+def mace_fitting(
+    db_dir: str,
+    model: str = "MACE",
+    config_type_weights: str = None,
+    hidden_irreps: str = None,
+    r_max: float = 4.0,
+    batch_size: int = 10,
+    max_num_epochs: int = 1000,
+    start_swa: str = None,
+    ema_decay: str = None,
+    correlation: int = 3,
+    loss: str = None,
+    default_dtype: str = None,
+    device: str = "cuda",
+):
+    """
+    Perform the MACE potential fitting.
+
+    This function sets up and executes a python script to perform MACE fitting using specified parameters
+    and input data located in the provided directory. It handles the input/output of atomic configurations,
+    sets up the NequIP model, and calculates training and testing errors after fitting.
+
+    Parameters
+    ----------
+    db_dir: str or Path
+        directory containing the training and testing data files.
+    model: str
+        type of model to be trained
+    config_type_weights: str
+        weights of config types
+    hidden_irreps: str
+        control the model size
+    r_max: float
+        cutoff radius controls the locality of the model
+    batch_size: int
+        batch size (note that batch size cannot be larger than the size of training datasets)
+    start_swa: str
+        if the keyword --swa is enabled, the energy weight of the loss is increased
+        for the last ~20% of the training epochs (from --start_swa epochs)
+    correlation: int
+        correlation order corresponds to the order that MACE induces at each layer
+    loss: str
+        loss functions
+    default_dtype: str
+        type of float to use, e.g. float32 and float64
+    device: str
+        specify device to use cuda or cpu
+
+    Returns
+    -------
+    dict[str, float]
+        A dictionary containing train_error, test_error, and the path to the fitted MLIP.
+
+    """
+    hypers = [
+        "--name=MACE_model",
+        f"--train_file={db_dir}/train.extxyz",
+        f"--valid_file={db_dir}/test.extxyz",
+        f"--config_type_weights={config_type_weights}",
+        f"--model={model}",
+        f"--hidden_irreps={hidden_irreps}",
+        "--energy_key=REF_energy",
+        "--forces_key=REF_forces",
+        f"--r_max={r_max}",
+        f"--correlation={correlation}",
+        f"--batch_size={batch_size}",
+        f"--max_num_epochs={max_num_epochs}",
+        "--swa",
+        f"--start_swa={start_swa}",
+        "--ema",
+        f"--ema_decay={ema_decay}",
+        "--amsgrad",
+        f"--loss={loss}",
+        "--restart_latest",
+        "--seed=12345",
+        f"--default_dtype={default_dtype}",
+        f"--device={device}",
+    ]
+
+    run_mace(hypers)
+
+    with open("./logs/MACE_model_run-12345.log") as file:
+        log_data = file.read()
+
+    tables = re.split(r"\+-+\+\n", log_data)
+    if tables:
+        last_table = tables[-2]
+        matches = re.findall(r"\|\s*(train|valid)\s*\|\s*([\d\.]+)\s*\|", last_table)
+
+    return {
+        "train_error": float(matches[0][1]),
+        "test_error": float(matches[1][1]),
         "mlip_path": Path.cwd(),
     }
 
@@ -924,7 +1030,7 @@ def split_dataset(atoms, split_ratio):
     for at in atoms:
         if (
             at.info["config_type"] != "dimer"
-            and at.info["config_type"] != "isolated_atom"
+            and at.info["config_type"] != "IsolatedAtom"
         ):
             atom_bulk.append(at)
         else:
@@ -1115,7 +1221,7 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, float]:
     isol_es = {
         atom.get_atomic_numbers()[0]: atom.info[e_name]
         for atom in atoms_db
-        if "config_type" in atom.info and "isol" in atom.info["config_type"]
+        if "config_type" in atom.info and "IsolatedAtom" in atom.info["config_type"]
     }
 
     es_visol = np.array(
@@ -1239,6 +1345,22 @@ def run_nequip(command: str, log_prefix: str):
         f"{log_prefix}_err.log", "w", encoding="utf-8"
     ) as file_err:
         subprocess.call(command.split(), stdout=file_out, stderr=file_err)
+
+
+def run_mace(hypers: list):
+    """
+    MACE runner.
+
+    Parameters
+    ----------
+    hypers: list
+        containing all hyperparameters required for the MACE model training.
+
+    """
+    with open("mace_train_out.log", "w", encoding="utf-8") as file_std, open(
+        "mace_train_err.log", "w", encoding="utf-8"
+    ) as file_err:
+        subprocess.call(["mace_run_train", *hypers], stdout=file_std, stderr=file_err)
 
 
 def prepare_fit_environment(database_dir, mlip_path, glue_xml: bool):

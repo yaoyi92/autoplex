@@ -9,6 +9,7 @@ from autoplex.fitting.common.utils import (
     ace_fitting,
     check_convergence,
     gap_fitting,
+    mace_fitting,
     nequip_fitting,
 )
 
@@ -58,7 +59,7 @@ def machine_learning_fit(
             mlip_hyper = {"two_body": True, "three_body": False, "soap": True}
         elif mlip_type == "J-ACE":
             mlip_hyper = {"order": 3, "totaldegree": 6, "cutoff": 2.0, "solver": "BLR"}
-        else:
+        elif mlip_type == "NEQUIP":
             mlip_hyper = {
                 "r_max": 4.0,
                 "num_layers": 4,
@@ -69,7 +70,24 @@ def machine_learning_fit(
                 "invariant_neurons": 64,
                 "batch_size": 5,
                 "learning_rate": 0.005,
+                "max_epochs": 10000,
                 "default_dtype": "float32",
+                "device": "cuda",
+            }
+        else:
+            mlip_hyper = {
+                "model": "MACE",
+                "config_type_weights": '{"Default":1.0}',
+                "hidden_irreps": "128x0e + 128x1o",
+                "r_max": 5.0,
+                "batch_size": 10,
+                "max_num_epochs": 1500,
+                "start_swa": 1200,
+                "ema_decay": 0.99,
+                "correlation": 3,
+                "loss": "huber",
+                "default_dtype": "float32",
+                "device": "cuda",
             }
 
     if mlip_type == "GAP":
@@ -107,7 +125,27 @@ def machine_learning_fit(
             invariant_neurons=mlip_hyper["invariant_neurons"],
             batch_size=mlip_hyper["batch_size"],
             learning_rate=mlip_hyper["learning_rate"],
+            max_epochs=mlip_hyper["max_epochs"],
+            isol_es=isol_es,
             default_dtype=mlip_hyper["default_dtype"],
+            device=mlip_hyper["device"],
+        )
+
+    elif mlip_type == "MACE":
+        train_test_error = mace_fitting(
+            db_dir=database_dir,
+            model=mlip_hyper["model"],
+            config_type_weights=mlip_hyper["config_type_weights"],
+            hidden_irreps=mlip_hyper["hidden_irreps"],
+            r_max=mlip_hyper["r_max"],
+            batch_size=mlip_hyper["batch_size"],
+            max_num_epochs=mlip_hyper["max_num_epochs"],
+            start_swa=mlip_hyper["start_swa"],
+            ema_decay=mlip_hyper["ema_decay"],
+            correlation=mlip_hyper["correlation"],
+            loss=mlip_hyper["loss"],
+            default_dtype=mlip_hyper["default_dtype"],
+            device=mlip_hyper["device"],
         )
 
     check_conv = check_convergence(train_test_error["test_error"])
