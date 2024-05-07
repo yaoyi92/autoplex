@@ -1,23 +1,19 @@
 """Jobs to create training data for ML potentials."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 from jobflow import job
-
-if TYPE_CHECKING:
-    from pymatgen.core.structure import Structure
+from pymatgen.core.structure import Structure
 from pymatgen.io.ase import AseAtomsAdaptor
 
 
-@job
+@job(data=[Structure])
 def generate_randomized_structures(
     structure: Structure,
     n_struct: int,
     cell_factor_sequence: list[float] | None = None,
     std_dev: float = 0.01,
-):
+) -> list[Structure]:
     """
     Take in a pymatgen Structure object and generates randomly displaced structures.
 

@@ -77,7 +77,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "EDIFF": 1e-7,
                 "LAECHG": False,
                 "LREAL": False,
-                "ALGO": "Fast",
+                "ALGO": "Normal",
                 "NSW": 0,
                 "LCHARG": False,
                 "SIGMA": 0.05,
