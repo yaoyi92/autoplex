@@ -194,7 +194,7 @@ def energy_plot(in_file, out_file, ax, title="Plot of energy"):
     ax.scatter(ener_in, ener_out)
     # get the appropriate limits for the plot
     for_limits = np.array(ener_in + ener_out)
-    elim = (for_limits.min() - 0.5, for_limits.max() + 0.5)
+    elim = (for_limits.min(), for_limits.max())
     ax.set_xlim(elim)
     ax.set_ylim(elim)
     # add line of slope 1 for reference
