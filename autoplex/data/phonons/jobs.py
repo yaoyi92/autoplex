@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import numpy as np
 from jobflow import job
-
 from pymatgen.core.structure import Structure
 from pymatgen.io.ase import AseAtomsAdaptor
 
