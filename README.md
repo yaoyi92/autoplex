@@ -41,7 +41,7 @@ Developers installation: Navigate to autoplex and install it by `pip install -e 
 
 Alternatively, the dependencies atomate2 and ase can be installed individually via
 ```bash
-pip install atomate2
+pip install atomate2[strict]
 
 pip install ase@git+https://gitlab.com/ase/ase.git@aae51d57721847624cea569f3a2d4bb6aa5032b4
 ```
