@@ -158,7 +158,7 @@ def sort_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
     write("outliers_force.extxyz", outliers, append=True)
 
 
-# copied from libatoms GAP tutorial page and adapted
+# copied from libatoms GAP tutorial page and adapted accordingly
 def energy_plot(in_file, out_file, ax, title="Plot of energy"):
     """
     Plot the distribution of energy per atom on the output vs the input.
