@@ -303,7 +303,7 @@ def force_plot(
     )
 
 
-def plot_energy_forces(title: str):
+def plot_energy_forces(title: str, energy_limit: float, force_limit: float):
     """
     Plot energy and forces of the data.
 
@@ -318,10 +318,10 @@ def plot_energy_forces(title: str):
     fig.set_size_inches(15, 20)
     ax_list = ax_list.flat[:]
 
-    # sort_outlier_energy('train.extxyz', 'quip_train.extxyz')
-    # sort_outlier_energy('test.extxyz', 'quip_test.extxyz')
-    # sort_outlier_forces('train.extxyz', 'quip_train.extxyz', 'Si')
-    # sort_outlier_forces('test.extxyz', 'quip_test.extxyz', 'Si')
+    sort_outlier_energy("train.extxyz", "quip_train.extxyz", energy_limit)
+    sort_outlier_energy("test.extxyz", "quip_test.extxyz", energy_limit)
+    sort_outlier_forces("train.extxyz", "quip_train.extxyz", "Si", force_limit)
+    sort_outlier_forces("test.extxyz", "quip_test.extxyz", "Si", force_limit)
 
     energy_plot(
         "train.extxyz", "quip_train.extxyz", ax_list[0], "Energy on training data"
@@ -337,12 +337,35 @@ def plot_energy_forces(title: str):
     force_plot(
         "test.extxyz", "quip_test.extxyz", ax_list[3], "Si", "Force on test data - Si"
     )
-    # energy_plot('sorted_in_energy.extxyz', 'sorted_out_energy.extxyz', ax_list[4], 'Energy on sorted data')
-    # force_plot('sorted_in_energy.extxyz', 'sorted_out_energy.extxyz', ax_list[5], 'Si', 'Force on sorted data - Si')
-    # energy_plot('sorted_in_force.extxyz', 'sorted_out_force.extxyz', ax_list[4], 'Energy on sorted data')
-    # force_plot('sorted_in_force.extxyz', 'sorted_out_force.extxyz', ax_list[5], 'Si', 'Force on sorted data - Si')
+    energy_plot(
+        "sorted_in_energy.extxyz",
+        "sorted_out_energy.extxyz",
+        ax_list[4],
+        "Energy on sorted data",
+    )
+    force_plot(
+        "sorted_in_energy.extxyz",
+        "sorted_out_energy.extxyz",
+        ax_list[5],
+        "Si",
+        "Force on sorted data - Si",
+    )
+    energy_plot(
+        "sorted_in_force.extxyz",
+        "sorted_out_force.extxyz",
+        ax_list[4],
+        "Energy on sorted data",
+    )
+    force_plot(
+        "sorted_in_force.extxyz",
+        "sorted_out_force.extxyz",
+        ax_list[5],
+        "Si",
+        "Force on sorted data - Si",
+    )
 
     fig.suptitle(title, fontsize=16)
 
-    plt.show()
+    plt.savefig("energy_forces.eps", format="eps")
     plt.savefig("energy_forces.png")
+    plt.show()
