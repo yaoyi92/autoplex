@@ -59,7 +59,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     structure = Structure.from_file(path_to_struct)
 
     complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01], cell_factor_sequence=[1.0],
+        n_structures=3, symprec=1e-2, min_length=8, displacements=[0.01], volume_custom_scale_factors=[1.0],
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
@@ -140,12 +140,12 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         structure = Structure.from_file(path_to_struct)
 
         add_data_workflow = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_custom_scale_factors=[1.0],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -188,13 +188,13 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         dft_reference: PhononBSDOSDoc = dft_data["output"]
 
         add_data_workflow_with_dft_reference = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             add_dft_phonon_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_custom_scale_factors=[1.0],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -237,13 +237,13 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         structure = Structure.from_file(path_to_struct)
 
         add_data_workflow_add_phonon_false = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             add_dft_phonon_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_custom_scale_factors=[1.0],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -273,13 +273,13 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         structure = Structure.from_file(path_to_struct)
 
         add_data_workflow_add_random_false = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             add_dft_random_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_custom_scale_factors=[1.0],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -309,12 +309,12 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         structure = Structure.from_file(path_to_struct)
 
         add_data_workflow_with_same_mpid = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_custom_scale_factors=[1.0],
         ).make(
             structure_list=[structure],
             mp_ids=["mp-22905"],
@@ -339,11 +339,11 @@ def test_phonon_dft_ml_data_generation_flow(
     structure = Structure.from_file(path_to_struct)
 
     flow_data_generation = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, min_length=10, symprec=1e-2, cell_factor_sequence=[1.0],
+        n_structures=3, min_length=10, symprec=1e-2, volume_custom_scale_factors=[1.0],
     ).make(structure_list=[structure], mp_ids=["mp-22905"])
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, min_length=10, symprec=1e-2, add_dft_random_struct=False, cell_factor_sequence=[1.0],
+        n_structures=3, min_length=10, symprec=1e-2, add_dft_random_struct=False, volume_custom_scale_factors=[1.0],
     ).make(structure_list=[structure], mp_ids=["mp-22905"])
 
     ref_paths = {

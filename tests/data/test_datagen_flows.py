@@ -1,4 +1,4 @@
-"""from __future__ import annotations
+from __future__ import annotations
 
 import os
 from pymatgen.core.structure import Structure
@@ -39,8 +39,8 @@ def test_data_generation(vasp_test_dir, mock_vasp, clean_dir):
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
     }
-    data_gen = RandomStructuresDataGenerator(n_struct=3).make(
-        structure=structure, mp_id=test_mpid, cell_factor_sequence=[1.0]
+    data_gen = RandomStructuresDataGenerator(n_structures=3).make(
+        structure=structure, mp_id=test_mpid, volume_custom_scale_factors=[1.0]
     )
 
     data_gen = update_user_incar_settings(data_gen, {"ISMEAR": 0})
@@ -100,4 +100,4 @@ def test_generate_training_data_for_testing(
                                           potential_filename=potential_file_dir, n_struct=1, steps=1)
 
     responses = run_locally(generate_data, create_folders=False, ensure_success=True, store=memory_jobstore)
-    #TODO unit test only runs with create_Folders=False because ForceFieldTaskDocument.from_ase_compatible_result() has no attribute dir_name implemented"""
+    #TODO unit test only runs with create_Folders=False because ForceFieldTaskDocument.from_ase_compatible_result() has no attribute dir_name implemented _summary_
