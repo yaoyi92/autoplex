@@ -15,7 +15,7 @@ from autoplex.fitting.common.regularization import set_sigma
 from autoplex.fitting.common.utils import (
     data_distillation,
     get_list_of_vasp_calc_dirs,
-    split_dataset,
+    stratified_dataset_split,
     vaspoutput_2_extended_xyz,
 )
 
@@ -240,7 +240,9 @@ class DataPreprocessing(Maker):
         )
 
         # split dataset into training and testing datasets with a ratio of 9:1
-        (train_structures, test_structures) = split_dataset(atoms, self.split_ratio)
+        (train_structures, test_structures) = stratified_dataset_split(
+            atoms, self.split_ratio
+        )
 
         # Merging database
         if pre_database_dir and os.path.exists(pre_database_dir):

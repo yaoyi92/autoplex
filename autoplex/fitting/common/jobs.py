@@ -9,6 +9,7 @@ from autoplex.fitting.common.utils import (
     ace_fitting,
     check_convergence,
     gap_fitting,
+    m3gnet_fitting,
     mace_fitting,
     nequip_fitting,
 )
@@ -57,8 +58,10 @@ def machine_learning_fit(
     if mlip_hyper is None:
         if mlip_type == "GAP":
             mlip_hyper = {"two_body": True, "three_body": False, "soap": True}
+
         elif mlip_type == "J-ACE":
             mlip_hyper = {"order": 3, "totaldegree": 6, "cutoff": 2.0, "solver": "BLR"}
+
         elif mlip_type == "NEQUIP":
             mlip_hyper = {
                 "r_max": 4.0,
@@ -74,6 +77,24 @@ def machine_learning_fit(
                 "default_dtype": "float32",
                 "device": "cuda",
             }
+
+        elif mlip_type == "M3GNET":
+            mlip_hyper = {
+                "exp_name": "training",
+                "results_dir": "m3gnet_results",
+                "cutoff": 5.0,
+                "threebody_cutoff": 4.0,
+                "batch_size": 10,
+                "max_epochs": 1000,
+                "include_stresses": True,
+                "hidden_dim": 128,
+                "num_units": 128,
+                "max_l": 4,
+                "max_n": 4,
+                "device": "cuda",
+                "test_equal_to_val": True,
+            }
+
         else:
             mlip_hyper = {
                 "model": "MACE",
@@ -129,6 +150,24 @@ def machine_learning_fit(
             isol_es=isol_es,
             default_dtype=mlip_hyper["default_dtype"],
             device=mlip_hyper["device"],
+        )
+
+    elif mlip_type == "M3GNET":
+        train_test_error = m3gnet_fitting(
+            db_dir=database_dir,
+            exp_name=mlip_hyper["exp_name"],
+            results_dir=mlip_hyper["results_dir"],
+            cutoff=mlip_hyper["cutoff"],
+            threebody_cutoff=mlip_hyper["threebody_cutoff"],
+            batch_size=mlip_hyper["batch_size"],
+            max_epochs=mlip_hyper["max_epochs"],
+            include_stresses=mlip_hyper["include_stresses"],
+            hidden_dim=mlip_hyper["hidden_dim"],
+            num_units=mlip_hyper["num_units"],
+            max_l=mlip_hyper["max_l"],
+            max_n=mlip_hyper["max_n"],
+            device=mlip_hyper["device"],
+            test_equal_to_val=mlip_hyper["test_equal_to_val"],
         )
 
     elif mlip_type == "MACE":

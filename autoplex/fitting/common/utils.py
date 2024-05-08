@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
 import shutil
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable
+from functools import partial
 from itertools import combinations
 from pathlib import Path
 
@@ -16,13 +19,22 @@ import ase
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pytorch_lightning as pl
+import torch
 from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.data import chemical_symbols
 from ase.io import read, write
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
+from dgl.data.utils import split_dataset
+from matgl.ext.pymatgen import Structure2Graph, get_element_list
+from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_efs
+from matgl.models import M3GNet
+from matgl.utils.training import PotentialLightningModule
 from nequip.ase import NequIPCalculator
+from pymatgen.io.ase import AseAtomsAdaptor
+from pytorch_lightning.loggers import CSVLogger
 from scipy.spatial import ConvexHull
 from scipy.special import comb
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -549,6 +561,312 @@ per_species_rescale_scales: dataset_forces_rms
     }
 
 
+def m3gnet_fitting(
+    db_dir: str,
+    exp_name: str = "training",
+    results_dir: str = "m3gnet_results",
+    cutoff: float = 5.0,
+    threebody_cutoff: float = 4.0,
+    batch_size: int = 10,
+    max_epochs: int = 1000,
+    include_stresses: bool = True,
+    hidden_dim: int = 128,
+    num_units: int = 128,
+    max_l: int = 4,
+    max_n: int = 4,
+    device: str = "cuda",
+    test_equal_to_val: bool = True,
+):
+    """
+    Perform the M3GNet potential fitting.
+
+    Parameters
+    ----------
+    db_dir: str or Path
+        Directory containing the training and testing data files.
+    exp_name: str
+        Name of the experiment, used for saving model checkpoints and logs.
+    results_dir: str
+        Directory to store the training results and fitted model.
+    cutoff: float
+        Cutoff radius for atomic interactions in length units.
+    threebody_cutoff: float
+        Cutoff radius for three-body interactions in length units.
+    batch_size: int
+        Number of structures per batch during training.
+    max_epochs: int
+        Maximum number of training epochs.
+    include_stresses: bool
+        If True, includes stress tensors in the model predictions and training process.
+    hidden_dim: int
+        Dimensionality of the hidden layers in the model.
+    num_units: int
+        Number of units in each dense layer of the model.
+    max_l: int
+        Maximum degree of spherical harmonics.
+    max_n: int
+        Maximum radial function degree.
+    device: str
+        Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
+    test_equal_to_val: bool
+        If True, the testing dataset will be the same as the validation dataset.
+
+    Returns
+    -------
+    dict[str, float]
+        A dictionary containing keys such as 'train_error', 'test_error', and 'path_to_fitted_model',
+        representing the training error, test error, and the location of the saved model, respectively.
+
+    """
+    os.makedirs(os.path.join(results_dir, exp_name), exist_ok=True)
+
+    with open("m3gnet.log", "a") as log_file:
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        sys.stdout = log_file
+        sys.stderr = log_file
+
+        train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
+        train_m3gnet = [
+            at
+            for at in train_data
+            if "IsolatedAtom" not in at.info["config_type"]
+            and "dimer" not in at.info["config_type"]
+        ]
+
+        # prepare train dataset
+        (
+            train_structs,
+            train_energies,
+            train_forces,
+            train_stresses,
+        ) = convert_xyz_to_structure(
+            train_m3gnet, include_forces=True, include_stresses=include_stresses
+        )
+
+        train_labels = {
+            "energies": train_energies,
+            "forces": train_forces,
+            "stresses": train_stresses,
+        }
+        train_element_types = get_element_list(train_structs)
+        print(train_element_types)
+        train_converter = Structure2Graph(
+            element_types=train_element_types, cutoff=cutoff
+        )
+        train_datasets = MGLDataset(
+            threebody_cutoff=threebody_cutoff,
+            structures=train_structs,
+            converter=train_converter,
+            labels=train_labels,
+            include_line_graph=True,
+            filename=os.path.join(results_dir, exp_name, "dgl_graph_train.bin"),
+            filename_lattice=os.path.join(results_dir, exp_name, "lattice_train.pt"),
+            filename_line_graph=os.path.join(
+                results_dir, exp_name, "dgl_line_graph_train.bin"
+            ),
+            filename_state_attr=os.path.join(
+                results_dir, exp_name, "state_attr_train.pt"
+            ),
+            filename_labels=os.path.join(results_dir, exp_name, "labels_train.json"),
+        )
+
+        if os.path.exists(os.path.join(db_dir, "test.extxyz")):
+            test_data = ase.io.read(os.path.join(db_dir, "test.extxyz"), index=":")
+            # prepare test dataset
+            (
+                test_structs,
+                test_energies,
+                test_forces,
+                test_stresses,
+            ) = convert_xyz_to_structure(
+                test_data, include_forces=True, include_stresses=include_stresses
+            )
+
+            test_labels = {
+                "energies": test_energies,
+                "forces": test_forces,
+                "stresses": test_stresses,
+            }
+            test_element_types = get_element_list(test_structs)
+            test_converter = Structure2Graph(
+                element_types=test_element_types, cutoff=cutoff
+            )
+            test_dataset = MGLDataset(
+                threebody_cutoff=threebody_cutoff,
+                structures=test_structs,
+                converter=test_converter,
+                labels=test_labels,
+                include_line_graph=True,
+                filename=os.path.join(results_dir, exp_name, "dgl_graph_test.bin"),
+                filename_lattice=os.path.join(results_dir, exp_name, "lattice_test.pt"),
+                filename_line_graph=os.path.join(
+                    results_dir, exp_name, "dgl_line_graph_test.bin"
+                ),
+                filename_state_attr=os.path.join(
+                    results_dir, exp_name, "state_attr_test.pt"
+                ),
+                filename_labels=os.path.join(results_dir, exp_name, "labels_test.json"),
+            )
+
+        if test_equal_to_val:
+            train_dataset = train_datasets
+            val_dataset = test_dataset
+        else:
+            if os.path.exists(os.path.join(db_dir, "test.extxyz")):
+                train_dataset, val_dataset, _ = split_dataset(
+                    train_datasets,
+                    frac_list=[0.9, 0.1, 0],  # to guarantee train:valid=9:1
+                    shuffle=True,
+                    random_state=42,
+                )
+            else:
+                train_dataset, val_dataset, test_dataset = split_dataset(
+                    train_datasets,
+                    frac_list=[0.8, 0.1, 0.1],  # to guarantee train:valid:test=8:1:1
+                    shuffle=True,
+                    random_state=42,
+                )
+
+        my_collate_fn = partial(
+            collate_fn_efs, include_line_graph=True
+        )  # Set all include_line_graph to False will disable three-body interactions
+        train_loader, val_loader, test_loader = MGLDataLoader(
+            train_data=train_dataset,
+            val_data=val_dataset,
+            test_data=test_dataset,
+            collate_fn=my_collate_fn,
+            batch_size=batch_size,
+            num_workers=1,
+        )
+        model = M3GNet(
+            element_types=train_element_types,
+            is_intensive=False,
+            cutoff=cutoff,
+            threebody_cutoff=threebody_cutoff,
+            dim_node_embedding=hidden_dim,
+            dim_edge_embedding=hidden_dim,
+            units=num_units,
+            max_l=max_l,
+            max_n=max_n,
+        )
+        lit_module = PotentialLightningModule(model=model, include_line_graph=True)
+        logger = CSVLogger(name=exp_name, save_dir=os.path.join(results_dir, "logs"))
+        # Inference mode = False is required for calculating forces, stress in test mode and prediction mode
+        if device == "cuda":
+            if torch.cuda.is_available():
+                gpu_id = os.environ.get("CUDA_VISIBLE_DEVICES", "0")
+                torch.cuda.set_device(torch.device(f"cuda:{gpu_id}"))
+                trainer = pl.Trainer(
+                    max_epochs=max_epochs,
+                    accelerator="gpu",
+                    logger=logger,
+                    inference_mode=False,
+                )
+            else:
+                raise ValueError("CUDA is not available.")
+        else:
+            trainer = pl.Trainer(
+                max_epochs=max_epochs,
+                accelerator="cpu",
+                logger=logger,
+                inference_mode=False,
+            )
+        print("Start training...")
+        print("Length of train_loader: ", len(train_loader))
+        print("Length of val_loader: ", len(val_loader))
+        print("Length of test_loader: ", len(test_loader))
+        trainer.fit(
+            model=lit_module, train_dataloaders=train_loader, val_dataloaders=val_loader
+        )
+        # test the model, remember to set inference_mode=False in trainer (see above)
+        print("Train error:")
+        trainer.test(dataloaders=train_loader)
+        print("Valid error:")
+        trainer.test(dataloaders=val_loader)
+        print("Test error:")
+        trainer.test(dataloaders=test_loader)
+
+        # save trained model
+        model_export_path = os.path.join(results_dir, exp_name)
+        model.save(model_export_path)
+
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+
+    log_file.close()
+
+    for fn in (
+        "dgl_graph_train.bin",
+        "lattice_train.pt",
+        "dgl_line_graph_train.bin",
+        "state_attr_train.pt",
+        "labels_train.json",
+        "dgl_graph_test.bin",
+        "lattice_test.pt",
+        "dgl_line_graph_test.bin",
+        "state_attr_test.pt",
+        "labels_test.json",
+    ):
+        with contextlib.suppress(FileNotFoundError):
+            os.remove(os.path.join(results_dir, exp_name, fn))
+
+    sections = {
+        "Train error:": {
+            "train_Energy_RMSE": "test_Energy_RMSE",
+            "train_Force_RMSE": "test_Force_RMSE",
+        },
+        "Valid error:": {
+            "val_Energy_RMSE": "test_Energy_RMSE",
+            "val_Force_RMSE": "test_Force_RMSE",
+        },
+        "Test error:": {
+            "test_Energy_RMSE": "test_Energy_RMSE",
+            "test_Force_RMSE": "test_Force_RMSE",
+        },
+    }
+
+    extracted_values = {}
+
+    with open("m3gnet.log") as file:
+        content = file.read()
+
+        for section, metrics in sections.items():
+            start_index = content.find(section)
+            if start_index != -1:
+                next_index = min(
+                    [
+                        content.find(sec, start_index + 1)
+                        for sec in sections
+                        if content.find(sec, start_index + 1) != -1
+                    ],
+                    default=len(content),
+                )
+                section_content = content[start_index:next_index]
+
+                for key, metric in metrics.items():
+                    match = re.search(rf"{metric}\s+\│\s+([\d\.]+)", section_content)
+                    if match:
+                        extracted_values[key] = float(match.group(1))
+
+    for key, value in extracted_values.items():
+        print(f"{key}: {value}")
+
+    """
+    !!![Note] The RMSE directly outputted from Torch is not strictly the RMSE of the full datasets;
+    it is related to the batch size. It only becomes a strict RMSE when the batch size is larger
+    than the size of the dataset. The output here can be considered as an approximate result.
+    [TODO] Switch it to the strict RMSE.
+    """
+    mlip_path = Path.cwd() / model_export_path
+
+    return {
+        "train_error": extracted_values["train_Energy_RMSE"],
+        "test_error": extracted_values["test_Energy_RMSE"],
+        "mlip_path": mlip_path,
+    }
+
+
 def mace_fitting(
     db_dir: str,
     model: str = "MACE",
@@ -1008,7 +1326,7 @@ def get_atomic_numbers(species):
     return atom_numbers
 
 
-def split_dataset(atoms, split_ratio):
+def stratified_dataset_split(atoms, split_ratio):
     """
     Split the dataset.
 
@@ -1400,3 +1718,29 @@ def prepare_fit_environment(database_dir, mlip_path, glue_xml: bool):
         )
 
     return mlip_path
+
+
+def convert_xyz_to_structure(atoms_list, include_forces=True, include_stresses=True):
+    """Convert extxyz to structure format used in pymatgen."""
+    structures = []
+    energies = []
+    forces = []
+    stresses = []
+    for atoms in atoms_list:
+        structure = AseAtomsAdaptor.get_structure(atoms)
+        structures.append(structure)
+        energies.append(atoms.info["REF_energy"])
+        if include_forces:
+            forces.append(np.array(atoms.arrays["REF_forces"]).tolist())
+        else:
+            forces.append(np.zeros((len(structure), 3)).tolist())
+        if include_stresses:
+            # convert from eV to GPa
+            virial = atoms.info["REF_virial"] / atoms.get_volume()  # eV/Å^3
+            stresses.append(np.array(virial * 160.2176565).tolist())  # eV/Å^3 -> GPa
+        else:
+            stresses.append(np.zeros((3, 3)).tolist())
+
+    print(f"Loaded {len(structures)} structures.")
+
+    return structures, energies, forces, stresses
