@@ -108,7 +108,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         f_max: float = 40.0,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
-        regularization: float = 0.1,
+        atom_wise_regularization_parameter: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
@@ -135,7 +135,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
             the pre-database directory.
-        regularization: float
+        atom_wise_regularization_parameter: float
             regularization value for the atom-wise force components.
         f_min: float
             minimal force cutoff value for atom-wise regularization.
@@ -201,7 +201,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 f_max=f_max,
                 pre_xyz_files=pre_xyz_files,
                 pre_database_dir=pre_database_dir,
-                atom_wise_regularization_parameter=regularization,
+                atom_wise_regularization_parameter=atom_wise_regularization_parameter,
                 f_min=f_min,
                 atom_wise_regularization=atom_wise_regularization,
                 auto_delta=auto_delta,
