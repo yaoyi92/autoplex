@@ -201,7 +201,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 f_max=f_max,
                 pre_xyz_files=pre_xyz_files,
                 pre_database_dir=pre_database_dir,
-                regularization=regularization,
+                atom_wise_regularization_parameter=regularization,
                 f_min=f_min,
                 atom_wise_regularization=atom_wise_regularization,
                 auto_delta=auto_delta,

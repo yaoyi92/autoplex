@@ -195,7 +195,7 @@ def test_mlip_fit_maker_with_kwargs(
     gapfit = MLIPFitMaker().make(species_list=["Li", "Cl"], isolated_atoms_energy=[-0.28649227, -0.25638457],
                                  fit_input=fit_input_dict, auto_delta=False, glue_xml=False, **{
             "twob": {"delta": 2.0, "cutoff": 8}, "threeb": {"n_sparse": 100},
-            "split_ratio": 0.4, "regularization": True, "distillation": True, "f_max": 40,
+            "split_ratio": 0.4, "regularization": False, "distillation": True, "f_max": 40,
         })
 
     responses = run_locally(
