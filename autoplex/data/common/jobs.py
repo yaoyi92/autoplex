@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
+    from pymatgen.core import Structure
 
 import pickle
 from itertools import chain
@@ -15,7 +16,6 @@ from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
 from jobflow.core.job import job
 from phonopy.structure.cells import get_supercell
-from pymatgen.core import Structure
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.common.utils import (
@@ -218,7 +218,7 @@ def generate_randomized_structures(
         )
     elif distort_type == 1:
         distorted_cells = random_vary_angle(
-            structure=Structure,
+            structure=structure,
             min_distance=min_distance,
             angle_percentage_scale=angle_percentage_scale,
             w_angle=w_angle,
@@ -243,8 +243,11 @@ def generate_randomized_structures(
                 angle_max_attempts=angle_max_attempts,
             )
             distorted_cells.append(distorted_cell)
+        distorted_cells = list(chain.from_iterable(distorted_cells))
     else:
         raise TypeError("distort_type is not recognised")
+
+    # distorted_cells=list(chain.from_iterable(distorted_cells))
 
     # rattle cells by standard or mc
     rattled_cells = (

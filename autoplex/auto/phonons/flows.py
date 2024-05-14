@@ -53,7 +53,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         If True, will add randomly distorted structures for DFT calculation.
     add_rss_struct: bool.
         If True, will add RSS generated structures for DFT calculation.
-        n_struct: int.
+        n_structures: int.
         The total number of randomly displaced structures to be generated.
     phonon_displacement_maker: BaseVaspMaker
         Maker used to compute the forces for a supercell.

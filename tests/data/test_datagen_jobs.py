@@ -8,8 +8,8 @@ from autoplex.data.common.utils import (
 )
 import numpy as np
 
-
-def test_generate_randomized_structures():
+# test distort_type=0, i.e. volume distortion
+def test_generate_randomized_structures_distort_type_0():
     from jobflow import run_locally
 
     structure = Structure(
@@ -35,6 +35,68 @@ def test_generate_randomized_structures():
             for struct in response.output:
             # check if all outputs are Structure objects
                 assert isinstance(struct, Structure)
+
+# test distort_type=1, i.e. angle distortion
+def test_generate_randomized_structures_distort_type_1():
+    from jobflow import run_locally
+
+    structure = Structure(
+        lattice=[[0, 2.73, 2.73], [2.73, 0, 2.73], [2.73, 2.73, 0]],
+        species=["Si", "Si"],
+        coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
+    )
+
+    rand_structs_job = generate_randomized_structures(
+                        structure=structure, 
+                        distort_type=1, 
+                        n_structures=10, 
+                        min_distance=1.5,
+                        angle_percentage_scale=10,
+                        angle_max_attempts=1000,
+                        rattle_type=0)
+
+    responses = run_locally(rand_structs_job, create_folders=False, ensure_success=True)
+
+    # check if correct number of valid structure objects are generated
+    for uuid, response_collection in responses.items():
+        for k, response in response_collection.items():
+            # check if correct number of structures are generated
+            assert 10 == len(response.output)
+            for struct in response.output:
+            # check if all outputs are Structure objects
+                assert isinstance(struct, Structure)
+
+# test distort_type=2, i.e. simultaneous volume and angle distortion
+def test_generate_randomized_structures_distort_type_2():
+    from jobflow import run_locally
+
+    structure = Structure(
+        lattice=[[0, 2.73, 2.73], [2.73, 0, 2.73], [2.73, 2.73, 0]],
+        species=["Si", "Si"],
+        coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
+    )
+
+    rand_structs_job = generate_randomized_structures(
+                        structure=structure, 
+                        distort_type=2, 
+                        n_structures=10, 
+                        volume_scale_factor_range=[0.90,1.10], 
+                        min_distance=1.5,
+                        angle_percentage_scale=10,
+                        angle_max_attempts=1000,
+                        rattle_type=0)
+
+    responses = run_locally(rand_structs_job, create_folders=False, ensure_success=True)
+
+    # check if correct number of valid structure objects are generated
+    for uuid, response_collection in responses.items():
+        for k, response in response_collection.items():
+            # check if correct number of structures are generated
+            assert 10 == len(response.output)
+            for struct in response.output:
+            # check if all outputs are Structure objects
+                assert isinstance(struct, Structure)
+
 
 def test_mc_rattle():
     structure = Structure(
@@ -121,3 +183,5 @@ def test_scale_cell():
         assert struct.num_sites == structure.num_sites
         # check lattice parameters are within +-10% of original value
         assert np.allclose(np.abs(np.array(struct.lattice.abc) - np.array(structure.lattice.abc)), 0, atol=0.1 * np.array(structure.lattice.abc))
+
+
