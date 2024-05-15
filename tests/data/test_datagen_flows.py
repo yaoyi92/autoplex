@@ -228,6 +228,6 @@ def test_generate_training_data_for_testing(
                                           potential_filename=potential_file_dir, n_structures=1, steps=1)
 
 
-    responses = run_locally(generate_data, create_folders=True, ensure_success=True, store=memory_jobstore)
+    responses = run_locally(generate_data, create_folders=False, ensure_success=True, store=memory_jobstore)
 
 #TODO: update pymatgen with ForceFieldTaskDocument.from_ase_compatible_result() with attribute dir_name
