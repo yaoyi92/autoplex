@@ -341,7 +341,6 @@ def mc_rattle(
     return [AseAtomsAdaptor.get_structure(xtal) for xtal in mc_rattle]
 
 
-
 def rms_dict(x_ref, x_pred):
     """
     Take two datasets of the same shape and returns a dictionary containing RMS error data.
