@@ -175,29 +175,28 @@ def set_sigma(
                     val.info["virial_sigma"] = v
                     atoms_modi.append(val)
 
-    e = np.array(sigs[0])
-    f = np.array(sigs[1])
-    v = np.array(sigs[2])
+    labels = ["E", "F", "V"]
+    data_type = [np.array(sig) for sig in sigs]  # [e, f, v]
 
-    print(f"Automatic regularisation statistics for {len(e)} structures:\n")
-    print(
-        "{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}".format("", "Mean", "Std", "Nmin", "Nmax")
-    )
-    print(
-        "{:>20s}{:>20.4f}{:>20.4f}{:>20d}{:>20d}".format(
-            "E", e.mean(), e.std(), len(e[e == e.min()]), len(e[e == e.max()])
+    for label, data in zip(labels, data_type):
+        if label == "E":
+            # Print header
+            print(f"Automatic regularisation statistics for {len(data)} structures:\n")
+            print(
+                "{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}".format(
+                    "", "Mean", "Std", "Nmin", "Nmax"
+                )
+            )
+
+        print(
+            "{:>20s}{:>20.4f}{:>20.4f}{:>20d}{:>20d}".format(
+                label,
+                data.mean(),
+                data.std(),
+                (data == data.min()).sum(),
+                (data == data.max()).sum(),
+            )
         )
-    )
-    print(
-        "{:>20s}{:>20.4g}{:>20.4f}{:>20d}{:>20d}".format(
-            "F", f.mean(), f.std(), len(f[f == f.min()]), len(f[f == f.max()])
-        )
-    )
-    print(
-        "{:>20s}{:>20.4g}{:>20.4f}{:>20d}{:>20d}".format(
-            "V", v.mean(), v.std(), len(v[v == v.min()]), len(v[v == v.max()])
-        )
-    )
 
     return atoms_modi
 

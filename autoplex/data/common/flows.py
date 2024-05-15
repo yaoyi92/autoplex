@@ -18,10 +18,10 @@ from jobflow import Flow, Maker, Response, job
 
 from autoplex.data.common.jobs import (
     convert_to_extxyz,
+    generate_randomized_structures,
     get_supercell_job,
     plot_force_distribution,
 )
-from autoplex.data.phonons.jobs import generate_randomized_structures
 
 __all__ = ["GenerateTrainingDataForTesting"]
 
@@ -56,8 +56,8 @@ class GenerateTrainingDataForTesting(Maker):
         train_structure_list: list[Structure],
         cell_factor_sequence: list[float] | None = None,
         potential_filename: str = "gap.xml",
-        n_struct: int = 50,
-        std_dev: float = 0.01,
+        n_structures: int = 50,
+        rattle_std: float = 0.01,
         relax_cell: bool = True,
         steps: int = 1000,
         supercell_matrix: Matrix3D | None = None,
@@ -78,10 +78,11 @@ class GenerateTrainingDataForTesting(Maker):
             list of factor to resize cell parameters.
         potential_filename: str
             param_file_name for :obj:`quippy.potential.Potential()'`.
-        n_struct : int.
+        n_structures : int.
             Total number of randomly displaced structures to be generated.
-        std_dev: float
-            Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
+        rattle_std: float.
+            Rattle amplitude (standard deviation in normal distribution).
+            Default=0.01.
         relax_cell : bool
             Whether to allow the cell shape/volume to change during relaxation.
         steps : int
@@ -126,10 +127,10 @@ class GenerateTrainingDataForTesting(Maker):
 
             for cell_factor in cell_factor_sequence:
                 rand_struc_job = generate_randomized_structures(
-                    supercell.output,
-                    n_struct=n_struct,
-                    cell_factor_sequence=[cell_factor],
-                    std_dev=std_dev,
+                    structure=supercell.output,
+                    n_structures=n_structures,
+                    volume_custom_scale_factors=[cell_factor],
+                    rattle_std=rattle_std,
                 )
                 jobs.append(rand_struc_job)
                 static_conv_jobs = self.static_run_and_convert(

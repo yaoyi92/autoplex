@@ -237,11 +237,12 @@ def dft_random_gen_data(
     structure: Structure,
     mp_id,
     phonon_displacement_maker,
-    n_struct: int = 1,
+    n_structures: int = 1,
     uc: bool = False,
-    cell_factor_sequence: list[float] | None = None,
-    std_dev: float = 0.01,
+    volume_custom_scale_factors: list[float] | None = None,
+    rattle_std: float = 0.01,
     supercell_matrix: Matrix3D | None = None,
+    distort_type: int = 0,
 ):
     """
     Job to generate random structured DFT reference database to be used for fitting ML potentials.
@@ -254,31 +255,35 @@ def dft_random_gen_data(
         Maker used to compute the forces for a supercell.
     mp_id:
         materials project id
-    n_struct: int.
+    n_structures: int.
         The total number of randomly displaced structures to be generated.
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
-    cell_factor_sequence: list[float]
+    volume_custom_scale_factors: list[float]
         list of factors to resize cell parameters.
-    std_dev: float
-        Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
+    rattle_std: float.
+        Rattle amplitude (standard deviation in normal distribution).
+        Default=0.01.
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
+    distort_type : int.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     """
     jobs = []
 
     random_datagen = RandomStructuresDataGenerator(
         name="RandomDataGen",
         phonon_displacement_maker=phonon_displacement_maker,
-        n_struct=n_struct,
+        n_structures=n_structures,
         uc=uc,
-        std_dev=std_dev,
+        rattle_std=rattle_std,
+        distort_type=distort_type,
     ).make(
         structure=structure,
         mp_id=mp_id,
         supercell_matrix=supercell_matrix,
-        cell_factor_sequence=cell_factor_sequence,
+        volume_custom_scale_factors=volume_custom_scale_factors,
     )
     jobs.append(random_datagen)
 

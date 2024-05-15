@@ -36,6 +36,7 @@ def gap_fitting(
     num_processes: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
+    regularization: bool = True,
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
 ):
     """
@@ -59,6 +60,8 @@ def gap_fitting(
         automatically determine delta for 2b, 3b and soap terms.
     glue_xml: bool
         use the glue.xml core potential instead of fitting 2b terms.
+    regularization: bool
+        For using sigma regularization.
     fit_kwargs: dict.
         optional dictionary with parameters for gap fitting with keys same as
         gap-defaults.json.
@@ -69,10 +72,14 @@ def gap_fitting(
         A dictionary with train_error, test_error
 
     """
-    mlip_path: Path = prepare_fit_environment(db_dir, Path.cwd(), glue_xml)
+    mlip_path: Path = prepare_fit_environment(
+        db_dir, Path.cwd(), glue_xml, regularization
+    )
 
     db_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
-    train_data_path = os.path.join(db_dir, "train_with_sigma.extxyz")
+    train_data_path = os.path.join(
+        db_dir, "train_with_sigma.extxyz" if regularization else "train.extxyz"
+    )
     test_data_path = os.path.join(db_dir, "test.extxyz")
 
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
@@ -837,7 +844,9 @@ def run_quip(
         subprocess.call(command, stdout=file_std, stderr=file_err, shell=True)
 
 
-def prepare_fit_environment(database_dir, mlip_path, glue_xml: bool):
+def prepare_fit_environment(
+    database_dir, mlip_path, glue_xml: bool, regularization: bool
+):
     """
     Prepare the environment for the fit.
 
@@ -849,12 +858,14 @@ def prepare_fit_environment(database_dir, mlip_path, glue_xml: bool):
         Path to the MLIP fit run (cwd).
     glue_xml: bool
             use the glue.xml core potential instead of fitting 2b terms.
+    regularization: bool
+        For using sigma regularization.
 
     Returns
     -------
     the MLIP path.
     """
-    if os.path.join(database_dir, "train_with_sigma.extxyz"):
+    if regularization:
         shutil.copy(
             os.path.join(database_dir, "train_with_sigma.extxyz"),
             os.path.join(mlip_path, "train_with_sigma.extxyz"),
