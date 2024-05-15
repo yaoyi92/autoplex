@@ -242,6 +242,7 @@ def dft_random_gen_data(
     volume_custom_scale_factors: list[float] | None = None,
     rattle_std: float = 0.01,
     supercell_matrix: Matrix3D | None = None,
+    distort_type: int = 0,
 ):
     """
     Job to generate random structured DFT reference database to be used for fitting ML potentials.
@@ -266,6 +267,8 @@ def dft_random_gen_data(
         Default=0.01.
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
+    distort_type : int.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     """
     jobs = []
 
@@ -275,6 +278,7 @@ def dft_random_gen_data(
         n_structures=n_structures,
         uc=uc,
         rattle_std=rattle_std,
+        distort_type=distort_type,
     ).make(
         structure=structure,
         mp_id=mp_id,

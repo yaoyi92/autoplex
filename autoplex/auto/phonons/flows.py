@@ -78,6 +78,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         to generate the rattled structures.
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
+    distort_type : int.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     ml_models: list[str]
         list of the ML models to be used. Default is GAP.
     """
@@ -98,6 +100,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     volume_custom_scale_factors: list[float] | None = None
     rattle_std: float = 0.01
     supercell_matrix: Matrix3D | None = None
+    distort_type: int = 0
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
 
     def make(
@@ -108,7 +111,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         f_max: float = 40.0,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
-        regularization: float = 0.1,
+        atom_wise_regularization_parameter: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
@@ -135,7 +138,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
             the pre-database directory.
-        regularization: float
+        atom_wise_regularization_parameter: float
             regularization value for the atom-wise force components.
         f_min: float
             minimal force cutoff value for atom-wise regularization.
@@ -166,6 +169,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     self.volume_custom_scale_factors,
                     self.rattle_std,
                     self.supercell_matrix,
+                    self.distort_type,
                 )
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
@@ -201,7 +205,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 f_max=f_max,
                 pre_xyz_files=pre_xyz_files,
                 pre_database_dir=pre_database_dir,
-                regularization=regularization,
+                atom_wise_regularization_parameter=atom_wise_regularization_parameter,
                 f_min=f_min,
                 atom_wise_regularization=atom_wise_regularization,
                 auto_delta=auto_delta,
@@ -318,6 +322,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         volume_custom_scale_factors: list[float] | None = None,
         rattle_std: float = 0.01,
         supercell_matrix: Matrix3D | None = None,
+        distort_type: int = 0,
     ):
         """Add DFT phonon runs for randomly displaced structures.
 
@@ -341,6 +346,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             to generate the rattled structures.
         supercell_matrix: Matrix3D or None
             The matrix to construct the supercell.
+        distort_type : int.
+            0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
         """
         additonal_dft_random = dft_random_gen_data(
             structure,
@@ -351,6 +358,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             volume_custom_scale_factors,
             rattle_std,
             supercell_matrix,
+            distort_type,
         )
         return Flow(
             additonal_dft_random,

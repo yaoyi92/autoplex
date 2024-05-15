@@ -7,8 +7,10 @@ if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
     from pymatgen.core import Structure
 
+import os
 import pickle
 from itertools import chain
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -44,8 +46,8 @@ def convert_to_extxyz(job_output, pkl_file, config_type, factor):
             string of factor to resize cell parameters.
 
     """
-    with open(pkl_file, "rb") as file:
-        traj_obj = pickle.load(file)  # job_output.dir_name +
+    with open(Path(job_output.dir_name) / Path(pkl_file), "rb") as file:
+        traj_obj = pickle.load(file)
     # ForceFieldTaskDocument.from_ase_compatible_result() has no attribute dir_name implemented
     data = to_ase_trajectory(traj_obj=traj_obj)
     data[-1].write("tmp.xyz")
@@ -62,10 +64,13 @@ def convert_to_extxyz(job_output, pkl_file, config_type, factor):
         i.pbc = True
     write("ref_" + factor + ".extxyz", file, append=True)
 
+    return os.getcwd()
+
 
 @job
 def plot_force_distribution(
-    cell_factor_sequence: list[float],
+    cell_factor: float,
+    path,
     x_min: int = 0,
     x_max: int = 5,
     bin_width: float = 0.125,
@@ -75,8 +80,8 @@ def plot_force_distribution(
 
     Parameters
     ----------
-    cell_factor_sequence: list[float]
-        list of factor to resize cell parameters.
+    cell_factor: float
+        factor to resize cell parameters.
     x_min: int
         minimum value for the plot x-axis.
     x_max: int
@@ -89,19 +94,21 @@ def plot_force_distribution(
     plt.ylabel("Count")
     bins = np.arange(x_min, x_max + bin_width, bin_width)
     plot_total = []
-    for cell_factor in cell_factor_sequence:
-        plot_data = []
-        with open("ref_" + str(cell_factor).replace(".", "") + ".extxyz") as file:
-            for line in file:
-                # Split the line into columns
-                columns = line.split()
 
-                # Check if the line has exactly 10 columns
-                if len(columns) == 10:
-                    # Extract the last three columns
-                    data = columns[-3:]
-                    norm_data = np.linalg.norm(data, axis=-1)
-                    plot_data.append(norm_data)
+    # TODO split data collection and plotting
+
+    plot_data = []
+    with open(path + "/ref_" + str(cell_factor).replace(".", "") + ".extxyz") as file:
+        for line in file:
+            # Split the line into columns
+            columns = line.split()
+
+            # Check if the line has exactly 10 columns
+            if len(columns) == 10:
+                # Extract the last three columns
+                data = columns[-3:]
+                norm_data = np.linalg.norm(data, axis=-1)
+                plot_data.append(norm_data)
 
         plt.hist(plot_data, bins=bins, edgecolor="black")
         plt.title(f"Data for factor {cell_factor}")

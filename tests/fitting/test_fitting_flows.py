@@ -195,8 +195,7 @@ def test_mlip_fit_maker_with_kwargs(
     gapfit = MLIPFitMaker().make(species_list=["Li", "Cl"], isolated_atoms_energy=[-0.28649227, -0.25638457],
                                  fit_input=fit_input_dict, auto_delta=False, glue_xml=False, **{
             "twob": {"delta": 2.0, "cutoff": 8}, "threeb": {"n_sparse": 100},
-            "split_ratio": 0.4, "regularization": True, "distillation": True, "f_max": 40,
-            # "general": {"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"}
+            "split_ratio": 0.4, "regularization": False, "distillation": True, "f_max": 40,
         })
 
     responses = run_locally(
@@ -308,6 +307,134 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, clean_dir, memory_jobsto
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
+    path_to_job_files = list(test_files_dir.glob("job*"))
+
+    # check if gap fit file is generated
+    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+
+    for job_dir in path_to_job_files:
+        shutil.rmtree(job_dir)
+
+    os.chdir(parent_dir)
+
+def test_mlip_fit_maker_glue_xml(
+    test_dir, memory_jobstore, vasp_test_dir, #clean_dir
+):
+    import os
+    import shutil
+    from pathlib import Path
+    from jobflow import run_locally
+
+    parent_dir = os.getcwd()
+
+    os.chdir(test_dir / "fitting")
+
+    fit_input_dict = {
+        "mp-149": {
+            "rand_struc_dir": [
+                [
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "rattled_supercell_1"
+                    )
+                    .absolute()
+                    .as_posix(),
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "rattled_supercell_2"
+                    )
+                    .absolute()
+                    .as_posix(),
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "rattled_supercell_3"
+                    )
+                    .absolute()
+                    .as_posix(),
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "rattled_supercell_4"
+                    )
+                    .absolute()
+                    .as_posix(),
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "rattled_supercell_5"
+                    )
+                    .absolute()
+                    .as_posix(),
+                ]
+            ],
+            "phonon_dir": [
+                [
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "phonon_supercell_1"
+                    )
+                    .absolute()
+                    .as_posix(),
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "phonon_supercell_2"
+                    )
+                    .absolute()
+                    .as_posix(),
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "phonon_supercell_3"
+                    )
+                    .absolute()
+                    .as_posix(),
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "phonon_supercell_4"
+                    )
+                    .absolute()
+                    .as_posix(),
+                    (
+                            vasp_test_dir
+                            / "Si_glue_xml_fit"
+                            / "phonon_supercell_5"
+                    )
+                    .absolute()
+                    .as_posix(),
+                ]
+            ],
+            "phonon_data": [],
+        },
+        "isolated_atom": {"iso_atoms_dir": [[
+            (
+                    vasp_test_dir
+                    / "Si_glue_xml_fit"
+                    / "iso_atom"
+            )
+            .absolute()
+            .as_posix(),
+        ]]
+        }
+    }
+
+    # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
+    gapfit = MLIPFitMaker().make(species_list=["Si"], isolated_atoms_energy=[-0.82067307], fit_input=fit_input_dict,
+                                 auto_delta=False, glue_xml=True, **{
+            "gap_para": {"two_body": False, "three_body": False, "soap": True},
+             "general": {"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"}
+        })
+
+    responses = run_locally(
+        gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
+    )
+
+    test_files_dir = Path(test_dir / "fitting").resolve()
     path_to_job_files = list(test_files_dir.glob("job*"))
 
     # check if gap fit file is generated

@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
     from pymatgen.core import Structure
 
+
 from atomate2.forcefields.jobs import (
     ForceFieldRelaxMaker,
     ForceFieldStaticMaker,
@@ -140,9 +141,11 @@ class GenerateTrainingDataForTesting(Maker):
                     **relax_kwargs,
                 )
                 jobs.append(static_conv_jobs)
+                plots = plot_force_distribution(
+                    cell_factor, static_conv_jobs.output, x_min, x_max, bin_width
+                )
+                jobs.append(plots)
 
-        plots = plot_force_distribution(cell_factor_sequence, x_min, x_max, bin_width)
-        jobs.append(plots)
         return Flow(jobs)  # , plots.output)
 
     @job
@@ -184,7 +187,7 @@ class GenerateTrainingDataForTesting(Maker):
                 }
             if self.static_energy_maker is None:
                 self.static_energy_maker = GAPRelaxMaker(
-                    potential_param_file_name=potential_filename,  # task_document_kwargs={'dir_name': os.getcwd()},
+                    potential_param_file_name=potential_filename,
                     relax_cell=False,
                     relax_kwargs=relax_kwargs,
                     steps=1,
@@ -202,4 +205,4 @@ class GenerateTrainingDataForTesting(Maker):
             )
             jobs.append(conv_job)
 
-        return Response(replace=Flow(jobs))
+        return Response(replace=Flow(jobs), output=conv_job.output)

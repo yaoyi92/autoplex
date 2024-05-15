@@ -77,7 +77,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "EDIFF": 1e-7,
                 "LAECHG": False,
                 "LREAL": False,
-                "ALGO": "Fast",
+                "ALGO": "Normal",
                 "NSW": 0,
                 "LCHARG": False,
                 "SIGMA": 0.05,
@@ -260,7 +260,7 @@ class RandomStructuresDataGenerator(Maker):
         determines the dft code. currently only vasp is implemented.
         This keyword might enable the implementation of other codes
         in the future
-    n_struct: int.
+    n_structures: int.
         The total number of randomly displaced structures to be generated.
     uc: bool.
         If True, will use the unit cells of initial randomly displaced
@@ -268,6 +268,8 @@ class RandomStructuresDataGenerator(Maker):
     rattle_std: float.
         Rattle amplitude (standard deviation in normal distribution).
         Default=0.01.
+    distort_type : int.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
@@ -278,6 +280,7 @@ class RandomStructuresDataGenerator(Maker):
     n_structures: int = 1
     uc: bool = False
     rattle_std: float = 0.01
+    distort_type: int = 0
 
     def make(
         self,
@@ -313,6 +316,7 @@ class RandomStructuresDataGenerator(Maker):
 
         random_rattle_sc = generate_randomized_structures(
             structure=get_pmg_structure(supercell),
+            distort_type=self.distort_type,
             n_structures=self.n_structures,
             volume_custom_scale_factors=volume_custom_scale_factors,
             rattle_std=self.rattle_std,
@@ -333,6 +337,7 @@ class RandomStructuresDataGenerator(Maker):
         if self.uc is True:
             random_rattle = generate_randomized_structures(
                 structure=structure,
+                distort_type=self.distort_type,
                 n_structures=self.n_structures,
                 volume_custom_scale_factors=volume_custom_scale_factors,
                 rattle_std=self.rattle_std,
