@@ -71,7 +71,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
-    volume_custom_scale_factors: list[float]
+    volume_scale_factors: list[float]
         list of factors to resize cell parameters. Default is [0.975, 1.0, 1.025, 1.05].
     rattle_std: float
         Standard deviation for normal distribution to draw numbers from
@@ -97,7 +97,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     min_length: int = 20
     symprec: float = 1e-4
     uc: bool = False
-    volume_custom_scale_factors: list[float] | None = None
+    volume_scale_factors: list[float] | None = None
     rattle_std: float = 0.01
     supercell_matrix: Matrix3D | None = None
     distort_type: int = 0
@@ -166,7 +166,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     self.phonon_displacement_maker,
                     self.n_structures,
                     self.uc,
-                    self.volume_custom_scale_factors,
+                    self.volume_scale_factors,
                     self.rattle_std,
                     self.supercell_matrix,
                     self.distort_type,
