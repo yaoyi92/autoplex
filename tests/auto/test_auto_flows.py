@@ -134,6 +134,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
+
         "phonon static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
@@ -396,7 +397,6 @@ def test_phonon_dft_ml_data_generation_flow(
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, min_length=10, symprec=1e-2, add_dft_random_struct=False, volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-
     ).make(structure_list=[structure], mp_ids=["mp-22905"])
 
     ref_paths = {
