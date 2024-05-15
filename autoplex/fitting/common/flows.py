@@ -55,7 +55,7 @@ class MLIPFitMaker(Maker):
         regularization: bool = True,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
-        atom_wise_regularization_parameter: float = 0.1,
+        atomwise_regularization_param: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
@@ -82,7 +82,7 @@ class MLIPFitMaker(Maker):
             names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
             the pre-database directory.
-        atom_wise_regularization_parameter: float
+        atomwise_regularization_param: float
             regularization value for the atom-wise force components.
         f_min: float
             minimal force cutoff value for atom-wise regularization.
@@ -106,7 +106,7 @@ class MLIPFitMaker(Maker):
             pre_xyz_files=pre_xyz_files,
             pre_database_dir=pre_database_dir,
             f_min=f_min,
-            atom_wise_regularization_parameter=atom_wise_regularization_parameter,
+            atomwise_regularization_parameter=atomwise_regularization_param,
             atom_wise_regularization=atom_wise_regularization,
         )
         jobs.append(data_prep_job)

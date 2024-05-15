@@ -53,11 +53,11 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         If True, will add randomly distorted structures for DFT calculation.
     add_rss_struct: bool.
         If True, will add RSS generated structures for DFT calculation.
-        n_struct: int.
+        n_structures: int.
         The total number of randomly displaced structures to be generated.
     phonon_displacement_maker: BaseVaspMaker
         Maker used to compute the forces for a supercell.
-    n_struct: int.
+    n_structures: int.
         The total number of randomly displaced structures to be generated.
     displacements: list[float]
         displacement distance for phonons
@@ -71,13 +71,15 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
-    cell_factor_sequence: list[float]
+    volume_scale_factors: list[float]
         list of factors to resize cell parameters. Default is [0.975, 1.0, 1.025, 1.05].
-    std_dev: float
-        Standard deviation std_dev for normal distribution to draw numbers from
+    rattle_std: float
+        Standard deviation for normal distribution to draw numbers from
         to generate the rattled structures.
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
+    distort_type : int.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     ml_models: list[str]
         list of the ML models to be used. Default is GAP.
     """
@@ -90,14 +92,15 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=TightDFTStaticMaker
     )
-    n_struct: int = 1
+    n_structures: int = 1
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
     symprec: float = 1e-4
     uc: bool = False
-    cell_factor_sequence: list[float] | None = None
-    std_dev: float = 0.01
+    volume_scale_factors: list[float] | None = None
+    rattle_std: float = 0.01
     supercell_matrix: Matrix3D | None = None
+    distort_type: int = 0
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
 
     def make(
@@ -161,11 +164,12 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     structure,
                     mp_id,
                     self.phonon_displacement_maker,
-                    self.n_struct,
+                    self.n_structures,
                     self.uc,
-                    self.cell_factor_sequence,
-                    self.std_dev,
+                    self.volume_scale_factors,
+                    self.rattle_std,
                     self.supercell_matrix,
+                    self.distort_type,
                 )
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
@@ -201,7 +205,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 f_max=f_max,
                 pre_xyz_files=pre_xyz_files,
                 pre_database_dir=pre_database_dir,
-                atom_wise_regularization_parameter=atom_wise_regularization_parameter,
+                atomwise_regularization_param=atomwise_regularization_parameter,
                 f_min=f_min,
                 atom_wise_regularization=atom_wise_regularization,
                 auto_delta=auto_delta,
@@ -313,11 +317,12 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         structure: Structure,
         mp_id: str,
         phonon_displacement_maker: BaseVaspMaker,
-        n_struct: int = 1,
+        n_structures: int = 1,
         uc: bool = False,
-        cell_factor_sequence: list[float] | None = None,
-        std_dev: float = 0.01,
+        volume_custom_scale_factors: list[float] | None = None,
+        rattle_std: float = 0.01,
         supercell_matrix: Matrix3D | None = None,
+        distort_type: int = 0,
     ):
         """Add DFT phonon runs for randomly displaced structures.
 
@@ -329,28 +334,31 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             materials project id
         phonon_displacement_maker: BaseVaspMaker
             Maker used to compute the forces for a supercell.
-        n_struct: int.
+        n_structures: int.
             The total number of randomly displaced structures to be generated.
         uc: bool.
             If True, will generate randomly distorted structures (unitcells)
             and add static computation jobs to the flow.
-        cell_factor_sequence: list[float]
+        volume_custom_scale_factors: list[float]
             list of factors to resize cell parameters.
-        std_dev: float
-            Standard deviation std_dev for normal distribution to draw numbers from
+        rattle_std: float
+            Standard deviation for normal distribution to draw numbers from
             to generate the rattled structures.
         supercell_matrix: Matrix3D or None
             The matrix to construct the supercell.
+        distort_type : int.
+            0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
         """
         additonal_dft_random = dft_random_gen_data(
             structure,
             mp_id,
             phonon_displacement_maker,
-            n_struct,
+            n_structures,
             uc,
-            cell_factor_sequence,
-            std_dev,
+            volume_custom_scale_factors,
+            rattle_std,
             supercell_matrix,
+            distort_type,
         )
         return Flow(
             additonal_dft_random,
