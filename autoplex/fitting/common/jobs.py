@@ -26,6 +26,7 @@ def machine_learning_fit(
     auto_delta: bool = True,
     glue_xml: bool = False,
     mlip_type: str | None = None,
+    regularization: bool = True,
     HPO: bool = False,
     mlip_hyper: dict | None = None,
     **kwargs,
@@ -52,6 +53,8 @@ def machine_learning_fit(
     mlip_type: str
         Choose one specific MLIP type:
         'GAP' | 'ACE' | 'Nequip' | 'M3GNet' | 'MACE'
+    regularization: bool
+        For using sigma regularization.
     HPO: bool
         call hyperparameter optimization (HPO) or not
     """
@@ -120,6 +123,7 @@ def machine_learning_fit(
             num_processes=num_processes,
             auto_delta=auto_delta,
             glue_xml=glue_xml,
+            regularization=regularization,
             fit_kwargs=kwargs,
         )
 

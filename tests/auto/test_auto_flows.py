@@ -21,9 +21,18 @@ def ref_paths():
         "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
         "phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
         "phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
+        "phonon static 1/12": "dft_ml_data_generation/rand_static_1/",
+        "phonon static 2/12": "dft_ml_data_generation/rand_static_2/",
+        "phonon static 3/12": "dft_ml_data_generation/rand_static_3/",
+        "phonon static 4/12": "dft_ml_data_generation/rand_static_4/",
+        "phonon static 5/12": "dft_ml_data_generation/rand_static_5/",
+        "phonon static 6/12": "dft_ml_data_generation/rand_static_6/",
+        "phonon static 7/12": "dft_ml_data_generation/rand_static_7/",
+        "phonon static 8/12": "dft_ml_data_generation/rand_static_8/",
+        "phonon static 9/12": "dft_ml_data_generation/rand_static_9/",
+        "phonon static 10/12": "dft_ml_data_generation/rand_static_10/",
+        "phonon static 11/12": "dft_ml_data_generation/rand_static_11/",
+        "phonon static 12/12": "dft_ml_data_generation/rand_static_12/",
     }
 
 
@@ -34,15 +43,55 @@ def fake_run_vasp_kwargs():
         "tight relax 2": {"incar_settings": ["NSW"]},
         "phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 1/3": {
+        "phonon static 1/12": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 2/3": {
+        "phonon static 1/12": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 3/3": {
+        "phonon static 2/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 3/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 4/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 5/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 6/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 7/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 8/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 9/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 10/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 11/12": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 12/12": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
@@ -58,14 +107,12 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, symprec=1e-2, min_length=8, displacements=[0.01], cell_factor_sequence=[1.0],
+    complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01], volume_scale_factors=[0.975, 1.0, 1.025, 1.05], phonon_displacement_maker=TightDFTStaticMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        phonon_displacement_maker=TightDFTStaticMaker(),
     )
 
     ref_paths = {
@@ -76,9 +123,10 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
         "phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
         "phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
+        "phonon static 1/4": "dft_ml_data_generation/rand_static_1/",
+        "phonon static 2/4": "dft_ml_data_generation/rand_static_4/",
+        "phonon static 3/4": "dft_ml_data_generation/rand_static_7/",
+        "phonon static 4/4": "dft_ml_data_generation/rand_static_10/",
     }
 
     fake_run_vasp_kwargs = {
@@ -86,15 +134,20 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 1/3": {
+
+        "phonon static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 2/3": {
+        "phonon static 2/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 3/3": {
+        "phonon static 3/4": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 4/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
@@ -140,12 +193,12 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         structure = Structure.from_file(path_to_struct)
 
         add_data_workflow = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -188,13 +241,13 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         dft_reference: PhononBSDOSDoc = dft_data["output"]
 
         add_data_workflow_with_dft_reference = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             add_dft_phonon_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -210,7 +263,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         _ = run_locally(
             add_data_workflow_with_dft_reference,
             create_folders=True,
-            ensure_success=False,  # not enough data points for successful fit
+            ensure_success=True,
             store=memory_jobstore,
         )
 
@@ -237,13 +290,13 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         structure = Structure.from_file(path_to_struct)
 
         add_data_workflow_add_phonon_false = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             add_dft_phonon_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -273,13 +326,13 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         structure = Structure.from_file(path_to_struct)
 
         add_data_workflow_add_random_false = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             add_dft_random_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -309,12 +362,12 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         structure = Structure.from_file(path_to_struct)
 
         add_data_workflow_with_same_mpid = CompleteDFTvsMLBenchmarkWorkflow(
-            n_struct=3,
+            n_structures=3,
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
             phonon_displacement_maker=TightDFTStaticMaker(),
-            cell_factor_sequence=[1.0],
+            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["mp-22905"],
@@ -339,11 +392,11 @@ def test_phonon_dft_ml_data_generation_flow(
     structure = Structure.from_file(path_to_struct)
 
     flow_data_generation = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, min_length=10, symprec=1e-2, cell_factor_sequence=[1.0],
+        n_structures=3, min_length=10, symprec=1e-2, volume_scale_factors=[0.975, 1.0, 1.025, 1.05],
     ).make(structure_list=[structure], mp_ids=["mp-22905"])
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
-        n_struct=3, min_length=10, symprec=1e-2, add_dft_random_struct=False, cell_factor_sequence=[1.0],
+        n_structures=3, min_length=10, symprec=1e-2, add_dft_random_struct=False, volume_scale_factors=[0.975, 1.0, 1.025, 1.05],
     ).make(structure_list=[structure], mp_ids=["mp-22905"])
 
     ref_paths = {
@@ -354,9 +407,10 @@ def test_phonon_dft_ml_data_generation_flow(
         "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
         "phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
         "phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
+        "phonon static 1/4": "dft_ml_data_generation/rand_static_1/",
+        "phonon static 2/4": "dft_ml_data_generation/rand_static_4/",
+        "phonon static 3/4": "dft_ml_data_generation/rand_static_7/",
+        "phonon static 4/4": "dft_ml_data_generation/rand_static_10/",
     }
 
     fake_run_vasp_kwargs = {
@@ -364,15 +418,19 @@ def test_phonon_dft_ml_data_generation_flow(
         "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 1/3": {
+        "phonon static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 2/3": {
+        "phonon static 2/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 3/3": {
+        "phonon static 3/4": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 4/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
@@ -392,7 +450,7 @@ def test_phonon_dft_ml_data_generation_flow(
     responses_worattled = run_locally(
         flow_data_generation_without_rattled_structures,
         create_folders=True,
-        ensure_success=False,  # not enough data points for successful fit
+        ensure_success=False,  # only two phonon calcs are not enough for this to pass
         store=memory_jobstore,
     )
     counter = 0
@@ -404,3 +462,4 @@ def test_phonon_dft_ml_data_generation_flow(
     assert counter == 5
     assert counter_wor == 4
 # TODO better tests
+# TODO testing cell_factor_sequence

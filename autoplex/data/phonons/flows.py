@@ -21,7 +21,7 @@ from phonopy.structure.cells import get_supercell
 from pymatgen.core import Molecule, Site
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
-from autoplex.data.phonons.jobs import generate_randomized_structures
+from autoplex.data.common.jobs import generate_randomized_structures
 
 __all__ = [
     "DFTPhononMaker",
@@ -77,7 +77,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "EDIFF": 1e-7,
                 "LAECHG": False,
                 "LREAL": False,
-                "ALGO": "Fast",
+                "ALGO": "Normal",
                 "NSW": 0,
                 "LCHARG": False,
                 "SIGMA": 0.05,
@@ -260,13 +260,16 @@ class RandomStructuresDataGenerator(Maker):
         determines the dft code. currently only vasp is implemented.
         This keyword might enable the implementation of other codes
         in the future
-    n_struct: int.
+    n_structures: int.
         The total number of randomly displaced structures to be generated.
     uc: bool.
         If True, will use the unit cells of initial randomly displaced
         structures and add phonon static computation jobs to the flow
-    std_dev: float
-        Standard deviation std_dev for normal distribution to draw numbers from to generate the rattled structures.
+    rattle_std: float.
+        Rattle amplitude (standard deviation in normal distribution).
+        Default=0.01.
+    distort_type : int.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
@@ -274,16 +277,17 @@ class RandomStructuresDataGenerator(Maker):
         default_factory=TightDFTStaticMaker
     )
     code: str = "vasp"
-    n_struct: int = 1
+    n_structures: int = 1
     uc: bool = False
-    std_dev: float = 0.01
+    rattle_std: float = 0.01
+    distort_type: int = 0
 
     def make(
         self,
         structure: Structure,
         mp_id: str,
         supercell_matrix: Matrix3D | None = None,
-        cell_factor_sequence: list[float] | None = None,
+        volume_custom_scale_factors: list[float] | None = None,
     ):
         """
         Make a flow to generate rattled structures reference DFT data.
@@ -296,8 +300,9 @@ class RandomStructuresDataGenerator(Maker):
             Materials Project IDs
         supercell_matrix: Matrix3D.
             Matrix for obtaining the supercell
-        cell_factor_sequence: list[float]
-            list of factors to resize cell parameters.
+        volume_custom_scale_factors : list[float]
+            Specify explicit scale factors (if range is not specified).
+            If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
         """
         jobs = []  # initializing empty job list
         outputs = []
@@ -311,9 +316,10 @@ class RandomStructuresDataGenerator(Maker):
 
         random_rattle_sc = generate_randomized_structures(
             structure=get_pmg_structure(supercell),
-            n_struct=self.n_struct,
-            cell_factor_sequence=cell_factor_sequence,
-            std_dev=self.std_dev,
+            distort_type=self.distort_type,
+            n_structures=self.n_structures,
+            volume_custom_scale_factors=volume_custom_scale_factors,
+            rattle_std=self.rattle_std,
         )
         jobs.append(random_rattle_sc)
         # perform the phonon displaced calculations for randomized displaced structures.
@@ -331,9 +337,10 @@ class RandomStructuresDataGenerator(Maker):
         if self.uc is True:
             random_rattle = generate_randomized_structures(
                 structure=structure,
-                n_struct=self.n_struct,
-                cell_factor_sequence=cell_factor_sequence,
-                std_dev=self.std_dev,
+                distort_type=self.distort_type,
+                n_structures=self.n_structures,
+                volume_custom_scale_factors=volume_custom_scale_factors,
+                rattle_std=self.rattle_std,
             )
             jobs.append(random_rattle)
             vasp_random_displacement_calcs = run_phonon_displacements(

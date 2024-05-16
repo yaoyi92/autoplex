@@ -17,7 +17,7 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
 
 def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
-    potential_file_dir = test_dir / "fitting" / "ref_files" / "gap.xml"
+    potential_file_dir = test_dir / "fitting" / "ref_files" / "gap_file.xml"
     path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 

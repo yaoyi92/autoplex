@@ -54,9 +54,10 @@ class MLIPFitMaker(Maker):
         isol_es: dict | None = None,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
+        regularization: bool = True,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
-        regularization: float = 0.1,
+        atomwise_regularization_param: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
@@ -84,7 +85,7 @@ class MLIPFitMaker(Maker):
             names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
             the pre-database directory.
-        regularization: float
+        atomwise_regularization_param: float
             regularization value for the atom-wise force components.
         f_min: float
             minimal force cutoff value for atom-wise regularization.
@@ -99,13 +100,16 @@ class MLIPFitMaker(Maker):
         """
         jobs = []
         data_prep_job = DataPreprocessing(
-            split_ratio=split_ratio, regularization=True, distillation=True, f_max=f_max
+            split_ratio=split_ratio,
+            regularization=regularization,
+            distillation=True,
+            f_max=f_max,
         ).make(
             fit_input=fit_input,
             pre_xyz_files=pre_xyz_files,
             pre_database_dir=pre_database_dir,
             f_min=f_min,
-            regularization=regularization,
+            atom_wise_regularization_parameter=atomwise_regularization_param,
             atom_wise_regularization=atom_wise_regularization,
         )
         jobs.append(data_prep_job)
@@ -124,6 +128,7 @@ class MLIPFitMaker(Maker):
             mlip_type=self.mlip_type,
             mlip_hyper=self.mlip_hyper,
             num_processes=num_processes,
+            regularization=regularization,
             **fit_kwargs,
         )
         jobs.append(mlip_fit_job)  # type: ignore
@@ -145,7 +150,7 @@ class DataPreprocessing(Maker):
         Parameter to divide the training set and the test set.
         A value of 0.1 means that the ratio of the training set to the test set is 9:1
     regularization: bool
-        For using regularization.
+        For using sigma regularization.
     distillation: bool
         For using distillation.
     f_max: float
@@ -165,7 +170,7 @@ class DataPreprocessing(Maker):
         fit_input: dict,
         pre_database_dir: str | None = None,
         pre_xyz_files: list[str] | None = None,
-        regularization: float = 0.1,
+        atom_wise_regularization_parameter: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
     ):
@@ -180,7 +185,7 @@ class DataPreprocessing(Maker):
             the pre-database directory.
         pre_xyz_files: list[str] or None
             names of the pre-database train xyz file and test xyz file labeled by VASP.
-        regularization: float
+        atom_wise_regularization_parameter: float
             regularization value for the atom-wise force components.
         f_min: float
             minimal force cutoff value for atom-wise regularization.
@@ -228,7 +233,7 @@ class DataPreprocessing(Maker):
             config_types=config_types,
             data_types=data_types,
             f_min=f_min,
-            regularization=regularization,
+            regularization=atom_wise_regularization_parameter,
             atom_wise_regularization=atom_wise_regularization,
         )
 

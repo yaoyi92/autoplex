@@ -52,6 +52,7 @@ def gap_fitting(
     num_processes: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
+    regularization: bool = True,
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
 ):
     """
@@ -75,6 +76,8 @@ def gap_fitting(
         automatically determine delta for 2b, 3b and soap terms.
     glue_xml: bool
         use the glue.xml core potential instead of fitting 2b terms.
+    regularization: bool
+        For using sigma regularization.
     fit_kwargs: dict.
         optional dictionary with parameters for gap fitting with keys same as
         gap-defaults.json.
@@ -85,10 +88,14 @@ def gap_fitting(
         A dictionary with train_error, test_error
 
     """
-    mlip_path: Path = prepare_fit_environment(db_dir, Path.cwd(), glue_xml)
+    mlip_path: Path = prepare_fit_environment(
+        db_dir, Path.cwd(), glue_xml, regularization
+    )
 
     db_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
-    train_data_path = os.path.join(db_dir, "train_with_sigma.extxyz")
+    train_data_path = os.path.join(
+        db_dir, "train_with_sigma.extxyz" if regularization else "train.extxyz"
+    )
     test_data_path = os.path.join(db_dir, "test.extxyz")
 
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
@@ -100,15 +107,6 @@ def gap_fitting(
             for arg in fit_kwargs:
                 if parameter == arg:
                     gap_default_hyperparameters[parameter].update(fit_kwargs[arg])
-                if glue_xml:
-                    for item in fit_kwargs["general"].items():
-                        if item == ("core_param_file", "glue.xml"):
-                            gap_default_hyperparameters["general"].update(
-                                {"core_param_file": "glue.xml"}
-                            )
-                            gap_default_hyperparameters["general"].update(
-                                {"core_ip_args": "{IP Glue}"}
-                            )
 
     if include_two_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -140,6 +138,26 @@ def gap_fitting(
         run_gap(num_processes, fit_parameters_list)
         run_quip(num_processes, train_data_path, "gap_file.xml", "quip_train.extxyz")
 
+    if glue_xml:
+        gap_default_hyperparameters["general"].update({"at_file": train_data_path})
+        gap_default_hyperparameters["general"].update({"core_param_file": "glue.xml"})
+        gap_default_hyperparameters["general"].update({"core_ip_args": "{IP Glue}"})
+
+        fit_parameters_list = gap_hyperparameter_constructor(
+            gap_parameter_dict=gap_default_hyperparameters,
+            include_two_body=False,
+            include_three_body=False,
+        )
+
+        run_gap(num_processes, fit_parameters_list)
+        run_quip(
+            num_processes,
+            train_data_path,
+            "gap_file.xml",
+            "quip_train.extxyz",
+            glue_xml,
+        )
+
     if include_soap:
         delta_soap = (
             energy_remain("quip_train.extxyz")
@@ -158,16 +176,24 @@ def gap_fitting(
         )
 
         run_gap(num_processes, fit_parameters_list)
-        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_train.extxyz")
+        run_quip(
+            num_processes,
+            train_data_path,
+            "gap_file.xml",
+            "quip_train.extxyz",
+            glue_xml,
+        )
 
     # Calculate training error
     train_error = energy_remain("quip_train.extxyz")
-    print("Training error of MLIP (eV/at.):", round(train_error, 4))
+    print("Training error of MLIP (eV/at.):", round(train_error, 7))
 
     # Calculate testing error
-    run_quip(num_processes, test_data_path, "gap_file.xml", "quip_test.extxyz")
+    run_quip(
+        num_processes, test_data_path, "gap_file.xml", "quip_test.extxyz", glue_xml
+    )
     test_error = energy_remain("quip_test.extxyz")
-    print("Testing error of MLIP (eV/at.):", round(test_error, 4))
+    print("Testing error of MLIP (eV/at.):", round(test_error, 7))
 
     return {
         "train_error": train_error,
@@ -1625,7 +1651,9 @@ def run_gap(num_processes: int, parameters):
         subprocess.call(["gap_fit", *parameters], stdout=file_std, stderr=file_err)
 
 
-def run_quip(num_processes: int, data_path, xml_file: str, filename: str):
+def run_quip(
+    num_processes: int, data_path, xml_file: str, filename: str, glue_xml: bool = False
+):
     """
     QUIP runner.
 
@@ -1639,8 +1667,11 @@ def run_quip(num_processes: int, data_path, xml_file: str, filename: str):
     """
     os.environ["OMP_NUM_THREADS"] = str(num_processes)
 
-    command = f"quip E=T F=T atoms_filename={data_path} param_filename={xml_file} | grep AT | sed 's/AT//' > {filename}"
-
+    init_args = "init_args='IP Glue'" if glue_xml else ""
+    quip = (
+        f"quip {init_args} E=T F=T atoms_filename={data_path} param_filename={xml_file}"
+    )
+    command = f"{quip} | grep AT | sed 's/AT//' > {filename}"
     with open("std_quip_out.log", "w", encoding="utf-8") as file_std, open(
         "std_quip_err.log", "w", encoding="utf-8"
     ) as file_err:
@@ -1681,7 +1712,9 @@ def run_mace(hypers: list):
         subprocess.call(["mace_run_train", *hypers], stdout=file_std, stderr=file_err)
 
 
-def prepare_fit_environment(database_dir, mlip_path, glue_xml: bool):
+def prepare_fit_environment(
+    database_dir, mlip_path, glue_xml: bool, regularization: bool
+):
     """
     Prepare the environment for the fit.
 
@@ -1693,12 +1726,14 @@ def prepare_fit_environment(database_dir, mlip_path, glue_xml: bool):
         Path to the MLIP fit run (cwd).
     glue_xml: bool
             use the glue.xml core potential instead of fitting 2b terms.
+    regularization: bool
+        For using sigma regularization.
 
     Returns
     -------
     the MLIP path.
     """
-    if os.path.join(database_dir, "train_with_sigma.extxyz"):
+    if regularization:
         shutil.copy(
             os.path.join(database_dir, "train_with_sigma.extxyz"),
             os.path.join(mlip_path, "train_with_sigma.extxyz"),
