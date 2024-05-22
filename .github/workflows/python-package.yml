@@ -31,7 +31,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-mock pytest-split pytest-cov
         python -m pip install types-setuptools
-        pip install git+https://github.com/materialsproject/atomate2.git@c369c86b9ede4c25ac281536132753f11ce113d0
         pip install .[strict]
     - name: Lint with flake8
       run: |
