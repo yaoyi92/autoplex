@@ -162,7 +162,8 @@ class MLPhononMaker(PhononMaker):
             br = self.bulk_relax_maker
             self.bulk_relax_maker = br.update_kwargs(
                 update={
-                    "potential_param_file_name": ml_model,
+                    "calculator_kwargs": {"param_filename": ml_model,
+                                          "args_str": "IP GAP"},
                     **self.relax_maker_kwargs,
                 }
             )
@@ -170,7 +171,8 @@ class MLPhononMaker(PhononMaker):
             ph_disp = self.phonon_displacement_maker
             self.phonon_displacement_maker = ph_disp.update_kwargs(
                 update={
-                    "potential_param_file_name": ml_model,
+                   "calculator_kwargs": {"param_filename": ml_model,
+                                          "args_str": "IP GAP"},
                     **self.static_maker_kwargs,
                 }
             )
@@ -178,7 +180,8 @@ class MLPhononMaker(PhononMaker):
             stat_en = self.static_energy_maker
             self.static_energy_maker = stat_en.update_kwargs(
                 update={
-                    "potential_param_file_name": ml_model,
+                    "calculator_kwargs": {"param_filename": ml_model,
+                                          "args_str": "IP GAP"},
                     **self.static_maker_kwargs,
                 }
             )
