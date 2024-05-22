@@ -29,7 +29,7 @@ from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from dgl.data.utils import split_dataset
 from matgl.ext.pymatgen import Structure2Graph, get_element_list
-from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_graph
+from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
 from matgl.utils.training import PotentialLightningModule
 from nequip.ase import NequIPCalculator
@@ -755,7 +755,7 @@ def m3gnet_fitting(
                 )
 
         my_collate_fn = partial(
-            collate_fn_graph, include_line_graph=True
+            collate_fn_pes, include_line_graph=True
         )  # Set all include_line_graph to False will disable three-body interactions
         train_loader, val_loader, test_loader = MGLDataLoader(
             train_data=train_dataset,
