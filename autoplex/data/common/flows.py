@@ -111,8 +111,8 @@ class GenerateTrainingDataForTesting(Maker):
             if self.bulk_relax_maker is None:
                 self.bulk_relax_maker = GAPRelaxMaker(
                     calculator_kwargs={
-                        "param_filename": potential_filename,
                         "args_str": "IP GAP",
+                        "param_filename": str(potential_filename),
                     },
                     relax_cell=relax_cell,
                     steps=steps,
@@ -191,8 +191,8 @@ class GenerateTrainingDataForTesting(Maker):
             if self.static_energy_maker is None:
                 self.static_energy_maker = GAPRelaxMaker(
                     calculator_kwargs={
-                        "param_filename": potential_filename,
                         "args_str": "IP GAP",
+                        "param_filename": str(potential_filename),
                     },
                     relax_cell=False,
                     relax_kwargs=relax_kwargs,
