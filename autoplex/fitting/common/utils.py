@@ -1483,6 +1483,7 @@ def energy_remain(in_file):
     ener_in = [
         at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in in_atoms
     ]
+    print(in_atoms[0].info)
     ener_out = [at.info["energy"] / len(at.get_chemical_symbols()) for at in in_atoms]
     rms = rms_dict(ener_in, ener_out)
     return rms["rmse"]

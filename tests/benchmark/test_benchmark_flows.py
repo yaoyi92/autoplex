@@ -12,7 +12,7 @@ def test_benchmark(test_dir, clean_dir):
     from monty.serialization import loadfn
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
 
-    # test wih two different band-structures
+    # test with two different band-structures
 
     dft_data = loadfn(test_dir / "benchmark" / "PhononBSDOSDoc_LiCl.json")
     dft_doc: PhononBSDOSDoc = dft_data["output"]
