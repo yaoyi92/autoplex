@@ -29,7 +29,7 @@ from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from dgl.data.utils import split_dataset
 from matgl.ext.pymatgen import Structure2Graph, get_element_list
-from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_efs
+from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
 from matgl.utils.training import PotentialLightningModule
 from nequip.ase import NequIPCalculator
@@ -755,7 +755,7 @@ def m3gnet_fitting(
                 )
 
         my_collate_fn = partial(
-            collate_fn_efs, include_line_graph=True
+            collate_fn_pes, include_line_graph=True
         )  # Set all include_line_graph to False will disable three-body interactions
         train_loader, val_loader, test_loader = MGLDataLoader(
             train_data=train_dataset,
@@ -1480,10 +1480,25 @@ def energy_remain(in_file):
     """
     # read files
     in_atoms = ase.io.read(in_file, ":")
-    ener_in = [
-        at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in in_atoms
-    ]
-    ener_out = [at.info["energy"] / len(at.get_chemical_symbols()) for at in in_atoms]
+    if "data_type" in in_atoms[0].info:
+        ener_in = [
+            at.info["REF_energy"] / len(at.get_chemical_symbols())
+            for at in in_atoms
+            if at.info["data_type"] != "iso_atoms"
+        ]
+        ener_out = [
+            at.get_potential_energy() / len(at.get_chemical_symbols())
+            for at in in_atoms
+            if at.info["data_type"] != "iso_atoms"
+        ]
+    else:
+        ener_in = [
+            at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in in_atoms
+        ]
+        ener_out = [
+            at.get_potential_energy() / len(at.get_chemical_symbols())
+            for at in in_atoms
+        ]
     rms = rms_dict(ener_in, ener_out)
     return rms["rmse"]
 

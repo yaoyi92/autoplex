@@ -5,7 +5,8 @@ name: Testing Linux
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - '*'
   pull_request:
     branches: [ main ]
 
@@ -31,7 +32,8 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-mock pytest-split pytest-cov
         python -m pip install types-setuptools
-        pip install .[strict]
+        python -m pip install .[strict]
+        python -m pip install ase@git+https://gitlab.com/ase/ase.git@aae51d57721847624cea569f3a2d4bb6aa5032b4
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
