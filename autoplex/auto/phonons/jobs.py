@@ -237,12 +237,20 @@ def dft_random_gen_data(
     structure: Structure,
     mp_id,
     phonon_displacement_maker,
-    n_structures: int = 1,
     uc: bool = False,
     volume_custom_scale_factors: list[float] | None = None,
+    volume_scale_factor_range: list[float] | None = None,
     rattle_std: float = 0.01,
     supercell_matrix: Matrix3D | None = None,
     distort_type: int = 0,
+    n_structures: int = 10,
+    min_distance: float = 1.5,
+    angle_percentage_scale: float = 10,
+    angle_max_attempts: int = 1000,
+    rattle_type: int = 0,
+    rattle_seed: int = 42,
+    rattle_mc_n_iter: int = 10,
+    w_angle: list[float] | None = None,
 ):
     """
     Job to generate random structured DFT reference database to be used for fitting ML potentials.
@@ -255,20 +263,49 @@ def dft_random_gen_data(
         Maker used to compute the forces for a supercell.
     mp_id:
         materials project id
-    n_structures: int.
-        The total number of randomly displaced structures to be generated.
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
-    volume_custom_scale_factors: list[float]
-        list of factors to resize cell parameters.
+    supercell_matrix: Matrix3D or None
+        The matrix to construct the supercell.
+        distort_type : int.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
+    n_structures : int.
+        Total number of distorted structures to be generated.
+        Must be provided if distorting volume without specifying a range, or if distorting angles.
+        Default=10.
+    volume_scale_factor_range : list[float]
+        [min, max] of volume scale factors.
+        e.g. [0.90, 1.10] will distort volume +-10%.
+    volume_custom_scale_factors : list[float]
+        Specify explicit scale factors (if range is not specified).
+        If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
+    min_distance: float
+        Minimum separation allowed between any two atoms.
+        Default= 1.5A.
+    angle_percentage_scale: float
+        Angle scaling factor.
+        Default= 10 will randomly distort angles by +-10% of original value.
+    angle_max_attempts: int.
+        Maximum number of attempts to distort structure before aborting.
+        Default=1000.
+    w_angle: list[float]
+        List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
+        Default= [0, 1, 2].
+    rattle_type: int.
+        0- standard rattling, 1- Monte-Carlo rattling. Default=0.
     rattle_std: float.
         Rattle amplitude (standard deviation in normal distribution).
         Default=0.01.
-    supercell_matrix: Matrix3D or None
-        The matrix to construct the supercell.
-    distort_type : int.
-        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
+        Note that for MC rattling, displacements generated will roughly be
+        rattle_mc_n_iter**0.5 * rattle_std for small values of n_iter.
+    rattle_seed: int.
+        Seed for setting up NumPy random state from which random numbers are generated.
+        Default=42.
+    rattle_mc_n_iter: int.
+        Number of Monte Carlo iterations.
+        Larger number of iterations will generate larger displacements.
+        Default=10.
     """
     jobs = []
 
@@ -279,11 +316,19 @@ def dft_random_gen_data(
         uc=uc,
         rattle_std=rattle_std,
         distort_type=distort_type,
+        min_distance=min_distance,
+        rattle_seed=rattle_seed,
+        rattle_type=rattle_type,
+        angle_max_attempts=angle_max_attempts,
+        angle_percentage_scale=angle_percentage_scale,
+        rattle_mc_n_iter=rattle_mc_n_iter,
+        w_angle=w_angle,
     ).make(
         structure=structure,
         mp_id=mp_id,
         supercell_matrix=supercell_matrix,
         volume_custom_scale_factors=volume_custom_scale_factors,
+        volume_scale_factor_range=volume_scale_factor_range,
     )
     jobs.append(random_datagen)
 

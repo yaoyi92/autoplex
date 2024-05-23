@@ -94,7 +94,11 @@ def scale_cell(
             / (n_structures - 1),
         )
 
-        warnings.warn("Generated lattice scale factors within your range", stacklevel=2)
+        if 1 not in scale_factors_defined:
+            scale_factors_defined = np.append(scale_factors_defined, 1)
+            scale_factors_defined = np.sort(scale_factors_defined)
+
+        warnings.warn(f"Generated lattice scale factors {scale_factors_defined} within your range", stacklevel=2)
 
     else:  # range is not specified
         if volume_custom_scale_factors is None:
@@ -442,15 +446,18 @@ def sort_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
                 out_force = at_out.arrays["force"][j]
                 rms = rms_dict(in_force, out_force)
                 force_error.append(rms["rmse"])
-        if not any(np.any(array > criteria) for array in force_error):
+        at_in.info["max RMSE"] = max(force_error)
+        at_in.info["avg RMSE"] = sum(force_error) / len(force_error) if force_error else 0
+        at_in.info["RMSE"] = force_error
+        if not any(np.any(value > criteria) for value in force_error):
             atoms_in.append(at_in)
             atoms_out.append(at_out)
         else:
             outliers.append(at_in)
 
-    write("sorted_in_force.extxyz", atoms_in, append=True)
-    write("sorted_out_force.extxyz", atoms_out, append=True)
-    write("outliers_force.extxyz", outliers, append=True)
+    write("sorted_in_force.extxyz", atoms_in, append=False)
+    write("sorted_out_force.extxyz", atoms_out, append=False)
+    write("outliers_force.extxyz", outliers, append=False)
 
 
 # copied from libatoms GAP tutorial page and adapted accordingly
@@ -597,6 +604,8 @@ def force_plot(
         verticalalignment="bottom",
     )
 
+    return _rms["rmse"]
+
 
 def plot_energy_forces(title: str, energy_limit: float, force_limit: float):
     """
@@ -613,15 +622,10 @@ def plot_energy_forces(title: str, energy_limit: float, force_limit: float):
     fig.set_size_inches(15, 20)
     ax_list = ax_list.flat[:]
 
-    sort_outlier_energy("train.extxyz", "quip_train.extxyz", energy_limit)
-    sort_outlier_energy("test.extxyz", "quip_test.extxyz", energy_limit)
-    sort_outlier_forces("train.extxyz", "quip_train.extxyz", "Si", force_limit)
-    sort_outlier_forces("test.extxyz", "quip_test.extxyz", "Si", force_limit)
-
     energy_plot(
         "train.extxyz", "quip_train.extxyz", ax_list[0], "Energy on training data"
     )
-    force_plot(
+    rmse_train = force_plot(
         "train.extxyz",
         "quip_train.extxyz",
         ax_list[1],
@@ -629,9 +633,15 @@ def plot_energy_forces(title: str, energy_limit: float, force_limit: float):
         "Force on training data - Si",
     )
     energy_plot("test.extxyz", "quip_test.extxyz", ax_list[2], "Energy on test data")
-    force_plot(
+    rmse_test = force_plot(
         "test.extxyz", "quip_test.extxyz", ax_list[3], "Si", "Force on test data - Si"
     )
+
+    sort_outlier_energy("train.extxyz", "quip_train.extxyz", energy_limit)
+    sort_outlier_energy("test.extxyz", "quip_test.extxyz", energy_limit)
+    sort_outlier_forces("train.extxyz", "quip_train.extxyz", "Si", force_limit)
+    sort_outlier_forces("test.extxyz", "quip_test.extxyz", "Si", force_limit)
+
     energy_plot(
         "sorted_in_energy.extxyz",
         "sorted_out_energy.extxyz",
