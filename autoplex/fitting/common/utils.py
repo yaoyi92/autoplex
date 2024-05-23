@@ -686,15 +686,12 @@ def m3gnet_fitting(
             converter=train_converter,
             labels=train_labels,
             include_line_graph=True,
-            filename=os.path.join(results_dir, exp_name, "dgl_graph_train.bin"),
-            filename_lattice=os.path.join(results_dir, exp_name, "lattice_train.pt"),
-            filename_line_graph=os.path.join(
-                results_dir, exp_name, "dgl_line_graph_train.bin"
-            ),
-            filename_state_attr=os.path.join(
-                results_dir, exp_name, "state_attr_train.pt"
-            ),
-            filename_labels=os.path.join(results_dir, exp_name, "labels_train.json"),
+            filename="dgl_graph_train.bin",
+            filename_lattice="lattice_train.pt",
+            filename_line_graph="dgl_line_graph_train.bin",
+            filename_state_attr="state_attr_train.pt",
+            filename_labels="labels_train.json",
+            save_dir=os.path.join(results_dir, exp_name),
         )
 
         if os.path.exists(os.path.join(db_dir, "test.extxyz")):
@@ -724,15 +721,12 @@ def m3gnet_fitting(
                 converter=test_converter,
                 labels=test_labels,
                 include_line_graph=True,
-                filename=os.path.join(results_dir, exp_name, "dgl_graph_test.bin"),
-                filename_lattice=os.path.join(results_dir, exp_name, "lattice_test.pt"),
-                filename_line_graph=os.path.join(
-                    results_dir, exp_name, "dgl_line_graph_test.bin"
-                ),
-                filename_state_attr=os.path.join(
-                    results_dir, exp_name, "state_attr_test.pt"
-                ),
-                filename_labels=os.path.join(results_dir, exp_name, "labels_test.json"),
+                filename="dgl_graph_test.bin",
+                filename_lattice="lattice_test.pt",
+                filename_line_graph="dgl_line_graph_test.bin",
+                filename_state_attr="state_attr_test.pt",
+                filename_labels="labels_test.json",
+                save_dir=os.path.join(results_dir, exp_name),
             )
 
         if test_equal_to_val:
