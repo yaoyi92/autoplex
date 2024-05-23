@@ -319,7 +319,7 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
 
 
     # # Test to check if julia-ace fit runs with pre_database_dir
-    # jacefit = MLIPFitMaker(mlip_type="J-ACE", mlip_hyper={'order':3, 'totaldegree':6, 'cutoff':2.0, 
+    # jacefit = MLIPFitMaker(mlip_type="J-ACE", mlip_hyper={'order':3, 'totaldegree':6, 'cutoff':2.0,
     #                              'solver':'BLR',}).make(isol_es={3: -0.28649227, 17:-0.25638457},
     #                              fit_input=fit_input_dict, pre_database_dir=str(test_files_dir),
     #                              pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],num_processes=4)
@@ -353,7 +353,7 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
     #             "max_epochs": 4,
     #             "default_dtype": "float32",
     #             "device": 'cpu',
-    #         }).make(fit_input=fit_input_dict, 
+    #         }).make(fit_input=fit_input_dict,
     #                             isol_es={3: -0.28649227, 17:-0.25638457},
     #                             pre_database_dir=str(test_files_dir),
     #                             pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
@@ -424,7 +424,7 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
     #             "loss": "huber",
     #             "default_dtype": "float32",
     #             "device": "cpu",
-    #         }).make(fit_input=fit_input_dict, 
+    #         }).make(fit_input=fit_input_dict,
     #                             pre_database_dir=str(test_files_dir),
     #                             pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
     #                             num_processes=1)
@@ -444,7 +444,7 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
     # os.chdir(parent_dir)
 
 def test_mlip_fit_maker_glue_xml(
-    test_dir, memory_jobstore, vasp_test_dir, #clean_dir
+    test_dir, memory_jobstore, vasp_test_dir, clean_dir
 ):
     import os
     import shutil
