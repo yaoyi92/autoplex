@@ -646,7 +646,20 @@ def m3gnet_fitting(
     """
     os.makedirs(os.path.join(results_dir, exp_name), exist_ok=True)
 
-    with open("m3gnet.log", "a") as log_file:
+    with open('output.txt', 'w') as f:
+        # Backup original stdout stream.
+        original_stdout = sys.stdout
+
+        # Set stdout to the file object.
+        sys.stdout = f
+
+        # Print something (it goes to the file).
+        print('This line will be written to the file.')
+
+        # Restore original stdout stream.
+        sys.stdout = original_stdout
+
+    with open("m3gnet.log", "w") as log_file:
         original_stdout = sys.stdout
         original_stderr = sys.stderr
         sys.stdout = log_file
@@ -676,6 +689,7 @@ def m3gnet_fitting(
             "stresses": train_stresses,
         }
         train_element_types = get_element_list(train_structs)
+        # a logger should be used
         print(train_element_types)
         train_converter = Structure2Graph(
             element_types=train_element_types, cutoff=cutoff
@@ -792,6 +806,7 @@ def m3gnet_fitting(
                 logger=logger,
                 inference_mode=False,
             )
+        # Again loggers ...
         print("Start training...")
         print("Length of train_loader: ", len(train_loader))
         print("Length of val_loader: ", len(val_loader))
@@ -814,7 +829,6 @@ def m3gnet_fitting(
         sys.stdout = original_stdout
         sys.stderr = original_stderr
 
-    log_file.close()
 
     for fn in (
         "dgl_graph_train.bin",
@@ -847,13 +861,17 @@ def m3gnet_fitting(
     }
 
     extracted_values = {}
-
-    with open("m3gnet.log") as file:
+    with open("m3gnet.log", 'r') as file:
         content = file.read()
 
         for section, metrics in sections.items():
             start_index = content.find(section)
+            print("Start")
+            print(start_index)
             if start_index != -1:
+                for sec in sections:
+                    print("section")
+                    print(content.find(sec, start_index + 1))
                 next_index = min(
                     [
                         content.find(sec, start_index + 1)
@@ -863,11 +881,11 @@ def m3gnet_fitting(
                     default=len(content),
                 )
                 section_content = content[start_index:next_index]
-
+                print(section_content)
                 for key, metric in metrics.items():
-                    match = re.search(rf"{metric}\s+\│\s+([\d\.]+)", section_content)
-                    if match:
-                        extracted_values[key] = float(match.group(1))
+                    for line in section_content.split("\n"):
+                        if metric in line:
+                            extracted_values[key] =float(line.split()[1])
 
     for key, value in extracted_values.items():
         print(f"{key}: {value}")
@@ -879,7 +897,7 @@ def m3gnet_fitting(
     [TODO] Switch it to the strict RMSE.
     """
     mlip_path = Path.cwd() / model_export_path
-
+    print(extracted_values)
     return {
         "train_error": extracted_values["train_Energy_RMSE"],
         "test_error": extracted_values["test_Energy_RMSE"],

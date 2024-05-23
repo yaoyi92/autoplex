@@ -213,7 +213,7 @@ def test_mlip_fit_maker_with_kwargs(
 
     os.chdir(parent_dir)
 
-def test_mlip_fit_maker_with_pre_database_dir(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
+def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_test_dir, clean_dir):
     import os
     import shutil
     from pathlib import Path
