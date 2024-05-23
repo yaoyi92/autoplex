@@ -98,7 +98,10 @@ def scale_cell(
             scale_factors_defined = np.append(scale_factors_defined, 1)
             scale_factors_defined = np.sort(scale_factors_defined)
 
-        warnings.warn(f"Generated lattice scale factors {scale_factors_defined} within your range", stacklevel=2)
+        warnings.warn(
+            f"Generated lattice scale factors {scale_factors_defined} within your range",
+            stacklevel=2,
+        )
 
     else:  # range is not specified
         if volume_custom_scale_factors is None:
@@ -447,7 +450,9 @@ def sort_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
                 rms = rms_dict(in_force, out_force)
                 force_error.append(rms["rmse"])
         at_in.info["max RMSE"] = max(force_error)
-        at_in.info["avg RMSE"] = sum(force_error) / len(force_error) if force_error else 0
+        at_in.info["avg RMSE"] = (
+            sum(force_error) / len(force_error) if force_error else 0
+        )
         at_in.info["RMSE"] = force_error
         if not any(np.any(value > criteria) for value in force_error):
             atoms_in.append(at_in)
@@ -625,7 +630,8 @@ def plot_energy_forces(title: str, energy_limit: float, force_limit: float):
     energy_plot(
         "train.extxyz", "quip_train.extxyz", ax_list[0], "Energy on training data"
     )
-    rmse_train = force_plot(
+    # rmse_train =
+    force_plot(
         "train.extxyz",
         "quip_train.extxyz",
         ax_list[1],
@@ -633,7 +639,8 @@ def plot_energy_forces(title: str, energy_limit: float, force_limit: float):
         "Force on training data - Si",
     )
     energy_plot("test.extxyz", "quip_test.extxyz", ax_list[2], "Energy on test data")
-    rmse_test = force_plot(
+    # rmse_test =
+    force_plot(
         "test.extxyz", "quip_test.extxyz", ax_list[3], "Si", "Force on test data - Si"
     )
 

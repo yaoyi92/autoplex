@@ -127,7 +127,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     symprec: float = 1e-4
     uc: bool = False
     volume_custom_scale_factors: list[float] | None = None
-    volume_scale_factor_range: list[float] | None = None,
+    volume_scale_factor_range: list[float] | None = None
     rattle_std: float = 0.01
     supercell_matrix: Matrix3D | None = None
     distort_type: int = 0
@@ -215,7 +215,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     angle_max_attempts=self.angle_max_attempts,
                     angle_percentage_scale=self.angle_percentage_scale,
                     w_angle=self.w_angle,
-
                 )
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
