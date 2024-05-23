@@ -689,7 +689,7 @@ def m3gnet_fitting(
             "stresses": train_stresses,
         }
         train_element_types = get_element_list(train_structs)
-        # a logger should be used
+
         print(train_element_types)
         train_converter = Structure2Graph(
             element_types=train_element_types, cutoff=cutoff
@@ -866,12 +866,8 @@ def m3gnet_fitting(
 
         for section, metrics in sections.items():
             start_index = content.find(section)
-            print("Start")
-            print(start_index)
             if start_index != -1:
                 for sec in sections:
-                    print("section")
-                    print(content.find(sec, start_index + 1))
                 next_index = min(
                     [
                         content.find(sec, start_index + 1)
@@ -881,7 +877,6 @@ def m3gnet_fitting(
                     default=len(content),
                 )
                 section_content = content[start_index:next_index]
-                print(section_content)
                 for key, metric in metrics.items():
                     for line in section_content.split("\n"):
                         if metric in line:
@@ -897,7 +892,7 @@ def m3gnet_fitting(
     [TODO] Switch it to the strict RMSE.
     """
     mlip_path = Path.cwd() / model_export_path
-    print(extracted_values)
+
     return {
         "train_error": extracted_values["train_Energy_RMSE"],
         "test_error": extracted_values["test_Energy_RMSE"],
