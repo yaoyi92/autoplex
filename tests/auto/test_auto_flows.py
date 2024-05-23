@@ -107,7 +107,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01], volume_scale_factors=[0.975, 1.0, 1.025, 1.05], phonon_displacement_maker=TightDFTStaticMaker(),
+    complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01], volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05], phonon_displacement_maker=TightDFTStaticMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
@@ -198,7 +198,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             min_length=8,
             displacements=[0.01],
             phonon_displacement_maker=TightDFTStaticMaker(),
-            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -247,7 +247,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_phonon_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
-            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -296,7 +296,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_phonon_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
-            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -332,7 +332,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_random_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
-            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -367,7 +367,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             min_length=8,
             displacements=[0.01],
             phonon_displacement_maker=TightDFTStaticMaker(),
-            volume_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
             structure_list=[structure],
             mp_ids=["mp-22905"],
@@ -392,11 +392,11 @@ def test_phonon_dft_ml_data_generation_flow(
     structure = Structure.from_file(path_to_struct)
 
     flow_data_generation = CompleteDFTvsMLBenchmarkWorkflow(
-        n_structures=3, min_length=10, symprec=1e-2, volume_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        n_structures=3, min_length=10, symprec=1e-2, volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
     ).make(structure_list=[structure], mp_ids=["mp-22905"])
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
-        n_structures=3, min_length=10, symprec=1e-2, add_dft_random_struct=False, volume_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        n_structures=3, min_length=10, symprec=1e-2, add_dft_random_struct=False, volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
     ).make(structure_list=[structure], mp_ids=["mp-22905"])
 
     ref_paths = {

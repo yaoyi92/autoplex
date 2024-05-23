@@ -158,7 +158,7 @@ class DataPreprocessing(Maker):
         fit_input: dict,
         pre_database_dir: str | None = None,
         pre_xyz_files: list[str] | None = None,
-        atom_wise_regularization_parameter: float = 0.1,
+        atomwise_regularization_parameter: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
     ):
@@ -173,7 +173,7 @@ class DataPreprocessing(Maker):
             the pre-database directory.
         pre_xyz_files: list[str] or None
             names of the pre-database train xyz file and test xyz file labeled by VASP.
-        atom_wise_regularization_parameter: float
+        atomwise_regularization_parameter: float
             regularization value for the atom-wise force components.
         f_min: float
             minimal force cutoff value for atom-wise regularization.
@@ -221,7 +221,7 @@ class DataPreprocessing(Maker):
             config_types=config_types,
             data_types=data_types,
             f_min=f_min,
-            regularization=atom_wise_regularization_parameter,
+            regularization=atomwise_regularization_parameter,
             atom_wise_regularization=atom_wise_regularization,
         )
 
