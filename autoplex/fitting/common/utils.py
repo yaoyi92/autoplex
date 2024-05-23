@@ -646,7 +646,7 @@ def m3gnet_fitting(
     """
     os.makedirs(os.path.join(results_dir, exp_name), exist_ok=True)
 
-    with open('output.txt', 'w') as f:
+    with open("output.txt", "w") as f:
         # Backup original stdout stream.
         original_stdout = sys.stdout
 
@@ -654,7 +654,7 @@ def m3gnet_fitting(
         sys.stdout = f
 
         # Print something (it goes to the file).
-        print('This line will be written to the file.')
+        print("This line will be written to the file.")
 
         # Restore original stdout stream.
         sys.stdout = original_stdout
@@ -829,7 +829,6 @@ def m3gnet_fitting(
         sys.stdout = original_stdout
         sys.stderr = original_stderr
 
-
     for fn in (
         "dgl_graph_train.bin",
         "lattice_train.pt",
@@ -861,13 +860,12 @@ def m3gnet_fitting(
     }
 
     extracted_values = {}
-    with open("m3gnet.log", 'r') as file:
+    with open("m3gnet.log") as file:
         content = file.read()
 
         for section, metrics in sections.items():
             start_index = content.find(section)
             if start_index != -1:
-                for sec in sections:
                 next_index = min(
                     [
                         content.find(sec, start_index + 1)
@@ -880,7 +878,7 @@ def m3gnet_fitting(
                 for key, metric in metrics.items():
                     for line in section_content.split("\n"):
                         if metric in line:
-                            extracted_values[key] =float(line.split()[1])
+                            extracted_values[key] = float(line.split()[1])
 
     for key, value in extracted_values.items():
         print(f"{key}: {value}")
