@@ -270,6 +270,8 @@ def dft_random_gen_data(
         The matrix to construct the supercell.
         distort_type : int.
         0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
+    distort_type : int.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     n_structures : int.
         Total number of distorted structures to be generated.
         Must be provided if distorting volume without specifying a range, or if distorting angles.
