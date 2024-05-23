@@ -268,7 +268,7 @@ def dft_random_gen_data(
         and add static computation jobs to the flow.
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
-        distort_type : int.
+    distort_type : int.
         0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     distort_type : int.
         0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.

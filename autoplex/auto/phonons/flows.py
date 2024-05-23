@@ -75,7 +75,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         and add static computation jobs to the flow.
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
-        distort_type : int.
+    distort_type : int.
         0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     volume_scale_factor_range : list[float]
         [min, max] of volume scale factors.
