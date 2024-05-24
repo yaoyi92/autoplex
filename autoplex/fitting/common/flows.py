@@ -131,7 +131,7 @@ class MLIPFitMaker(Maker):
             mlip_hyper=self.mlip_hyper,
             num_processes=num_processes,
             regularization=regularization,
-            **fit_kwargs
+            **fit_kwargs,
         )
         jobs.append(mlip_fit_job)  # type: ignore
 
