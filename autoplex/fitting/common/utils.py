@@ -881,7 +881,7 @@ def m3gnet_fitting(
                             if metric in line.split()[0]:
                                 extracted_values[key] = float(line.split()[1])
                             else:
-                                extracted_values[key] = float(line.split()[2])
+                                extracted_values[key] = float(line.split()[3])
 
     for key, value in extracted_values.items():
         print(f"{key}: {value}")
