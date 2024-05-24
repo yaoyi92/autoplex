@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
+import re
 import shutil
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable
+from functools import partial
 from itertools import combinations
 from pathlib import Path
 
@@ -15,12 +19,24 @@ import ase
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pytorch_lightning as pl
+import torch
 from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
+from ase.data import chemical_symbols
 from ase.io import read, write
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
+from dgl.data.utils import split_dataset
+from matgl.ext.pymatgen import Structure2Graph, get_element_list
+from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
+from matgl.models import M3GNet
+from matgl.utils.training import PotentialLightningModule
+from nequip.ase import NequIPCalculator
+from pymatgen.io.ase import AseAtomsAdaptor
+from pytorch_lightning.loggers import CSVLogger
 from scipy.spatial import ConvexHull
+from scipy.special import comb
 from sklearn.model_selection import StratifiedShuffleSplit
 
 current_dir = Path(__file__).absolute().parent
@@ -95,7 +111,7 @@ def gap_fitting(
     if include_two_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
         if auto_delta:
-            delta_2b = calculate_delta(db_atoms, "REF_energy")
+            delta_2b, num_triplet = calculate_delta(db_atoms, "REF_energy")
             gap_default_hyperparameters["twob"].update({"delta": delta_2b})
 
         fit_parameters_list = gap_hyperparameter_constructor(
@@ -110,6 +126,7 @@ def gap_fitting(
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
         if auto_delta:
             delta_3b = energy_remain("quip_train.extxyz")
+            delta_3b = delta_3b / num_triplet
             gap_default_hyperparameters["threeb"].update({"delta": delta_3b})
 
         fit_parameters_list = gap_hyperparameter_constructor(
@@ -182,6 +199,801 @@ def gap_fitting(
         "train_error": train_error,
         "test_error": test_error,
         "mlip_path": mlip_path,
+    }
+
+
+def ace_fitting(
+    db_dir: str | Path,
+    order: int = 4,
+    totaldegree: int = 16,
+    cutoff: float = 5.0,
+    solver: str = "BLR",
+    isol_es: dict | None = None,
+    num_processes: int = 32,
+):
+    """
+    Perform the ACE (Atomic Cluster Expansion) potential fitting.
+
+    This function sets up and executes a Julia script to perform ACE fitting using specified parameters
+    and input data located in the provided directory. It handles the input/output of atomic configurations,
+    sets up the ACE model, and calculates training and testing errors after fitting.
+
+    Parameters
+    ----------
+    db_dir: str or Path
+        directory containing the training and testing data files.
+    order: int
+        order of ACE.
+    totaldegree: int
+        total degree of the polynomial terms in the ACE model.
+    cutoff: float
+        cutoff distance for atomic interactions in the ACE model.
+    solver: str
+        solver to be used for fitting the ACE model. Default is "BLR" (Bayesian Linear Regression).
+        For very large-scale parameter estimation problems, using "LSQR" solver.
+    isol_es: dict:
+        mandatory dictionary mapping element numbers to isolated energies.
+    num_processes: int
+        number of processes to use for parallel computation.
+
+    Returns
+    -------
+    dict[str, float]
+        A dictionary containing train_error, test_error, and the path to the fitted MLIP.
+
+    Raises
+    ------
+    - ValueError: If the `isol_es` dictionary is empty or not provided when required.
+
+    Example:
+    >>> result = ace_fitting('/path/to/data', order=2, totaldegree=12, cutoff=6.0, solver='BLR', num_processes=4)
+    >>> print(result['train_error'], result['test_error'])
+    """
+    train_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
+    source_file_path = os.path.join(db_dir, "test.extxyz")
+    shutil.copy(source_file_path, ".")
+    isol_es_update = {}
+
+    if isol_es:
+        for e_num, e_energy in isol_es.items():
+            isol_es_update[chemical_symbols[int(e_num)]] = e_energy
+    else:
+        raise ValueError("isol_es is empty or not defined!")
+
+    formatted_isol_es = (
+        "["
+        + ", ".join([f":{key} => {value}" for key, value in isol_es_update.items()])
+        + "]"
+    )
+    formatted_species = (
+        "[" + ", ".join([f":{key}" for key, value in isol_es_update.items()]) + "]"
+    )
+
+    train_ace = [
+        at for at in train_atoms if "IsolatedAtom" not in at.info["config_type"]
+    ]
+    ase.io.write("train_ace.extxyz", train_ace, format="extxyz")
+
+    ace_text = f"""using ACEpotentials
+using LinearAlgebra: norm, Diagonal
+using CSV, DataFrames
+using Distributed
+addprocs({num_processes-1}, exeflags="--project=$(Base.active_project())")
+@everywhere using ACEpotentials
+
+data_file = "train_ace.extxyz"
+data = read_extxyz(data_file)
+test_data_file = "test.extxyz"
+test_data = read_extxyz(test_data_file)
+data_keys = (energy_key = "REF_energy", force_key = "REF_force", virial_key = "REF_virial")
+
+model = acemodel(elements={formatted_species},
+                order={order},
+                totaldegree={totaldegree},
+                rcut={cutoff},
+                Eref={formatted_isol_es})
+
+weights = Dict(
+            "crystal" => Dict("E" => 30.0, "F" => 1.0 , "V" => 1.0 ),
+            "RSS" => Dict("E" => 3.0, "F" => 0.5 , "V" => 0.1 ),
+            "amorphous" => Dict("E" => 3.0, "F" => 0.5 , "V" => 0.1 ),
+            "liquid" => Dict("E" => 10.0, "F" => 0.5 , "V" => 0.25 ),
+            "RSS_initial" => Dict("E" => 1.0, "F" => 0.5 , "V" => 0.1 ),
+            "dimer" => Dict("E" => 30.0, "F" => 1.0 , "V" => 1.0 )
+            )
+
+P = smoothness_prior(model; p = 4)
+
+solver = ACEfit.{solver}()
+
+acefit!(model, data; solver=solver, weights=weights, prior = P, data_keys...)
+
+@info("Training Error Table")
+ACEpotentials.linear_errors(data, model; data_keys...)
+
+@info("Testing Error Table")
+ACEpotentials.linear_errors(test_data, model; data_keys...)
+
+@info("Manual RMSE Test")
+potential = model.potential
+train_energies = [ JuLIP.get_data(at, "REF_energy") / length(at) for at in data]
+model_energies_train = [energy(potential, at) / length(at) for at in data]
+rmse_energy_train = norm(train_energies - model_energies_train) / sqrt(length(data))
+test_energies = [ JuLIP.get_data(at, "REF_energy") / length(at) for at in test_data]
+model_energies_pred = [energy(potential, at) / length(at) for at in test_data]
+rmse_energy_test = norm(test_energies - model_energies_pred) / sqrt(length(test_data))
+
+df = DataFrame(rmse_energy_train = rmse_energy_train, rmse_energy_test = rmse_energy_test)
+CSV.write("rmse_energies.csv", df)
+
+save_potential("acemodel.json", model)
+export2lammps("acemodel.yace", model)
+    """
+
+    with open("ace.jl", "w") as file:
+        file.write(ace_text)
+
+    os.system(f"export OMP_NUM_THREADS={num_processes} && julia ace.jl")
+
+    energy_err = pd.read_csv("rmse_energies.csv")
+    train_error = energy_err["rmse_energy_train"][0]
+    test_error = energy_err["rmse_energy_test"][0]
+
+    return {
+        "train_error": train_error,
+        "test_error": test_error,
+        "mlip_path": Path.cwd(),
+    }
+
+
+def nequip_fitting(
+    db_dir: str,
+    r_max: float = 4.0,
+    num_layers: int = 4,
+    l_max: int = 2,
+    num_features: int = 32,
+    num_basis: int = 8,
+    invariant_layers: int = 2,
+    invariant_neurons: int = 64,
+    batch_size: int = 5,
+    learning_rate: float = 0.005,
+    max_epochs: int = 10000,
+    default_dtype: str = "float32",
+    isol_es: dict | None = None,
+    device: str = "cuda",
+):
+    """
+    Perform the NequIP potential fitting.
+
+    This function sets up and executes a python script to perform NequIP fitting using specified parameters
+    and input data located in the provided directory. It handles the input/output of atomic configurations,
+    sets up the NequIP model, and calculates training and testing errors after fitting.
+
+    Parameters
+    ----------
+    db_dir: str or Path
+        directory containing the training and testing data files.
+    r_max: float
+        cutoff radius in length units
+    num_layers: int
+        number of interaction blocks
+    l_max: int
+        maximum irrep order (rotation order) for the network's features
+    num_features: int
+        multiplicity of the features
+    num_basis: int
+        number of basis functions used in the radial basis
+    invariant_layers: int
+        number of radial layers
+    invariant_neurons: int
+        number of hidden neurons in radial function
+    batch_size: int
+        batch size
+    learning_rate: float
+        learning rate
+    default_dtype: str
+        type of float to use, e.g. float32 and float64
+    isol_es: dict
+        mandatory dictionary mapping element numbers to isolated energies.
+    device: str
+        specify device to use cuda or cpu
+
+    Returns
+    -------
+    dict[str, float]
+        A dictionary containing train_error, test_error, and the path to the fitted MLIP.
+
+    Raises
+    ------
+    - ValueError: If the `isol_es` dictionary is empty or not provided when required.
+    """
+    train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
+    train_nequip = [
+        at for at in train_data if "IsolatedAtom" not in at.info["config_type"]
+    ]
+    ase.io.write("train_nequip.extxyz", train_nequip, format="extxyz")
+
+    test_data = ase.io.read(os.path.join(db_dir, "test.extxyz"), index=":")
+    num_of_train = len(train_nequip)
+    num_of_val = len(test_data)
+
+    isol_es_update = ""
+    ele_syms = []
+    if isol_es:
+        for e_num in isol_es:
+            ele_sym = "  - " + chemical_symbols[int(e_num)] + "\n"
+            isol_es_update += ele_sym
+            ele_syms.append(chemical_symbols[int(e_num)])
+    else:
+        raise ValueError("isol_es is empty or not defined!")
+
+    nequip_text = f"""root: results
+run_name: autoplex
+seed: 123
+dataset_seed: 456
+append: true
+default_dtype: {default_dtype}
+
+# network
+r_max: {r_max}
+num_layers: {num_layers}
+l_max: {l_max}
+parity: true
+num_features: {num_features}
+nonlinearity_type: gate
+
+nonlinearity_scalars:
+  e: silu
+  o: tanh
+
+nonlinearity_gates:
+  e: silu
+  o: tanh
+
+num_basis: {num_basis}
+BesselBasis_trainable: true
+PolynomialCutoff_p: 6
+
+invariant_layers: {invariant_layers}
+invariant_neurons: {invariant_neurons}
+avg_num_neighbors: auto
+
+use_sc: true
+dataset: ase
+validation_dataset: ase
+dataset_file_name: ./train_nequip.extxyz
+validation_dataset_file_name: {db_dir}/test.extxyz
+
+ase_args:
+  format: extxyz
+dataset_key_mapping:
+  REF_energy: total_energy
+  REF_forces: forces
+validation_dataset_key_mapping:
+  REF_energy: total_energy
+  REF_forces: forces
+
+chemical_symbols:
+{isol_es_update}
+wandb: False
+wandb_project: autoplex
+
+verbose: info
+log_batch_freq: 10
+log_epoch_freq: 1
+save_checkpoint_freq: -1
+save_ema_checkpoint_freq: -1
+
+n_train: {num_of_train}
+n_val: {num_of_val}
+learning_rate: {learning_rate}
+batch_size: {batch_size}
+validation_batch_size: 10
+max_epochs: {max_epochs}
+shuffle: true
+metrics_key: validation_loss
+use_ema: true
+ema_decay: 0.99
+ema_use_num_updates: true
+report_init_validation: true
+
+early_stopping_patiences:
+  validation_loss: 50
+
+early_stopping_lower_bounds:
+  LR: 1.0e-5
+
+loss_coeffs:
+  forces: 1
+  total_energy:
+    - 1
+    - PerAtomMSELoss
+
+metrics_components:
+  - - forces
+    - mae
+  - - forces
+    - rmse
+  - - forces
+    - mae
+    - PerSpecies: True
+      report_per_component: False
+  - - forces
+    - rmse
+    - PerSpecies: True
+      report_per_component: False
+  - - total_energy
+    - mae
+  - - total_energy
+    - mae
+    - PerAtom: True
+
+optimizer_name: Adam
+optimizer_amsgrad: true
+
+lr_scheduler_name: ReduceLROnPlateau
+lr_scheduler_patience: 100
+lr_scheduler_factor: 0.5
+
+per_species_rescale_shifts_trainable: false
+per_species_rescale_scales_trainable: false
+
+per_species_rescale_shifts: dataset_per_atom_total_energy_mean
+per_species_rescale_scales: dataset_forces_rms
+    """
+
+    with open("nequip.yaml", "w") as file:
+        file.write(nequip_text)
+
+    run_nequip("nequip-train nequip.yaml", "nequip_train")
+    run_nequip(
+        "nequip-deploy build --train-dir results/autoplex ./deployed_nequip_model.pth",
+        "nequip_deploy",
+    )
+
+    calc = NequIPCalculator.from_deployed_model(
+        model_path="deployed_nequip_model.pth",
+        device=device,
+        species_to_type_name={s: s for s in ele_syms},
+        set_global_options=False,
+    )
+
+    ener_out_train = []
+    for at in train_nequip:
+        at.calc = calc
+        ener_out_train.append(at.get_potential_energy() / len(at))
+
+    ener_in_train = [
+        at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in train_nequip
+    ]
+
+    train_error = rms_dict(ener_in_train, ener_out_train)["rmse"]
+
+    ener_out_test = []
+    for at in test_data:
+        at.calc = calc
+        ener_out_test.append(at.get_potential_energy() / len(at))
+
+    ener_in_test = [
+        at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in test_data
+    ]
+
+    test_error = rms_dict(ener_in_test, ener_out_test)["rmse"]
+
+    return {
+        "train_error": train_error,
+        "test_error": test_error,
+        "mlip_path": Path.cwd(),
+    }
+
+
+def m3gnet_fitting(
+    db_dir: str,
+    exp_name: str = "training",
+    results_dir: str = "m3gnet_results",
+    cutoff: float = 5.0,
+    threebody_cutoff: float = 4.0,
+    batch_size: int = 10,
+    max_epochs: int = 1000,
+    include_stresses: bool = True,
+    hidden_dim: int = 128,
+    num_units: int = 128,
+    max_l: int = 4,
+    max_n: int = 4,
+    device: str = "cuda",
+    test_equal_to_val: bool = True,
+):
+    """
+    Perform the M3GNet potential fitting.
+
+    Parameters
+    ----------
+    db_dir: str or Path
+        Directory containing the training and testing data files.
+    exp_name: str
+        Name of the experiment, used for saving model checkpoints and logs.
+    results_dir: str
+        Directory to store the training results and fitted model.
+    cutoff: float
+        Cutoff radius for atomic interactions in length units.
+    threebody_cutoff: float
+        Cutoff radius for three-body interactions in length units.
+    batch_size: int
+        Number of structures per batch during training.
+    max_epochs: int
+        Maximum number of training epochs.
+    include_stresses: bool
+        If True, includes stress tensors in the model predictions and training process.
+    hidden_dim: int
+        Dimensionality of the hidden layers in the model.
+    num_units: int
+        Number of units in each dense layer of the model.
+    max_l: int
+        Maximum degree of spherical harmonics.
+    max_n: int
+        Maximum radial function degree.
+    device: str
+        Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
+    test_equal_to_val: bool
+        If True, the testing dataset will be the same as the validation dataset.
+
+    Returns
+    -------
+    dict[str, float]
+        A dictionary containing keys such as 'train_error', 'test_error', and 'path_to_fitted_model',
+        representing the training error, test error, and the location of the saved model, respectively.
+
+    """
+    os.makedirs(os.path.join(results_dir, exp_name), exist_ok=True)
+
+    with open("output.txt", "w") as f:
+        # Backup original stdout stream.
+        original_stdout = sys.stdout
+
+        # Set stdout to the file object.
+        sys.stdout = f
+
+        # Print something (it goes to the file).
+        print("This line will be written to the file.")
+
+        # Restore original stdout stream.
+        sys.stdout = original_stdout
+
+    with open("m3gnet.log", "w") as log_file:
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        sys.stdout = log_file
+        sys.stderr = log_file
+
+        train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
+        train_m3gnet = [
+            at
+            for at in train_data
+            if "IsolatedAtom" not in at.info["config_type"]
+            and "dimer" not in at.info["config_type"]
+        ]
+
+        # prepare train dataset
+        (
+            train_structs,
+            train_energies,
+            train_forces,
+            train_stresses,
+        ) = convert_xyz_to_structure(
+            train_m3gnet, include_forces=True, include_stresses=include_stresses
+        )
+
+        train_labels = {
+            "energies": train_energies,
+            "forces": train_forces,
+            "stresses": train_stresses,
+        }
+        train_element_types = get_element_list(train_structs)
+
+        print(train_element_types)
+        train_converter = Structure2Graph(
+            element_types=train_element_types, cutoff=cutoff
+        )
+        train_datasets = MGLDataset(
+            threebody_cutoff=threebody_cutoff,
+            structures=train_structs,
+            converter=train_converter,
+            labels=train_labels,
+            include_line_graph=True,
+            filename="dgl_graph_train.bin",
+            filename_lattice="lattice_train.pt",
+            filename_line_graph="dgl_line_graph_train.bin",
+            filename_state_attr="state_attr_train.pt",
+            filename_labels="labels_train.json",
+            save_dir=os.path.join(results_dir, exp_name),
+        )
+
+        if os.path.exists(os.path.join(db_dir, "test.extxyz")):
+            test_data = ase.io.read(os.path.join(db_dir, "test.extxyz"), index=":")
+            # prepare test dataset
+            (
+                test_structs,
+                test_energies,
+                test_forces,
+                test_stresses,
+            ) = convert_xyz_to_structure(
+                test_data, include_forces=True, include_stresses=include_stresses
+            )
+
+            test_labels = {
+                "energies": test_energies,
+                "forces": test_forces,
+                "stresses": test_stresses,
+            }
+            test_element_types = get_element_list(test_structs)
+            test_converter = Structure2Graph(
+                element_types=test_element_types, cutoff=cutoff
+            )
+            test_dataset = MGLDataset(
+                threebody_cutoff=threebody_cutoff,
+                structures=test_structs,
+                converter=test_converter,
+                labels=test_labels,
+                include_line_graph=True,
+                filename="dgl_graph_test.bin",
+                filename_lattice="lattice_test.pt",
+                filename_line_graph="dgl_line_graph_test.bin",
+                filename_state_attr="state_attr_test.pt",
+                filename_labels="labels_test.json",
+                save_dir=os.path.join(results_dir, exp_name),
+            )
+
+        if test_equal_to_val:
+            train_dataset = train_datasets
+            val_dataset = test_dataset
+        else:
+            if os.path.exists(os.path.join(db_dir, "test.extxyz")):
+                train_dataset, val_dataset, _ = split_dataset(
+                    train_datasets,
+                    frac_list=[0.9, 0.1, 0],  # to guarantee train:valid=9:1
+                    shuffle=True,
+                    random_state=42,
+                )
+            else:
+                train_dataset, val_dataset, test_dataset = split_dataset(
+                    train_datasets,
+                    frac_list=[0.8, 0.1, 0.1],  # to guarantee train:valid:test=8:1:1
+                    shuffle=True,
+                    random_state=42,
+                )
+
+        my_collate_fn = partial(
+            collate_fn_pes, include_line_graph=True
+        )  # Set all include_line_graph to False will disable three-body interactions
+        train_loader, val_loader, test_loader = MGLDataLoader(
+            train_data=train_dataset,
+            val_data=val_dataset,
+            test_data=test_dataset,
+            collate_fn=my_collate_fn,
+            batch_size=batch_size,
+            num_workers=1,
+        )
+        model = M3GNet(
+            element_types=train_element_types,
+            is_intensive=False,
+            cutoff=cutoff,
+            threebody_cutoff=threebody_cutoff,
+            dim_node_embedding=hidden_dim,
+            dim_edge_embedding=hidden_dim,
+            units=num_units,
+            max_l=max_l,
+            max_n=max_n,
+        )
+        lit_module = PotentialLightningModule(model=model, include_line_graph=True)
+        logger = CSVLogger(name=exp_name, save_dir=os.path.join(results_dir, "logs"))
+        # Inference mode = False is required for calculating forces, stress in test mode and prediction mode
+        if device == "cuda":
+            if torch.cuda.is_available():
+                gpu_id = os.environ.get("CUDA_VISIBLE_DEVICES", "0")
+                torch.cuda.set_device(torch.device(f"cuda:{gpu_id}"))
+                trainer = pl.Trainer(
+                    max_epochs=max_epochs,
+                    accelerator="gpu",
+                    logger=logger,
+                    inference_mode=False,
+                )
+            else:
+                raise ValueError("CUDA is not available.")
+        else:
+            trainer = pl.Trainer(
+                max_epochs=max_epochs,
+                accelerator="cpu",
+                logger=logger,
+                inference_mode=False,
+            )
+        # Again loggers ...
+        print("Start training...")
+        print("Length of train_loader: ", len(train_loader))
+        print("Length of val_loader: ", len(val_loader))
+        print("Length of test_loader: ", len(test_loader))
+        trainer.fit(
+            model=lit_module, train_dataloaders=train_loader, val_dataloaders=val_loader
+        )
+        # test the model, remember to set inference_mode=False in trainer (see above)
+        print("Train error:")
+        trainer.test(dataloaders=train_loader)
+        print("Valid error:")
+        trainer.test(dataloaders=val_loader)
+        print("Test error:")
+        trainer.test(dataloaders=test_loader)
+
+        # save trained model
+        model_export_path = os.path.join(results_dir, exp_name)
+        model.save(model_export_path)
+
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+
+    for fn in (
+        "dgl_graph_train.bin",
+        "lattice_train.pt",
+        "dgl_line_graph_train.bin",
+        "state_attr_train.pt",
+        "labels_train.json",
+        "dgl_graph_test.bin",
+        "lattice_test.pt",
+        "dgl_line_graph_test.bin",
+        "state_attr_test.pt",
+        "labels_test.json",
+    ):
+        with contextlib.suppress(FileNotFoundError):
+            os.remove(os.path.join(results_dir, exp_name, fn))
+
+    sections = {
+        "Train error:": {
+            "train_Energy_RMSE": "test_Energy_RMSE",
+            "train_Force_RMSE": "test_Force_RMSE",
+        },
+        "Valid error:": {
+            "val_Energy_RMSE": "test_Energy_RMSE",
+            "val_Force_RMSE": "test_Force_RMSE",
+        },
+        "Test error:": {
+            "test_Energy_RMSE": "test_Energy_RMSE",
+            "test_Force_RMSE": "test_Force_RMSE",
+        },
+    }
+
+    extracted_values = {}
+    with open("m3gnet.log") as file:
+        content = file.read()
+
+        for section, metrics in sections.items():
+            start_index = content.find(section)
+            if start_index != -1:
+                next_index = min(
+                    [
+                        content.find(sec, start_index + 1)
+                        for sec in sections
+                        if content.find(sec, start_index + 1) != -1
+                    ],
+                    default=len(content),
+                )
+                section_content = content[start_index:next_index]
+                for key, metric in metrics.items():
+                    for line in section_content.split("\n"):
+                        if metric in line:
+                            if metric in line.split()[0]:
+                                extracted_values[key] = float(line.split()[1])
+                            else:
+                                extracted_values[key] = float(line.split()[2])
+
+    for key, value in extracted_values.items():
+        print(f"{key}: {value}")
+
+    """
+    !!![Note] The RMSE directly outputted from Torch is not strictly the RMSE of the full datasets;
+    it is related to the batch size. It only becomes a strict RMSE when the batch size is larger
+    than the size of the dataset. The output here can be considered as an approximate result.
+    [TODO] Switch it to the strict RMSE.
+    """
+    mlip_path = Path.cwd() / model_export_path
+
+    return {
+        "train_error": extracted_values["train_Energy_RMSE"],
+        "test_error": extracted_values["test_Energy_RMSE"],
+        "mlip_path": mlip_path,
+    }
+
+
+def mace_fitting(
+    db_dir: str,
+    model: str = "MACE",
+    config_type_weights: str = None,
+    hidden_irreps: str = None,
+    r_max: float = 4.0,
+    batch_size: int = 10,
+    max_num_epochs: int = 1000,
+    start_swa: str = None,
+    ema_decay: str = None,
+    correlation: int = 3,
+    loss: str = None,
+    default_dtype: str = None,
+    device: str = "cuda",
+):
+    """
+    Perform the MACE potential fitting.
+
+    This function sets up and executes a python script to perform MACE fitting using specified parameters
+    and input data located in the provided directory. It handles the input/output of atomic configurations,
+    sets up the NequIP model, and calculates training and testing errors after fitting.
+
+    Parameters
+    ----------
+    db_dir: str or Path
+        directory containing the training and testing data files.
+    model: str
+        type of model to be trained
+    config_type_weights: str
+        weights of config types
+    hidden_irreps: str
+        control the model size
+    r_max: float
+        cutoff radius controls the locality of the model
+    batch_size: int
+        batch size (note that batch size cannot be larger than the size of training datasets)
+    start_swa: str
+        if the keyword --swa is enabled, the energy weight of the loss is increased
+        for the last ~20% of the training epochs (from --start_swa epochs)
+    correlation: int
+        correlation order corresponds to the order that MACE induces at each layer
+    loss: str
+        loss functions
+    default_dtype: str
+        type of float to use, e.g. float32 and float64
+    device: str
+        specify device to use cuda or cpu
+
+    Returns
+    -------
+    dict[str, float]
+        A dictionary containing train_error, test_error, and the path to the fitted MLIP.
+
+    """
+    hypers = [
+        "--name=MACE_model",
+        f"--train_file={db_dir}/train.extxyz",
+        f"--valid_file={db_dir}/test.extxyz",
+        f"--config_type_weights={config_type_weights}",
+        f"--model={model}",
+        f"--hidden_irreps={hidden_irreps}",
+        "--energy_key=REF_energy",
+        "--forces_key=REF_forces",
+        f"--r_max={r_max}",
+        f"--correlation={correlation}",
+        f"--batch_size={batch_size}",
+        f"--max_num_epochs={max_num_epochs}",
+        "--swa",
+        f"--start_swa={start_swa}",
+        "--ema",
+        f"--ema_decay={ema_decay}",
+        "--amsgrad",
+        f"--loss={loss}",
+        "--restart_latest",
+        "--seed=12345",
+        f"--default_dtype={default_dtype}",
+        f"--device={device}",
+    ]
+
+    run_mace(hypers)
+
+    with open("./logs/MACE_model_run-12345.log") as file:
+        log_data = file.read()
+
+    tables = re.split(r"\+-+\+\n", log_data)
+    if tables:
+        last_table = tables[-2]
+        matches = re.findall(r"\|\s*(train|valid)\s*\|\s*([\d\.]+)\s*\|", last_table)
+
+    return {
+        "train_error": float(matches[0][1]),
+        "test_error": float(matches[1][1]),
+        "mlip_path": Path.cwd(),
     }
 
 
@@ -548,7 +1360,7 @@ def get_atomic_numbers(species):
     return atom_numbers
 
 
-def split_dataset(atoms, split_ratio):
+def stratified_dataset_split(atoms, split_ratio):
     """
     Split the dataset.
 
@@ -570,7 +1382,7 @@ def split_dataset(atoms, split_ratio):
     for at in atoms:
         if (
             at.info["config_type"] != "dimer"
-            and at.info["config_type"] != "isolated_atom"
+            and at.info["config_type"] != "IsolatedAtom"
         ):
             atom_bulk.append(at)
         else:
@@ -676,10 +1488,25 @@ def energy_remain(in_file):
     """
     # read files
     in_atoms = ase.io.read(in_file, ":")
-    ener_in = [
-        at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in in_atoms
-    ]
-    ener_out = [at.info["energy"] / len(at.get_chemical_symbols()) for at in in_atoms]
+    if "data_type" in in_atoms[0].info:
+        ener_in = [
+            at.info["REF_energy"] / len(at.get_chemical_symbols())
+            for at in in_atoms
+            if at.info["data_type"] != "iso_atoms"
+        ]
+        ener_out = [
+            at.get_potential_energy() / len(at.get_chemical_symbols())
+            for at in in_atoms
+            if at.info["data_type"] != "iso_atoms"
+        ]
+    else:
+        ener_in = [
+            at.info["REF_energy"] / len(at.get_chemical_symbols()) for at in in_atoms
+        ]
+        ener_out = [
+            at.get_potential_energy() / len(at.get_chemical_symbols())
+            for at in in_atoms
+        ]
     rms = rms_dict(ener_in, ener_out)
     return rms["rmse"]
 
@@ -738,9 +1565,9 @@ def plot_convex_hull(all_points, hull_points):
     plt.show()
 
 
-def calculate_delta(atoms_db: list[Atoms], e_name: str) -> float:
+def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, float]:
     """
-    Calculate delta parameter used for gap-fit.
+    Calculate the delta parameter and average number of triplets for gap-fitting.
 
     Parameters
     ----------
@@ -751,15 +1578,17 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> float:
 
     Returns
     -------
-    float
-        delta parameter used for gap-fit (es_var / avg_neigh)
+    tuple[float, float]
+        A tuple containing:
+        - delta parameter used for gap-fit, calculated as (es_var / avg_neigh).
+        - Average number of triplets per atom.
 
     """
     at_ids = [atom.get_atomic_numbers() for atom in atoms_db]
     isol_es = {
         atom.get_atomic_numbers()[0]: atom.info[e_name]
         for atom in atoms_db
-        if "config_type" in atom.info and "isol" in atom.info["config_type"]
+        if "config_type" in atom.info and "IsolatedAtom" in atom.info["config_type"]
     }
 
     es_visol = np.array(
@@ -769,32 +1598,60 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> float:
         ]
     )
     es_var = np.var(es_visol)
-    avg_neigh = np.mean([compute_average_coordination(atom) for atom in atoms_db])
-    return es_var / avg_neigh
+    avg_neigh = np.mean([compute_pairs_triplets(atom)[0] for atom in atoms_db])
+    num_triplet = np.mean([compute_pairs_triplets(atom)[1] for atom in atoms_db])
+
+    return es_var / avg_neigh, num_triplet
 
 
-def compute_average_coordination(atoms: Atoms) -> float:
+def compute_pairs_triplets(atoms):
     """
-    Compute average coordination.
+    Calculate the number of pairwise and triplet within a cutoff distance for a given list of atoms.
 
     Parameters
     ----------
-    atoms: Atoms
-        Ase atoms object
+    atoms : ASE atoms object
 
     Returns
     -------
-    float
-        Average coordination - total_coordination / len(atoms)
+    list[float, float]
+        Returns a list of the number of pairs or triplets an atom is involved in.
 
     """
     cutoffs = natural_cutoffs(atoms)
-    neighbor_list = NeighborList(cutoffs, self_interaction=False, bothways=True)
-    neighbor_list.update(atoms)
-    total_coordination = sum(
-        len(neighbor_list.get_neighbors(index)[0]) for index in range(len(atoms))
+    neighbor_list = NeighborList(
+        cutoffs=cutoffs, skin=0.15, self_interaction=False, bothways=True
     )
-    return total_coordination / len(atoms)
+    neighbor_list.update(atoms)
+    counts_list = [
+        len(neighbor_list.get_neighbors(index)[0]) for index in range(len(atoms))
+    ]
+    num_pair = sum(counts_list) / len(atoms)
+
+    triplets = [comb(count, 2) for count in counts_list if count > 1]
+    num_triplet = sum(triplets) / len(atoms)
+
+    return [num_pair, num_triplet]
+
+
+def run_ace(num_processes: int, script_name: str):
+    """
+    Julia-ACE script runner.
+
+    Parameters
+    ----------
+    num_processes: int
+        Number of threads to be used for the run.
+    script_name: str
+        Name of the Julia script to run.
+
+    """
+    os.environ["JULIA_NUM_THREADS"] = str(num_processes)
+
+    with open("julia-ace_out.log", "w", encoding="utf-8") as file_out, open(
+        "julia-ace_err.log", "w", encoding="utf-8"
+    ) as file_err:
+        subprocess.call(["julia", script_name], stdout=file_out, stderr=file_err)
 
 
 def run_gap(num_processes: int, parameters):
@@ -844,6 +1701,40 @@ def run_quip(
         subprocess.call(command, stdout=file_std, stderr=file_err, shell=True)
 
 
+def run_nequip(command: str, log_prefix: str):
+    """
+    Nequip runner.
+
+    Parameters
+    ----------
+    command: str
+        The command to execute, along with its arguments.
+    log_prefix: str
+        Prefix for log file names, used to differentiate between different commands' logs.
+
+    """
+    with open(f"{log_prefix}_out.log", "w", encoding="utf-8") as file_out, open(
+        f"{log_prefix}_err.log", "w", encoding="utf-8"
+    ) as file_err:
+        subprocess.call(command.split(), stdout=file_out, stderr=file_err)
+
+
+def run_mace(hypers: list):
+    """
+    MACE runner.
+
+    Parameters
+    ----------
+    hypers: list
+        containing all hyperparameters required for the MACE model training.
+
+    """
+    with open("mace_train_out.log", "w", encoding="utf-8") as file_std, open(
+        "mace_train_err.log", "w", encoding="utf-8"
+    ) as file_err:
+        subprocess.call(["mace_run_train", *hypers], stdout=file_std, stderr=file_err)
+
+
 def prepare_fit_environment(
     database_dir, mlip_path, glue_xml: bool, regularization: bool
 ):
@@ -885,3 +1776,29 @@ def prepare_fit_environment(
         )
 
     return mlip_path
+
+
+def convert_xyz_to_structure(atoms_list, include_forces=True, include_stresses=True):
+    """Convert extxyz to structure format used in pymatgen."""
+    structures = []
+    energies = []
+    forces = []
+    stresses = []
+    for atoms in atoms_list:
+        structure = AseAtomsAdaptor.get_structure(atoms)
+        structures.append(structure)
+        energies.append(atoms.info["REF_energy"])
+        if include_forces:
+            forces.append(np.array(atoms.arrays["REF_forces"]).tolist())
+        else:
+            forces.append(np.zeros((len(structure), 3)).tolist())
+        if include_stresses:
+            # convert from eV to GPa
+            virial = atoms.info["REF_virial"] / atoms.get_volume()  # eV/Å^3
+            stresses.append(np.array(virial * 160.2176565).tolist())  # eV/Å^3 -> GPa
+        else:
+            stresses.append(np.zeros((3, 3)).tolist())
+
+    print(f"Loaded {len(structures)} structures.")
+
+    return structures, energies, forces, stresses
