@@ -40,6 +40,8 @@ class MLIPFitMaker(Maker):
     mlip_type: str
         Choose one specific MLIP type:
         'GAP' | 'ACE' | 'Nequip' | 'M3GNet' | 'MACE'
+    mlip_hyper: dict
+        basic MLIP hyperparameters
     """
 
     name: str = "MLpotentialFit"
@@ -129,7 +131,7 @@ class MLIPFitMaker(Maker):
             mlip_hyper=self.mlip_hyper,
             num_processes=num_processes,
             regularization=regularization,
-            **fit_kwargs,
+            **fit_kwargs
         )
         jobs.append(mlip_fit_job)  # type: ignore
 

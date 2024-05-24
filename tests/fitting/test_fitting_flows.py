@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from autoplex.fitting.common.flows import MLIPFitMaker
 
 
@@ -19,26 +18,26 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
             "rand_struc_dir": [
                 [
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_1"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_1"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_2"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_2"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_3"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_3"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
@@ -47,18 +46,18 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
             "phonon_dir": [
                 [
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "phonon_static_1"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "phonon_static_1"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "phonon_static_2"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "phonon_static_2"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
@@ -107,7 +106,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir):
 
 
 def test_mlip_fit_maker_with_kwargs(
-    test_dir, clean_dir, memory_jobstore, vasp_test_dir
+        test_dir, clean_dir, memory_jobstore, vasp_test_dir
 ):
     import os
     import shutil
@@ -213,6 +212,7 @@ def test_mlip_fit_maker_with_kwargs(
 
     os.chdir(parent_dir)
 
+
 def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_test_dir, clean_dir):
     import os
     import shutil
@@ -228,26 +228,26 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
             "rand_struc_dir": [
                 [
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_1"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_1"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_2"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_2"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_3"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_3"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
@@ -256,18 +256,18 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
             "phonon_dir": [
                 [
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "phonon_static_1"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "phonon_static_1"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "phonon_static_2"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "phonon_static_2"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
@@ -317,7 +317,6 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
 
     # os.chdir(parent_dir)
 
-
     # # Test to check if julia-ace fit runs with pre_database_dir
     # jacefit = MLIPFitMaker(mlip_type="J-ACE", mlip_hyper={'order':3, 'totaldegree':6, 'cutoff':2.0,
     #                              'solver':'BLR',}).make(isol_es={3: -0.28649227, 17:-0.25638457},
@@ -337,7 +336,6 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
     #     shutil.rmtree(job_dir)
 
     # os.chdir(parent_dir)
-
 
     # # Test to check if nequip fit runs with pre_database_dir
     # nequipfit = MLIPFitMaker(mlip_type="NEQUIP", mlip_hyper = {
@@ -373,27 +371,26 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
 
     # os.chdir(parent_dir)
 
-
     # Test to check if m3gnet fit runs with pre_database_dir
-    m3gnetfit = MLIPFitMaker(mlip_type="M3GNET", mlip_hyper = {
-                "exp_name": "training",
-                "results_dir": "m3gnet_results",
-                "cutoff": 3.0,
-                "threebody_cutoff": 2.0,
-                "batch_size": 1,
-                "max_epochs": 3,
-                "include_stresses": True,
-                "hidden_dim": 8,
-                "num_units": 8,
-                "max_l": 4,
-                "max_n": 4,
-                "device": "cpu",
-                "test_equal_to_val": True,
-            }).make(fit_input=fit_input_dict, 
-                                isol_es={3: -0.28649227, 17:-0.25638457},
-                                pre_database_dir=str(test_files_dir),
-                                pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
-                                num_processes=1)
+    m3gnetfit = MLIPFitMaker(mlip_type="M3GNET", mlip_hyper={
+        "exp_name": "training",
+        "results_dir": "m3gnet_results",
+        "cutoff": 3.0,
+        "threebody_cutoff": 2.0,
+        "batch_size": 1,
+        "max_epochs": 3,
+        "include_stresses": True,
+        "hidden_dim": 8,
+        "num_units": 8,
+        "max_l": 4,
+        "max_n": 4,
+        "device": "cpu",
+        "test_equal_to_val": True,
+    }).make(fit_input=fit_input_dict,
+            isol_es={3: -0.28649227, 17: -0.25638457},
+            pre_database_dir=str(test_files_dir),
+            pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
+            num_processes=1)
 
     responses = run_locally(
         m3gnetfit, ensure_success=True, create_folders=True, store=memory_jobstore
@@ -408,7 +405,6 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
         shutil.rmtree(job_dir)
 
     os.chdir(parent_dir)
-
 
     # # Test to check if MACE fit runs with pre_database_dir
     # macefit = MLIPFitMaker(mlip_type="MACE", mlip_hyper = {
@@ -443,8 +439,9 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, memory_jobstore, vasp_te
 
     # os.chdir(parent_dir)
 
+
 def test_mlip_fit_maker_glue_xml(
-    test_dir, memory_jobstore, vasp_test_dir, clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, clean_dir
 ):
     import os
     import shutil
@@ -537,7 +534,7 @@ def test_mlip_fit_maker_glue_xml(
             ],
             "phonon_data": [],
         },
-        "isolated_atom": {"iso_atoms_dir": [[
+        "IsolatedAtom": {"iso_atoms_dir": [[
             (
                     vasp_test_dir
                     / "Si_glue_xml_fit"
@@ -550,10 +547,9 @@ def test_mlip_fit_maker_glue_xml(
     }
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
-    gapfit = MLIPFitMaker().make(species_list=["Si"], isolated_atoms_energy=[-0.82067307], fit_input=fit_input_dict,
-                                 auto_delta=False, glue_xml=True, **{
-            "gap_para": {"two_body": False, "three_body": False, "soap": True},
-             "general": {"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"}
+    gapfit = MLIPFitMaker(mlip_type="GAP", mlip_hyper={"two_body": False, "three_body": False, "soap": True}).make(
+        species_list=["Si"], isolated_atoms_energy=[-0.82067307], fit_input=fit_input_dict, auto_delta=False,
+        glue_xml=True, **{"general": {"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"}
         })
 
     responses = run_locally(

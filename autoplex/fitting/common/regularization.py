@@ -53,7 +53,7 @@ def set_sigma(
     atoms_modi = []
 
     for at in atoms:
-        if at.info["config_type"] == "isolated_atom":
+        if at.info["config_type"] == "IsolatedAtom":
             # isol_es
             at.info["energy_sigma"] = 0.0001
             at.calc = None  # TODO side-effect alert
@@ -126,7 +126,7 @@ def set_sigma(
             if de > 20.0:
                 # don't even fit if too high
                 continue
-            if val.info["config_type"] != "isolated_atom":
+            if val.info["config_type"] != "IsolatedAtom":
                 if group == "initial":
                     sigs[0].append(etup[1][1])
                     sigs[1].append(etup[2][1])
@@ -220,7 +220,7 @@ def get_convex_hull(atoms, energy_name="energy", **kwargs):
     p = []
     ct = 0
     for at in atoms:
-        if (at.info["config_type"] == "isolated_atom") or (
+        if (at.info["config_type"] == "IsolatedAtom") or (
             at.info["config_type"] == "dimer"
         ):
             continue

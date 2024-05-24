@@ -53,6 +53,8 @@ def machine_learning_fit(
     mlip_type: str
         Choose one specific MLIP type:
         'GAP' | 'ACE' | 'Nequip' | 'M3GNet' | 'MACE'
+    mlip_hyper: dict
+        basic MLIP hyperparameters
     regularization: bool
         For using sigma regularization.
     HPO: bool
