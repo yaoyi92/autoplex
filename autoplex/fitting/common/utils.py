@@ -23,7 +23,7 @@ from atomate2.utils.path import strip_hostname
 from scipy.spatial import ConvexHull
 from sklearn.model_selection import StratifiedShuffleSplit
 
-from autoplex.data.common.utils import plot_energy_forces
+from autoplex.data.common.utils import plot_energy_forces, rms_dict
 
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
@@ -642,33 +642,6 @@ def data_distillation(vasp_ref_dir, f_max):
     )
 
     return atoms_distilled
-
-
-def rms_dict(x_ref, x_pred) -> dict:
-    """Compute RMSE and standard deviation of predictions with reference data.
-
-    x_ref and x_pred should be of same shape.
-
-    Parameters
-    ----------
-    x_ref : np.ndarray.
-        list of reference data.
-    x_pred: np.ndarray.
-        list of prediction.
-
-    Returns
-    -------
-    dict
-        Dict with rmse and std deviation of predictions.
-    """
-    x_ref = np.array(x_ref)
-    x_pred = np.array(x_pred)
-    if np.shape(x_pred) != np.shape(x_ref):
-        raise ValueError("WARNING: not matching shapes in rms")
-    error_2 = (x_ref - x_pred) ** 2
-    average = np.sqrt(np.average(error_2))
-    std_ = np.sqrt(np.var(error_2))
-    return {"rmse": average, "std": std_}
 
 
 def energy_remain(in_file):
