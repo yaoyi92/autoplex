@@ -374,9 +374,9 @@ def rms_dict(x_ref, x_pred):
     return {"rmse": average, "std": std_}
 
 
-def sort_outlier_energy(in_file, out_file, criteria: float = 0.0005):
+def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
     """
-    Sort data outliers per energy criteria and write them into files.
+    Filter data outliers per energy criteria and write them into files.
 
     Parameters
     ----------
@@ -409,14 +409,14 @@ def sort_outlier_energy(in_file, out_file, criteria: float = 0.0005):
         else:
             outliers.append(at_in)
 
-    write("sorted_in_energy.extxyz", atoms_in, append=True)
-    write("sorted_out_energy.extxyz", atoms_out, append=True)
+    write("filtered_in_energy.extxyz", atoms_in, append=True)
+    write("filtered_out_energy.extxyz", atoms_out, append=True)
     write("outliers_energy.extxyz", outliers, append=True)
 
 
-def sort_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
+def filter_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
     """
-    Sort data outliers per force criteria and write them into files.
+    Filter data outliers per force criteria and write them into files.
 
     Parameters
     ----------
@@ -449,7 +449,7 @@ def sort_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
                 out_force = at_out.arrays["force"][j]
                 rms = rms_dict(in_force, out_force)
                 force_error.append(rms["rmse"])
-        at_in.info["max RMSE"] = max(force_error)
+        at_in.info["max RMSE"] = max(force_error) if force_error else 0
         at_in.info["avg RMSE"] = (
             sum(force_error) / len(force_error) if force_error else 0
         )
@@ -460,13 +460,15 @@ def sort_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
         else:
             outliers.append(at_in)
 
-    write("sorted_in_force.extxyz", atoms_in, append=False)
-    write("sorted_out_force.extxyz", atoms_out, append=False)
-    write("outliers_force.extxyz", outliers, append=False)
+    write("filtered_in_force.extxyz", atoms_in, append=True)
+    write("filtered_out_force.extxyz", atoms_out, append=True)
+    write("outliers_force.extxyz", outliers, append=True)
 
 
-# copied from libatoms GAP tutorial page and adapted accordingly
-def energy_plot(in_file, out_file, ax, title="Plot of energy"):
+# copied from libatoms GAP tutorial page and adjusted
+def energy_plot(
+    in_file, out_file, ax, title: str = "Plot of energy", label: str = "energy"
+):
     """
     Plot the distribution of energy per atom on the output vs the input.
 
@@ -480,25 +482,32 @@ def energy_plot(in_file, out_file, ax, title="Plot of energy"):
         Panel position in plt.subplots.
     title:
         Title of the plot.
+    label:
+        Legend label
 
     """
     # read files
     in_atoms = ase.io.read(in_file, ":")
-    for atoms in in_atoms:
-        kwargs = {
-            "energy": atoms.info["REF_energy"],
-        }
-        atoms.calc = SinglePointCalculator(atoms=atoms, **kwargs)
     out_atoms = ase.io.read(out_file, ":")
+    atoms_in: list = []
+    atoms_out: list = []
+    for at_in, at_out in zip(in_atoms, out_atoms):
+        kwargs = {
+            "energy": at_in.info["REF_energy"],
+        }
+        at_in.calc = SinglePointCalculator(atoms=at_in, **kwargs)
+        for at, atoms in [(at_in, atoms_in), (at_out, atoms_out)]:
+            if at.info["config_type"] not in {"isolated_atom", "IsolatedAtom"}:
+                atoms.append(at)
     # list energies
     ener_in = [
-        at.get_potential_energy() / len(at.get_chemical_symbols()) for at in in_atoms
+        at.get_potential_energy() / len(at.get_chemical_symbols()) for at in atoms_in
     ]
     ener_out = [
-        at.get_potential_energy() / len(at.get_chemical_symbols()) for at in out_atoms
+        at.get_potential_energy() / len(at.get_chemical_symbols()) for at in atoms_out
     ]
     # scatter plot of the data
-    ax.scatter(ener_in, ener_out)
+    ax.scatter(ener_in, ener_out, label=label)
     # get the appropriate limits for the plot
     for_limits = np.array(ener_in + ener_out)
     elim = (for_limits.min() - 0.01, for_limits.max() + 0.01)
@@ -511,6 +520,8 @@ def energy_plot(in_file, out_file, ax, title="Plot of energy"):
     ax.set_xlabel("energy by DFT / eV")
     # set title
     ax.set_title(title)
+    # set legend
+    ax.legend(loc="upper right")
     # add text about RMSE
     _rms = rms_dict(ener_in, ener_out)
     rmse_text = (
@@ -532,7 +543,12 @@ def energy_plot(in_file, out_file, ax, title="Plot of energy"):
 
 
 def force_plot(
-    in_file, out_file, ax, symbol="Si", title="Plot of force"
+    in_file,
+    out_file,
+    ax,
+    symbol: str = "Si",
+    title: str = "Plot of force",
+    label: str = "force for ",
 ):  # make general symbol
     """
     Plot the distribution of force components per atom on the output vs the input.
@@ -551,6 +567,8 @@ def force_plot(
         Chemical symbol.
     title:
         Title of the plot.
+    label:
+        Legend label
 
     """
     in_atoms = ase.io.read(in_file, ":")
@@ -577,7 +595,7 @@ def force_plot(
     # in_force = np.array(in_force)
     # out_force = np.array(out_force)
     # scatter plot of the data
-    ax.scatter(in_force, out_force)
+    ax.scatter(in_force, out_force, label=label + symbol)
     # get the appropriate limits for the plot
     for_limits = np.array(in_force + out_force)
     flim = (for_limits.min() - 1, for_limits.max() + 1)
@@ -590,6 +608,8 @@ def force_plot(
     ax.set_xlabel("force by DFT / (eV/Å)")
     # set title
     ax.set_title(title)
+    # set legend
+    ax.legend(loc="upper right")
     # add text about RMSE
     _rms = rms_dict(in_force, out_force)
     rmse_text = (
@@ -612,7 +632,12 @@ def force_plot(
     return _rms["rmse"]
 
 
-def plot_energy_forces(title: str, energy_limit: float, force_limit: float):
+def plot_energy_forces(
+    title: str,
+    energy_limit: float,
+    force_limit: float,
+    species_list: list | None = None,
+):
     """
     Plot energy and forces of the data.
 
@@ -620,9 +645,17 @@ def plot_energy_forces(title: str, energy_limit: float, force_limit: float):
     ----------
     title:
         Title of the plot.
+    energy_limit:
+        Energy limit for data filtering.
+    force_limit:
+        Force limit for data filtering.
+    species_list:
+        List of species
 
 
     """
+    if species_list is None:
+        species_list = ["Si"]
     fig, ax_list = plt.subplots(nrows=3, ncols=2, gridspec_kw={"hspace": 0.3})
     fig.set_size_inches(15, 20)
     ax_list = ax_list.flat[:]
@@ -631,50 +664,62 @@ def plot_energy_forces(title: str, energy_limit: float, force_limit: float):
         "train.extxyz", "quip_train.extxyz", ax_list[0], "Energy on training data"
     )
     # rmse_train =
-    force_plot(
-        "train.extxyz",
-        "quip_train.extxyz",
-        ax_list[1],
-        "Si",
-        "Force on training data - Si",
-    )
+    for species in species_list:
+        force_plot(
+            "train.extxyz",
+            "quip_train.extxyz",
+            ax_list[1],
+            species,
+            f"Force on training data - {species}",
+        )
     energy_plot("test.extxyz", "quip_test.extxyz", ax_list[2], "Energy on test data")
     # rmse_test =
-    force_plot(
-        "test.extxyz", "quip_test.extxyz", ax_list[3], "Si", "Force on test data - Si"
-    )
+    for species in species_list:
+        force_plot(
+            "test.extxyz",
+            "quip_test.extxyz",
+            ax_list[3],
+            species,
+            f"Force on test data - {species}",
+        )
 
-    sort_outlier_energy("train.extxyz", "quip_train.extxyz", energy_limit)
-    sort_outlier_energy("test.extxyz", "quip_test.extxyz", energy_limit)
-    sort_outlier_forces("train.extxyz", "quip_train.extxyz", "Si", force_limit)
-    sort_outlier_forces("test.extxyz", "quip_test.extxyz", "Si", force_limit)
+    filter_outlier_energy("train.extxyz", "quip_train.extxyz", energy_limit)
+    filter_outlier_energy("test.extxyz", "quip_test.extxyz", energy_limit)
+    filter_outlier_forces("train.extxyz", "quip_train.extxyz", "Si", force_limit)
+    filter_outlier_forces("test.extxyz", "quip_test.extxyz", "Si", force_limit)
 
     energy_plot(
-        "sorted_in_energy.extxyz",
-        "sorted_out_energy.extxyz",
+        "filtered_in_energy.extxyz",
+        "filtered_out_energy.extxyz",
         ax_list[4],
-        "Energy on sorted data",
+        "Energy on filtered data",
+        "energy-filtered data, energy",
     )
-    force_plot(
-        "sorted_in_energy.extxyz",
-        "sorted_out_energy.extxyz",
-        ax_list[5],
-        "Si",
-        "Force on sorted data - Si",
-    )
+    for species in species_list:
+        force_plot(
+            "filtered_in_energy.extxyz",
+            "filtered_out_energy.extxyz",
+            ax_list[5],
+            species,
+            f"Force on filtered data - {species}",
+            "energy-filtered data, force for ",
+        )
     energy_plot(
-        "sorted_in_force.extxyz",
-        "sorted_out_force.extxyz",
+        "filtered_in_force.extxyz",
+        "filtered_out_force.extxyz",
         ax_list[4],
-        "Energy on sorted data",
+        "Energy on filtered data",
+        "force-filtered data, energy",
     )
-    force_plot(
-        "sorted_in_force.extxyz",
-        "sorted_out_force.extxyz",
-        ax_list[5],
-        "Si",
-        "Force on sorted data - Si",
-    )
+    for species in species_list:
+        force_plot(
+            "filtered_in_force.extxyz",
+            "filtered_out_force.extxyz",
+            ax_list[5],
+            species,
+            f"Force on filtered data - {species}",
+            "force-filtered data, force for ",
+        )
 
     fig.suptitle(title, fontsize=16)
 

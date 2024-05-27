@@ -14,6 +14,7 @@ GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 @job
 def machine_learning_fit(
     database_dir: str,
+    species_list: list,
     gap_para=None,
     isol_es: None = None,
     num_processes: int = 32,
@@ -48,8 +49,12 @@ def machine_learning_fit(
         'GAP' | 'SNAP' | 'ACE' | 'Nequip' | 'Allegro' | 'MACE'
     regularization: bool
         For using sigma regularization.
+    species_list : list.
+            List of element names (str)
     HPO: bool
         call hyperparameter optimization (HPO) or not
+    kwargs : dict.
+            dict including more fit keyword args.
     """
     if gap_para is None:
         gap_para = {"two_body": True, "three_body": False, "soap": True}
@@ -63,6 +68,7 @@ def machine_learning_fit(
     if mlip_type == "GAP":
         train_test_error = gap_fitting(
             db_dir=database_dir,
+            species_list=species_list,
             include_two_body=gap_para["two_body"],
             include_three_body=gap_para["three_body"],
             include_soap=gap_para["soap"],

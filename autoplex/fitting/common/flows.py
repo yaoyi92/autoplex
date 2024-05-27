@@ -117,6 +117,7 @@ class MLIPFitMaker(Maker):
             glue_xml=glue_xml,
             mlip_type=self.mlip_type,
             regularization=regularization,
+            species_list=species_list,
             **fit_kwargs,
         )
         jobs.append(gap_fit_job)  # type: ignore

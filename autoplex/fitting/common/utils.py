@@ -23,12 +23,15 @@ from atomate2.utils.path import strip_hostname
 from scipy.spatial import ConvexHull
 from sklearn.model_selection import StratifiedShuffleSplit
 
+from autoplex.data.common.utils import plot_energy_forces
+
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 
 
 def gap_fitting(
     db_dir: str | Path,
+    species_list: list,
     include_two_body: bool = True,
     include_three_body: bool = False,
     include_soap: bool = True,
@@ -46,6 +49,8 @@ def gap_fitting(
     ----------
     db_dir: str or path.
         Path to database directory.
+    species_list : list.
+        List of element names (str)
     path_to_default_hyperparameters : str or Path.
         Path to gap-defaults.json.
     include_two_body : bool.
@@ -177,6 +182,13 @@ def gap_fitting(
     )
     test_error = energy_remain("quip_test.extxyz")
     print("Testing error of MLIP (eV/at.):", round(test_error, 7))
+
+    plot_energy_forces(
+        title="Data error metrics",
+        energy_limit=0.005,
+        force_limit=0.1,
+        species_list=species_list,
+    )
 
     return {
         "train_error": train_error,
