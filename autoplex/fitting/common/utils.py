@@ -644,7 +644,7 @@ def data_distillation(vasp_ref_dir, f_max):
     return atoms_distilled
 
 
-def rms_dict(x_ref: np.ndarray, x_pred: np.ndarray) -> dict:
+def rms_dict(x_ref, x_pred) -> dict:
     """Compute RMSE and standard deviation of predictions with reference data.
 
     x_ref and x_pred should be of same shape.

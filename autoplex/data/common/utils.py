@@ -19,6 +19,8 @@ from ase.io import write
 from hiphive.structure_generation import generate_mc_rattled_structures
 from pymatgen.io.ase import AseAtomsAdaptor
 
+from autoplex.fitting.common.utils import rms_dict
+
 
 def to_ase_trajectory(
     traj_obj, filename: str = "atoms.traj", store_magmoms=False
@@ -346,32 +348,6 @@ def mc_rattle(
         n_iter=rattle_mc_n_iter,
     )
     return [AseAtomsAdaptor.get_structure(xtal) for xtal in mc_rattle]
-
-
-def rms_dict(x_ref, x_pred):
-    """
-    Take two datasets of the same shape and returns a dictionary containing RMS error data.
-
-    Parameters
-    ----------
-    x_ref:
-        Reference data
-    x_pred:
-        Predicted data
-
-    """
-    x_ref = np.array(x_ref)
-    x_pred = np.array(x_pred)
-
-    if np.shape(x_pred) != np.shape(x_ref):
-        raise ValueError("WARNING: not matching shapes in rms")
-
-    error_2 = (x_ref - x_pred) ** 2
-
-    average = np.sqrt(np.average(error_2))
-    std_ = np.sqrt(np.var(error_2))
-
-    return {"rmse": average, "std": std_}
 
 
 def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
