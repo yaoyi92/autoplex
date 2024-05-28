@@ -318,7 +318,7 @@ def test_mlip_fit_maker_with_pre_database_dir(test_dir, clean_dir, memory_jobsto
     os.chdir(parent_dir)
 
 def test_mlip_fit_maker_glue_xml(
-    test_dir, memory_jobstore, vasp_test_dir, #clean_dir
+    test_dir, memory_jobstore, vasp_test_dir, clean_dir
 ):
     import os
     import shutil

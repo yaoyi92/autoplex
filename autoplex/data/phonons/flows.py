@@ -17,9 +17,7 @@ from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
 from atomate2.vasp.jobs.phonons import PhononDisplacementMaker
 from atomate2.vasp.sets.core import StaticSetGenerator, TightRelaxSetGenerator
 from jobflow import Flow, Maker
-from phonopy.structure.cells import get_supercell
 from pymatgen.core import Molecule, Site
-from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.common.jobs import generate_randomized_structures
 
@@ -301,6 +299,7 @@ class RandomStructuresDataGenerator(Maker):
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=TightDFTStaticMaker
     )
+    bulk_relax_maker: BaseVaspMaker = field(default_factory=TightRelaxMaker)
     code: str = "vasp"
     uc: bool = False
     distort_type: int = 0
@@ -343,15 +342,13 @@ class RandomStructuresDataGenerator(Maker):
         jobs = []  # initializing empty job list
         outputs = []
 
-        if supercell_matrix is None:
-            supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
-        supercell = get_supercell(
-            unitcell=get_phonopy_structure(structure),
-            supercell_matrix=supercell_matrix,
-        )
+        relaxed = self.bulk_relax_maker.make(structure)
+        jobs.append(relaxed)
+        structure = relaxed.output.structure
 
         random_rattle_sc = generate_randomized_structures(
-            structure=get_pmg_structure(supercell),
+            structure=structure,
+            supercell_matrix=supercell_matrix,
             distort_type=self.distort_type,
             n_structures=self.n_structures,
             volume_custom_scale_factors=volume_custom_scale_factors,
@@ -381,6 +378,7 @@ class RandomStructuresDataGenerator(Maker):
         if self.uc is True:
             random_rattle = generate_randomized_structures(
                 structure=structure,
+                supercell_matrix=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                 distort_type=self.distort_type,
                 n_structures=self.n_structures,
                 volume_custom_scale_factors=volume_custom_scale_factors,

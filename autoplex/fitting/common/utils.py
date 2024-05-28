@@ -183,12 +183,13 @@ def gap_fitting(
     test_error = energy_remain("quip_test.extxyz")
     print("Testing error of MLIP (eV/at.):", round(test_error, 7))
 
-    plot_energy_forces(
-        title="Data error metrics",
-        energy_limit=0.005,
-        force_limit=0.1,
-        species_list=species_list,
-    )
+    if not glue_xml:
+        plot_energy_forces(
+            title="Data error metrics",
+            energy_limit=0.005,
+            force_limit=0.1,
+            species_list=species_list,
+        )
 
     return {
         "train_error": train_error,

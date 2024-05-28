@@ -17,12 +17,14 @@ def test_data_generation_distort_type_0(vasp_test_dir, mock_vasp, clean_dir):
 
     test_mpid = "mp-22905"
     ref_paths = {
+        "tight relax": "dft_ml_data_generation/tight_relax_1/",
         "phonon static 1/1": "dft_ml_data_generation/rand_static_1/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
+        "tight relax": {"incar_settings": ["NSW"]},
         "phonon static 1/1": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
@@ -54,6 +56,7 @@ def test_data_generation_distort_type_1(vasp_test_dir, mock_vasp, clean_dir):
 
     test_mpid = "mp-22905"
     ref_paths = {
+        "tight relax": "dft_ml_data_generation/tight_relax_1/",
         "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
         "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
         "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
@@ -62,6 +65,7 @@ def test_data_generation_distort_type_1(vasp_test_dir, mock_vasp, clean_dir):
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
+        "tight relax": {"incar_settings": ["NSW"]},
         "phonon static 1/3": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
@@ -100,6 +104,7 @@ def test_data_generation_distort_type_2(vasp_test_dir, mock_vasp, clean_dir):
 
     test_mpid = "mp-22905"
     ref_paths = {
+        "tight relax": "dft_ml_data_generation/tight_relax_1/",
         "phonon static 1/2": "dft_ml_data_generation/rand_static_1/",
         "phonon static 2/2": "dft_ml_data_generation/rand_static_2/",
     }
@@ -107,6 +112,7 @@ def test_data_generation_distort_type_2(vasp_test_dir, mock_vasp, clean_dir):
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
+        "tight relax": {"incar_settings": ["NSW"]},
         "phonon static 1/2": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
@@ -141,6 +147,7 @@ def test_data_generation_volume_range(vasp_test_dir, mock_vasp, clean_dir):
 
     test_mpid = "mp-22905"
     ref_paths = {
+        "tight relax": "dft_ml_data_generation/tight_relax_1/",
         "phonon static 1/4": "dft_ml_data_generation/rand_static_1/",
         "phonon static 2/4": "dft_ml_data_generation/rand_static_4/",
         "phonon static 3/4": "dft_ml_data_generation/rand_static_7/",
@@ -150,6 +157,7 @@ def test_data_generation_volume_range(vasp_test_dir, mock_vasp, clean_dir):
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
+        "tight relax": {"incar_settings": ["NSW"]},
         "phonon static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
