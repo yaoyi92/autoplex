@@ -476,7 +476,6 @@ validation_dataset_key_mapping:
 chemical_symbols:
 {isol_es_update}
 wandb: False
-wandb_project: autoplex
 
 verbose: info
 log_batch_freq: 10
@@ -1488,16 +1487,16 @@ def energy_remain(in_file):
     """
     # read files
     in_atoms = ase.io.read(in_file, ":")
-    if "data_type" in in_atoms[0].info:
+    if "config_type" in in_atoms[0].info:
         ener_in = [
             at.info["REF_energy"] / len(at.get_chemical_symbols())
             for at in in_atoms
-            if at.info["data_type"] != "iso_atoms"
+            if at.info["config_type"] != "iso_atoms"
         ]
         ener_out = [
             at.get_potential_energy() / len(at.get_chemical_symbols())
             for at in in_atoms
-            if at.info["data_type"] != "iso_atoms"
+            if at.info["config_type"] != "iso_atoms"
         ]
     else:
         ener_in = [
