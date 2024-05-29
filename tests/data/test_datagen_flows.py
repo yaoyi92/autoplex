@@ -12,92 +12,92 @@ os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
 
-# def test_data_generation_distort_type_0(vasp_test_dir, mock_vasp, clean_dir):
-#     from jobflow import run_locally
+def test_data_generation_distort_type_0(vasp_test_dir, mock_vasp, clean_dir):
+    from jobflow import run_locally
 
-#     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
-#     structure = Structure.from_file(path_to_struct)
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
 
-#     test_mpid = "mp-22905"
-#     ref_paths = {
-#         "phonon static 1/1": "dft_ml_data_generation/rand_static_1/",
-#     }
+    test_mpid = "mp-22905"
+    ref_paths = {
+        "phonon static 1/1": "dft_ml_data_generation/rand_static_1/",
+    }
 
-#     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
-#     # disabled poscar checks here to avoid failures due to randomness issues
-#     fake_run_vasp_kwargs = {
-#         "phonon static 1/1": {
-#             "incar_settings": ["NSW", "ISMEAR"],
-#             "check_inputs": ["incar", "kpoints", "potcar"],
-#         },
-#     }
-#     data_gen_dt_0 = RandomStructuresDataGenerator(distort_type=0).make(
-#         structure=structure,
-#         mp_id=test_mpid,
-#         volume_custom_scale_factors=[1.0],
-#     )
+    # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
+    # disabled poscar checks here to avoid failures due to randomness issues
+    fake_run_vasp_kwargs = {
+        "phonon static 1/1": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+    }
+    data_gen_dt_0 = RandomStructuresDataGenerator(distort_type=0).make(
+        structure=structure,
+        mp_id=test_mpid,
+        volume_custom_scale_factors=[1.0],
+    )
 
-#     data_gen_dt_0 = update_user_incar_settings(data_gen_dt_0, {"ISMEAR": 0})
+    data_gen_dt_0 = update_user_incar_settings(data_gen_dt_0, {"ISMEAR": 0})
 
-#     # automatically use fake VASP and write POTCAR.spec during the test
-#     mock_vasp(ref_paths, fake_run_vasp_kwargs)
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths, fake_run_vasp_kwargs)
 
-#     # run the flow or job and ensure that it finished running successfully
-#     responses = run_locally(data_gen_dt_0, create_folders=True, ensure_success=True)
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(data_gen_dt_0, create_folders=True, ensure_success=True)
 
-#     assert len(responses[data_gen_dt_0.output[0].uuid][2].output["dirs"]) == 1
-#     job_names = ["phonon static 1/1"]
-#     for inx, name in enumerate(job_names):
-#         assert responses[data_gen_dt_0.output[0].uuid][1].replace.jobs[inx].name == name
+    assert len(responses[data_gen_dt_0.output[0].uuid][2].output["dirs"]) == 1
+    job_names = ["phonon static 1/1"]
+    for inx, name in enumerate(job_names):
+        assert responses[data_gen_dt_0.output[0].uuid][1].replace.jobs[inx].name == name
 
 
-# def test_data_generation_distort_type_1(vasp_test_dir, mock_vasp, clean_dir):
-#     from jobflow import run_locally
+def test_data_generation_distort_type_1(vasp_test_dir, mock_vasp, clean_dir):
+    from jobflow import run_locally
 
-#     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
-#     structure = Structure.from_file(path_to_struct)
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
 
-#     test_mpid = "mp-22905"
-#     ref_paths = {
-#         "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
-#         "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
-#         "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
-#     }
+    test_mpid = "mp-22905"
+    ref_paths = {
+        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
+        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
+        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
+    }
 
-#     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
-#     # disabled poscar checks here to avoid failures due to randomness issues
-#     fake_run_vasp_kwargs = {
-#         "phonon static 1/3": {
-#             "incar_settings": ["NSW", "ISMEAR"],
-#             "check_inputs": ["incar", "kpoints", "potcar"],
-#         },
-#         "phonon static 2/3": {
-#             "incar_settings": ["NSW", "ISMEAR"],
-#             "check_inputs": ["incar", "kpoints", "potcar"],
-#         },
-#         "phonon static 3/3": {
-#             "incar_settings": ["NSW", "ISMEAR"],
-#             "check_inputs": ["incar", "kpoints", "potcar"],
-#         },
-#     }
-#     data_gen_dt_1 = RandomStructuresDataGenerator(n_structures=3, distort_type=1).make(
-#         structure=structure,
-#         mp_id=test_mpid,
-#         volume_custom_scale_factors=[1.0],
-#     )
+    # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
+    # disabled poscar checks here to avoid failures due to randomness issues
+    fake_run_vasp_kwargs = {
+        "phonon static 1/3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 2/3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+        "phonon static 3/3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "kpoints", "potcar"],
+        },
+    }
+    data_gen_dt_1 = RandomStructuresDataGenerator(n_structures=3, distort_type=1).make(
+        structure=structure,
+        mp_id=test_mpid,
+        volume_custom_scale_factors=[1.0],
+    )
 
-#     data_gen_dt_1 = update_user_incar_settings(data_gen_dt_1, {"ISMEAR": 0})
+    data_gen_dt_1 = update_user_incar_settings(data_gen_dt_1, {"ISMEAR": 0})
 
-#     # automatically use fake VASP and write POTCAR.spec during the test
-#     mock_vasp(ref_paths, fake_run_vasp_kwargs)
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths, fake_run_vasp_kwargs)
 
-#     # run the flow or job and ensure that it finished running successfully
-#     responses = run_locally(data_gen_dt_1, create_folders=True, ensure_success=True)
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(data_gen_dt_1, create_folders=True, ensure_success=True)
 
-#     assert len(responses[data_gen_dt_1.output[0].uuid][2].output["dirs"]) == 3
-#     job_names = ["phonon static 1/3", "phonon static 2/3", "phonon static 3/3"]
-#     for inx, name in enumerate(job_names):
-#         assert responses[data_gen_dt_1.output[0].uuid][1].replace.jobs[inx].name == name
+    assert len(responses[data_gen_dt_1.output[0].uuid][2].output["dirs"]) == 3
+    job_names = ["phonon static 1/3", "phonon static 2/3", "phonon static 3/3"]
+    for inx, name in enumerate(job_names):
+        assert responses[data_gen_dt_1.output[0].uuid][1].replace.jobs[inx].name == name
 
 
 def test_data_generation_distort_type_2(vasp_test_dir, mock_vasp, clean_dir):
