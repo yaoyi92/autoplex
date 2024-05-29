@@ -293,7 +293,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     test_files_dir = Path(test_dir / "fitting").resolve()
 
-    # Test to check if gap fit runs with pre_database_dir
+    # Test if gap fit runs with pre_database_dir
     gapfit = MLIPFitMaker().make(
         species_list=["Li", "Cl"],
         isolated_atoms_energy=[-0.28649227, -0.25638457],
@@ -306,7 +306,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     path_to_job_files = list(test_files_dir.glob("job*"))
 
-    # check if gap fit file is generated
+    # check if gap potential file is generated
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
     for job_dir in path_to_job_files:
@@ -314,7 +314,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     os.chdir(parent_dir)
 
-    # Test to check if julia-ace fit runs with pre_database_dir
+    # Test julia-ACE fit runs with pre_database_dir
     jacefit = MLIPFitMaker(
         mlip_type="J-ACE",
         mlip_hyper={
@@ -337,7 +337,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     path_to_job_files = list(test_files_dir.glob("job*"))
 
-    # check if gap fit file is generated
+    # check if julia-ACE potential file is generated
     assert Path(jacefit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
     for job_dir in path_to_job_files:
@@ -345,7 +345,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     os.chdir(parent_dir)
 
-    # Test to check if nequip fit runs with pre_database_dir
+    # Test NEQUIP fit runs with pre_database_dir
     nequipfit = MLIPFitMaker(
         mlip_type="NEQUIP",
         mlip_hyper={
@@ -358,7 +358,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
             "invariant_neurons": 64,
             "batch_size": 1,
             "learning_rate": 0.005,
-            "max_epochs": 4,
+            "max_epochs": 1,  # reduced  it to 1 to minimize the test execution time
             "default_dtype": "float32",
             "device": "cpu",
         },
@@ -376,7 +376,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     path_to_job_files = list(test_files_dir.glob("job*"))
 
-    # check if gap fit file is generated
+    # check if NEQUIP potential file is generated
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
     for job_dir in path_to_job_files:
@@ -384,7 +384,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     os.chdir(parent_dir)
 
-    # Test to check if m3gnet fit runs with pre_database_dir
+    # Test if M3GNET fit runs with pre_database_dir
     m3gnetfit = MLIPFitMaker(
         mlip_type="M3GNET",
         mlip_hyper={
@@ -416,7 +416,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     path_to_job_files = list(test_files_dir.glob("job*"))
 
-    # check if gap fit file is generated
+    # check if M3GNET potential file is generated
     assert Path(m3gnetfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
     for job_dir in path_to_job_files:
@@ -424,7 +424,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     os.chdir(parent_dir)
 
-    # Test to check if MACE fit runs with pre_database_dir
+    # Test if MACE fit runs with pre_database_dir
     macefit = MLIPFitMaker(
         mlip_type="MACE",
         mlip_hyper={
@@ -454,7 +454,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     path_to_job_files = list(test_files_dir.glob("job*"))
 
-    # check if gap fit file is generated
+    # check if MACE potential file is generated
     assert Path(macefit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
     for job_dir in path_to_job_files:
