@@ -299,7 +299,13 @@ class RandomStructuresDataGenerator(Maker):
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=TightDFTStaticMaker
     )
-    bulk_relax_maker: BaseVaspMaker = field(default_factory=TightRelaxMaker)
+    bulk_relax_maker: BaseVaspMaker = field(
+        default_factory=lambda: TightRelaxMaker(
+            input_set_generator=TightRelaxSetGenerator(
+                user_incar_settings={"ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
+            )
+        )
+    )
     code: str = "vasp"
     uc: bool = False
     distort_type: int = 0
