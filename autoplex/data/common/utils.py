@@ -674,6 +674,8 @@ def plot_energy_forces(
             f"Force on training data - {species}",
         )
     energy_plot("test.extxyz", "quip_test.extxyz", ax_list[2], "Energy on test data")
+    filter_outlier_energy("train.extxyz", "quip_train.extxyz", energy_limit)
+    filter_outlier_energy("test.extxyz", "quip_test.extxyz", energy_limit)
     # rmse_test =
     for species in species_list:
         force_plot(
@@ -683,11 +685,8 @@ def plot_energy_forces(
             species,
             f"Force on test data - {species}",
         )
-
-    filter_outlier_energy("train.extxyz", "quip_train.extxyz", energy_limit)
-    filter_outlier_energy("test.extxyz", "quip_test.extxyz", energy_limit)
-    filter_outlier_forces("train.extxyz", "quip_train.extxyz", "Si", force_limit)
-    filter_outlier_forces("test.extxyz", "quip_test.extxyz", "Si", force_limit)
+        filter_outlier_forces("train.extxyz", "quip_train.extxyz", species, force_limit)
+        filter_outlier_forces("test.extxyz", "quip_test.extxyz", species, force_limit)
 
     energy_plot(
         "filtered_in_energy.extxyz",
