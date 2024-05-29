@@ -46,10 +46,13 @@ pip install atomate2[strict]
 pip install ase@git+https://gitlab.com/ase/ase.git@aae51d57721847624cea569f3a2d4bb6aa5032b4
 ```
 
-Additionally, to be able to fit and validate `ACEpotentials`, one also needs to install julia as it autoplex relies on [ACEpotentials](https://acesuit.github.io/ACEpotentials.jl/dev/gettingstarted/installation/) which support fitting of linear ace and currently no python package exists for the same. Please run following commands to be enable ACEpotentials functionality
+Additionally, to be able to fit and validate `ACEpotentials`, one also needs to install julia as autoplex relies on [ACEpotentials](https://acesuit.github.io/ACEpotentials.jl/dev/gettingstarted/installation/) which support fitting of linear ACE and currently no python package exists for the same. 
+Please run following commands to enable ACEpotentials fitting and functionality.
 
+Install julia
 `curl -fsSL https://install.julialang.org | sh`
-Once installed, in terminal run `julia` and run following commands
+
+Once installed, in terminal run `julia` and then run the following commands
 
 ```jl
 using Pkg
