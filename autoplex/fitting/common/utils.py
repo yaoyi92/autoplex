@@ -1491,7 +1491,7 @@ def energy_remain(in_file):
         ener_in = [
             at.info["REF_energy"] / len(at.get_chemical_symbols())
             for at in in_atoms
-            if at.info["config_type"] != "iso_atoms"
+            if at.info["config_type"] != "IsolatedAtoms"
         ]
         ener_out = [
             at.get_potential_energy() / len(at.get_chemical_symbols())
