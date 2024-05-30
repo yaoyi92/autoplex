@@ -39,8 +39,6 @@ def machine_learning_fit(
     ----------
     database_dir: str
         the database directory.
-    gap_para: dict
-        gap fit parameters.
     isol_es:
         isolated es.
     num_processes: int
