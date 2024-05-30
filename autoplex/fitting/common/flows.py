@@ -15,7 +15,7 @@ from autoplex.fitting.common.regularization import set_sigma
 from autoplex.fitting.common.utils import (
     data_distillation,
     get_list_of_vasp_calc_dirs,
-    split_dataset,
+    stratified_dataset_split,
     vaspoutput_2_extended_xyz,
 )
 
@@ -39,17 +39,21 @@ class MLIPFitMaker(Maker):
         Name of the flows produced by this maker.
     mlip_type: str
         Choose one specific MLIP type:
-        'GAP' | 'SNAP' | 'ACE' | 'Nequip' | 'Allegro' | 'MACE'
+        'GAP' | 'ACE' | 'Nequip' | 'M3GNet' | 'MACE'
+    mlip_hyper: dict
+        basic MLIP hyperparameters
     """
 
     name: str = "MLpotentialFit"
     mlip_type: str = "GAP"
+    mlip_hyper: dict | None = None
 
     def make(
         self,
-        species_list: list,
-        isolated_atoms_energy: list,
         fit_input: dict,
+        species_list: list | None = None,
+        isolated_atoms_energy: list | None = None,
+        isol_es: dict | None = None,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
         regularization: bool = True,
@@ -60,6 +64,7 @@ class MLIPFitMaker(Maker):
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
         glue_xml: bool = False,
+        num_processes: int = 32,
         **fit_kwargs,
     ):
         """
@@ -110,20 +115,29 @@ class MLIPFitMaker(Maker):
             atom_wise_regularization=atom_wise_regularization,
         )
         jobs.append(data_prep_job)
-        gap_fit_job = machine_learning_fit(
+
+        if self.mlip_type not in ["GAP", "J-ACE", "P-ACE", "NEQUIP", "M3GNET", "MACE"]:
+            raise ValueError(
+                "Please correct the MLIP name!"
+                "The current version ONLY supports the following models: GAP, J-ACE, P-ACE, NEQUIP, M3GNET, and MACE."
+            )
+
+        mlip_fit_job = machine_learning_fit(
             database_dir=data_prep_job.output,
-            isol_es=None,
+            isol_es=isol_es,
             auto_delta=auto_delta,
             glue_xml=glue_xml,
             mlip_type=self.mlip_type,
+            mlip_hyper=self.mlip_hyper,
+            num_processes=num_processes,
             regularization=regularization,
             species_list=species_list,
             **fit_kwargs,
         )
-        jobs.append(gap_fit_job)  # type: ignore
+        jobs.append(mlip_fit_job)  # type: ignore
 
         # create a flow including all jobs
-        return Flow(jobs, gap_fit_job.output)
+        return Flow(jobs, mlip_fit_job.output)
 
 
 @dataclass
@@ -234,7 +248,9 @@ class DataPreprocessing(Maker):
         )
 
         # split dataset into training and testing datasets with a ratio of 9:1
-        (train_structures, test_structures) = split_dataset(atoms, self.split_ratio)
+        (train_structures, test_structures) = stratified_dataset_split(
+            atoms, self.split_ratio
+        )
 
         ase.io.write("train.extxyz", train_structures, format="extxyz", append=True)
         ase.io.write("test.extxyz", test_structures, format="extxyz", append=True)

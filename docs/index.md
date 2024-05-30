@@ -2,7 +2,10 @@
 :caption: User Guide
 :hidden:
 user/index
-user/tutorials
+user/generation/data
+user/generation/structure
+user/fitting/fitting
+user/flows/flows
 ```
 
 ```{toctree}
