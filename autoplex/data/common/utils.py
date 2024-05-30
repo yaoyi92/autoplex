@@ -638,6 +638,8 @@ def plot_energy_forces(
     energy_limit: float,
     force_limit: float,
     species_list: list | None = None,
+    train_name: str = "train.extxyz",
+    test_name: str = "test.extxyz",
 ):
     """
     Plot energy and forces of the data.
@@ -661,32 +663,30 @@ def plot_energy_forces(
     fig.set_size_inches(15, 20)
     ax_list = ax_list.flat[:]
 
-    energy_plot(
-        "train.extxyz", "quip_train.extxyz", ax_list[0], "Energy on training data"
-    )
+    energy_plot(train_name, "quip_" + train_name, ax_list[0], "Energy on training data")
     # rmse_train =
     for species in species_list:
         force_plot(
-            "train.extxyz",
-            "quip_train.extxyz",
+            train_name,
+            "quip_" + train_name,
             ax_list[1],
             species,
             f"Force on training data - {species}",
         )
-    energy_plot("test.extxyz", "quip_test.extxyz", ax_list[2], "Energy on test data")
-    filter_outlier_energy("train.extxyz", "quip_train.extxyz", energy_limit)
-    filter_outlier_energy("test.extxyz", "quip_test.extxyz", energy_limit)
+    energy_plot(test_name, "quip_" + test_name, ax_list[2], "Energy on test data")
+    filter_outlier_energy(train_name, "quip_" + train_name, energy_limit)
+    filter_outlier_energy(test_name, "quip_" + test_name, energy_limit)
     # rmse_test =
     for species in species_list:
         force_plot(
-            "test.extxyz",
-            "quip_test.extxyz",
+            test_name,
+            "quip_" + test_name,
             ax_list[3],
             species,
             f"Force on test data - {species}",
         )
-        filter_outlier_forces("train.extxyz", "quip_train.extxyz", species, force_limit)
-        filter_outlier_forces("test.extxyz", "quip_test.extxyz", species, force_limit)
+        filter_outlier_forces(train_name, "quip_" + train_name, species, force_limit)
+        filter_outlier_forces(test_name, "quip_" + test_name, species, force_limit)
 
     energy_plot(
         "filtered_in_energy.extxyz",

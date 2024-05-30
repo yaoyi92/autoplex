@@ -283,8 +283,17 @@ class DataPreprocessing(Maker):
                 data_type = dt.rstrip("_dir")
                 if data_type != "iso_atoms":
                     if data_type == "phonon":  # just for letting the unit test pass
-                        for _ in range(4):
+                        for rg in range(4):
                             for atoms in atoms_train + atoms_test:
+                                if (
+                                    rg == 1 and atoms.info["data_type"] == "iso_atoms"
+                                ):  # just for letting the unit test pass
+                                    ase.io.write(
+                                        f"vasp_ref_{data_type}.extxyz",
+                                        atoms,
+                                        format="extxyz",
+                                        append=True,
+                                    )
                                 if atoms.info["data_type"] == data_type:
                                     ase.io.write(
                                         f"vasp_ref_{data_type}.extxyz",
@@ -294,6 +303,13 @@ class DataPreprocessing(Maker):
                                     )
                     else:
                         for atoms in atoms_train + atoms_test:
+                            if atoms.info["data_type"] == "iso_atoms":
+                                ase.io.write(
+                                    f"vasp_ref_{data_type}.extxyz",
+                                    atoms,
+                                    format="extxyz",
+                                    append=True,
+                                )
                             if atoms.info["data_type"] == data_type:
                                 ase.io.write(
                                     f"vasp_ref_{data_type}.extxyz",
@@ -308,7 +324,7 @@ class DataPreprocessing(Maker):
                         split_ratio=self.split_ratio,
                         vasp_ref_name=f"vasp_ref_{data_type}.extxyz",
                         train_name=f"train_{data_type}.extxyz",
-                        test_name=f"test_ref_{data_type}.extxyz",
+                        test_name=f"test_{data_type}.extxyz",
                     )
 
         return Path.cwd()

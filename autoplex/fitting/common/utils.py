@@ -97,7 +97,7 @@ def gap_fitting(
 
     """
     mlip_path: Path = prepare_fit_environment(
-        db_dir, Path.cwd(), glue_xml, regularization
+        db_dir, Path.cwd(), glue_xml, regularization, train_name, test_name
     )
 
     db_atoms = ase.io.read(os.path.join(db_dir, train_name), index=":")
@@ -209,6 +209,8 @@ def gap_fitting(
             energy_limit=0.005,
             force_limit=0.1,
             species_list=species_list,
+            train_name=train_name,
+            test_name=test_name,
         )
 
     return {
@@ -1724,7 +1726,12 @@ def run_mace(hypers: list):
 
 
 def prepare_fit_environment(
-    database_dir, mlip_path, glue_xml: bool, regularization: bool
+    database_dir,
+    mlip_path,
+    glue_xml: bool,
+    regularization: bool,
+    train_name: str = "train.extxyz",
+    test_name: str = "test.extxyz",
 ):
     """
     Prepare the environment for the fit.
@@ -1750,12 +1757,12 @@ def prepare_fit_environment(
             os.path.join(mlip_path, "train_with_sigma.extxyz"),
         )
     shutil.copy(
-        os.path.join(database_dir, "test.extxyz"),
-        os.path.join(mlip_path, "test.extxyz"),
+        os.path.join(database_dir, test_name),
+        os.path.join(mlip_path, test_name),
     )
     shutil.copy(
-        os.path.join(database_dir, "train.extxyz"),
-        os.path.join(mlip_path, "train.extxyz"),
+        os.path.join(database_dir, train_name),
+        os.path.join(mlip_path, train_name),
     )
     if glue_xml:
         shutil.copy(
