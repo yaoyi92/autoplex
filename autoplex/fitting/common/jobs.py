@@ -21,9 +21,8 @@ GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 @job
 def machine_learning_fit(
     database_dir: str,
-    isol_es: dict | None = None,
     species_list: list,
-    isol_es: None = None,
+    isol_es: dict | None = None,
     num_processes: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
