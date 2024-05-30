@@ -30,6 +30,8 @@ def machine_learning_fit(
     regularization: bool = True,
     HPO: bool = False,
     mlip_hyper: dict | None = None,
+    train_name: str = "train.extxyz",
+    test_name: str = "test.extxyz",
     **kwargs,
 ):
     """
@@ -130,6 +132,8 @@ def machine_learning_fit(
             auto_delta=auto_delta,
             glue_xml=glue_xml,
             regularization=regularization,
+            train_name=train_name,
+            test_name=test_name,
             fit_kwargs=kwargs,
         )
 

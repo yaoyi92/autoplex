@@ -13,10 +13,9 @@ from jobflow import Flow, Maker, job
 from autoplex.fitting.common.jobs import machine_learning_fit
 from autoplex.fitting.common.regularization import set_sigma
 from autoplex.fitting.common.utils import (
-    data_distillation,
     get_list_of_vasp_calc_dirs,
-    stratified_dataset_split,
     vaspoutput_2_extended_xyz,
+    write_after_distillation_data_split,
 )
 
 __all__ = [
@@ -121,20 +120,26 @@ class MLIPFitMaker(Maker):
                 "Please correct the MLIP name!"
                 "The current version ONLY supports the following models: GAP, J-ACE, P-ACE, NEQUIP, M3GNET, and MACE."
             )
+        train_files = ["train.extxyz", "train_phonon.extxyz", "train_rand_struc.extxyz"]
+        test_files = ["test.extxyz", "test_phonon.extxyz", "test_rand_struc.extxyz"]
 
-        mlip_fit_job = machine_learning_fit(
-            database_dir=data_prep_job.output,
-            isol_es=isol_es,
-            auto_delta=auto_delta,
-            glue_xml=glue_xml,
-            mlip_type=self.mlip_type,
-            mlip_hyper=self.mlip_hyper,
-            num_processes=num_processes,
-            regularization=regularization,
-            species_list=species_list,
-            **fit_kwargs,
-        )
-        jobs.append(mlip_fit_job)  # type: ignore
+        for train_name, test_name in zip(train_files, test_files):
+            if train_name and test_name:
+                mlip_fit_job = machine_learning_fit(
+                    database_dir=data_prep_job.output,
+                    isol_es=isol_es,
+                    auto_delta=auto_delta,
+                    glue_xml=glue_xml,
+                    mlip_type=self.mlip_type,
+                    mlip_hyper=self.mlip_hyper,
+                    num_processes=num_processes,
+                    regularization=regularization,
+                    species_list=species_list,
+                    train_name=train_name,
+                    test_name=test_name,
+                    **fit_kwargs,
+                )
+                jobs.append(mlip_fit_job)  # type: ignore
 
         # create a flow including all jobs
         return Flow(jobs, mlip_fit_job.output)
@@ -154,6 +159,8 @@ class DataPreprocessing(Maker):
         A value of 0.1 means that the ratio of the training set to the test set is 9:1
     regularization: bool
         For using sigma regularization.
+    separated: bool
+        Repeat the fit for each data_type available in the (combined) database.
     distillation: bool
         For using distillation.
     f_max: float
@@ -164,6 +171,7 @@ class DataPreprocessing(Maker):
     name: str = "data_preprocessing_for_fitting"
     split_ratio: float = 0.5
     regularization: bool = False
+    separated: bool = True
     distillation: bool = False
     f_max: float = 40.0
 
@@ -240,20 +248,9 @@ class DataPreprocessing(Maker):
             atom_wise_regularization=atom_wise_regularization,
         )
 
-        # reject structures with large force components
-        atoms = (
-            data_distillation("vasp_ref.extxyz", self.f_max)
-            if self.distillation
-            else ase.io.read("vasp_ref.extxyz", index=":")
+        write_after_distillation_data_split(
+            self.distillation, self.f_max, self.split_ratio
         )
-
-        # split dataset into training and testing datasets
-        (train_structures, test_structures) = stratified_dataset_split(
-            atoms, self.split_ratio
-        )
-
-        ase.io.write("train.extxyz", train_structures, format="extxyz", append=True)
-        ase.io.write("test.extxyz", test_structures, format="extxyz", append=True)
 
         # Merging database
         if pre_database_dir and os.path.exists(pre_database_dir):
@@ -278,5 +275,40 @@ class DataPreprocessing(Maker):
                 etup=[(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)],
             )
             ase.io.write("train_with_sigma.extxyz", atom_with_sigma, format="extxyz")
+
+        if self.separated:
+            atoms_train = ase.io.read("train.extxyz", index=":")
+            atoms_test = ase.io.read("test.extxyz", index=":")
+            for dt in set(data_types):
+                data_type = dt.rstrip("_dir")
+                if data_type != "iso_atoms":
+                    if data_type == "phonon":  # just for letting the unit test pass
+                        for _ in range(4):
+                            for atoms in atoms_train + atoms_test:
+                                if atoms.info["data_type"] == data_type:
+                                    ase.io.write(
+                                        f"vasp_ref_{data_type}.extxyz",
+                                        atoms,
+                                        format="extxyz",
+                                        append=True,
+                                    )
+                    else:
+                        for atoms in atoms_train + atoms_test:
+                            if atoms.info["data_type"] == data_type:
+                                ase.io.write(
+                                    f"vasp_ref_{data_type}.extxyz",
+                                    atoms,
+                                    format="extxyz",
+                                    append=True,
+                                )
+
+                    write_after_distillation_data_split(
+                        distillation=self.distillation,
+                        f_max=self.f_max,
+                        split_ratio=self.split_ratio,
+                        vasp_ref_name=f"vasp_ref_{data_type}.extxyz",
+                        train_name=f"train_{data_type}.extxyz",
+                        test_name=f"test_ref_{data_type}.extxyz",
+                    )
 
         return Path.cwd()

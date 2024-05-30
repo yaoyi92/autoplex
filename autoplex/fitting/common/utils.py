@@ -57,6 +57,8 @@ def gap_fitting(
     auto_delta: bool = True,
     glue_xml: bool = False,
     regularization: bool = True,
+    train_name: str = "train.extxyz",
+    test_name: str = "test.extxyz",
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
 ):
     """
@@ -98,11 +100,11 @@ def gap_fitting(
         db_dir, Path.cwd(), glue_xml, regularization
     )
 
-    db_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
+    db_atoms = ase.io.read(os.path.join(db_dir, train_name), index=":")
     train_data_path = os.path.join(
-        db_dir, "train_with_sigma.extxyz" if regularization else "train.extxyz"
+        db_dir, "train_with_sigma.extxyz" if regularization else train_name
     )
-    test_data_path = os.path.join(db_dir, "test.extxyz")
+    test_data_path = os.path.join(db_dir, test_name)
 
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
         gap_fit_parameter_file_path=path_to_default_hyperparameters
@@ -126,12 +128,12 @@ def gap_fitting(
         )
 
         run_gap(num_processes, fit_parameters_list)
-        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_train.extxyz")
+        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_" + train_name)
 
     if include_three_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
         if auto_delta:
-            delta_3b = energy_remain("quip_train.extxyz")
+            delta_3b = energy_remain("quip_" + train_name)
             delta_3b = delta_3b / num_triplet
             gap_default_hyperparameters["threeb"].update({"delta": delta_3b})
 
@@ -142,7 +144,7 @@ def gap_fitting(
         )
 
         run_gap(num_processes, fit_parameters_list)
-        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_train.extxyz")
+        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_" + train_name)
 
     if glue_xml:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -160,13 +162,13 @@ def gap_fitting(
             num_processes,
             train_data_path,
             "gap_file.xml",
-            "quip_train.extxyz",
+            "quip_" + train_name,
             glue_xml,
         )
 
     if include_soap:
         delta_soap = (
-            energy_remain("quip_train.extxyz")
+            energy_remain("quip_" + train_name)
             if include_two_body or include_three_body
             else 1
         )
@@ -186,19 +188,19 @@ def gap_fitting(
             num_processes,
             train_data_path,
             "gap_file.xml",
-            "quip_train.extxyz",
+            "quip_" + train_name,
             glue_xml,
         )
 
     # Calculate training error
-    train_error = energy_remain("quip_train.extxyz")
+    train_error = energy_remain("quip_" + train_name)
     print("Training error of MLIP (eV/at.):", round(train_error, 7))
 
     # Calculate testing error
     run_quip(
-        num_processes, test_data_path, "gap_file.xml", "quip_test.extxyz", glue_xml
+        num_processes, test_data_path, "gap_file.xml", "quip_" + test_name, glue_xml
     )
-    test_error = energy_remain("quip_test.extxyz")
+    test_error = energy_remain("quip_" + test_name)
     print("Testing error of MLIP (eV/at.):", round(test_error, 7))
 
     if not glue_xml:
@@ -1788,3 +1790,34 @@ def convert_xyz_to_structure(atoms_list, include_forces=True, include_stresses=T
     print(f"Loaded {len(structures)} structures.")
 
     return structures, energies, forces, stresses
+
+
+def write_after_distillation_data_split(
+    distillation,
+    f_max,
+    split_ratio,
+    vasp_ref_name: str = "vasp_ref.extxyz",
+    train_name: str = "train.extxyz",
+    test_name: str = "test.extxyz",
+):
+    """
+    Write train.extxyz and test.extxyz after data distillation and split.
+
+    Parameters
+    ----------
+    distillation
+    f_max
+    split_ratio
+    """
+    # reject structures with large force components
+    atoms = (
+        data_distillation(vasp_ref_name, f_max)
+        if distillation
+        else ase.io.read(vasp_ref_name, index=":")
+    )
+
+    # split dataset into training and testing datasets
+    (train_structures, test_structures) = stratified_dataset_split(atoms, split_ratio)
+
+    ase.io.write(train_name, train_structures, format="extxyz", append=True)
+    ase.io.write(test_name, test_structures, format="extxyz", append=True)
