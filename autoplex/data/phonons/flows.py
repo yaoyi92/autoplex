@@ -65,7 +65,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
 
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
-            user_kpoints_settings={"reciprocal_density": 100},
+            user_kpoints_settings={"reciprocal_density": 1000},
             user_incar_settings={
                 "IBRION": 2,
                 "ISPIN": 1,

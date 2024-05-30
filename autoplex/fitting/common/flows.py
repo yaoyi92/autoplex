@@ -247,7 +247,7 @@ class DataPreprocessing(Maker):
             else ase.io.read("vasp_ref.extxyz", index=":")
         )
 
-        # split dataset into training and testing datasets with a ratio of 9:1
+        # split dataset into training and testing datasets
         (train_structures, test_structures) = stratified_dataset_split(
             atoms, self.split_ratio
         )
@@ -257,8 +257,6 @@ class DataPreprocessing(Maker):
 
         # Merging database
         if pre_database_dir and os.path.exists(pre_database_dir):
-            current_working_directory = os.getcwd()
-
             if len(pre_xyz_files) == 2:
                 files_new = ["train.extxyz", "test.extxyz"]
                 for file_name, file_new in zip(pre_xyz_files, files_new):

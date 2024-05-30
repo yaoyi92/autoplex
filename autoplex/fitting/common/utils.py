@@ -33,6 +33,7 @@ from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
 from matgl.utils.training import PotentialLightningModule
 from nequip.ase import NequIPCalculator
+from numpy import ndarray
 from pymatgen.io.ase import AseAtomsAdaptor
 from pytorch_lightning.loggers import CSVLogger
 from scipy.spatial import ConvexHull
@@ -1197,7 +1198,7 @@ def vaspoutput_2_extended_xyz(
     ):
         # strip hostname if it exists in the path
         path_without_hostname = Path(strip_hostname(path)).joinpath("vasprun.xml.gz")
-        # read the outcar
+        # read the vasp output
         file = read(path_without_hostname, index=":")
         for i in file:
             virial_list = -voigt_6_to_full_3x3_stress(i.get_stress()) * i.get_volume()
@@ -1550,7 +1551,7 @@ def plot_convex_hull(all_points, hull_points):
     plt.show()
 
 
-def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, float]:
+def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]:
     """
     Calculate the delta parameter and average number of triplets for gap-fitting.
 
