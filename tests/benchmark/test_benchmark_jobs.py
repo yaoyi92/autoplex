@@ -15,7 +15,7 @@ def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     from jobflow import run_locally
 
     # test if same band structure gives out expected 0.0 rmse
-    dummy_bs_file_path = test_dir / "benchmark" / "mp_1000.json"
+    dummy_bs_file_path = test_dir / "benchmark" / "NaCl.json"
 
     with open(dummy_bs_file_path, "r") as file:
         dummy_bs_dict = json.load(file)
@@ -36,7 +36,7 @@ def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
 
     # get list of generated plot files
     test_files_dir = Path(test_dir / "benchmark").resolve()
-    path_to_plot_files = list(test_files_dir.glob("BaTe*.eps"))
+    path_to_plot_files = list(test_files_dir.glob("NaCl*.eps"))
 
     # ensure two plots are generated
     assert len(path_to_plot_files) == 2

@@ -1,0 +1,1 @@
+The test file in benchmark/NaCl.json has been taken from the pymatgen repository licensed under an MIT license.

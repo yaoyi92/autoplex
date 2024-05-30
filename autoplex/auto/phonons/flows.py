@@ -193,7 +193,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         if pre_xyz_files is None:
             fit_input.update(
-                {"isolated_atom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
+                {"IsolatedAtom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
             )
 
         for ml_model in self.ml_models:
