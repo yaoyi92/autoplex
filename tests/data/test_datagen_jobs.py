@@ -31,7 +31,7 @@ def test_generate_randomized_structures_distort_type_0():
     for uuid, response_collection in responses.items():
         for k, response in response_collection.items():
             # check if correct number of structures are generated
-            assert 10 == len(response.output)
+            assert 11 == len(response.output)
             for struct in response.output:
             # check if all outputs are Structure objects
                 assert isinstance(struct, Structure)
@@ -92,7 +92,7 @@ def test_generate_randomized_structures_distort_type_2():
     for uuid, response_collection in responses.items():
         for k, response in response_collection.items():
             # check if correct number of structures are generated
-            assert 10 == len(response.output)
+            assert 11 == len(response.output)
             for struct in response.output:
             # check if all outputs are Structure objects
                 assert isinstance(struct, Structure)
@@ -175,7 +175,7 @@ def test_scale_cell():
     scale_cell_job=scale_cell(structure=structure, volume_scale_factor_range=[0.90, 1.10], n_structures=10)
 
     # check if correct number of structures are generated
-    assert len(scale_cell_job) == 10
+    assert len(scale_cell_job) == 11
     for struct in scale_cell_job:
         # check if all outputs are Structure objects
         assert isinstance(struct, Structure)

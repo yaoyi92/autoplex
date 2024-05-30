@@ -39,12 +39,15 @@ from scipy.spatial import ConvexHull
 from scipy.special import comb
 from sklearn.model_selection import StratifiedShuffleSplit
 
+from autoplex.data.common.utils import plot_energy_forces, rms_dict
+
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 
 
 def gap_fitting(
     db_dir: str | Path,
+    species_list: list,
     include_two_body: bool = True,
     include_three_body: bool = False,
     include_soap: bool = True,
@@ -62,6 +65,8 @@ def gap_fitting(
     ----------
     db_dir: str or path.
         Path to database directory.
+    species_list : list.
+        List of element names (str)
     path_to_default_hyperparameters : str or Path.
         Path to gap-defaults.json.
     include_two_body : bool.
@@ -194,6 +199,14 @@ def gap_fitting(
     )
     test_error = energy_remain("quip_test.extxyz")
     print("Testing error of MLIP (eV/at.):", round(test_error, 7))
+
+    if not glue_xml:
+        plot_energy_forces(
+            title="Data error metrics",
+            energy_limit=0.005,
+            force_limit=0.1,
+            species_list=species_list,
+        )
 
     return {
         "train_error": train_error,
@@ -1441,33 +1454,6 @@ def data_distillation(vasp_ref_dir, f_max):
     )
 
     return atoms_distilled
-
-
-def rms_dict(x_ref: np.ndarray, x_pred: np.ndarray) -> dict:
-    """Compute RMSE and standard deviation of predictions with reference data.
-
-    x_ref and x_pred should be of same shape.
-
-    Parameters
-    ----------
-    x_ref : np.ndarray.
-        list of reference data.
-    x_pred: np.ndarray.
-        list of prediction.
-
-    Returns
-    -------
-    dict
-        Dict with rmse and std deviation of predictions.
-    """
-    x_ref = np.array(x_ref)
-    x_pred = np.array(x_pred)
-    if np.shape(x_pred) != np.shape(x_ref):
-        raise ValueError("WARNING: not matching shapes in rms")
-    error_2 = (x_ref - x_pred) ** 2
-    average = np.sqrt(np.average(error_2))
-    std_ = np.sqrt(np.var(error_2))
-    return {"rmse": average, "std": std_}
 
 
 def energy_remain(in_file):

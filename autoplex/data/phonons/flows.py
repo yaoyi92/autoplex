@@ -17,9 +17,7 @@ from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
 from atomate2.vasp.jobs.phonons import PhononDisplacementMaker
 from atomate2.vasp.sets.core import StaticSetGenerator, TightRelaxSetGenerator
 from jobflow import Flow, Maker
-from phonopy.structure.cells import get_supercell
 from pymatgen.core import Molecule, Site
-from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.common.jobs import generate_randomized_structures
 
@@ -260,27 +258,66 @@ class RandomStructuresDataGenerator(Maker):
         determines the dft code. currently only vasp is implemented.
         This keyword might enable the implementation of other codes
         in the future
-    n_structures: int.
-        The total number of randomly displaced structures to be generated.
+    n_structures : int.
+        Total number of distorted structures to be generated.
+        Must be provided if distorting volume without specifying a range, or if distorting angles.
+        Default=10.
     uc: bool.
         If True, will use the unit cells of initial randomly displaced
         structures and add phonon static computation jobs to the flow
+    distort_type : int.
+        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
+    min_distance: float
+        Minimum separation allowed between any two atoms.
+        Default= 1.5A.
+    angle_percentage_scale: float
+        Angle scaling factor.
+        Default= 10 will randomly distort angles by +-10% of original value.
+    angle_max_attempts: int.
+        Maximum number of attempts to distort structure before aborting.
+        Default=1000.
+    w_angle: list[float]
+        List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
+        Default= [0, 1, 2].
+    rattle_type: int.
+        0- standard rattling, 1- Monte-Carlo rattling. Default=0.
     rattle_std: float.
         Rattle amplitude (standard deviation in normal distribution).
         Default=0.01.
-    distort_type : int.
-        0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
+        Note that for MC rattling, displacements generated will roughly be
+        rattle_mc_n_iter**0.5 * rattle_std for small values of n_iter.
+    rattle_seed: int.
+        Seed for setting up NumPy random state from which random numbers are generated.
+        Default=42.
+    rattle_mc_n_iter: int.
+        Number of Monte Carlo iterations.
+        Larger number of iterations will generate larger displacements.
+        Default=10.
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=TightDFTStaticMaker
     )
+    bulk_relax_maker: BaseVaspMaker = field(
+        default_factory=lambda: TightRelaxMaker(
+            input_set_generator=TightRelaxSetGenerator(
+                user_incar_settings={"ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
+            )
+        )
+    )
     code: str = "vasp"
-    n_structures: int = 1
     uc: bool = False
-    rattle_std: float = 0.01
     distort_type: int = 0
+    n_structures: int = 10
+    min_distance: float = 1.5
+    angle_percentage_scale: float = 10
+    angle_max_attempts: int = 1000
+    rattle_type: int = 0
+    rattle_std: float = 0.01
+    rattle_seed: int = 42
+    rattle_mc_n_iter: int = 10
+    w_angle: list[float] | None = None
 
     def make(
         self,
@@ -288,6 +325,7 @@ class RandomStructuresDataGenerator(Maker):
         mp_id: str,
         supercell_matrix: Matrix3D | None = None,
         volume_custom_scale_factors: list[float] | None = None,
+        volume_scale_factor_range: list[float] | None = None,
     ):
         """
         Make a flow to generate rattled structures reference DFT data.
@@ -300,6 +338,9 @@ class RandomStructuresDataGenerator(Maker):
             Materials Project IDs
         supercell_matrix: Matrix3D.
             Matrix for obtaining the supercell
+        volume_scale_factor_range : list[float]
+            [min, max] of volume scale factors.
+            e.g. [0.90, 1.10] will distort volume +-10%.
         volume_custom_scale_factors : list[float]
             Specify explicit scale factors (if range is not specified).
             If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
@@ -307,19 +348,25 @@ class RandomStructuresDataGenerator(Maker):
         jobs = []  # initializing empty job list
         outputs = []
 
-        if supercell_matrix is None:
-            supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
-        supercell = get_supercell(
-            unitcell=get_phonopy_structure(structure),
-            supercell_matrix=supercell_matrix,
-        )
+        relaxed = self.bulk_relax_maker.make(structure)
+        jobs.append(relaxed)
+        structure = relaxed.output.structure
 
         random_rattle_sc = generate_randomized_structures(
-            structure=get_pmg_structure(supercell),
+            structure=structure,
+            supercell_matrix=supercell_matrix,
             distort_type=self.distort_type,
             n_structures=self.n_structures,
             volume_custom_scale_factors=volume_custom_scale_factors,
+            volume_scale_factor_range=volume_scale_factor_range,
             rattle_std=self.rattle_std,
+            min_distance=self.min_distance,
+            angle_percentage_scale=self.angle_percentage_scale,
+            angle_max_attempts=self.angle_max_attempts,
+            rattle_type=self.rattle_type,
+            rattle_seed=self.rattle_seed,
+            rattle_mc_n_iter=self.rattle_mc_n_iter,
+            w_angle=self.w_angle,
         )
         jobs.append(random_rattle_sc)
         # perform the phonon displaced calculations for randomized displaced structures.
@@ -337,10 +384,19 @@ class RandomStructuresDataGenerator(Maker):
         if self.uc is True:
             random_rattle = generate_randomized_structures(
                 structure=structure,
+                supercell_matrix=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                 distort_type=self.distort_type,
                 n_structures=self.n_structures,
                 volume_custom_scale_factors=volume_custom_scale_factors,
+                volume_scale_factor_range=volume_scale_factor_range,
                 rattle_std=self.rattle_std,
+                min_distance=self.min_distance,
+                angle_percentage_scale=self.angle_percentage_scale,
+                angle_max_attempts=self.angle_max_attempts,
+                rattle_type=self.rattle_type,
+                rattle_seed=self.rattle_seed,
+                rattle_mc_n_iter=self.rattle_mc_n_iter,
+                w_angle=self.w_angle,
             )
             jobs.append(random_rattle)
             vasp_random_displacement_calcs = run_phonon_displacements(

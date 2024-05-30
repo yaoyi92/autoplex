@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import matplotlib.pyplot as plt
-from autoplex.data.common.utils import energy_plot, force_plot, plot_energy_forces, sort_outlier_energy, sort_outlier_forces
+from autoplex.data.common.utils import energy_plot, force_plot, plot_energy_forces, filter_outlier_energy, filter_outlier_forces
 
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
@@ -44,17 +44,17 @@ def test_force_plot(test_dir, clean_dir):
 
     os.chdir(parent_dir)
 
-def test_sort_outliers(test_dir, clean_dir):
+def test_filter_outliers(test_dir, clean_dir):
     parent_dir = os.getcwd()
     os.chdir(test_dir / "data")
-    sort_energy = sort_outlier_energy("train.extxyz", "quip_train.extxyz", 0.005)
-    sort_forces = sort_outlier_forces("train.extxyz", "quip_train.extxyz", "Si", 0.1)
+    filter_energy = filter_outlier_energy("train.extxyz", "quip_train.extxyz", 0.005)
+    filter_forces = filter_outlier_forces("train.extxyz", "quip_train.extxyz", "Si", 0.1)
 
-    assert os.path.isfile("sorted_in_energy.extxyz")
-    assert os.path.isfile("sorted_out_energy.extxyz")
+    assert os.path.isfile("filtered_in_energy.extxyz")
+    assert os.path.isfile("filtered_out_energy.extxyz")
     assert os.path.isfile("outliers_energy.extxyz")
-    assert os.path.isfile("sorted_in_force.extxyz")
-    assert os.path.isfile("sorted_out_force.extxyz")
+    assert os.path.isfile("filtered_in_force.extxyz")
+    assert os.path.isfile("filtered_out_force.extxyz")
     assert os.path.isfile("outliers_force.extxyz")
 
     for file_name in os.listdir(os.getcwd()):

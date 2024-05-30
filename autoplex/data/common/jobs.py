@@ -151,6 +151,7 @@ def get_supercell_job(structure: Structure, supercell_matrix: Matrix3D):
 @job
 def generate_randomized_structures(
     structure: Structure,
+    supercell_matrix: Matrix3D | None = None,
     distort_type: int = 0,
     n_structures: int = 10,
     volume_scale_factor_range: list[float] | None = None,
@@ -171,6 +172,8 @@ def generate_randomized_structures(
     ----------
     structure : Structure.
         Pymatgen structures object.
+    supercell_matrix: Matrix3D.
+        Matrix for obtaining the supercell.
     distort_type : int.
         0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     n_structures : int.
@@ -215,6 +218,13 @@ def generate_randomized_structures(
     Response.output.
         Volume or angle-distorted structures with rattled atoms.
     """
+    if supercell_matrix is None:
+        supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
+    supercell = get_supercell(
+        unitcell=get_phonopy_structure(structure),
+        supercell_matrix=supercell_matrix,
+    )
+    structure = get_pmg_structure(supercell)
     # distort cells by volume or angle
     if distort_type == 0:
         distorted_cells = scale_cell(

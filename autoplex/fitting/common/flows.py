@@ -111,7 +111,7 @@ class MLIPFitMaker(Maker):
             pre_xyz_files=pre_xyz_files,
             pre_database_dir=pre_database_dir,
             f_min=f_min,
-            atom_wise_regularization_parameter=atomwise_regularization_param,
+            atomwise_regularization_parameter=atomwise_regularization_param,
             atom_wise_regularization=atom_wise_regularization,
         )
         jobs.append(data_prep_job)
@@ -131,6 +131,7 @@ class MLIPFitMaker(Maker):
             mlip_hyper=self.mlip_hyper,
             num_processes=num_processes,
             regularization=regularization,
+            species_list=species_list,
             **fit_kwargs,
         )
         jobs.append(mlip_fit_job)  # type: ignore
@@ -172,7 +173,7 @@ class DataPreprocessing(Maker):
         fit_input: dict,
         pre_database_dir: str | None = None,
         pre_xyz_files: list[str] | None = None,
-        atom_wise_regularization_parameter: float = 0.1,
+        atomwise_regularization_parameter: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
     ):
@@ -187,7 +188,7 @@ class DataPreprocessing(Maker):
             the pre-database directory.
         pre_xyz_files: list[str] or None
             names of the pre-database train xyz file and test xyz file labeled by VASP.
-        atom_wise_regularization_parameter: float
+        atomwise_regularization_parameter: float
             regularization value for the atom-wise force components.
         f_min: float
             minimal force cutoff value for atom-wise regularization.
@@ -235,7 +236,7 @@ class DataPreprocessing(Maker):
             config_types=config_types,
             data_types=data_types,
             f_min=f_min,
-            regularization=atom_wise_regularization_parameter,
+            regularization=atomwise_regularization_parameter,
             atom_wise_regularization=atom_wise_regularization,
         )
 
@@ -251,6 +252,9 @@ class DataPreprocessing(Maker):
             atoms, self.split_ratio
         )
 
+        ase.io.write("train.extxyz", train_structures, format="extxyz", append=True)
+        ase.io.write("test.extxyz", test_structures, format="extxyz", append=True)
+
         # Merging database
         if pre_database_dir and os.path.exists(pre_database_dir):
             current_working_directory = os.getcwd()
@@ -258,21 +262,16 @@ class DataPreprocessing(Maker):
             if len(pre_xyz_files) == 2:
                 files_new = ["train.extxyz", "test.extxyz"]
                 for file_name, file_new in zip(pre_xyz_files, files_new):
-                    source_file_path = os.path.join(pre_database_dir, file_name)
-                    destination_file_path = os.path.join(
-                        current_working_directory, file_new
-                    )
-                    shutil.copy(source_file_path, destination_file_path)
-                    print(
-                        f"File {file_name} has been copied to {destination_file_path}"
-                    )
+                    with open(
+                        os.path.join(pre_database_dir, file_name)
+                    ) as pre_xyz_file, open(file_new, "a") as xyz_file:
+                        xyz_file.write(pre_xyz_file.read())
+                    print(f"File {file_name} has been copied to {file_new}")
+
             elif len(pre_xyz_files) > 2:
                 raise ValueError(
                     "Please provide a train and a test extxyz file (two files in total) for the pre_xyz_files."
                 )
-
-        ase.io.write("train.extxyz", train_structures, format="extxyz", append=True)
-        ase.io.write("test.extxyz", test_structures, format="extxyz", append=True)
 
         if self.regularization:
             atoms = ase.io.read("train.extxyz", index=":")

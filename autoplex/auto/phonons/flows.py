@@ -57,8 +57,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         The total number of randomly displaced structures to be generated.
     phonon_displacement_maker: BaseVaspMaker
         Maker used to compute the forces for a supercell.
-    n_structures: int.
-        The total number of randomly displaced structures to be generated.
+    n_structures : int.
+        Total number of distorted structures to be generated.
+        Must be provided if distorting volume without specifying a range, or if distorting angles.
+        Default=10.
     displacements: list[float]
         displacement distance for phonons
     min_length: float
@@ -71,15 +73,42 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
-    volume_scale_factors: list[float]
-        list of factors to resize cell parameters. Default is [0.975, 1.0, 1.025, 1.05].
-    rattle_std: float
-        Standard deviation for normal distribution to draw numbers from
-        to generate the rattled structures.
     supercell_matrix: Matrix3D or None
         The matrix to construct the supercell.
     distort_type : int.
         0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
+    volume_scale_factor_range : list[float]
+        [min, max] of volume scale factors.
+        e.g. [0.90, 1.10] will distort volume +-10%.
+    volume_custom_scale_factors : list[float]
+        Specify explicit scale factors (if range is not specified).
+        If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
+    min_distance: float
+        Minimum separation allowed between any two atoms.
+        Default= 1.5A.
+    angle_percentage_scale: float
+        Angle scaling factor.
+        Default= 10 will randomly distort angles by +-10% of original value.
+    angle_max_attempts: int.
+        Maximum number of attempts to distort structure before aborting.
+        Default=1000.
+    w_angle: list[float]
+        List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
+        Default= [0, 1, 2].
+    rattle_type: int.
+        0- standard rattling, 1- Monte-Carlo rattling. Default=0.
+    rattle_std: float.
+        Rattle amplitude (standard deviation in normal distribution).
+        Default=0.01.
+        Note that for MC rattling, displacements generated will roughly be
+        rattle_mc_n_iter**0.5 * rattle_std for small values of n_iter.
+    rattle_seed: int.
+        Seed for setting up NumPy random state from which random numbers are generated.
+        Default=42.
+    rattle_mc_n_iter: int.
+        Number of Monte Carlo iterations.
+        Larger number of iterations will generate larger displacements.
+        Default=10.
     ml_models: list[str]
         list of the ML models to be used. Default is GAP.
     """
@@ -92,15 +121,23 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=TightDFTStaticMaker
     )
-    n_structures: int = 1
+    n_structures: int = 10
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
     symprec: float = 1e-4
     uc: bool = False
-    volume_scale_factors: list[float] | None = None
+    volume_custom_scale_factors: list[float] | None = None
+    volume_scale_factor_range: list[float] | None = None
     rattle_std: float = 0.01
     supercell_matrix: Matrix3D | None = None
     distort_type: int = 0
+    min_distance: float = 1.5
+    angle_percentage_scale: float = 10
+    angle_max_attempts: int = 1000
+    rattle_type: int = 0
+    rattle_seed: int = 42
+    rattle_mc_n_iter: int = 10
+    w_angle: list[float] | None = None
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
 
     def make(
@@ -111,7 +148,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         f_max: float = 40.0,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
-        atom_wise_regularization_parameter: float = 0.1,
+        atomwise_regularization_parameter: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
         auto_delta: bool = True,
@@ -138,7 +175,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
             the pre-database directory.
-        atom_wise_regularization_parameter: float
+        atomwise_regularization_parameter: float
             regularization value for the atom-wise force components.
         f_min: float
             minimal force cutoff value for atom-wise regularization.
@@ -161,15 +198,23 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
-                    structure,
-                    mp_id,
-                    self.phonon_displacement_maker,
-                    self.n_structures,
-                    self.uc,
-                    self.volume_scale_factors,
-                    self.rattle_std,
-                    self.supercell_matrix,
-                    self.distort_type,
+                    structure=structure,
+                    mp_id=mp_id,
+                    phonon_displacement_maker=self.phonon_displacement_maker,
+                    n_structures=self.n_structures,
+                    uc=self.uc,
+                    volume_custom_scale_factors=self.volume_custom_scale_factors,
+                    volume_scale_factor_range=self.volume_scale_factor_range,
+                    rattle_std=self.rattle_std,
+                    supercell_matrix=self.supercell_matrix,
+                    distort_type=self.distort_type,
+                    min_distance=self.min_distance,
+                    rattle_type=self.rattle_type,
+                    rattle_seed=self.rattle_seed,
+                    rattle_mc_n_iter=self.rattle_mc_n_iter,
+                    angle_max_attempts=self.angle_max_attempts,
+                    angle_percentage_scale=self.angle_percentage_scale,
+                    w_angle=self.w_angle,
                 )
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
@@ -205,7 +250,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 f_max=f_max,
                 pre_xyz_files=pre_xyz_files,
                 pre_database_dir=pre_database_dir,
-                atomwise_regularization_param=atom_wise_regularization_parameter,
+                atomwise_regularization_param=atomwise_regularization_parameter,
                 f_min=f_min,
                 atom_wise_regularization=atom_wise_regularization,
                 auto_delta=auto_delta,
@@ -317,12 +362,20 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         structure: Structure,
         mp_id: str,
         phonon_displacement_maker: BaseVaspMaker,
-        n_structures: int = 1,
         uc: bool = False,
         volume_custom_scale_factors: list[float] | None = None,
+        volume_scale_factor_range: list[float] | None = None,
         rattle_std: float = 0.01,
         supercell_matrix: Matrix3D | None = None,
         distort_type: int = 0,
+        n_structures: int = 10,
+        min_distance: float = 1.5,
+        angle_percentage_scale: float = 10,
+        angle_max_attempts: int = 1000,
+        rattle_type: int = 0,
+        rattle_seed: int = 42,
+        rattle_mc_n_iter: int = 10,
+        w_angle: list[float] | None = None,
     ):
         """Add DFT phonon runs for randomly displaced structures.
 
@@ -334,31 +387,68 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             materials project id
         phonon_displacement_maker: BaseVaspMaker
             Maker used to compute the forces for a supercell.
-        n_structures: int.
-            The total number of randomly displaced structures to be generated.
         uc: bool.
             If True, will generate randomly distorted structures (unitcells)
             and add static computation jobs to the flow.
-        volume_custom_scale_factors: list[float]
-            list of factors to resize cell parameters.
-        rattle_std: float
-            Standard deviation for normal distribution to draw numbers from
-            to generate the rattled structures.
         supercell_matrix: Matrix3D or None
             The matrix to construct the supercell.
         distort_type : int.
             0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
+        n_structures : int.
+            Total number of distorted structures to be generated.
+            Must be provided if distorting volume without specifying a range, or if distorting angles.
+            Default=10.
+        volume_scale_factor_range : list[float]
+            [min, max] of volume scale factors.
+            e.g. [0.90, 1.10] will distort volume +-10%.
+        volume_custom_scale_factors : list[float]
+            Specify explicit scale factors (if range is not specified).
+            If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
+        min_distance: float
+            Minimum separation allowed between any two atoms.
+            Default= 1.5A.
+        angle_percentage_scale: float
+            Angle scaling factor.
+            Default= 10 will randomly distort angles by +-10% of original value.
+        angle_max_attempts: int.
+            Maximum number of attempts to distort structure before aborting.
+            Default=1000.
+        w_angle: list[float]
+            List of angle indices to be changed i.e. 0=alpha, 1=beta, 2=gamma.
+            Default= [0, 1, 2].
+        rattle_type: int.
+            0- standard rattling, 1- Monte-Carlo rattling. Default=0.
+        rattle_std: float.
+            Rattle amplitude (standard deviation in normal distribution).
+            Default=0.01.
+            Note that for MC rattling, displacements generated will roughly be
+            rattle_mc_n_iter**0.5 * rattle_std for small values of n_iter.
+        rattle_seed: int.
+            Seed for setting up NumPy random state from which random numbers are generated.
+            Default=42.
+        rattle_mc_n_iter: int.
+            Number of Monte Carlo iterations.
+            Larger number of iterations will generate larger displacements.
+            Default=10.
         """
         additonal_dft_random = dft_random_gen_data(
-            structure,
-            mp_id,
-            phonon_displacement_maker,
-            n_structures,
-            uc,
-            volume_custom_scale_factors,
-            rattle_std,
-            supercell_matrix,
-            distort_type,
+            structure=structure,
+            mp_id=mp_id,
+            phonon_displacement_maker=phonon_displacement_maker,
+            n_structures=n_structures,
+            uc=uc,
+            volume_custom_scale_factors=volume_custom_scale_factors,
+            volume_scale_factor_range=volume_scale_factor_range,
+            rattle_std=rattle_std,
+            supercell_matrix=supercell_matrix,
+            distort_type=distort_type,
+            rattle_seed=rattle_seed,
+            rattle_mc_n_iter=rattle_mc_n_iter,
+            rattle_type=rattle_type,
+            angle_max_attempts=angle_max_attempts,
+            angle_percentage_scale=angle_percentage_scale,
+            w_angle=w_angle,
+            min_distance=min_distance,
         )
         return Flow(
             additonal_dft_random,
