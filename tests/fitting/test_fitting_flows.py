@@ -74,7 +74,6 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -109,7 +108,6 @@ def test_mlip_fit_maker_with_kwargs(
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -153,7 +151,6 @@ def test_mlip_fit_maker_with_pre_database_dir(
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -189,7 +186,6 @@ def test_mlip_fit_maker_jace(
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -235,7 +231,6 @@ def test_mlip_fit_maker_nequip(
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -289,7 +284,6 @@ def test_mlip_fit_maker_m3gnet(
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -344,7 +338,6 @@ def test_mlip_fit_maker_mace(
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -398,7 +391,6 @@ def test_mlip_fit_maker_glue_xml(
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -493,7 +485,6 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -508,7 +499,7 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
         isolated_atoms_energy=[-0.28649227, -0.25638457],
         fit_input=fit_input_dict,
         pre_database_dir=str(test_files_dir),
-        pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
+        pre_xyz_files=["pre_xyz_train_more_data.extxyz", "pre_xyz_test_more_data.extxyz"],
         **{"separated": True}
     )
 
@@ -518,6 +509,7 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
 
     # check if gap potential file is generated
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)+"/train_phonon.extxyz").exists()
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)+"/train_rand_struc.extxyz").exists()
 
     for job_dir in path_to_job_files:

@@ -96,12 +96,13 @@ def gap_fitting(
         A dictionary with train_error, test_error
 
     """
+    gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     mlip_path: Path = prepare_fit_environment(
         db_dir, Path.cwd(), glue_xml, regularization, train_name, test_name
     )
 
     db_atoms = ase.io.read(os.path.join(db_dir, train_name), index=":")
-    train_data_path = os.path.join(
+    train_data_path = os.path.join(  # change this so that train_sigma is the new train and the old train is train_bak
         db_dir, "train_with_sigma.extxyz" if regularization else train_name
     )
     test_data_path = os.path.join(db_dir, test_name)
@@ -109,6 +110,8 @@ def gap_fitting(
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
         gap_fit_parameter_file_path=path_to_default_hyperparameters
     )
+
+    gap_default_hyperparameters["general"].update({"gp_file": gap_file_xml})
 
     for parameter in gap_default_hyperparameters:
         if fit_kwargs:
@@ -128,7 +131,7 @@ def gap_fitting(
         )
 
         run_gap(num_processes, fit_parameters_list)
-        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_" + train_name)
+        run_quip(num_processes, train_data_path, gap_file_xml, "quip_" + train_name)
 
     if include_three_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -144,7 +147,7 @@ def gap_fitting(
         )
 
         run_gap(num_processes, fit_parameters_list)
-        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_" + train_name)
+        run_quip(num_processes, train_data_path, gap_file_xml, "quip_" + train_name)
 
     if glue_xml:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -161,7 +164,7 @@ def gap_fitting(
         run_quip(
             num_processes,
             train_data_path,
-            "gap_file.xml",
+            gap_file_xml,
             "quip_" + train_name,
             glue_xml,
         )
@@ -187,7 +190,7 @@ def gap_fitting(
         run_quip(
             num_processes,
             train_data_path,
-            "gap_file.xml",
+            gap_file_xml,
             "quip_" + train_name,
             glue_xml,
         )
@@ -197,9 +200,7 @@ def gap_fitting(
     print("Training error of MLIP (eV/at.):", round(train_error, 7))
 
     # Calculate testing error
-    run_quip(
-        num_processes, test_data_path, "gap_file.xml", "quip_" + test_name, glue_xml
-    )
+    run_quip(num_processes, test_data_path, gap_file_xml, "quip_" + test_name, glue_xml)
     test_error = energy_remain("quip_" + test_name)
     print("Testing error of MLIP (eV/at.):", round(test_error, 7))
 
@@ -217,6 +218,7 @@ def gap_fitting(
         "train_error": train_error,
         "test_error": test_error,
         "mlip_path": mlip_path,
+        "mlip_pot": mlip_path.joinpath(gap_file_xml),
     }
 
 

@@ -211,7 +211,7 @@ def machine_learning_fit(
 
     return {
         "mlip_path": train_test_error["mlip_path"],
-        "mlip_xml": train_test_error["mlip_path"].joinpath("gap_file.xml"),
+        "mlip_xml": train_test_error["mlip_pot"],
         "train_error": train_test_error["train_error"],
         "test_error": train_test_error["test_error"],
         "convergence": check_conv,
