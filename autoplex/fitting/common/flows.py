@@ -55,7 +55,8 @@ class MLIPFitMaker(Maker):
         isol_es: dict | None = None,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
-        regularization: bool = True,
+        regularization: bool = False,
+        separated: bool = False,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
         atomwise_regularization_param: float = 0.1,
@@ -103,6 +104,7 @@ class MLIPFitMaker(Maker):
         data_prep_job = DataPreprocessing(
             split_ratio=split_ratio,
             regularization=regularization,
+            separated=separated,
             distillation=True,
             f_max=f_max,
         ).make(
@@ -120,26 +122,20 @@ class MLIPFitMaker(Maker):
                 "Please correct the MLIP name!"
                 "The current version ONLY supports the following models: GAP, J-ACE, P-ACE, NEQUIP, M3GNET, and MACE."
             )
-        train_files = ["train.extxyz", "train_phonon.extxyz", "train_rand_struc.extxyz"]
-        test_files = ["test.extxyz", "test_phonon.extxyz", "test_rand_struc.extxyz"]
 
-        for train_name, test_name in zip(train_files, test_files):
-            if train_name and test_name:
-                mlip_fit_job = machine_learning_fit(
-                    database_dir=data_prep_job.output,
-                    isol_es=isol_es,
-                    auto_delta=auto_delta,
-                    glue_xml=glue_xml,
-                    mlip_type=self.mlip_type,
-                    mlip_hyper=self.mlip_hyper,
-                    num_processes=num_processes,
-                    regularization=regularization,
-                    species_list=species_list,
-                    train_name=train_name,
-                    test_name=test_name,
-                    **fit_kwargs,
-                )
-                jobs.append(mlip_fit_job)  # type: ignore
+        mlip_fit_job = machine_learning_fit(
+            database_dir=data_prep_job.output,
+            isol_es=isol_es,
+            auto_delta=auto_delta,
+            glue_xml=glue_xml,
+            mlip_type=self.mlip_type,
+            mlip_hyper=self.mlip_hyper,
+            num_processes=num_processes,
+            regularization=regularization,
+            species_list=species_list,
+            **fit_kwargs,
+        )
+        jobs.append(mlip_fit_job)  # type: ignore
 
         # create a flow including all jobs
         return Flow(jobs, mlip_fit_job.output)
@@ -171,7 +167,7 @@ class DataPreprocessing(Maker):
     name: str = "data_preprocessing_for_fitting"
     split_ratio: float = 0.5
     regularization: bool = False
-    separated: bool = True
+    separated: bool = False
     distillation: bool = False
     f_max: float = 40.0
 
@@ -267,7 +263,6 @@ class DataPreprocessing(Maker):
                 raise ValueError(
                     "Please provide a train and a test extxyz file (two files in total) for the pre_xyz_files."
                 )
-
         if self.regularization:
             atoms = ase.io.read("train.extxyz", index=":")
             atom_with_sigma = set_sigma(
@@ -275,48 +270,27 @@ class DataPreprocessing(Maker):
                 etup=[(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)],
             )
             ase.io.write("train_with_sigma.extxyz", atom_with_sigma, format="extxyz")
-
         if self.separated:
             atoms_train = ase.io.read("train.extxyz", index=":")
             atoms_test = ase.io.read("test.extxyz", index=":")
             for dt in set(data_types):
                 data_type = dt.rstrip("_dir")
                 if data_type != "iso_atoms":
-                    if data_type == "phonon":  # just for letting the unit test pass
-                        for rg in range(4):
-                            for atoms in atoms_train + atoms_test:
-                                if (
-                                    rg == 1 and atoms.info["data_type"] == "iso_atoms"
-                                ):  # just for letting the unit test pass
-                                    ase.io.write(
-                                        f"vasp_ref_{data_type}.extxyz",
-                                        atoms,
-                                        format="extxyz",
-                                        append=True,
-                                    )
-                                if atoms.info["data_type"] == data_type:
-                                    ase.io.write(
-                                        f"vasp_ref_{data_type}.extxyz",
-                                        atoms,
-                                        format="extxyz",
-                                        append=True,
-                                    )
-                    else:
-                        for atoms in atoms_train + atoms_test:
-                            if atoms.info["data_type"] == "iso_atoms":
-                                ase.io.write(
-                                    f"vasp_ref_{data_type}.extxyz",
-                                    atoms,
-                                    format="extxyz",
-                                    append=True,
-                                )
-                            if atoms.info["data_type"] == data_type:
-                                ase.io.write(
-                                    f"vasp_ref_{data_type}.extxyz",
-                                    atoms,
-                                    format="extxyz",
-                                    append=True,
-                                )
+                    for atoms in atoms_train + atoms_test:
+                        if atoms.info["data_type"] == "iso_atoms":
+                            ase.io.write(
+                                f"vasp_ref_{data_type}.extxyz",
+                                atoms,
+                                format="extxyz",
+                                append=True,
+                            )
+                        if atoms.info["data_type"] == data_type:
+                            ase.io.write(
+                                f"vasp_ref_{data_type}.extxyz",
+                                atoms,
+                                format="extxyz",
+                                append=True,
+                            )
 
                     write_after_distillation_data_split(
                         distillation=self.distillation,

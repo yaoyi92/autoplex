@@ -30,8 +30,6 @@ def machine_learning_fit(
     regularization: bool = True,
     HPO: bool = False,
     mlip_hyper: dict | None = None,
-    train_name: str = "train.extxyz",
-    test_name: str = "test.extxyz",
     **kwargs,
 ):
     """
@@ -65,6 +63,9 @@ def machine_learning_fit(
     kwargs : dict.
             dict including more fit keyword args.
     """
+    train_files = ["train.extxyz", "train_phonon.extxyz", "train_rand_struc.extxyz"]
+    test_files = ["test.extxyz", "test_phonon.extxyz", "test_rand_struc.extxyz"]
+
     if mlip_hyper is None:
         if mlip_type == "GAP":
             mlip_hyper = {"two_body": True, "three_body": False, "soap": True}
@@ -122,20 +123,25 @@ def machine_learning_fit(
             }
 
     if mlip_type == "GAP":
-        train_test_error = gap_fitting(
-            db_dir=database_dir,
-            species_list=species_list,
-            include_two_body=mlip_hyper["two_body"],
-            include_three_body=mlip_hyper["three_body"],
-            include_soap=mlip_hyper["soap"],
-            num_processes=num_processes,
-            auto_delta=auto_delta,
-            glue_xml=glue_xml,
-            regularization=regularization,
-            train_name=train_name,
-            test_name=test_name,
-            fit_kwargs=kwargs,
-        )
+        for train_name, test_name in zip(train_files, test_files):
+            if (
+                Path(Path(database_dir) / train_name).exists()
+                and Path(Path(database_dir) / test_name).exists()
+            ):
+                train_test_error = gap_fitting(
+                    db_dir=database_dir,
+                    species_list=species_list,
+                    include_two_body=mlip_hyper["two_body"],
+                    include_three_body=mlip_hyper["three_body"],
+                    include_soap=mlip_hyper["soap"],
+                    num_processes=num_processes,
+                    auto_delta=auto_delta,
+                    glue_xml=glue_xml,
+                    regularization=regularization,
+                    train_name=train_name,
+                    test_name=test_name,
+                    fit_kwargs=kwargs,
+                )
 
     elif mlip_type == "J-ACE":
         train_test_error = ace_fitting(
