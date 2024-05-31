@@ -183,6 +183,21 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     os.chdir(parent_dir)
 
+def test_mlip_fit_maker_jace(
+        test_dir, memory_jobstore, vasp_test_dir, clean_dir, fit_input_dict
+):
+    import os
+    import shutil
+    from pathlib import Path
+
+    from jobflow import run_locally
+
+    parent_dir = os.getcwd()
+
+    os.chdir(test_dir / "fitting")
+
+    test_files_dir = Path(test_dir / "fitting").resolve()
+
     # Test julia-ACE fit runs with pre_database_dir
     jacefit = MLIPFitMaker(
         mlip_type="J-ACE",
@@ -213,6 +228,21 @@ def test_mlip_fit_maker_with_pre_database_dir(
         shutil.rmtree(job_dir)
 
     os.chdir(parent_dir)
+
+def test_mlip_fit_maker_nequip(
+        test_dir, memory_jobstore, vasp_test_dir, clean_dir, fit_input_dict
+):
+    import os
+    import shutil
+    from pathlib import Path
+
+    from jobflow import run_locally
+
+    parent_dir = os.getcwd()
+
+    os.chdir(test_dir / "fitting")
+
+    test_files_dir = Path(test_dir / "fitting").resolve()
 
     # Test NEQUIP fit runs with pre_database_dir
     nequipfit = MLIPFitMaker(
@@ -253,6 +283,21 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
     os.chdir(parent_dir)
 
+def test_mlip_fit_maker_m3gnet(
+        test_dir, memory_jobstore, vasp_test_dir, clean_dir, fit_input_dict
+):
+    import os
+    import shutil
+    from pathlib import Path
+
+    from jobflow import run_locally
+
+    parent_dir = os.getcwd()
+
+    os.chdir(test_dir / "fitting")
+
+    test_files_dir = Path(test_dir / "fitting").resolve()
+
     # Test if M3GNET fit runs with pre_database_dir
     m3gnetfit = MLIPFitMaker(
         mlip_type="M3GNET",
@@ -292,6 +337,21 @@ def test_mlip_fit_maker_with_pre_database_dir(
         shutil.rmtree(job_dir)
 
     os.chdir(parent_dir)
+
+def test_mlip_fit_maker_mace(
+        test_dir, memory_jobstore, vasp_test_dir, clean_dir, fit_input_dict
+):
+    import os
+    import shutil
+    from pathlib import Path
+
+    from jobflow import run_locally
+
+    parent_dir = os.getcwd()
+
+    os.chdir(test_dir / "fitting")
+
+    test_files_dir = Path(test_dir / "fitting").resolve()
 
     # Test if MACE fit runs with pre_database_dir
     macefit = MLIPFitMaker(
