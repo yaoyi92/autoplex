@@ -79,6 +79,8 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "NSW": 0,
                 "LCHARG": False,
                 "SIGMA": 0.05,
+                "ISYM": 0,
+                "KSPACING": 0.2,
             },
             auto_ispin=False,
         )
@@ -191,6 +193,10 @@ class DFTPhononMaker(PhononMaker):
             )
         )
     )
+
+    if min_length is not None and min_length > 20.0:
+        update_kpoint_settings = "KP 111"  # implement adaptive kpoint settings
+
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=TightDFTStaticMaker
     )

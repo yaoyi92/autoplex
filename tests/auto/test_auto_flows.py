@@ -104,7 +104,6 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
 ):
     from jobflow import run_locally
-    from atomate2.common.schemas.phonons import PhononBSDOSDoc
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
@@ -168,14 +167,9 @@ def test_complete_dft_vs_ml_benchmark_workflow(
         store=memory_jobstore,
     )
 
-    ml_task_doc = responses[complete_workflow.jobs[4].output.uuid][2].output.resolve(
-        store=memory_jobstore
-    )
-
-    assert isinstance(ml_task_doc, PhononBSDOSDoc)
-
-    assert responses[complete_workflow.jobs[6].output.uuid][1].output == pytest.approx(
-        1.2014670270901717, abs=0.5
+    assert complete_workflow.jobs[4].name == "complete_benchmark"
+    assert responses[complete_workflow.jobs[4].output.uuid][1].replace[3].output.resolve(memory_jobstore)[0] == pytest.approx(
+        0.7611611665106662, abs=0.5
     )
 
 
@@ -225,7 +219,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
 
         assert responses[add_data_workflow.jobs[6].output.uuid][
             1
-        ].output == pytest.approx(1.2014670270901717, abs=0.5)
+        ].output == pytest.approx(0.7611611665106662, abs=0.5)
 
     def test_add_data_workflow_with_dft_reference(
         self,

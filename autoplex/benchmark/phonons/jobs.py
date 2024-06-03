@@ -93,4 +93,4 @@ def write_benchmark_metrics(benchmark_structure: Structure, mp_id, rmse, displac
         # TODO has img modes + ' ' + ' ' + str(ml.has_imag_modes(0.1))
         #  + ' ' + str(dft.has_imag_modes(0.1))
 
-    return Response
+    return Response(output=rmse)

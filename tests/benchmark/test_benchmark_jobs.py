@@ -99,7 +99,7 @@ def test_write_benchmark_metrics(test_dir, clean_dir):
 
     write_metrics_job = write_benchmark_metrics(
         benchmark_structure=structure,
-        rmse=[1.2014670270901717],
+        rmse=[0.7611611665106662],
         displacements=[0.01],
         mp_id="mp-22905",
     )

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from atomate2.forcefields.flows.phonons import PhononMaker
@@ -17,11 +18,110 @@ if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
+from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
+from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.data.phonons.flows import (
     DFTPhononMaker,
     IsoAtomMaker,
     RandomStructuresDataGenerator,
 )
+
+
+@job
+def complete_benchmark(
+    ibenchmark_structure: int,
+    benchmark_structure: Structure,
+    min_length: float,
+    ml_model: str,
+    mp_ids,
+    benchmark_mp_ids,
+    add_dft_phonon_struct: bool,
+    fit_input,
+    symprec,
+    phonon_displacement_maker,
+    displacements,
+    dft_references=None,
+):
+    """
+    Need to add proper docstrings.
+
+    Parameters
+    ----------
+    ibenchmark_structure
+    benchmark_structure
+    min_length
+    ml_model
+    mp_ids
+    benchmark_mp_ids
+    add_dft_phonon_struct
+    fit_input
+    symprec
+    phonon_displacement_maker
+    displacements
+    dft_references
+
+    """
+    jobs = []
+    collect = []
+    bm_output = []
+    for suffix in ["", "_phonon", "rand_struc"]:
+        if Path(Path(ml_model) / f"gap_file{suffix}.xml").exists():
+            add_data_ml_phonon = MLPhononMaker(
+                min_length=min_length,
+            ).make_from_ml_model(
+                structure=benchmark_structure,
+                ml_model=ml_model,
+                suffix=suffix,
+            )
+            jobs.append(add_data_ml_phonon)
+
+            if dft_references is None and benchmark_mp_ids is not None:
+                if (
+                    benchmark_mp_ids[ibenchmark_structure] in mp_ids
+                ) and add_dft_phonon_struct:
+                    dft_references = fit_input[benchmark_mp_ids[ibenchmark_structure]][
+                        "phonon_data"
+                    ]["001"]
+                elif (
+                    benchmark_mp_ids[ibenchmark_structure] not in mp_ids
+                ) or (  # else?
+                    add_dft_phonon_struct is False
+                ):
+                    dft_phonons = DFTPhononMaker(
+                        symprec=symprec,
+                        phonon_displacement_maker=phonon_displacement_maker,
+                        born_maker=None,
+                        min_length=min_length,
+                    ).make(structure=benchmark_structure)
+                    jobs.append(dft_phonons)
+                    dft_references = dft_phonons.output
+
+                add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                    structure=benchmark_structure,
+                    benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
+                    ml_phonon_task_doc=add_data_ml_phonon.output,
+                    dft_phonon_task_doc=dft_references,
+                )
+            else:
+                add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                    structure=benchmark_structure,
+                    benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
+                    ml_phonon_task_doc=add_data_ml_phonon.output,
+                    dft_phonon_task_doc=dft_references[ibenchmark_structure],
+                )
+            jobs.append(add_data_bm)
+            collect.append(add_data_bm.output)
+
+            collect_bm = write_benchmark_metrics(
+                benchmark_structure=benchmark_structure,
+                mp_id=benchmark_mp_ids[ibenchmark_structure],
+                rmse=collect,
+                displacements=displacements,
+            )
+            jobs.append(collect_bm)
+            bm_output.append(collect_bm.output)
+
+    return Response(replace=jobs, output=bm_output)
 
 
 @dataclass
@@ -138,7 +238,7 @@ class MLPhononMaker(PhononMaker):
     static_maker_kwargs: dict = field(default_factory=dict)
 
     @job
-    def make_from_ml_model(self, structure, ml_model, **make_kwargs):
+    def make_from_ml_model(self, structure, ml_model, suffix, **make_kwargs):
         """
         Maker for GAP phonon jobs.
 
@@ -149,7 +249,7 @@ class MLPhononMaker(PhononMaker):
             that is nearly fully optimized as the internal optimizers
             have very strict settings!
         ml_model : str
-            Complete path to gapfit.xml file including file name.
+            Complete path to gapfit.xml file(s).
         make_kwargs :
             Keyword arguments for the PhononMaker.
 
@@ -158,6 +258,7 @@ class MLPhononMaker(PhononMaker):
         PhononMaker jobs.
 
         """
+        ml_model = ml_model + f"/gap_file{suffix}.xml"
         if self.bulk_relax_maker is not None:
             br = self.bulk_relax_maker
             self.bulk_relax_maker = br.update_kwargs(
@@ -169,7 +270,6 @@ class MLPhononMaker(PhononMaker):
                     **self.relax_maker_kwargs,
                 }
             )
-            print(self.bulk_relax_maker.calculator_kwargs)
         if self.phonon_displacement_maker is not None:
             ph_disp = self.phonon_displacement_maker
             self.phonon_displacement_maker = ph_disp.update_kwargs(
