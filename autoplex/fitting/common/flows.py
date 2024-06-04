@@ -62,7 +62,7 @@ class MLIPFitMaker(Maker):
         atomwise_regularization_param: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
-        auto_delta: bool = True,
+        auto_delta: bool = False,
         glue_xml: bool = False,
         num_processes: int = 32,
         **fit_kwargs,
@@ -138,7 +138,7 @@ class MLIPFitMaker(Maker):
         jobs.append(mlip_fit_job)  # type: ignore
 
         # create a flow including all jobs
-        return Flow(jobs, mlip_fit_job.output)
+        return Flow(jobs=jobs, output=mlip_fit_job.output, name=self.name)
 
 
 @dataclass

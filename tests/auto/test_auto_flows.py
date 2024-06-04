@@ -168,7 +168,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     )
 
     assert complete_workflow.jobs[4].name == "complete_benchmark"
-    assert responses[complete_workflow.jobs[4].output.uuid][1].replace[3].output.resolve(memory_jobstore)[0] == pytest.approx(
+    assert responses[complete_workflow.jobs[5].output.uuid][1].output[0][0]["benchmark_phonon_rmse"] == pytest.approx(
         0.7611611665106662, abs=0.5
     )
 

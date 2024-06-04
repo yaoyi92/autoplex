@@ -416,7 +416,7 @@ class RandomStructuresDataGenerator(Maker):
             outputs.append(vasp_random_displacement_calcs.output["dirs"])
 
         # create a flow including all jobs
-        return Flow(jobs, outputs)
+        return Flow(jobs=jobs, output=outputs, name=self.name)
 
 
 @dataclass
@@ -460,4 +460,8 @@ class IsoAtomMaker(Maker):
             isoatoms_dirs.append(isoatom_calcs.output.dir_name)
 
         # create a flow including all jobs
-        return Flow(jobs, {"energies": isoatoms_energy, "dirs": isoatoms_dirs})
+        return Flow(
+            jobs=jobs,
+            output={"energies": isoatoms_energy, "dirs": isoatoms_dirs},
+            name=self.name,
+        )

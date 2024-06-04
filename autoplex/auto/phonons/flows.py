@@ -19,6 +19,7 @@ from autoplex.auto.phonons.jobs import (
     dft_random_gen_data,
     get_iso_atom,
 )
+from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.data.phonons.flows import TightDFTStaticMaker
 from autoplex.fitting.common.flows import MLIPFitMaker
 
@@ -109,6 +110,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Default=10.
     ml_models: list[str]
         list of the ML models to be used. Default is GAP.
+    HPloop: bool
+        making it easier to loop through several hyperparameter sets.
     """
 
     name: str = "add_data"
@@ -137,7 +140,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
-    HPO: bool = False
+    HPloop: bool = False
 
     def make(
         self,
@@ -192,6 +195,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         """
         flows = []
         fit_input = {}
+        hyper_list = []
+        bm_outputs = []
         for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
@@ -239,6 +244,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             )
 
         for ml_model in self.ml_models:
+            soap_dict = {
+                "n_sparse": 0,  # have to think of a better way
+                "delta": 0.0,
+            }
             add_data_fit = MLIPFitMaker(mlip_type=ml_model).make(
                 species_list=isoatoms.output["species"],
                 isolated_atoms_energy=isoatoms.output["energies"],
@@ -254,18 +263,44 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 **fit_kwargs,
             )
             flows.append(add_data_fit)
+            hyper_list.append(
+                {"f=" + str(atomwise_regularization_parameter): soap_dict}
+            )
 
-            # self.HPO = True
+            if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
+                for ibenchmark_structure, benchmark_structure in enumerate(
+                    benchmark_structures
+                ):
+                    complete_bm = complete_benchmark(
+                        ibenchmark_structure=ibenchmark_structure,
+                        benchmark_structure=benchmark_structure,
+                        min_length=self.min_length,
+                        ml_model=add_data_fit.output["mlip_path"],
+                        mp_ids=mp_ids,
+                        benchmark_mp_ids=benchmark_mp_ids,
+                        add_dft_phonon_struct=self.add_dft_phonon_struct,
+                        fit_input=fit_input,
+                        symprec=self.symprec,
+                        phonon_displacement_maker=self.phonon_displacement_maker,
+                        dft_references=dft_references,
+                    )
+                    flows.append(complete_bm)
+                    bm_outputs.append(complete_bm.output)
 
-            if self.HPO:
+            self.HPloop = True
+
+            if self.HPloop:
                 for atomwise_regularization in [0.1, 0.01]:  # , 0.001, 0.0001]:
                     for n_sparse in [
                         1000,
                         2000,
-                        3000,
-                    ]:  # , 4000, 5000, 6000, 7000, 8000, 9000]:
-                        for delta in [0.5, 1.0, 1.5]:
-                            data_fit = MLIPFitMaker(mlip_type=ml_model).make(
+                    ]:  # , 300, 4000, 5000, 6000, 7000, 8000, 9000]:
+                        for delta in [0.5, 1.0]:
+                            soap_dict = {
+                                "n_sparse": n_sparse,
+                                "delta": delta,
+                            }
+                            loop_data_fit = MLIPFitMaker(mlip_type=ml_model).make(
                                 species_list=isoatoms.output["species"],
                                 isolated_atoms_energy=isoatoms.output["energies"],
                                 fit_input=fit_input,
@@ -277,55 +312,45 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 f_min=f_min,
                                 atom_wise_regularization=atom_wise_regularization,
                                 auto_delta=auto_delta,
-                                soap={
-                                    "n_sparse": n_sparse,
-                                    "delta": delta,
-                                },
+                                soap=soap_dict,
                             )
-                            flows.append(data_fit)
+                            flows.append(loop_data_fit)
+                            hyper_list.append(
+                                {"f=" + str(atomwise_regularization): soap_dict}
+                            )
+                            if (benchmark_structures is not None) and (
+                                benchmark_mp_ids is not None
+                            ):
+                                for (
+                                    ibenchmark_structure,
+                                    benchmark_structure,
+                                ) in enumerate(benchmark_structures):
+                                    complete_bm = complete_benchmark(
+                                        ibenchmark_structure=ibenchmark_structure,
+                                        benchmark_structure=benchmark_structure,
+                                        min_length=self.min_length,
+                                        ml_model=loop_data_fit.output["mlip_path"],
+                                        mp_ids=mp_ids,
+                                        benchmark_mp_ids=benchmark_mp_ids,
+                                        add_dft_phonon_struct=self.add_dft_phonon_struct,
+                                        fit_input=fit_input,
+                                        symprec=self.symprec,
+                                        phonon_displacement_maker=self.phonon_displacement_maker,
+                                        dft_references=dft_references,
+                                    )
+                                    flows.append(complete_bm)
+                                    bm_outputs.append(complete_bm.output)
+        collect_bm = write_benchmark_metrics(
+            ml_models=self.ml_models,
+            benchmark_structures=benchmark_structures,
+            mp_ids=benchmark_mp_ids,
+            metrics=bm_outputs,
+            displacements=self.displacements,
+            hyper_list=hyper_list,
+        )
+        flows.append(collect_bm)
 
-        bm_outputs = []
-
-        if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
-            for ibenchmark_structure, benchmark_structure in enumerate(
-                benchmark_structures
-            ):
-                complete_bm = complete_benchmark(
-                    ibenchmark_structure=ibenchmark_structure,
-                    benchmark_structure=benchmark_structure,
-                    min_length=self.min_length,
-                    ml_model=add_data_fit.output["mlip_path"],
-                    mp_ids=mp_ids,
-                    benchmark_mp_ids=benchmark_mp_ids,
-                    add_dft_phonon_struct=self.add_dft_phonon_struct,
-                    fit_input=fit_input,
-                    symprec=self.symprec,
-                    phonon_displacement_maker=self.phonon_displacement_maker,
-                    displacements=self.displacements,
-                    dft_references=dft_references,
-                )
-                flows.append(complete_bm)
-                bm_outputs.append(complete_bm.output)
-
-                if self.HPO:  # collecting the results correctly does not work yet
-                    complete_bm = complete_benchmark(
-                        ibenchmark_structure=ibenchmark_structure,
-                        benchmark_structure=benchmark_structure,
-                        min_length=self.min_length,
-                        ml_model=data_fit.output["mlip_path"],
-                        mp_ids=mp_ids,
-                        benchmark_mp_ids=benchmark_mp_ids,
-                        add_dft_phonon_struct=self.add_dft_phonon_struct,
-                        fit_input=fit_input,
-                        symprec=self.symprec,
-                        phonon_displacement_maker=self.phonon_displacement_maker,
-                        displacements=self.displacements,
-                        dft_references=dft_references,
-                    )
-                    flows.append(complete_bm)
-                    bm_outputs.append(complete_bm.output)
-
-        return Flow(flows, bm_outputs)
+        return Flow(jobs=flows, output=collect_bm, name=self.name)
 
     def add_dft_phonons(
         self,
@@ -358,11 +383,12 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         )
 
         return Flow(
-            additonal_dft_phonon,  # flows
+            jobs=additonal_dft_phonon,  # flows
             output={
                 "phonon_dir": additonal_dft_phonon.output["dirs"],
                 "phonon_data": additonal_dft_phonon.output["data"],
             },
+            name=self.name,
         )
 
     def add_dft_random(
@@ -459,6 +485,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             min_distance=min_distance,
         )
         return Flow(
-            additonal_dft_random,
+            jobs=additonal_dft_random,
             output={"rand_struc_dir": additonal_dft_random.output},
+            name=self.name,
         )

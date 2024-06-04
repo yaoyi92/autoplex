@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
 
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
-from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.data.phonons.flows import (
     DFTPhononMaker,
     IsoAtomMaker,
@@ -39,7 +38,6 @@ def complete_benchmark(
     fit_input,
     symprec,
     phonon_displacement_maker,
-    displacements,
     dft_references=None,
 ):
     """
@@ -62,8 +60,7 @@ def complete_benchmark(
 
     """
     jobs = []
-    collect = []
-    bm_output = []
+    collect_output = []
     for suffix in ["", "_phonon", "rand_struc"]:
         if Path(Path(ml_model) / f"gap_file{suffix}.xml").exists():
             add_data_ml_phonon = MLPhononMaker(
@@ -110,18 +107,9 @@ def complete_benchmark(
                     dft_phonon_task_doc=dft_references[ibenchmark_structure],
                 )
             jobs.append(add_data_bm)
-            collect.append(add_data_bm.output)
+            collect_output.append(add_data_bm.output)
 
-            collect_bm = write_benchmark_metrics(
-                benchmark_structure=benchmark_structure,
-                mp_id=benchmark_mp_ids[ibenchmark_structure],
-                rmse=collect,
-                displacements=displacements,
-            )
-            jobs.append(collect_bm)
-            bm_output.append(collect_bm.output)
-
-    return Response(replace=jobs, output=bm_output)
+    return Response(replace=jobs, output=collect_output)
 
 
 @dataclass
