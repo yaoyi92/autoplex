@@ -245,7 +245,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         for ml_model in self.ml_models:
             soap_dict = {
-                "n_sparse": 0,  # have to think of a better way
+                "n_sparse": 0,  # have to think of a better way,
+                # error: Dict entry 0 has incompatible type "str": "int"; expected "str": "str"
                 "delta": 0.0,
             }
             add_data_fit = MLIPFitMaker(mlip_type=ml_model).make(
