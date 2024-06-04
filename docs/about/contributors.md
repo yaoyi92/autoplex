@@ -27,3 +27,12 @@ Friedrich Schiller University Jena
 
 [naik-aakash]: https://github.com/naik-aakash
 [0000-0002-6071-6786]: https://orcid.org/0000-0002-6071-6786
+
+
+
+**Volker Deringer** [![gh]][vlderinger] [![orc]][0000-0001-6873-0278] \
+Professor \
+Department of Chemistry, University of Oxford
+
+[vlderinger]: https://github.com/vlderinger
+[0000-0001-6873-0278]: https://orcid.org/0000-0001-6873-0278
