@@ -1,0 +1,6 @@
+Potential  Structure  mpid        displacement  RMSE  Hyperparameters (atom-wise f, n_sparse, SOAP delta)    imagmodes(pot)  imagmodes(dft)  
+GAP        LiCl       mp-22905    0.010000      0.767 {'f=0.1': 'default'}                                   True            False           
+GAP        LiCl       mp-22905    0.010000      0.761 {'f=0.1': {'n_sparse': 4000, 'delta': 0.5}}            True            False           
+GAP        LiCl       mp-22905    0.010000      0.767 {'f=0.1': {'n_sparse': 4000, 'delta': 1.0}}            True            False           
+GAP        LiCl       mp-22905    0.010000      0.763 {'f=0.1': {'n_sparse': 5000, 'delta': 0.5}}            True            False           
+GAP        LiCl       mp-22905    0.010000      0.763 {'f=0.1': {'n_sparse': 5000, 'delta': 1.0}}            True            False           

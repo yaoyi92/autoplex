@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
@@ -195,7 +195,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         """
         flows = []
         fit_input = {}
-        hyper_list = []
+        hyper_list: list[dict[Any, Any]] = []
         bm_outputs = []
         for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
@@ -244,11 +244,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             )
 
         for ml_model in self.ml_models:
-            soap_dict = {
-                "n_sparse": 0,  # have to think of a better way,
-                # error: Dict entry 0 has incompatible type "str": "int"; expected "str": "str"
-                "delta": 0.0,
-            }
             add_data_fit = MLIPFitMaker(mlip_type=ml_model).make(
                 species_list=isoatoms.output["species"],
                 isolated_atoms_energy=isoatoms.output["energies"],
@@ -265,7 +260,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             )
             flows.append(add_data_fit)
             hyper_list.append(
-                {"f=" + str(atomwise_regularization_parameter): soap_dict}
+                {"f=" + str(atomwise_regularization_parameter): "default"}
             )
 
             if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
@@ -291,11 +286,18 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             self.HPloop = True
 
             if self.HPloop:
-                for atomwise_regularization in [0.1, 0.01]:  # , 0.001, 0.0001]:
+                for atomwise_regularization in [0.1]:  # , 0.01 , 0.001, 0.0001]:
                     for n_sparse in [
-                        1000,
-                        2000,
-                    ]:  # , 300, 4000, 5000, 6000, 7000, 8000, 9000]:
+                        # 1000,
+                        # 2000,
+                        # 3000,
+                        4000,
+                        5000,
+                        # 6000,
+                        # 7000,
+                        # 8000,
+                        # 9000
+                    ]:
                         for delta in [0.5, 1.0]:
                             soap_dict = {
                                 "n_sparse": n_sparse,

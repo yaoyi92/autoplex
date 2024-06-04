@@ -110,19 +110,37 @@ def write_benchmark_metrics(
                 encoding="utf-8",
             ) as file:
                 file.write(
-                    "Pot Structure mpid displacements RMSE Hyperparameter imagmodes(pot) imagmodes(dft) "
+                    "%-11s%-11s%-12s%-14s%-6s%-55s%-16s%-16s"
+                    % (
+                        "Potential",
+                        "Structure",
+                        "mpid",
+                        "displacement",
+                        "RMSE",
+                        "Hyperparameters (atom-wise f, n_sparse, SOAP delta)",
+                        "imagmodes(pot)",
+                        "imagmodes(dft)",
+                    )
                 )
             for metric, hyper in zip(metrics, hyper_list):
                 for displacement in displacements:
                     with open(
-                        f"results_{structure_composition}.txt",
+                        f"results_{structure_composition}_{mp_id}.txt",
                         "a",
                         encoding="utf-8",
                     ) as file:
                         file.write(
-                            f"\n{ml_model} {structure_composition} {mp_id} {displacement} "
-                            f"{metric[0]['benchmark_phonon_rmse']} {hyper} {metric[0]['dft_imaginary_modes']} "
-                            f"{metric[0]['ml_imaginary_modes']}"
+                            "\n%-11s%-11s%-12s%-14f%-6.3f%-55s%-16s%-16s"
+                            % (
+                                ml_model,
+                                structure_composition,
+                                mp_id,
+                                displacement,
+                                metric[0]["benchmark_phonon_rmse"],
+                                str(hyper),
+                                str(metric[0]["dft_imaginary_modes"]),
+                                str(metric[0]["ml_imaginary_modes"]),
+                            )
                         )
 
     return Response(output=metrics)

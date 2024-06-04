@@ -1,0 +1,339 @@
+<GAP_2024_6_5_120_0_56_59_418>
+<Potential label="GAP_2024_6_5_120_0_56_59_418" init_args="IP GAP label=GAP_2024_6_5_120_0_56_59_418"/>
+<GAP_params label="GAP_2024_6_5_120_0_56_59_418" gap_version="1686220958">
+  <GAP_data do_core="F">
+    <e0 Z="1" value=".00000000000000000E+000"/>
+    <e0 Z="2" value=".00000000000000000E+000"/>
+    <e0 Z="3" value="-.28663766000000002"/>
+    <e0 Z="4" value=".00000000000000000E+000"/>
+    <e0 Z="5" value=".00000000000000000E+000"/>
+    <e0 Z="6" value=".00000000000000000E+000"/>
+    <e0 Z="7" value=".00000000000000000E+000"/>
+    <e0 Z="8" value=".00000000000000000E+000"/>
+    <e0 Z="9" value=".00000000000000000E+000"/>
+    <e0 Z="10" value=".00000000000000000E+000"/>
+    <e0 Z="11" value=".00000000000000000E+000"/>
+    <e0 Z="12" value=".00000000000000000E+000"/>
+    <e0 Z="13" value=".00000000000000000E+000"/>
+    <e0 Z="14" value=".00000000000000000E+000"/>
+    <e0 Z="15" value=".00000000000000000E+000"/>
+    <e0 Z="16" value=".00000000000000000E+000"/>
+    <e0 Z="17" value="-.27567309000000001"/>
+    <e0 Z="18" value=".00000000000000000E+000"/>
+    <e0 Z="19" value=".00000000000000000E+000"/>
+    <e0 Z="20" value=".00000000000000000E+000"/>
+    <e0 Z="21" value=".00000000000000000E+000"/>
+    <e0 Z="22" value=".00000000000000000E+000"/>
+    <e0 Z="23" value=".00000000000000000E+000"/>
+    <e0 Z="24" value=".00000000000000000E+000"/>
+    <e0 Z="25" value=".00000000000000000E+000"/>
+    <e0 Z="26" value=".00000000000000000E+000"/>
+    <e0 Z="27" value=".00000000000000000E+000"/>
+    <e0 Z="28" value=".00000000000000000E+000"/>
+    <e0 Z="29" value=".00000000000000000E+000"/>
+    <e0 Z="30" value=".00000000000000000E+000"/>
+    <e0 Z="31" value=".00000000000000000E+000"/>
+    <e0 Z="32" value=".00000000000000000E+000"/>
+    <e0 Z="33" value=".00000000000000000E+000"/>
+    <e0 Z="34" value=".00000000000000000E+000"/>
+    <e0 Z="35" value=".00000000000000000E+000"/>
+    <e0 Z="36" value=".00000000000000000E+000"/>
+    <e0 Z="37" value=".00000000000000000E+000"/>
+    <e0 Z="38" value=".00000000000000000E+000"/>
+    <e0 Z="39" value=".00000000000000000E+000"/>
+    <e0 Z="40" value=".00000000000000000E+000"/>
+    <e0 Z="41" value=".00000000000000000E+000"/>
+    <e0 Z="42" value=".00000000000000000E+000"/>
+    <e0 Z="43" value=".00000000000000000E+000"/>
+    <e0 Z="44" value=".00000000000000000E+000"/>
+    <e0 Z="45" value=".00000000000000000E+000"/>
+    <e0 Z="46" value=".00000000000000000E+000"/>
+    <e0 Z="47" value=".00000000000000000E+000"/>
+    <e0 Z="48" value=".00000000000000000E+000"/>
+    <e0 Z="49" value=".00000000000000000E+000"/>
+    <e0 Z="50" value=".00000000000000000E+000"/>
+    <e0 Z="51" value=".00000000000000000E+000"/>
+    <e0 Z="52" value=".00000000000000000E+000"/>
+    <e0 Z="53" value=".00000000000000000E+000"/>
+    <e0 Z="54" value=".00000000000000000E+000"/>
+    <e0 Z="55" value=".00000000000000000E+000"/>
+    <e0 Z="56" value=".00000000000000000E+000"/>
+    <e0 Z="57" value=".00000000000000000E+000"/>
+    <e0 Z="58" value=".00000000000000000E+000"/>
+    <e0 Z="59" value=".00000000000000000E+000"/>
+    <e0 Z="60" value=".00000000000000000E+000"/>
+    <e0 Z="61" value=".00000000000000000E+000"/>
+    <e0 Z="62" value=".00000000000000000E+000"/>
+    <e0 Z="63" value=".00000000000000000E+000"/>
+    <e0 Z="64" value=".00000000000000000E+000"/>
+    <e0 Z="65" value=".00000000000000000E+000"/>
+    <e0 Z="66" value=".00000000000000000E+000"/>
+    <e0 Z="67" value=".00000000000000000E+000"/>
+    <e0 Z="68" value=".00000000000000000E+000"/>
+    <e0 Z="69" value=".00000000000000000E+000"/>
+    <e0 Z="70" value=".00000000000000000E+000"/>
+    <e0 Z="71" value=".00000000000000000E+000"/>
+    <e0 Z="72" value=".00000000000000000E+000"/>
+    <e0 Z="73" value=".00000000000000000E+000"/>
+    <e0 Z="74" value=".00000000000000000E+000"/>
+    <e0 Z="75" value=".00000000000000000E+000"/>
+    <e0 Z="76" value=".00000000000000000E+000"/>
+    <e0 Z="77" value=".00000000000000000E+000"/>
+    <e0 Z="78" value=".00000000000000000E+000"/>
+    <e0 Z="79" value=".00000000000000000E+000"/>
+    <e0 Z="80" value=".00000000000000000E+000"/>
+    <e0 Z="81" value=".00000000000000000E+000"/>
+    <e0 Z="82" value=".00000000000000000E+000"/>
+    <e0 Z="83" value=".00000000000000000E+000"/>
+    <e0 Z="84" value=".00000000000000000E+000"/>
+    <e0 Z="85" value=".00000000000000000E+000"/>
+    <e0 Z="86" value=".00000000000000000E+000"/>
+    <e0 Z="87" value=".00000000000000000E+000"/>
+    <e0 Z="88" value=".00000000000000000E+000"/>
+    <e0 Z="89" value=".00000000000000000E+000"/>
+    <e0 Z="90" value=".00000000000000000E+000"/>
+    <e0 Z="91" value=".00000000000000000E+000"/>
+    <e0 Z="92" value=".00000000000000000E+000"/>
+    <e0 Z="93" value=".00000000000000000E+000"/>
+    <e0 Z="94" value=".00000000000000000E+000"/>
+    <e0 Z="95" value=".00000000000000000E+000"/>
+    <e0 Z="96" value=".00000000000000000E+000"/>
+    <e0 Z="97" value=".00000000000000000E+000"/>
+    <e0 Z="98" value=".00000000000000000E+000"/>
+    <e0 Z="99" value=".00000000000000000E+000"/>
+    <e0 Z="100" value=".00000000000000000E+000"/>
+    <e0 Z="101" value=".00000000000000000E+000"/>
+    <e0 Z="102" value=".00000000000000000E+000"/>
+    <e0 Z="103" value=".00000000000000000E+000"/>
+    <e0 Z="104" value=".00000000000000000E+000"/>
+    <e0 Z="105" value=".00000000000000000E+000"/>
+    <e0 Z="106" value=".00000000000000000E+000"/>
+    <e0 Z="107" value=".00000000000000000E+000"/>
+    <e0 Z="108" value=".00000000000000000E+000"/>
+    <e0 Z="109" value=".00000000000000000E+000"/>
+    <e0 Z="110" value=".00000000000000000E+000"/>
+    <e0 Z="111" value=".00000000000000000E+000"/>
+    <e0 Z="112" value=".00000000000000000E+000"/>
+    <e0 Z="113" value=".00000000000000000E+000"/>
+    <e0 Z="114" value=".00000000000000000E+000"/>
+    <e0 Z="115" value=".00000000000000000E+000"/>
+    <e0 Z="116" value=".00000000000000000E+000"/>
+    <e0 Z="117" value=".00000000000000000E+000"/>
+    <e0 Z="118" value=".00000000000000000E+000"/>
+  </GAP_data>
+  <gpSparse label="GAP_2024_6_5_120_0_56_59_418" n_coordinate="5" fitted="T">
+    <gpCoordinates label="GAP_2024_6_5_120_0_56_59_4181" dimensions="1" signal_variance="1.0593752024390595" signal_mean=".00000000000000000E+000" sparsified="T" n_permutations="2" covariance_type="1" n_sparseX="15" sparseX_filename="gap_file.xml.sparseX.GAP_2024_6_5_120_0_56_59_4181" sparseX_md5sum="996fa328d85d655472d81e09028ce105">
+      <theta>  0.50000000000000000E+000 </theta>
+      <descriptor>distance_Nb order=2 f0=0.0               cutoff=5.0 n_sparse=15 covariance_type=ard_se delta=1.0593752024390595 theta_uniform=0.5 sparse_method=uniform compact_clusters=T Z={17 17 }</descriptor>
+      <permutation i="1">1  </permutation>
+      <permutation i="2">1  </permutation>
+      <sparseX i="1" alpha="337.01886084810332" sparseCutoff=".31881054311800328E-001"/>
+      <sparseX i="2" alpha="-741.25825238413211" sparseCutoff=".25830355226742319E-001"/>
+      <sparseX i="3" alpha="133.88611173423561" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="4" alpha="-65.078360210599357" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="5" alpha="136.64455950210032" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="6" alpha="129.51962339045022" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="7" alpha="-63.745561432470907" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="8" alpha="-170.66809113747468" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="9" alpha="268.38080573893001" sparseCutoff=".31571002425999861E-001"/>
+      <sparseX i="10" alpha="-9.7242203432164995" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="11" alpha="-118.70260176769861" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="12" alpha="-81.937258963836911" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="13" alpha="-118.33749027227067" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="14" alpha="243.28051216450612" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="15" alpha="-15.455130273720528" sparseCutoff="1.0000000000000000"/>
+    </gpCoordinates>
+    <gpCoordinates label="GAP_2024_6_5_120_0_56_59_4182" dimensions="1" signal_variance="1.0593752024390595" signal_mean=".00000000000000000E+000" sparsified="T" n_permutations="1" covariance_type="1" n_sparseX="15" sparseX_filename="gap_file.xml.sparseX.GAP_2024_6_5_120_0_56_59_4182" sparseX_md5sum="4b5f67943d1df34c136b1b76f9672c1c">
+      <theta>  0.50000000000000000E+000 </theta>
+      <descriptor>distance_Nb order=2 f0=0.0               cutoff=5.0 n_sparse=15 covariance_type=ard_se delta=1.0593752024390595 theta_uniform=0.5 sparse_method=uniform compact_clusters=T Z={3 17 }</descriptor>
+      <permutation i="1">1  </permutation>
+      <sparseX i="1" alpha="543.03971431688285" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="2" alpha="-535.09094476119367" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="3" alpha="-242.43292771744132" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="4" alpha="-223.26153188026836" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="5" alpha="756.13471349192730" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="6" alpha="-288.84553354937043" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="7" alpha="-441.63466800293520" sparseCutoff=".99565182586891576"/>
+      <sparseX i="8" alpha="1.8566780021549905" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="9" alpha="649.56664575311390" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="10" alpha="-94.519337852734935" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="11" alpha="552.29424347306792" sparseCutoff=".99026667733892948"/>
+      <sparseX i="12" alpha="-309.30013542263077" sparseCutoff=".99993774836405958"/>
+      <sparseX i="13" alpha="-401.75236148027028" sparseCutoff=".99532744349204805"/>
+      <sparseX i="14" alpha="121.62273194395620" sparseCutoff=".99221165268159039"/>
+      <sparseX i="15" alpha="-85.565048010632395" sparseCutoff="1.0000000000000000"/>
+    </gpCoordinates>
+    <gpCoordinates label="GAP_2024_6_5_120_0_56_59_4183" dimensions="1" signal_variance="1.0593752024390595" signal_mean=".00000000000000000E+000" sparsified="T" n_permutations="2" covariance_type="1" n_sparseX="15" sparseX_filename="gap_file.xml.sparseX.GAP_2024_6_5_120_0_56_59_4183" sparseX_md5sum="40b068a2dfbf13bb2a852acb015f7e89">
+      <theta>  0.50000000000000000E+000 </theta>
+      <descriptor>distance_Nb order=2 f0=0.0               cutoff=5.0 n_sparse=15 covariance_type=ard_se delta=1.0593752024390595 theta_uniform=0.5 sparse_method=uniform compact_clusters=T Z={3 3 }</descriptor>
+      <permutation i="1">1  </permutation>
+      <permutation i="2">1  </permutation>
+      <sparseX i="1" alpha="304.14885483845575" sparseCutoff=".66922198847080949E-001"/>
+      <sparseX i="2" alpha="14.926433848366774" sparseCutoff=".57491213082239145E-004"/>
+      <sparseX i="3" alpha="-230.74495767285066" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="4" alpha="-366.39961138973320" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="5" alpha="-169.04152786687956" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="6" alpha="-136.34677941017412" sparseCutoff=".33321733693987554E-001"/>
+      <sparseX i="7" alpha="-385.77249771267077" sparseCutoff=".51308483927907156E-001"/>
+      <sparseX i="8" alpha="-130.88978718433697" sparseCutoff=".33169810017640911E-001"/>
+      <sparseX i="9" alpha="492.61654892990606" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="10" alpha="106.00412857606838" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="11" alpha="645.93881895868230" sparseCutoff=".13007027518969982E-001"/>
+      <sparseX i="12" alpha="-259.86159436565958" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="13" alpha="436.34171873742923" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="14" alpha="297.53556976318612" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="15" alpha="-306.55766461075370" sparseCutoff="1.0000000000000000"/>
+    </gpCoordinates>
+    <gpCoordinates label="GAP_2024_6_5_120_0_56_59_4184" dimensions="3301" signal_variance=".43883232409143385E-006" signal_mean=".00000000000000000E+000" sparsified="T" n_permutations="1" covariance_type="2" zeta="4.0000000000000000" n_sparseX="70" sparseX_filename="gap_file.xml.sparseX.GAP_2024_6_5_120_0_56_59_4184" sparseX_md5sum="e9a61fc125bc9a53eb62da3c7a5a0f4d">
+      <descriptor>soap               l_max=10 n_max=12 atom_sigma=0.5 zeta=4 cutoff=5.0 cutoff_transition_width=0.5 central_weight=1.0 n_sparse=5000 delta=4.3883232409143385e-07 f0=0.0 covariance_type=dot_product sparse_method=cur_points n_species=2 Z=17 species_Z={17 3 }</descriptor>
+      <permutation i="1">1  </permutation>
+      <sparseX i="1" alpha="-.39592666590623054E-006" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="2" alpha="-.40889055575949558E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="3" alpha="-.41337537823878844E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="4" alpha="-.40745982629139944E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="5" alpha="-.41255824071990727E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="6" alpha="-.41404301228613213E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="7" alpha="-.41299619074622741E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="8" alpha="-.41143930488859136E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="9" alpha="-.41198137489684139E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="10" alpha="-.41162505716601264E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="11" alpha="-.41302812544873036E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="12" alpha="-.40776087856830113E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="13" alpha="-.41187195819831005E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="14" alpha="-.41079554212373619E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="15" alpha="-.41247440972444461E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="16" alpha="-.41184367941062569E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="17" alpha="-.41277121573218866E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="18" alpha="-.41264903996815575E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="19" alpha="-.41135968927874620E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="20" alpha="-.41276884948918406E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="21" alpha="-.40651790972433998E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="22" alpha="-.41172135904211005E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="23" alpha="-.41365075160299983E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="24" alpha="-.41379035696249914E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="25" alpha="-.40995409016169189E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="26" alpha="-.41177120672033140E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="27" alpha="-.41060591427300645E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="28" alpha="-.40965960007458403E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="29" alpha="-.40998984412420308E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="30" alpha="-.41393187543394829E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="31" alpha="-.41031085351121845E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="32" alpha="-.41559869779844445E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="33" alpha="-.41026348212959874E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="34" alpha="-.43394582756022573E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="35" alpha="-.43470262406664572E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="36" alpha="-.43632957147592854E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="37" alpha="-.43337914824629362E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="38" alpha="-.43499336447772822E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="39" alpha="-.43676164850254829E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="40" alpha="-.43688921781077640E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="41" alpha="-.43608326663465465E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="42" alpha="-.43550867485156247E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="43" alpha="-.43442672981323542E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="44" alpha="-.43598558426670431E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="45" alpha="-.43530007184924792E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="46" alpha="-.43452503634293388E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="47" alpha="-.43491236047062538E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="48" alpha="-.43656608533977647E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="49" alpha="-.43640379853567208E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="50" alpha="-.43545178896782326E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="51" alpha="-.43301085304042140E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="52" alpha="-.43599745227352064E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="53" alpha="-.43544309581965954E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="54" alpha="-.43567348541262646E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="55" alpha="-.43536474351000106E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="56" alpha="-.43474907979073701E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="57" alpha="-.43726533936622874E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="58" alpha="-.43384456557021990E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="59" alpha="-.43320647291854910E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="60" alpha="-.43550814814881421E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="61" alpha="-.43486398281927156E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="62" alpha="-.43616689552846653E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="63" alpha="-.43494870226733104E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="64" alpha="-.43664882770602810E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="65" alpha="-.43786791501402125E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="66" alpha="-.45836975960636758E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="67" alpha="-.45834339307303939E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="68" alpha="-.45823837954379876E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="69" alpha="-.45834225836029825E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="70" alpha="-.45844553385653188E-003" sparseCutoff="1.0000000000000000"/>
+    </gpCoordinates>
+    <gpCoordinates label="GAP_2024_6_5_120_0_56_59_4185" dimensions="3301" signal_variance=".43883232409143385E-006" signal_mean=".00000000000000000E+000" sparsified="T" n_permutations="1" covariance_type="2" zeta="4.0000000000000000" n_sparseX="71" sparseX_filename="gap_file.xml.sparseX.GAP_2024_6_5_120_0_56_59_4185" sparseX_md5sum="029ebd8d6bc5de0a45e60c0b06e0c649">
+      <descriptor>soap               l_max=10 n_max=12 atom_sigma=0.5 zeta=4 cutoff=5.0 cutoff_transition_width=0.5 central_weight=1.0 n_sparse=5000 delta=4.3883232409143385e-07 f0=0.0 covariance_type=dot_product sparse_method=cur_points n_species=2 Z=3 species_Z={17 3 }</descriptor>
+      <permutation i="1">1  </permutation>
+      <sparseX i="1" alpha="-.29576461131881176E-006" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="2" alpha="-.39847828722379820E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="3" alpha="-.39884036260771081E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="4" alpha="-.39780491687618834E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="5" alpha="-.39479895455485283E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="6" alpha="-.40235890283424867E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="7" alpha="-.39942808358584101E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="8" alpha="-.39936081916918601E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="9" alpha="-.39450686625044744E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="10" alpha="-.40201596547828394E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="11" alpha="-.39729156177873738E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="12" alpha="-.39845146309291441E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="13" alpha="-.39496511429935188E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="14" alpha="-.40022207414171392E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="15" alpha="-.39689778133156439E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="16" alpha="-.39790049141209398E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="17" alpha="-.39801746240131946E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="18" alpha="-.39769577942570463E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="19" alpha="-.40122538383615444E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="20" alpha="-.39447746516738525E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="21" alpha="-.39822663852422867E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="22" alpha="-.39803976890361107E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="23" alpha="-.40014822914898344E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="24" alpha="-.39833371424407394E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="25" alpha="-.39730123408417763E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="26" alpha="-.39632002337961468E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="27" alpha="-.39939764165176374E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="28" alpha="-.39523857270925764E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="29" alpha="-.39948703573369239E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="30" alpha="-.40011858759602818E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="31" alpha="-.39985237081759876E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="32" alpha="-.39651097762390336E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="33" alpha="-.39883603596510233E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="34" alpha="-.42713786589609133E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="35" alpha="-.42812116149683853E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="36" alpha="-.42809306718395501E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="37" alpha="-.42764414639220551E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="38" alpha="-.42970857239454740E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="39" alpha="-.42805152737369391E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="40" alpha="-.42965656332975653E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="41" alpha="-.42932328439934908E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="42" alpha="-.42809429371563836E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="43" alpha="-.42646750343173427E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="44" alpha="-.42810111685352492E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="45" alpha="-.42762571539949252E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="46" alpha="-.42844466175955183E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="47" alpha="-.42855786265173513E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="48" alpha="-.42981587282483097E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="49" alpha="-.42991837814436272E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="50" alpha="-.42660800549291735E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="51" alpha="-.42902882956114284E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="52" alpha="-.42941568231778983E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="53" alpha="-.42766803989540455E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="54" alpha="-.42796062305439580E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="55" alpha="-.42888182200891703E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="56" alpha="-.42989631436570906E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="57" alpha="-.42756384519497439E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="58" alpha="-.42802834172375726E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="59" alpha="-.42866820730701503E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="60" alpha="-.42901700827186075E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="61" alpha="-.42763844315012802E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="62" alpha="-.42877670366482862E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="63" alpha="-.42905170835470059E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="64" alpha="-.42916184511753894E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="65" alpha="-.42675775552860403E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="66" alpha="-.44351771254714221E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="67" alpha="-.44332874951984272E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="68" alpha="-.44337551209383238E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="69" alpha="-.44348019405573616E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="70" alpha="-.44342792175302599E-003" sparseCutoff="1.0000000000000000"/>
+      <sparseX i="71" alpha="-.44342765203100122E-003" sparseCutoff="1.0000000000000000"/>
+    </gpCoordinates>
+  </gpSparse>
+  <command_line><![CDATA[ at_file=/home/certural/git/autoplex/tests/auto/job_2024-06-04-22-54-30-000610-96818/train.extxyz default_sigma={0.0001 0.05 0.05 0} energy_parameter_name=REF_energy force_parameter_name=REF_forces virial_parameter_name=REF_virial sparse_jitter=1e-08 do_copy_at_file=F openmp_chunk_size=10000 gp_file=gap_file.xml gap={distance_Nb order=2 f0=0.0 add_species=T cutoff=5.0 n_sparse=15 covariance_type=ard_se delta=1.0593752024390595 theta_uniform=0.5 sparse_method=uniform compact_clusters=T :soap add_species=T l_max=10 n_max=12 atom_sigma=0.5 zeta=4 cutoff=5.0 cutoff_transition_width=0.5 central_weight=1.0 n_sparse=5000 delta=4.3883232409143385e-07 f0=0.0 covariance_type=dot_product sparse_method=cur_points}]]></command_line>
+</GAP_params>
+</GAP_2024_6_5_120_0_56_59_418>
