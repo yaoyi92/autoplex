@@ -101,7 +101,7 @@ def fake_run_vasp_kwargs():
 
 
 def test_complete_dft_vs_ml_benchmark_workflow(
-    vasp_test_dir, mock_vasp, test_dir, memory_jobstore, #clean_dir
+    vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
 ):
     from jobflow import run_locally
 
