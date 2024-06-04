@@ -36,3 +36,10 @@ Department of Chemistry, University of Oxford
 
 [vlderinger]: https://github.com/vlderinger
 [0000-0001-6873-0278]: https://orcid.org/0000-0001-6873-0278
+
+**Joe D. Morrow** [![gh]][MorrowChem] [![orc]][0000-0002-3441-8646] \
+DPhil student \
+Department of Chemistry, University of Oxford
+
+[MorrowChem]: https://github.com/morrowchem
+[0000-0002-3441-8646]: https://orcid.org/0000-0002-3441-8646
