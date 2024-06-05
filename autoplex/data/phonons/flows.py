@@ -65,7 +65,6 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
 
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
-            user_kpoints_settings={"reciprocal_density": 1000},
             user_incar_settings={
                 "IBRION": 2,
                 "ISPIN": 1,
@@ -81,6 +80,62 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "SIGMA": 0.05,
                 "ISYM": 0,
                 "KSPACING": 0.2,
+            },
+            auto_ispin=False,
+        )
+    )
+
+
+@dataclass
+class TightDFTStaticMakerBigSupercells(PhononDisplacementMaker):
+    """Adapted phonon displacement maker for static calculation for big supercells.
+
+    The input set used is same as PhononDisplacementMaker.
+    Only difference is Spin polarization is switched off and Gaussian smearing is used
+
+    Parameters
+    ----------
+    name : str
+        The job name.
+    input_set_generator : .VaspInputGenerator
+        A generator used to make the input set.
+    write_input_set_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.write_vasp_input_set`.
+    copy_vasp_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.copy_vasp_outputs`.
+    run_vasp_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.run_vasp`.
+    task_document_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.TaskDoc.from_directory`.
+    stop_children_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.should_stop_children`.
+    write_additional_data : dict
+        Additional data to write to the current directory. Given as a dict of
+        {filename: data}. Note that if using FireWorks, dictionary keys cannot contain
+        the "." character which is typically used to denote file extensions. To avoid
+        this, use the ":" character, which will automatically be converted to ".". E.g.
+        ``{"my_file:txt": "contents of the file"}``.
+    """
+
+    run_vasp_kwargs: dict = field(default_factory=lambda: {"handlers": ()})
+
+    input_set_generator: VaspInputGenerator = field(
+        default_factory=lambda: StaticSetGenerator(
+            user_kpoints_settings={"reciprocal_density": 1000},
+            user_incar_settings={
+                "IBRION": 2,
+                "ISPIN": 1,
+                "ISMEAR": 0,
+                "ISIF": 3,
+                "ENCUT": 700,
+                "EDIFF": 1e-7,
+                "LAECHG": False,
+                "LREAL": False,
+                "ALGO": "Normal",
+                "NSW": 0,
+                "LCHARG": False,
+                "SIGMA": 0.05,
+                "ISYM": 0,
             },
             auto_ispin=False,
         )
@@ -174,7 +229,7 @@ class DFTPhononMaker(PhononMaker):
     displacement: float = 0.01
     min_length: float | None = 20.0
     prefer_90_degrees: bool = True
-    get_supercell_size_kwargs: dict = field(default_factory=dict)
+    get_supercell_size_kwargs: dict = field(default_factory=lambda: {"max_atoms": 1500})
     use_symmetrized_structure: str | None = None
     bulk_relax_maker: BaseVaspMaker | None = field(
         default_factory=lambda: DoubleRelaxMaker.from_relax_maker(
@@ -193,9 +248,6 @@ class DFTPhononMaker(PhononMaker):
             )
         )
     )
-
-    if min_length is not None and min_length > 20.0:
-        update_kpoint_settings = "KP 111"  # implement adaptive kpoint settings
 
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=TightDFTStaticMaker

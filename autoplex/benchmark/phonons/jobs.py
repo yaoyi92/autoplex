@@ -96,9 +96,6 @@ def write_benchmark_metrics(
     -------
     A text file with root mean squared error between DFT and ML potential phonon band-structure
     """
-    print("METRICS", metrics)
-
-    print("HYPERHYPER", hyper_list)
     if hyper_list is None:
         hyper_list = ["default"]
     for ml_model in ml_models:
@@ -114,8 +111,8 @@ def write_benchmark_metrics(
                     % (
                         "Potential",
                         "Structure",
-                        "mpid",
-                        "displacement",
+                        "MPID",
+                        "Displacement",
                         "RMSE",
                         "Hyperparameters (atom-wise f, n_sparse, SOAP delta)",
                         "imagmodes(pot)",
@@ -130,7 +127,7 @@ def write_benchmark_metrics(
                         encoding="utf-8",
                     ) as file:
                         file.write(
-                            "\n%-11s%-11s%-12s%-14f%-6.3f%-55s%-16s%-16s"
+                            "\n%-11s%-11s%-12s%-14.2f%-6.3f%-55s%-16s%-16s"
                             % (
                                 ml_model,
                                 structure_composition,
@@ -138,8 +135,8 @@ def write_benchmark_metrics(
                                 displacement,
                                 metric[0]["benchmark_phonon_rmse"],
                                 str(hyper),
-                                str(metric[0]["dft_imaginary_modes"]),
                                 str(metric[0]["ml_imaginary_modes"]),
+                                str(metric[0]["dft_imaginary_modes"]),
                             )
                         )
 

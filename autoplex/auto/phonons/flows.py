@@ -20,7 +20,10 @@ from autoplex.auto.phonons.jobs import (
     get_iso_atom,
 )
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
-from autoplex.data.phonons.flows import TightDFTStaticMaker
+from autoplex.data.phonons.flows import (
+    TightDFTStaticMaker,
+    TightDFTStaticMakerBigSupercells,
+)
 from autoplex.fitting.common.flows import MLIPFitMaker
 
 __all__ = ["CompleteDFTvsMLBenchmarkWorkflow"]
@@ -118,7 +121,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     add_dft_phonon_struct: bool = True
     add_dft_random_struct: bool = True
     add_rss_struct: bool = False
-
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=TightDFTStaticMaker
     )
@@ -141,6 +143,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     w_angle: list[float] | None = None
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
     HPloop: bool = False
+    atomwise_regularization_list: list | None = None
+    soap_delta_list: list | None = None
+    n_sparse_list: list | None = None
 
     def make(
         self,
@@ -221,11 +226,18 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
+                print("MINLENGTH", self.min_length)
+                if self.min_length >= 20:
+                    phonon_displacement_maker: BaseVaspMaker = (
+                        TightDFTStaticMakerBigSupercells()
+                    )
+                else:
+                    phonon_displacement_maker = self.phonon_displacement_maker
                 addDFTphon = self.add_dft_phonons(
                     structure,
                     self.displacements,
                     self.symprec,
-                    self.phonon_displacement_maker,
+                    phonon_displacement_maker,
                     self.min_length,
                 )
                 flows.append(addDFTphon)
@@ -283,22 +295,26 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     flows.append(complete_bm)
                     bm_outputs.append(complete_bm.output)
 
-            self.HPloop = True
-
             if self.HPloop:
-                for atomwise_regularization in [0.1]:  # , 0.01 , 0.001, 0.0001]:
-                    for n_sparse in [
-                        # 1000,
-                        # 2000,
-                        # 3000,
-                        # 4000,
+                if self.atomwise_regularization_list is None:
+                    self.atomwise_regularization_list = [0.1, 0.01, 0.001, 0.0001]
+                if self.soap_delta_list is None:
+                    self.soap_delta_list = [0.5, 1.0, 1.5]
+                if self.n_sparse_list is None:
+                    self.n_sparse_list = [
+                        1000,
+                        2000,
+                        3000,
+                        4000,
                         5000,
-                        # 6000,
-                        # 7000,
-                        # 8000,
-                        # 9000
-                    ]:
-                        for delta in [0.5, 1.0]:
+                        6000,
+                        7000,
+                        8000,
+                        9000,
+                    ]
+                for atomwise_regularization in self.atomwise_regularization_list:
+                    for n_sparse in self.n_sparse_list:
+                        for delta in self.soap_delta_list:
                             soap_dict = {
                                 "n_sparse": n_sparse,
                                 "delta": delta,
