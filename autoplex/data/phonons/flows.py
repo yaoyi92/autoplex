@@ -80,6 +80,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "LCHARG": False,
                 "SIGMA": 0.05,
                 "ISYM": 0,
+                "SYMPREC": 1e-9,
                 "KSPACING": 0.2,
             },
             auto_ispin=False,
@@ -137,6 +138,7 @@ class TightDFTStaticMakerBigSupercells(PhononDisplacementMaker):
                 "LCHARG": False,
                 "SIGMA": 0.05,
                 "ISYM": 0,
+                "SYMPREC": 1e-9,
             },
             auto_ispin=False,
         )
