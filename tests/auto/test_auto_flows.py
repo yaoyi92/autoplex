@@ -182,7 +182,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, #clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
 ):
     from jobflow import run_locally
 
