@@ -153,7 +153,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         atomwise_regularization_parameter: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
-        auto_delta: bool = True,
+        auto_delta: bool = False,
         dft_references: list[PhononBSDOSDoc] | None = None,
         benchmark_structures: list[Structure] | None = None,
         benchmark_mp_ids: list[str] | None = None,
@@ -291,7 +291,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                         # 1000,
                         # 2000,
                         # 3000,
-                        4000,
+                        # 4000,
                         5000,
                         # 6000,
                         # 7000,

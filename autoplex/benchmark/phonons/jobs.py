@@ -105,7 +105,7 @@ def write_benchmark_metrics(
         for benchmark_structure, mp_id in zip(benchmark_structures, mp_ids):
             structure_composition = benchmark_structure.composition.reduced_formula
             with open(
-                f"results_{structure_composition}_{mp_id}.txt",
+                f"results_{structure_composition}.txt",
                 "a",
                 encoding="utf-8",
             ) as file:
@@ -125,7 +125,7 @@ def write_benchmark_metrics(
             for metric, hyper in zip(metrics, hyper_list):
                 for displacement in displacements:
                     with open(
-                        f"results_{structure_composition}_{mp_id}.txt",
+                        f"results_{structure_composition}.txt",
                         "a",
                         encoding="utf-8",
                     ) as file:
