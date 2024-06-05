@@ -52,3 +52,9 @@ Department of Chemistry, University of Oxford
 
 [MorrowChem]: https://github.com/morrowchem
 [0000-0002-3441-8646]: https://orcid.org/0000-0002-3441-8646
+
+**Natascia L. Fragapane** [![gh]][nfragapane]\
+DPhil student \
+Department of Chemistry, University of Oxford
+
+[nfragapane]: https://github.com/nfragapane
