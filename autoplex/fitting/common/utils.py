@@ -102,9 +102,7 @@ def gap_fitting(
     )
 
     db_atoms = ase.io.read(os.path.join(db_dir, train_name), index=":")
-    train_data_path = os.path.join(  # change this so that train_sigma is the new train and the old train is train_bak
-        db_dir, "train_with_sigma.extxyz" if regularization else train_name
-    )
+    train_data_path = os.path.join(db_dir, train_name)
     test_data_path = os.path.join(db_dir, test_name)
 
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
@@ -1753,11 +1751,6 @@ def prepare_fit_environment(
     -------
     the MLIP path.
     """
-    if regularization:
-        shutil.copy(
-            os.path.join(database_dir, "train_with_sigma.extxyz"),
-            os.path.join(mlip_path, "train_with_sigma.extxyz"),
-        )
     shutil.copy(
         os.path.join(database_dir, test_name),
         os.path.join(mlip_path, test_name),

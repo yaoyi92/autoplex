@@ -58,7 +58,7 @@ def set_sigma(
             at.info["energy_sigma"] = 0.0001
             at.calc = None  # TODO side-effect alert
             try:
-                del at.arrays[force_name]
+                #del at.arrays[force_name]
                 del at.info[virial_name]
             except Exception:
                 pass

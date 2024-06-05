@@ -265,11 +265,12 @@ class DataPreprocessing(Maker):
                 )
         if self.regularization:
             atoms = ase.io.read("train.extxyz", index=":")
-            atom_with_sigma = set_sigma(
+            ase.io.write("train_wo_sigma.extxyz", atoms, format="extxyz")
+            atoms_with_sigma = set_sigma(
                 atoms,
                 etup=[(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)],
             )
-            ase.io.write("train_with_sigma.extxyz", atom_with_sigma, format="extxyz")
+            ase.io.write("train.extxyz", atoms_with_sigma, format="extxyz")
         if self.separated:
             atoms_train = ase.io.read("train.extxyz", index=":")
             atoms_test = ase.io.read("test.extxyz", index=":")

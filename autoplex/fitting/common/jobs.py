@@ -63,8 +63,8 @@ def machine_learning_fit(
     kwargs : dict.
             dict including more fit keyword args.
     """
-    train_files = ["train.extxyz", "train_phonon.extxyz", "train_rand_struc.extxyz"]
-    test_files = ["test.extxyz", "test_phonon.extxyz", "test_rand_struc.extxyz"]
+    train_files = ["train_wo_sigma.extxyz", "train.extxyz", "train_phonon.extxyz", "train_rand_struc.extxyz"]
+    test_files = ["test.extxyz", "test.extxyz", "test_phonon.extxyz", "test_rand_struc.extxyz"]
 
     if mlip_hyper is None:
         if mlip_type == "GAP":
