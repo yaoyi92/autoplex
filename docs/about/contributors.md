@@ -29,9 +29,17 @@ Friedrich Schiller University Jena
 [0000-0002-6071-6786]: https://orcid.org/0000-0002-6071-6786
 
 
-**Yuanbin Liu** [![gh]][YuanbinLiu] [![orc]][0000-0002-5948-7031] \
-Postdoctoral Researcher \
+
+**Volker Deringer** [![gh]][vlderinger] [![orc]][0000-0001-6873-0278] \
+Professor \
 Department of Chemistry, University of Oxford
 
-[YuanbinLiu]: https://github.com/YuanbinLiu
-[0000-0002-5948-7031]: https://orcid.org/0000-0002-5948-7031
+[vlderinger]: https://github.com/vlderinger
+[0000-0001-6873-0278]: https://orcid.org/0000-0001-6873-0278
+
+**Joe D. Morrow** [![gh]][MorrowChem] [![orc]][0000-0002-3441-8646] \
+DPhil student \
+Department of Chemistry, University of Oxford
+
+[MorrowChem]: https://github.com/morrowchem
+[0000-0002-3441-8646]: https://orcid.org/0000-0002-3441-8646
