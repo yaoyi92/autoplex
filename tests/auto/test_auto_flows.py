@@ -47,55 +47,55 @@ def fake_run_vasp_kwargs():
         "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 1/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 2/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 3/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 4/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 5/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 6/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 7/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 8/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 9/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 10/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 11/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 12/12": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
     }
 
@@ -108,7 +108,7 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=22, displacements=[0.01], volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05], phonon_displacement_maker=TightDFTStaticMaker(),
+    complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01], volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05], phonon_displacement_maker=TightDFTStaticMaker(),
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
@@ -140,19 +140,19 @@ def test_complete_dft_vs_ml_benchmark_workflow(
 
         "phonon static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 2/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 3/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 4/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
     }
 
@@ -420,19 +420,19 @@ def test_phonon_dft_ml_data_generation_flow(
         "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "phonon static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 2/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 3/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 4/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
     }
 

@@ -27,6 +27,7 @@ __all__ = [
     "IsoAtomStaticMaker",
     "RandomStructuresDataGenerator",
     "TightDFTStaticMaker",
+    "TightDFTStaticMakerBigSupercells",
 ]
 
 
