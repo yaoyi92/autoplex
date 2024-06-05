@@ -27,3 +27,11 @@ Friedrich Schiller University Jena
 
 [naik-aakash]: https://github.com/naik-aakash
 [0000-0002-6071-6786]: https://orcid.org/0000-0002-6071-6786
+
+
+**Yuanbin Liu** [![gh]][YuanbinLiu] [![orc]][0000-0002-5948-7031] \
+Postdoctoral Researcher \
+Department of Chemistry, University of Oxford
+
+[YuanbinLiu]: https://github.com/YuanbinLiu
+[0000-0002-5948-7031]: https://orcid.org/0000-0002-5948-7031
