@@ -37,6 +37,15 @@ Department of Chemistry, University of Oxford
 [vlderinger]: https://github.com/vlderinger
 [0000-0001-6873-0278]: https://orcid.org/0000-0001-6873-0278
 
+
+**Yuanbin Liu** [![gh]][YuanbinLiu] [![orc]][0000-0002-5948-7031] \
+Postdoctoral Researcher \
+Department of Chemistry, University of Oxford
+
+[YuanbinLiu]: https://github.com/YuanbinLiu
+[0000-0002-5948-7031]: https://orcid.org/0000-0002-5948-7031
+
+
 **Joe D. Morrow** [![gh]][MorrowChem] [![orc]][0000-0002-3441-8646] \
 DPhil student \
 Department of Chemistry, University of Oxford
