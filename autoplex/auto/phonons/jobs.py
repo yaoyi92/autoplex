@@ -61,7 +61,7 @@ def complete_benchmark(
     """
     jobs = []
     collect_output = []
-    for suffix in ["", "_phonon", "rand_struc"]:
+    for suffix in ["", "_wo_sigma", "_phonon", "rand_struc"]:
         if Path(Path(ml_model) / f"gap_file{suffix}.xml").exists():
             add_data_ml_phonon = MLPhononMaker(
                 min_length=min_length,
@@ -71,7 +71,7 @@ def complete_benchmark(
                 suffix=suffix,
             )
             jobs.append(add_data_ml_phonon)
-
+            print("DFTREF", dft_references, benchmark_mp_ids, mp_ids)
             if dft_references is None and benchmark_mp_ids is not None:
                 if (
                     benchmark_mp_ids[ibenchmark_structure] in mp_ids
@@ -84,6 +84,7 @@ def complete_benchmark(
                 ) or (  # else?
                     add_dft_phonon_struct is False
                 ):
+                    print("BOOL", benchmark_mp_ids[ibenchmark_structure] not in mp_ids)
                     dft_phonons = DFTPhononMaker(
                         symprec=symprec,
                         phonon_displacement_maker=phonon_displacement_maker,
@@ -99,6 +100,14 @@ def complete_benchmark(
                     ml_phonon_task_doc=add_data_ml_phonon.output,
                     dft_phonon_task_doc=dft_references,
                 )
+            elif dft_references is not None and benchmark_mp_ids is not None:
+                if benchmark_mp_ids[ibenchmark_structure] not in mp_ids:
+                    add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                        structure=benchmark_structure,
+                        benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
+                        ml_phonon_task_doc=add_data_ml_phonon.output,
+                        dft_phonon_task_doc=dft_references,
+                    )
             else:
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
                     structure=benchmark_structure,

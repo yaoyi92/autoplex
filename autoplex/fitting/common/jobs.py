@@ -64,8 +64,8 @@ def machine_learning_fit(
             dict including more fit keyword args.
     """
     train_files = [
-        "train_wo_sigma.extxyz",
         "train.extxyz",
+        "train_wo_sigma.extxyz",
         "train_phonon.extxyz",
         "train_rand_struc.extxyz",
     ]
