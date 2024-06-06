@@ -41,17 +41,17 @@ def compute_bandstructure_benchmark_metrics(
     overall_rmse = get_rmse(ml_bs=ml_phonon_bs, dft_bs=dft_phonon_bs)
 
     # saves rmse k-dependent plot
-    file_name = f"{structure.composition.reduced_formula}_rmse_phonons.eps"
+    file_name = f"{structure.composition.reduced_formula}_rmse_phonons.pdf"
     _ = rmse_kdep_plot(
         ml_bs=ml_phonon_bs,
         dft_bs=dft_phonon_bs,
         which_k_path=2,
         file_name=file_name,
-        img_format="eps",
+        img_format="pdf",
     )
 
     # saves DFT and ML phonon band-structure overlay plot
-    file_name = f"{structure.composition.reduced_formula}_band_comparison.eps"
+    file_name = f"{structure.composition.reduced_formula}_band_comparison.pdf"
     _ = compare_plot(
         ml_bs=ml_phonon_bs,
         dft_bs=dft_phonon_bs,
