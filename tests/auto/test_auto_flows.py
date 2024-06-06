@@ -181,6 +181,85 @@ def test_complete_dft_vs_ml_benchmark_workflow(
     )
 
 
+def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+):
+    from jobflow import run_locally
+
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    complete_workflow_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
+                                                               volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+                                                               phonon_displacement_maker=TightDFTStaticMaker(),
+                                                               HPloop=True,
+                                                               atomwise_regularization_list=[0.01],
+                                                               n_sparse_list=[3000,5000],
+                                                               soap_delta_list=[1.0],
+                                                               ).make(
+        structure_list=[structure],
+        mp_ids=["test"],
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
+    )
+
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(
+        complete_workflow_hploop,
+        create_folders=True,
+        ensure_success=True,
+        store=memory_jobstore,
+    )
+
+    assert complete_workflow_hploop.jobs[4].name == "complete_benchmark"
+    assert responses[complete_workflow_hploop.jobs[-1].output.uuid][1].output[0][0][
+               "benchmark_phonon_rmse"] == pytest.approx(
+        2.053706532810291, abs=0.5
+    )
+
+def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+):
+    from jobflow import run_locally
+
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    complete_workflow_sigma_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
+                                                               volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+                                                               phonon_displacement_maker=TightDFTStaticMaker(),
+                                                               HPloop=True,
+                                                               atomwise_regularization_list=[0.01],
+                                                               n_sparse_list=[3000,5000],
+                                                               soap_delta_list=[1.0],
+                                                               ).make(
+        structure_list=[structure],
+        mp_ids=["test"],
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
+        **{"regularization": True},
+    )
+
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(
+        complete_workflow_sigma_hploop,
+        create_folders=True,
+        ensure_success=True,
+        store=memory_jobstore,
+    )
+
+    assert complete_workflow_sigma_hploop.jobs[4].name == "complete_benchmark"
+    assert responses[complete_workflow_sigma_hploop.jobs[-1].output.uuid][1].output[0][0][
+               "benchmark_phonon_rmse"] == pytest.approx(
+        1.511743561686686, abs=0.5
+    )
+
 def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
 ):
@@ -217,6 +296,44 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization(
         1.511743561686686, abs=0.5
     )
 
+def test_complete_dft_vs_ml_benchmark_workflow_separated(  # not working as expected yet  --> bug in collecting data to results file
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+):
+    from jobflow import run_locally
+
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
+                                                               volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+                                                               phonon_displacement_maker=TightDFTStaticMaker(),
+                                                               ).make(
+        structure_list=[structure],
+        mp_ids=["test"],
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
+        pre_xyz_files=["vasp_ref.extxyz"],
+        pre_database_dir=test_dir / "fitting" / "ref_files",
+        **{"separated": True},
+    )
+
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(
+        complete_workflow_sep,
+        create_folders=True,
+        ensure_success=True,
+        store=memory_jobstore,
+    )
+
+    assert complete_workflow_sep.jobs[4].name == "complete_benchmark"
+    assert responses[complete_workflow_sep.jobs[-1].output.uuid][1].output[0][0][
+               "benchmark_phonon_rmse"] == pytest.approx(
+        0.8709764794814768, abs=0.5
+    )
+
 
 class TestCompleteDFTvsMLBenchmarkWorkflow:
     def test_add_data_to_dataset_workflow(
@@ -247,7 +364,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
             dft_references=None,
         )
 
@@ -296,7 +414,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
             dft_references=[dft_reference],
         )
 
@@ -345,7 +464,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
             dft_references=None,
         )
 
@@ -381,7 +501,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
             dft_references=None,
         )
 
@@ -416,7 +537,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             mp_ids=["mp-22905"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            xyz_file=test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz",
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
             dft_references=None,
         )
 

@@ -266,6 +266,20 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 **fit_kwargs,
             )
             flows.append(add_data_fit)
+            if "regularization" in fit_kwargs and fit_kwargs["regularization"]:
+                hyper_list.append(
+                    {
+                        "f="
+                        + str(atomwise_regularization_parameter): "default with sigma"
+                    }
+                )
+            if "separated" in fit_kwargs and fit_kwargs["separated"]:
+                hyper_list.append(
+                    {"f=" + str(atomwise_regularization_parameter): "default phonon"}
+                )
+                hyper_list.append(
+                    {"f=" + str(atomwise_regularization_parameter): "default randstruc"}
+                )
             hyper_list.append(
                 {"f=" + str(atomwise_regularization_parameter): "default"}
             )

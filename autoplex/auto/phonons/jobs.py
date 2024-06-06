@@ -71,7 +71,6 @@ def complete_benchmark(
                 suffix=suffix,
             )
             jobs.append(add_data_ml_phonon)
-            print("DFTREF", dft_references, benchmark_mp_ids, mp_ids)
             if dft_references is None and benchmark_mp_ids is not None:
                 if (
                     benchmark_mp_ids[ibenchmark_structure] in mp_ids
@@ -84,7 +83,6 @@ def complete_benchmark(
                 ) or (  # else?
                     add_dft_phonon_struct is False
                 ):
-                    print("BOOL", benchmark_mp_ids[ibenchmark_structure] not in mp_ids)
                     dft_phonons = DFTPhononMaker(
                         symprec=symprec,
                         phonon_displacement_maker=phonon_displacement_maker,

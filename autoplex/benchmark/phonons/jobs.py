@@ -96,8 +96,11 @@ def write_benchmark_metrics(
     -------
     A text file with root mean squared error between DFT and ML potential phonon band-structure
     """
+    print("METRICS", metrics)
+    print("HYPER", hyper_list)
     if hyper_list is None:
         hyper_list = ["default"]
+    metrics_flattened = [item for sublist in metrics for item in sublist]
     for ml_model in ml_models:
         for benchmark_structure, mp_id in zip(benchmark_structures, mp_ids):
             structure_composition = benchmark_structure.composition.reduced_formula
@@ -119,8 +122,8 @@ def write_benchmark_metrics(
                         "imagmodes(dft)",
                     )
                 )
-            for metric, hyper in zip(metrics, hyper_list):
-                for displacement in displacements:
+            for displacement in displacements:
+                for metric, hyper in zip(metrics_flattened, hyper_list):
                     with open(
                         f"results_{structure_composition}.txt",
                         "a",
@@ -133,10 +136,10 @@ def write_benchmark_metrics(
                                 structure_composition,
                                 mp_id,
                                 displacement,
-                                metric[0]["benchmark_phonon_rmse"],
+                                metric["benchmark_phonon_rmse"],
                                 str(hyper),
-                                str(metric[0]["ml_imaginary_modes"]),
-                                str(metric[0]["dft_imaginary_modes"]),
+                                str(metric["ml_imaginary_modes"]),
+                                str(metric["dft_imaginary_modes"]),
                             )
                         )
 
