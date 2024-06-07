@@ -80,7 +80,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit
 
     os.chdir(test_dir / "fitting")
 
-    # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
+    # Test to check if gap fit runs with default hyperparameter sets (i.e. two_body and soap is True)
     gapfit = MLIPFitMaker().make(
         species_list=["Li", "Cl"],
         isolated_atoms_energy=[-0.28649227, -0.25638457],
