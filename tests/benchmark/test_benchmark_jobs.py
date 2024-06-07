@@ -27,16 +27,16 @@ def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     ml_bs = PhononBandStructureSymmLine.from_dict(dummy_bs_dict)
 
     benchmark_job = compute_bandstructure_benchmark_metrics(
-        structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs
+        structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
     )
 
     responses = run_locally(benchmark_job, create_folders=False, ensure_success=True)
 
-    assert responses[benchmark_job.output.uuid][1].output == pytest.approx(0.0)
+    assert responses[benchmark_job.output.uuid][1].output["benchmark_phonon_rmse"] == pytest.approx(0.0)
 
     # get list of generated plot files
     test_files_dir = Path(test_dir / "benchmark").resolve()
-    path_to_plot_files = list(test_files_dir.glob("NaCl*.eps"))
+    path_to_plot_files = list(test_files_dir.glob("NaCl*.pdf"))
 
     # ensure two plots are generated
     assert len(path_to_plot_files) == 2
@@ -64,18 +64,18 @@ def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
     ml_bs = get_ph_bs_symm_line(bands_path=ml_bs_file_path)
 
     benchmark_job = compute_bandstructure_benchmark_metrics(
-        structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs
+        structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
     )
 
     responses = run_locally(benchmark_job, create_folders=False, ensure_success=True)
 
-    assert responses[benchmark_job.output.uuid][1].output == pytest.approx(
+    assert responses[benchmark_job.output.uuid][1].output["benchmark_phonon_rmse"] == pytest.approx(
         0.5716963823412201, abs=0.3  # TODO check results
     )
 
     # get list of generated plot files
     test_files_dir = Path(test_dir / "benchmark").resolve()
-    path_to_plot_files = list(test_files_dir.glob("LiCl*.eps"))
+    path_to_plot_files = list(test_files_dir.glob("LiCl*.pdf"))
 
     # ensure two plots are generated
     assert len(path_to_plot_files) == 2
@@ -97,11 +97,31 @@ def test_write_benchmark_metrics(test_dir, clean_dir):
     path_to_struct = test_dir / "benchmark" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
+    metrics = [
+        [{'benchmark_phonon_rmse': 0.87425, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False},
+         {'benchmark_phonon_rmse': 0.63839, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}],
+        [{'benchmark_phonon_rmse': 0.55506, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}],
+        [{'benchmark_phonon_rmse': 0.43216, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}],
+        [{'benchmark_phonon_rmse': 0.38114, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False},
+         {'benchmark_phonon_rmse': 0.38100, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}]
+    ]
+
+    hyperlist = [
+        {'f=0.1': 'default with sigma'},
+        {'f=0.1': 'default'},
+        {'f=0.1': 'default phonon'},
+        {'f=0.1': 'default randstruc'},
+        {'f=0.01': {'n_sparse': 3000, 'delta': 1.0}},
+        {'f=0.01': {'n_sparse': 5000, 'delta': 1.0}}
+    ]
+
     write_metrics_job = write_benchmark_metrics(
-        benchmark_structure=structure,
-        rmse=[0.7611611665106662],
+        ml_models=["GAP"],
+        benchmark_structures=[structure],
+        benchmark_mp_ids=["mp-22905"],
+        metrics=metrics,
         displacements=[0.01],
-        mp_id="mp-22905",
+        hyper_list=hyperlist,
     )
 
     _ = run_locally(write_metrics_job, create_folders=False, ensure_success=True)

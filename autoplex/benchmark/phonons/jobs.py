@@ -28,9 +28,13 @@ def compute_bandstructure_benchmark_metrics(
     structure : .Structure
      A structure object.
     ml_phonon_bs: PhononBandStructureSymmLine.
-       ML generated pymatgen phonon band-structure object
+       ML generated pymatgen phonon band-structure object.
     dft_phonon_bs: PhononBandStructureSymmLine.
-       DFT generated pymatgen phonon band-structure object
+       DFT generated pymatgen phonon band-structure object.
+    ml_imag_modes: bool
+        Whether the ML-based phonon band structure shows imaginary modes.
+    dft_imag_modes: bool
+        Whether the DFT-based phonon band structure shows imaginary modes.
 
     Returns
     -------
@@ -108,7 +112,7 @@ def write_benchmark_metrics(
                 encoding="utf-8",
             ) as file:
                 file.write(
-                    "%-11s%-11s%-12s%-18s%-12s%-55s%-16s%-16s"
+                    "%-11s%-11s%-12s%-18s%-12s%-55s%-16s%-14s"
                     % (
                         "Potential",
                         "Structure",
@@ -128,7 +132,7 @@ def write_benchmark_metrics(
                         encoding="utf-8",
                     ) as file:
                         file.write(
-                            "\n%-11s%-11s%-12s%-18.2f%-12.5f%-55s%-16s%-16s"
+                            "\n%-11s%-11s%-12s%-18.2f%-12.5f%-55s%-16s%-5s"
                             % (
                                 ml_model,
                                 structure_composition,
