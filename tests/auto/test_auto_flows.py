@@ -400,6 +400,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             phonon_displacement_maker=TightDFTStaticMaker(),
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -423,7 +424,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
 
         assert responses[add_data_workflow.jobs[-1].output.uuid][
                    1
-               ].output == pytest.approx(0.7611611665106662, abs=0.5)
+               ].output[0][0][
+               "benchmark_phonon_rmse"] == pytest.approx(0.4841808019705598, abs=0.5)
 
     def test_add_data_workflow_with_dft_reference(
             self,
@@ -450,6 +452,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             add_dft_phonon_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -469,8 +472,6 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             ensure_success=True,
             store=memory_jobstore,
         )
-
-        # TODO: add better tests
 
         for job, uuid in add_data_workflow_with_dft_reference.iterflow():
             assert job.name != "dft_phonopy_gen_data"
@@ -500,6 +501,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             add_dft_phonon_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -509,8 +511,6 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             dft_references=None,
         )
-
-        # TODO: add better tests
 
         for job, uuid in add_data_workflow_add_phonon_false.iterflow():
             assert job.name != "dft_phonopy_gen_data"
@@ -537,6 +537,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             add_dft_random_struct=False,
             phonon_displacement_maker=TightDFTStaticMaker(),
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -546,8 +547,6 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             dft_references=None,
         )
-
-        # TODO: add better tests
 
         for job, uuid in add_data_workflow_add_random_false.iterflow():
             assert job.name != "dft_random_gen_data"
@@ -573,6 +572,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             phonon_displacement_maker=TightDFTStaticMaker(),
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
         ).make(
             structure_list=[structure],
             mp_ids=["mp-22905"],
@@ -583,70 +583,44 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             dft_references=None,
         )
 
-        # TODO: add better tests
-
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
             assert job.name != "tight relax 1"
 
 
 def test_phonon_dft_ml_data_generation_flow(
-        vasp_test_dir, mock_vasp, clean_dir, memory_jobstore
+        vasp_test_dir, mock_vasp, clean_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, test_dir
 ):
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
+    structure_list = [structure]
+    mp_ids = ["mp-22905"]
 
     flow_data_generation = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, min_length=10, symprec=1e-2, volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-    ).make(structure_list=[structure], mp_ids=["mp-22905"])
+        mlip_hyper={"two_body": True, "three_body": False, "soap": False},
+    ).make(structure_list=structure_list,
+           mp_ids=mp_ids,
+           benchmark_structures=structure_list,
+           benchmark_mp_ids=mp_ids,
+           pre_xyz_files=["vasp_ref.extxyz"],
+           pre_database_dir=test_dir / "fitting" / "ref_files",
+           )
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, min_length=10, symprec=1e-2, add_dft_random_struct=False,
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-    ).make(structure_list=[structure], mp_ids=["mp-22905"])
-
-    ref_paths = {
-        "tight relax": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
-        "static": "dft_ml_data_generation/static/",
-        "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
-        "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
-        "phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
-        "phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "phonon static 1/4": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/4": "dft_ml_data_generation/rand_static_4/",
-        "phonon static 3/4": "dft_ml_data_generation/rand_static_7/",
-        "phonon static 4/4": "dft_ml_data_generation/rand_static_10/",
-    }
-
-    fake_run_vasp_kwargs = {
-        "tight relax": {"incar_settings": ["NSW"]},
-        "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 1/4": {
-            "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "potcar"],
-        },
-        "phonon static 2/4": {
-            "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "potcar"],
-        },
-        "phonon static 3/4": {
-            "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "potcar"],
-        },
-        "phonon static 4/4": {
-            "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "potcar"],
-        },
-    }
-
+        mlip_hyper={"two_body": True, "three_body": False, "soap": False},
+    ).make(structure_list=structure_list,
+           mp_ids=mp_ids,
+           benchmark_structures=structure_list,
+           benchmark_mp_ids=mp_ids,
+           pre_xyz_files=["vasp_ref.extxyz"],
+           pre_database_dir=test_dir / "fitting" / "ref_files",
+           )
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths, fake_run_vasp_kwargs)
+    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -668,7 +642,6 @@ def test_phonon_dft_ml_data_generation_flow(
         counter += 1
     for job, uuid in flow_data_generation_without_rattled_structures.iterflow():
         counter_wor += 1
-    assert counter == 5
-    assert counter_wor == 4
-# TODO better tests
+    assert counter == 7
+    assert counter_wor == 6
 # TODO testing cell_factor_sequence

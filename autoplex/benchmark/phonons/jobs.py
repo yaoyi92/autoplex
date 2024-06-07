@@ -71,7 +71,7 @@ def compute_bandstructure_benchmark_metrics(
 def write_benchmark_metrics(
     ml_models: list[str],
     benchmark_structures: list[Structure],
-    mp_ids: list[str],
+    benchmark_mp_ids: list[str],
     metrics: list,
     displacements: list[float],
     hyper_list=None,
@@ -83,7 +83,7 @@ def write_benchmark_metrics(
     ----------
     benchmark_structures: List[Structure].
         Structure used for benchmarking.
-    mp_ids: List[str]
+    benchmark_mp_ids: List[str]
         materials project ID corresponding to the structure
     metrics: List[float]
         root mean squared error between band structures
@@ -100,7 +100,7 @@ def write_benchmark_metrics(
         hyper_list = ["default"]
     metrics_flattened = [item for sublist in metrics for item in sublist]
     for ml_model in ml_models:
-        for benchmark_structure, mp_id in zip(benchmark_structures, mp_ids):
+        for benchmark_structure, mp_id in zip(benchmark_structures, benchmark_mp_ids):
             structure_composition = benchmark_structure.composition.reduced_formula
             with open(
                 f"results_{structure_composition}.txt",

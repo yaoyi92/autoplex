@@ -113,8 +113,16 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Default=10.
     ml_models: list[str]
         list of the ML models to be used. Default is GAP.
+    mlip_hyper: dict
+        basic MLIP hyperparameters
     HPloop: bool
         making it easier to loop through several hyperparameter sets.
+    atomwise_regularization_list: list
+        List of atom-wise regularization parameters that are checked.
+    soap_delta_list: list
+        List of SOAP delta values that are checked.
+    n_sparse_list: list
+        List of GAP n_sparse values that are checked.
     """
 
     name: str = "add_data"
@@ -142,6 +150,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
+    mlip_hyper: dict | None = None
     HPloop: bool = False
     atomwise_regularization_list: list | None = None
     soap_delta_list: list | None = None
@@ -251,7 +260,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             )
 
         for ml_model in self.ml_models:
-            add_data_fit = MLIPFitMaker(mlip_type=ml_model).make(
+            add_data_fit = MLIPFitMaker(
+                mlip_type=ml_model, mlip_hyper=self.mlip_hyper
+            ).make(
                 species_list=isoatoms.output["species"],
                 isolated_atoms_energy=isoatoms.output["energies"],
                 fit_input=fit_input,
@@ -328,7 +339,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 "n_sparse": n_sparse,
                                 "delta": delta,
                             }
-                            loop_data_fit = MLIPFitMaker(mlip_type=ml_model).make(
+                            loop_data_fit = MLIPFitMaker(
+                                mlip_type=ml_model, mlip_hyper=self.mlip_hyper
+                            ).make(
                                 species_list=isoatoms.output["species"],
                                 isolated_atoms_energy=isoatoms.output["energies"],
                                 fit_input=fit_input,
@@ -371,7 +384,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         collect_bm = write_benchmark_metrics(
             ml_models=self.ml_models,
             benchmark_structures=benchmark_structures,
-            mp_ids=benchmark_mp_ids,
+            benchmark_mp_ids=benchmark_mp_ids,
             metrics=bm_outputs,
             displacements=self.displacements,
             hyper_list=hyper_list,

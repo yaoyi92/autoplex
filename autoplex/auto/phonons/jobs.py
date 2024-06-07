@@ -91,9 +91,15 @@ def complete_benchmark(  # this function was put here to prevent circular import
                     ml_phonon_task_doc=add_data_ml_phonon.output,
                     dft_phonon_task_doc=dft_references,
                 )
-            elif dft_references is not None and benchmark_mp_ids is not None:
+            elif (
+                dft_references is not None
+                and not isinstance(dft_references, list)
+                and benchmark_mp_ids is not None
+            ):
                 if benchmark_mp_ids[ibenchmark_structure] not in mp_ids:
                     add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                        # this is important for re-using the same internally calculated DFT reference
+                        # for looping through several settings
                         structure=benchmark_structure,
                         benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                         ml_phonon_task_doc=add_data_ml_phonon.output,
@@ -101,6 +107,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                     )
             else:
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                    # this is important for using a provided DFT reference
                     structure=benchmark_structure,
                     benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                     ml_phonon_task_doc=add_data_ml_phonon.output,
