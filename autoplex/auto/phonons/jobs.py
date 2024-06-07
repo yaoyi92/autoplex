@@ -61,7 +61,7 @@ def complete_benchmark(
     """
     jobs = []
     collect_output = []
-    for suffix in ["", "_wo_sigma", "_phonon", "rand_struc"]:
+    for suffix in ["", "_wo_sigma", "_phonon", "_rand_struc"]:
         if Path(Path(ml_model) / f"gap_file{suffix}.xml").exists():
             add_data_ml_phonon = MLPhononMaker(
                 min_length=min_length,

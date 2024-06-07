@@ -273,6 +273,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                         + str(atomwise_regularization_parameter): "default with sigma"
                     }
                 )
+            hyper_list.append(
+                {"f=" + str(atomwise_regularization_parameter): "default"}
+            )
             if "separated" in fit_kwargs and fit_kwargs["separated"]:
                 hyper_list.append(
                     {"f=" + str(atomwise_regularization_parameter): "default phonon"}
@@ -280,9 +283,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 hyper_list.append(
                     {"f=" + str(atomwise_regularization_parameter): "default randstruc"}
                 )
-            hyper_list.append(
-                {"f=" + str(atomwise_regularization_parameter): "default"}
-            )
 
             if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
                 for ibenchmark_structure, benchmark_structure in enumerate(

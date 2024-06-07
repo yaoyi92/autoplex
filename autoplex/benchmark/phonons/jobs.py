@@ -96,8 +96,6 @@ def write_benchmark_metrics(
     -------
     A text file with root mean squared error between DFT and ML potential phonon band-structure
     """
-    print("METRICS", metrics)
-    print("HYPER", hyper_list)
     if hyper_list is None:
         hyper_list = ["default"]
     metrics_flattened = [item for sublist in metrics for item in sublist]
