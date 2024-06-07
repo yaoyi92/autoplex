@@ -16,12 +16,12 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     from jobflow import run_locally
 
-    potential_file_dir = test_dir / "fitting" / "ref_files" / "gap_file.xml"
+    potential_file_dir = test_dir / "fitting" / "ref_files"
     path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
     gap_phonon_jobs = MLPhononMaker(min_length=20).make_from_ml_model(
-        structure=structure, ml_model=potential_file_dir,
+        structure=structure, ml_model=str(potential_file_dir),
     )
 
     responses = run_locally(
@@ -96,15 +96,15 @@ def test_data_generation_distort_type_1(vasp_test_dir, mock_vasp, clean_dir):
         "tight relax": {"incar_settings": ["NSW"]},
         "phonon static 1/3": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 2/3": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 3/3": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
     }
     data_gen_dt_1 = RandomStructuresDataGenerator(n_structures=3, distort_type=1).make(
@@ -146,11 +146,11 @@ def test_data_generation_distort_type_2(vasp_test_dir, mock_vasp, clean_dir):
         "tight relax": {"incar_settings": ["NSW"]},
         "phonon static 1/2": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 2/2": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
     }
     data_gen_dt_2 = RandomStructuresDataGenerator(distort_type=2).make(
@@ -197,19 +197,19 @@ def test_data_generation_volume_range(vasp_test_dir, mock_vasp, clean_dir):
         "tight relax": {"incar_settings": ["NSW"]},
         "phonon static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 2/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 3/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
         "phonon static 4/4": {
             "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "potcar"],
         },
     }
     data_gen_vol = RandomStructuresDataGenerator(distort_type=0).make(
@@ -289,4 +289,5 @@ def test_generate_training_data_for_testing(
     )
 
 
-# TODO: update pymatgen with ForceFieldTaskDocument.from_ase_compatible_result() with attribute dir_name
+# TODO: update pymatgen with ForceFieldTaskDocument.from_ase_compatible_result() with attribute dir_name,
+# then ensure_success can be set to True

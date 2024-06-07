@@ -382,7 +382,7 @@ class MLPhononMaker(FFPhononMaker):
     static_maker_kwargs: dict = field(default_factory=dict)
 
     @job
-    def make_from_ml_model(self, structure, ml_model, suffix, **make_kwargs):
+    def make_from_ml_model(self, structure, ml_model, suffix: str = "", **make_kwargs):
         """
         Maker for GAP phonon jobs.
 
@@ -393,7 +393,9 @@ class MLPhononMaker(FFPhononMaker):
             that is nearly fully optimized as the internal optimizers
             have very strict settings!
         ml_model : str
-            Complete path to gapfit.xml file(s).
+            Complete path to MLIP file(s).
+        suffix:
+            Train, test and MLIP suffix ("", "_wo_sigma", "_phonon", "_rand_struc").
         make_kwargs :
             Keyword arguments for the PhononMaker.
 
