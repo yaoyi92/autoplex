@@ -61,7 +61,8 @@ strict = [
      #"pymatgen==2023.9.10",
      "atomate2[strict]",
      #"FireWorks==2.0.3",
-     "ase@git+https://gitlab.com/ase/ase",
+     # last known working ASE version: https://gitlab.com/ase/ase@2bab58f4e
+     "ase@git+https://gitlab.com/ase/ase.git@2bab58f4e",
      #"quippy-ase==0.9.14",
      "numpy",
      "typing",
