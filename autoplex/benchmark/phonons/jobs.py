@@ -108,13 +108,13 @@ def write_benchmark_metrics(
                 encoding="utf-8",
             ) as file:
                 file.write(
-                    "%-11s%-11s%-12s%-14s%-6s%-55s%-16s%-16s"
+                    "%-11s%-11s%-12s%-18s%-12s%-55s%-16s%-16s"
                     % (
                         "Potential",
                         "Structure",
                         "MPID",
-                        "Displacement",
-                        "RMSE",
+                        "Displacement (Å)",
+                        "RMSE (THz)",
                         "Hyperparameters (atom-wise f, n_sparse, SOAP delta)",
                         "imagmodes(pot)",
                         "imagmodes(dft)",
@@ -128,7 +128,7 @@ def write_benchmark_metrics(
                         encoding="utf-8",
                     ) as file:
                         file.write(
-                            "\n%-11s%-11s%-12s%-14.2f%-6.3f%-55s%-16s%-16s"
+                            "\n%-11s%-11s%-12s%-18.2f%-12.5f%-55s%-16s%-16s"
                             % (
                                 ml_model,
                                 structure_composition,

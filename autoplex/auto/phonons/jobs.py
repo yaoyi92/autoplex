@@ -27,7 +27,7 @@ from autoplex.data.phonons.flows import (
 
 
 @job
-def complete_benchmark(
+def complete_benchmark(  # this function was put here to prevent circular import
     ibenchmark_structure: int,
     benchmark_structure: Structure,
     min_length: float,
@@ -120,7 +120,7 @@ def complete_benchmark(
 
 
 @dataclass
-class MLPhononMaker(PhononMaker):
+class MLPhononMaker(PhononMaker):  # maybe we can move this to data/flows
     """
     Maker to calculate harmonic phonons with a force field.
 
@@ -227,7 +227,7 @@ class MLPhononMaker(PhononMaker):
     )
     store_force_constants: bool = False
     generate_frequencies_eigenvectors_kwargs: dict = field(
-        default_factory=lambda: {"units": "THz"}
+        default_factory=lambda: {"units": "THz", "tol_imaginary_modes": 1e-1}
     )
     relax_maker_kwargs: dict = field(default_factory=dict)
     static_maker_kwargs: dict = field(default_factory=dict)

@@ -1,2 +1,7 @@
-Pot Structure mpid displacements RMS imagmodes(pot) imagmodes(dft) 
-GAP LiCl mp-22905 [0.01] [0.7611611665106662]
+Potential  Structure  MPID        Displacement (Å)  RMSE (THz)  Hyperparameters (atom-wise f, n_sparse, SOAP delta)    imagmodes(pot)  imagmodes(dft)
+GAP        LiCl       mp-22905    0.01              0.87425     {'f=0.1': 'default with sigma'}                        False           False
+GAP        LiCl       mp-22905    0.01              0.63839     {'f=0.1': 'default'}                                   False           False
+GAP        LiCl       mp-22905    0.01              0.55506     {'f=0.1': 'default phonon'}                            False           False
+GAP        LiCl       mp-22905    0.01              0.43216     {'f=0.1': 'default randstruc'}                         False           False
+GAP        LiCl       mp-22905    0.01              0.38114     {'f=0.01': {'n_sparse': 3000, 'delta': 1.0}}           False           False
+GAP        LiCl       mp-22905    0.01              0.38100     {'f=0.01': {'n_sparse': 5000, 'delta': 1.0}}           False           False
