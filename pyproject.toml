@@ -62,8 +62,9 @@ strict = [
      "atomate2[strict]",
      #"FireWorks==2.0.3",
      # last known working ASE version: https://gitlab.com/ase/ase@2bab58f4e
-     "ase@git+https://gitlab.com/ase/ase.git@2bab58f4e",
+     #"ase@git+https://gitlab.com/ase/ase.git@2bab58f4e",
      #"quippy-ase==0.9.14",
+     "ase==3.23.0",
      "numpy",
      "typing",
      #"jobflow==0.1.13",
