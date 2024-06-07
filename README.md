@@ -60,6 +60,6 @@ Pkg.activate(".")
 Pkg.Registry.add("General")  # only needed when installing Julia for the first time
 Pkg.Registry.add(RegistrySpec(url="https://github.com/ACEsuit/ACEregistry"))
 Pkg.add("ACEpotentials")
-Pkg.add("Dataframes")
+Pkg.add("DataFrames")
 Pkg.add("CSV")
 ```
