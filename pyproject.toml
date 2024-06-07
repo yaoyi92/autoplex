@@ -28,7 +28,7 @@ dependencies = [
      "atomate2[strict]@git+https://github.com/materialsproject/atomate2.git@c369c86b9ede4c25ac281536132753f11ce113d0",
      #"FireWorks>=2.0.3",
      "ase==3.23.0",
-     "@git+https://github.com/materialsvirtuallab/matgl.git",
+     "matgl@git+https://github.com/materialsvirtuallab/matgl.git",
      #"quippy-ase==0.9.14",
      "numpy",
      "typing",
