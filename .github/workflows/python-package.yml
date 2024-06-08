@@ -34,7 +34,7 @@ jobs:
         python -m pip cache purge
         python -m pip install .[strict]
         python -m pip cache purge
-        python -m pip install ase@git+https://gitlab.com/ase/ase.git@aae51d57721847624cea569f3a2d4bb6aa5032b4
+        python -m pip install ase==3.23.0
     - name: Install Julia
       run: curl -fsSL https://install.julialang.org | sh -s -- -y
     - name: Set up Julia environment (Needed for ACEpotentials.jl interface)

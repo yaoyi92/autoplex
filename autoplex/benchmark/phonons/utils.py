@@ -42,8 +42,8 @@ def rmse_kdep_plot(
     ml_bs: PhononBandStructureSymmLine,
     dft_bs: PhononBandStructureSymmLine,
     which_k_path=1,
-    file_name="rms.eps",
-    img_format="eps",
+    file_name="rms.pdf",
+    img_format="pdf",
 ):
     """
     Save q dependent root mean squared error plot between DFT and ML phonon band-structure.
@@ -59,7 +59,7 @@ def rmse_kdep_plot(
     file_name: str.
         Name of the saved plot
     img_format: str
-        File extension of plot to be saved, default is eps
+        File extension of plot to be saved, default is pdf.
 
     Returns
     -------
@@ -92,7 +92,7 @@ def rmse_kdep_plot(
 def compare_plot(
     ml_bs: PhononBandStructureSymmLine,
     dft_bs: PhononBandStructureSymmLine,
-    file_name: str = "band_comparison.eps",
+    file_name: str = "band_comparison.pdf",
 ):
     """
     Save DFT and ML phonon band-structure overlay plot for visual comparison.
