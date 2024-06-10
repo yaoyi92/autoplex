@@ -71,7 +71,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Symmetry precision to use in the
         reduction of symmetry to find the primitive/conventional cell
         (use_primitive_standard_structure, use_conventional_standard_structure)
-        and to handle all symmetry-related tasks in phonopy
+        and to handle all symmetry-related tasks in phonopy.
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
@@ -181,7 +181,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         structure_list:
             list of pymatgen structures.
         mp_ids:
-            materials project id.
+            materials project IDs.
         split_ratio: float.
             Parameter to divide the training set and the test set.
             A value of 0.1 means that the ratio of the training set to the test set is 9:1.
@@ -200,7 +200,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         auto_delta: bool
             automatically determine delta for 2b, 3b and soap terms.
         dft_references: list[PhononBSDOSDoc] | None
-            DFT reference file containing the PhononBSDOCDoc object.
+            a list of DFT reference files containing the PhononBSDOCDoc object.
         benchmark_structures: list[Structure] | None
             pymatgen structure for benchmarking.
         benchmark_mp_ids: list[str] | None

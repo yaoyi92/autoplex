@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from jobflow import Flow, Response, job
 
 if TYPE_CHECKING:
+    from atomate2.vasp.jobs.base import BaseVaspMaker
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
@@ -21,36 +22,56 @@ from autoplex.data.phonons.flows import (
 
 @job
 def complete_benchmark(  # this function was put here to prevent circular import
+    ml_model: str,
     ibenchmark_structure: int,
     benchmark_structure: Structure,
-    min_length: float,
-    ml_model: str,
     mp_ids,
     benchmark_mp_ids,
     add_dft_phonon_struct: bool,
+    min_length: float,
     fit_input,
     symprec,
-    phonon_displacement_maker,
+    phonon_displacement_maker: BaseVaspMaker,
     dft_references=None,
 ):
     """
-    Need to add proper docstrings.
+    Construct a complete flow for benchmarking the MLIP fit quality using a DFT based phonon structure.
+
+    The complete benchmark flow starts by calculating the MLIP based phonon structure for each structure that has to be
+    benchmarked. Then depending on if the user provided a DFT reference dataset or the DFT reference structure is
+    already given from a previous loop, the existing or to-be-calculated DFT reference is used to generate the phonon
+    bandstructure comparison plots, the q-point wise RMSE plots and to calculate the overall RMSE.
+    This process is repeated with the default ML potential as well as the potentials from the different active user
+    settings like sigma regularization, separated datasets or looping through several sets of hyperparameters.
 
     Parameters
     ----------
-    ibenchmark_structure
-    benchmark_structure
-    min_length
-    ml_model
-    mp_ids
-    benchmark_mp_ids
-    add_dft_phonon_struct
-    fit_input
-    symprec
-    phonon_displacement_maker
-    displacements
-    dft_references
-
+    ml_model: str
+        ML model to be used. Default is GAP.
+    ibenchmark_structure: int
+        ith benchmark structure.
+    benchmark_structure: Structure
+        pymatgen structure for benchmarking.
+    benchmark_mp_ids: str
+        Materials Project ID of the benchmarking structure.
+    mp_ids:
+        materials project IDs.
+    benchmark_mp_ids:
+        materials project IDs of th benchmark structures.
+    add_dft_phonon_struct: bool.
+        If True, will add displaced supercells via phonopy for DFT calculation.
+    min_length: float
+        min length of the supercell that will be built
+    fit_input,
+    symprec: float
+        Symmetry precision to use in the
+        reduction of symmetry to find the primitive/conventional cell
+        (use_primitive_standard_structure, use_conventional_standard_structure)
+        and to handle all symmetry-related tasks in phonopy.
+    phonon_displacement_maker: BaseVaspMaker
+        Maker used to compute the forces for a supercell.
+    dft_references:
+        a list of DFT reference files containing the PhononBSDOCDoc object. Default None.
     """
     jobs = []
     collect_output = []
