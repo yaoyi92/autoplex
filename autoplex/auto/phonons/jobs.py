@@ -62,7 +62,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
         If True, will add displaced supercells via phonopy for DFT calculation.
     min_length: float
         min length of the supercell that will be built
-    fit_input,
+    fit_input : dict.
+        CompletePhononDFTMLDataGenerationFlow output.
     symprec: float
         Symmetry precision to use in the
         reduction of symmetry to find the primitive/conventional cell

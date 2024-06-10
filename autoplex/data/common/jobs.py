@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
-    from pymatgen.core import Structure
 
 import os
 import pickle
@@ -18,6 +17,7 @@ from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
 from jobflow.core.job import job
 from phonopy.structure.cells import get_supercell
+from pymatgen.core import Structure
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.common.utils import (
@@ -148,7 +148,7 @@ def get_supercell_job(structure: Structure, supercell_matrix: Matrix3D):
     return get_pmg_structure(supercell)
 
 
-@job
+@job(data=[Structure])
 def generate_randomized_structures(
     structure: Structure,
     supercell_matrix: Matrix3D | None = None,

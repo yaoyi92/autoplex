@@ -35,7 +35,7 @@ def rms_dict(x_ref, x_pred) -> dict:
     Returns
     -------
     dict
-        Dict with rmse and std deviation of predictions.
+        Dict with RMSE and std deviation of predictions.
     """
     x_ref = np.array(x_ref)
     x_pred = np.array(x_pred)
@@ -383,7 +383,7 @@ def extract_base_name(filename, is_out=False):
     ----------
     filename:
         The name of the file.
-    is_out:
+    is_out: bool
         If it is an out_file (i.e. prefix is "quip_")
 
     """
@@ -411,6 +411,8 @@ def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
         Reference file (e.g. DFT).
     out_file:
         MLIP generated data file.
+    criteria:
+        Energy filter threshold.
 
     """
     # read files
@@ -465,6 +467,10 @@ def filter_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1)
         Reference file (e.g. DFT).
     out_file:
         MLIP generated data file.
+    symbol:
+        Atomi symbol.
+    criteria:
+        Force filter threshold.
 
     """
     # read files
@@ -707,7 +713,11 @@ def plot_energy_forces(
     force_limit:
         Force limit for data filtering.
     species_list:
-        List of species
+        List of species.
+    train_name:
+        name of the training data file.
+    test_name:
+        name of the test data file.
 
 
     """

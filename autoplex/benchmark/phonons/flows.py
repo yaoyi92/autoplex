@@ -38,7 +38,6 @@ class PhononBenchmarkMaker(Maker):
         benchmark_mp_id: str,
         ml_phonon_task_doc: PhononBSDOSDoc,
         dft_phonon_task_doc: PhononBSDOSDoc,
-        **kwargs,
     ):
         """
         Make flow for benchmarking.
@@ -48,16 +47,13 @@ class PhononBenchmarkMaker(Maker):
         structure :
             Pymatgen structures drawn from the Materials Project.
         benchmark_mp_id: str.
-            Materials project IDs for the structure
+            Materials project IDs for the structure.
         ml_phonon_task_doc: PhononBSDOSDoc
-            Phonon task doc from ML potential consisting of pymatgen band-structure object
+            Phonon task doc from ML potential consisting of pymatgen band-structure object.
         dft_phonon_task_doc: PhononBSDOSDoc
-            Phonon task doc from DFT runs consisting of pymatgen band-structure object
+            Phonon task doc from DFT runs consisting of pymatgen band-structure object.
         """
         jobs = []
-
-        kwargs.get("npoints_band", 51)
-        kwargs.get("kpoint_density", 12000)
 
         benchmark_job = compute_bandstructure_benchmark_metrics(
             ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,

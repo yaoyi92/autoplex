@@ -98,7 +98,7 @@ def gap_fitting(
     """
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     mlip_path: Path = prepare_fit_environment(
-        db_dir, Path.cwd(), glue_xml, regularization, train_name, test_name
+        db_dir, Path.cwd(), glue_xml, train_name, test_name
     )
 
     db_atoms = ase.io.read(os.path.join(db_dir, train_name), index=":")
@@ -226,7 +226,7 @@ def ace_fitting(
     totaldegree: int = 16,
     cutoff: float = 5.0,
     solver: str = "BLR",
-    isol_es: dict | None = None,
+    isolated_atoms_energies: dict | None = None,
     num_processes: int = 32,
 ):
     """
@@ -249,7 +249,7 @@ def ace_fitting(
     solver: str
         solver to be used for fitting the ACE model. Default is "BLR" (Bayesian Linear Regression).
         For very large-scale parameter estimation problems, using "LSQR" solver.
-    isol_es: dict:
+    isolated_atoms_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
     num_processes: int
         number of processes to use for parallel computation.
@@ -272,11 +272,11 @@ def ace_fitting(
     shutil.copy(source_file_path, ".")
     isol_es_update = {}
 
-    if isol_es:
-        for e_num, e_energy in isol_es.items():
+    if isolated_atoms_energies:
+        for e_num, e_energy in isolated_atoms_energies.items():
             isol_es_update[chemical_symbols[int(e_num)]] = e_energy
     else:
-        raise ValueError("isol_es is empty or not defined!")
+        raise ValueError("isolated_atoms_energies parameter is empty or not defined!")
 
     formatted_isol_es = (
         "["
@@ -377,7 +377,7 @@ def nequip_fitting(
     learning_rate: float = 0.005,
     max_epochs: int = 10000,
     default_dtype: str = "float32",
-    isol_es: dict | None = None,
+    isolated_atoms_energies: dict | None = None,
     device: str = "cuda",
 ):
     """
@@ -411,7 +411,7 @@ def nequip_fitting(
         learning rate
     default_dtype: str
         type of float to use, e.g. float32 and float64
-    isol_es: dict
+    isolated_atoms_energies: dict
         mandatory dictionary mapping element numbers to isolated energies.
     device: str
         specify device to use cuda or cpu
@@ -435,12 +435,12 @@ def nequip_fitting(
     num_of_train = len(train_nequip)
     num_of_val = len(test_data)
 
-    isol_es_update = ""
+    isolated_atoms_energies_update = ""
     ele_syms = []
-    if isol_es:
-        for e_num in isol_es:
-            ele_sym = "  - " + chemical_symbols[int(e_num)] + "\n"
-            isol_es_update += ele_sym
+    if isolated_atoms_energies:
+        for e_num in isolated_atoms_energies:
+            element_symbol = "  - " + chemical_symbols[int(e_num)] + "\n"
+            isolated_atoms_energies_update += element_symbol
             ele_syms.append(chemical_symbols[int(e_num)])
     else:
         raise ValueError("isol_es is empty or not defined!")
@@ -492,7 +492,7 @@ validation_dataset_key_mapping:
   REF_forces: forces
 
 chemical_symbols:
-{isol_es_update}
+{isolated_atoms_energies_update}
 wandb: False
 
 verbose: info
@@ -1054,8 +1054,6 @@ def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path):
 
 def gap_hyperparameter_constructor(
     gap_parameter_dict: dict,
-    atoms_symbols: list | None = None,
-    atoms_energies: list | None = None,
     include_two_body: bool = False,
     include_three_body: bool = False,
     include_soap: bool = False,
@@ -1067,10 +1065,6 @@ def gap_hyperparameter_constructor(
     ----------
     gap_parameter_dict : dict.
         dictionary with gap hyperparameters.
-    atoms_symbols: list or None.
-        List of atom symbols
-    atoms_energies: list or None.
-        List of isolated atoms energies
     include_two_body : bool.
         bool indicating whether to include two-body hyperparameters
     include_three_body : bool.
@@ -1083,19 +1077,6 @@ def gap_hyperparameter_constructor(
         list
            gap fit input parameter string.
     """
-    # convert gap_parameter_dict to representation compatible with gap
-
-    # if atoms_energies and atoms_symbols is not None:
-    #     e0 = ":".join(
-    #         [
-    #             f"{iso_atom}:{iso_energy}"
-    #             for iso_atom, iso_energy in zip(atoms_symbols, atoms_energies)
-    #         ]
-    #     )
-
-    # Update the isolated atom energy argument
-    # gap_parameter_dict["general"].update({"e0": e0})
-
     general = [f"{key}={value}" for key, value in gap_parameter_dict["general"].items()]
 
     two_body_params = " ".join(
@@ -1384,7 +1365,7 @@ def stratified_dataset_split(atoms, split_ratio):
     Parameters
     ----------
     atoms: Atoms
-        Ase atoms object
+        ase Atoms object
     split_ratio: float
         Parameter to divide the training set and the test set.
 
@@ -1729,7 +1710,6 @@ def prepare_fit_environment(
     database_dir,
     mlip_path,
     glue_xml: bool,
-    regularization: bool,
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
 ):
@@ -1744,12 +1724,14 @@ def prepare_fit_environment(
         Path to the MLIP fit run (cwd).
     glue_xml: bool
             use the glue.xml core potential instead of fitting 2b terms.
-    regularization: bool
-        For using sigma regularization.
+    train_name:
+        name of the training data file.
+    test_name:
+        name of the test data file.
 
     Returns
     -------
-    the MLIP path.
+    the MLIP file path.
     """
     shutil.copy(
         os.path.join(database_dir, test_name),
@@ -1769,7 +1751,23 @@ def prepare_fit_environment(
 
 
 def convert_xyz_to_structure(atoms_list, include_forces=True, include_stresses=True):
-    """Convert extxyz to structure format used in pymatgen."""
+    """
+    Convert extxyz to pymatgen Structure format.
+
+    Parameters
+    ----------
+    atoms_list:
+        list of atoms to be converted.
+    include_forces: bool
+        will include forces with the Structure object.
+    include_stresses: bool
+        will include stresses with the Structure object.
+
+    Returns
+    -------
+    tuple(pymatgen Structure object, energies, forces, stresses)
+
+    """
     structures = []
     energies = []
     forces = []
@@ -1805,11 +1803,23 @@ def write_after_distillation_data_split(
     """
     Write train.extxyz and test.extxyz after data distillation and split.
 
+    Reject structures with large force components and split dataset into training and test datasets.
+
     Parameters
     ----------
-    distillation
-    f_max
-    split_ratio
+    distillation: bool
+        For using data distillation.
+    f_max: float
+        Maximally allowed force in the data set.
+    split_ratio: float
+        Parameter to divide the training set and the test set.
+        A value of 0.1 means that the ratio of the training set to the test set is 9:1
+    vasp_ref_name:
+        name of the VASP reference data file.
+    train_name:
+        name of the training data file.
+    test_name:
+        name of the test data file.
     """
     # reject structures with large force components
     atoms = (
@@ -1818,7 +1828,7 @@ def write_after_distillation_data_split(
         else ase.io.read(vasp_ref_name, index=":")
     )
 
-    # split dataset into training and testing datasets
+    # split dataset into training and test datasets
     (train_structures, test_structures) = stratified_dataset_split(atoms, split_ratio)
 
     ase.io.write(train_name, train_structures, format="extxyz", append=True)

@@ -205,6 +205,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             pymatgen structure for benchmarking.
         benchmark_mp_ids: list[str] | None
             Materials Project ID of the benchmarking structure.
+        fit_kwargs : dict.
+            dict including MLIP fit keyword args.
 
         """
         flows = []

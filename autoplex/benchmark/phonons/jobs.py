@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
     from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 
-from autoplex.benchmark.phonons.utils import compare_plot, get_rmse, rmse_kdep_plot
+from autoplex.benchmark.phonons.utils import compare_plot, get_rmse, rmse_qdep_plot
 
 
 @job
@@ -46,10 +46,10 @@ def compute_bandstructure_benchmark_metrics(
 
     # saves rmse k-dependent plot
     file_name = f"{structure.composition.reduced_formula}_rmse_phonons.pdf"
-    _ = rmse_kdep_plot(
+    _ = rmse_qdep_plot(
         ml_bs=ml_phonon_bs,
         dft_bs=dft_phonon_bs,
-        which_k_path=2,
+        which_q_path=2,
         file_name=file_name,
         img_format="pdf",
     )
@@ -85,14 +85,16 @@ def write_benchmark_metrics(
 
     Parameters
     ----------
+    ml_models: list[str]
+        list of the ML models to be used. Default is GAP.
     benchmark_structures: List[Structure].
-        Structure used for benchmarking.
+        list of benchmark Structure used for benchmarking.
     benchmark_mp_ids: List[str]
-        materials project ID corresponding to the structure
+        lis of benchmark structure materials project ID.
     metrics: List[float]
-        root mean squared error between band structures
+        root mean squared error between band structures, imagmodesdft-bool and imagmodesml-bool.
     displacements: List[float]
-        Phonon displacement used for phonon computations
+        Phonon displacements used for phonon computations
     hyper_list:
         List of tested atomwise regularization parameter and SOAP hyperparameters.
 
