@@ -50,7 +50,7 @@ jobs:
       run: |
         # run the line below locally to update tests durations file
         # pytest --cov=autoplex --cov-append --splits 1 --group 1 --durations-path ./tests/test_data/.pytest-split-durations --store-durations
-        pytest --cov=autoplex --cov-report term-missing --cov-append --splits 4 --group ${{ matrix.split }} -vv --durations-path ./tests/test_data/.pytest-split-durations
+        pytest --cov=autoplex --cov-report term-missing --cov-append --splits 1 --group ${{ matrix.split }} -vv --durations-path ./tests/test_data/.pytest-split-durations
     - name: Upload coverage
       uses: actions/upload-artifact@v3
       with:
