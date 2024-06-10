@@ -1,5 +1,6 @@
-"""Functions for automatic regularization and weighting of training data, adapted from JDM's RSS routines."""
+"""Functions for automatic regularization and weighting of training data."""
 
+# adapted from MorrowChem's RSS routines.
 from __future__ import annotations
 
 import traceback
