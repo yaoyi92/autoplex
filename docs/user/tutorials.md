@@ -5,7 +5,8 @@ Tutorials
 
 The user is advised to have a general familiarity with the following software packages and tools:
  * VASP
- * the MLIP framework that is aimed to be used
+ * the machine-learned interatomic potential (MLIP) framework that is aimed to be used
+ * the [Materials Project](https://next-gen.materialsproject.org/) framework
  * atomate2
  * ase
  * basic Python knowledge
@@ -22,6 +23,6 @@ By the end of this tutorial, you should be able to:
 
 flows/flows
 generation/data
-generation/structure
 fitting/fitting
+benchmark/benchmark
 ```
