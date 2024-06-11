@@ -237,7 +237,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
-                if self.min_length >= 20:
+                if self.min_length >= 18:
                     self.phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
                 addDFTphon = self.add_dft_phonons(
                     structure,

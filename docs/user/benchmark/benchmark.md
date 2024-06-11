@@ -1,6 +1,6 @@
 (benchmark)=
 
-# Benchmrak
+# Benchmark
 
 ## Phonon bandstructure comparison
 
