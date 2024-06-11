@@ -1,3 +1,3 @@
 (flows)=
 
-# Running workflows
+# Out of the box workflow

@@ -1,7 +1,7 @@
 [![Testing Linux](https://github.com/JaGeo/autoplex/actions/workflows/python-package.yml/badge.svg)](https://github.com/JaGeo/autoplex/actions/workflows/python-package.yml)
 # autoplex
 
-Software for generating and benchmarking machine learning (ML) based interatomic potentials. The aim of **autoplex** is to provide a fully automated solution for creating high-quality ML potentials. The software is interfaced to multiple different ML potential fitting frameworks and to the atomate2 environment for efficient high-throughput computations. The vision of this project is to allow a wide community of researchers to create accurate and reliable ML potentials for materials simulations.
+Software for generating and benchmarking machine learning (ML) based interatomic potentials. The aim of **autoplex** is to provide a fully automated solution for creating high-quality ML potentials. The software is interfaced to multiple different ML potential fitting frameworks and to the atomate2 and ase environment for efficient high-throughput computations. The vision of this project is to allow a wide community of researchers to create accurate and reliable ML potentials for materials simulations.
 
 `autoplex` is developed jointly by two research groups at BAM Berlin and the University of Oxford.
 
@@ -37,7 +37,7 @@ Please check out atomate2 for example code (https://github.com/materialsproject/
 # Installation
 autoplex relies on the atomate2 and ase frameworks.
 
-Developers installation: Navigate to autoplex and install it by `pip install -e .[strict] python==3.11`.
+Developers installation: Navigate to autoplex and install it by `pip install -e .[docs,strict,dev] python==3.11`.
 
 Alternatively, the dependencies atomate2 and ase can be installed individually via
 ```bash

@@ -693,6 +693,11 @@ class IsoAtomMaker(Maker):
                 name=str(species) + "-statisoatom",
                 input_set_generator=StaticSetGenerator(
                     user_kpoints_settings={"grid_density": 1},
+                    user_incar_settings={
+                        "ISPIN": 1,
+                        "LAECHG": False,
+                        "ISMEAR": 0,
+                    },
                 ),
             ).make(iso_atom)
 

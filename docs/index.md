@@ -2,10 +2,7 @@
 :caption: User Guide
 :hidden:
 user/index
-user/generation/data
-user/generation/structure
-user/fitting/fitting
-user/flows/flows
+user/tutorials
 ```
 
 ```{toctree}
@@ -37,7 +34,11 @@ about/license
 [Source Repository](https://github.com/JaGeo/autoplex) |
 [Issues & Ideas](https://github.com/JaGeo/autoplex/issues) |
 
-Autoplex is a library for automated fitting and benchmarking of ML potentials..
+`autoplex` is a software tool for the automated generation and benchmarking of machine learning (ML)-based interatomic potentials. 
+The aim of autoplex is to provide a fully automated solution for creating high-quality ML potentials. 
+The software is interfaced to multiple different ML potential fitting frameworks and to the atomate2 and ase environment 
+for efficient high-throughput computations. 
+The vision of this project is to allow a wide community of researchers to create accurate and reliable ML potentials for materials simulations.
 
 ::::{grid} 1 1 2 2
 :class-container: text-center
@@ -67,8 +68,8 @@ Tutorials for using autoplex.
 :class-header: bg-light
 **API reference**
 ^^^
-The reference guide contains a detailed description of the *atomate2* API. It
-assumes that you have an understanding of the key concepts.
+The reference guide contains a detailed description of the *autoplex* API. It
+assumes that you have a broad understanding of the key concepts.
 :::
 
 :::{grid-item-card}
