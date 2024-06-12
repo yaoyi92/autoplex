@@ -276,7 +276,7 @@ class DataPreprocessing(Maker):
             ase.io.write("train_wo_sigma.extxyz", atoms, format="extxyz")
             atoms_with_sigma = set_sigma(
                 atoms,
-                etup=[(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)],
+                reg_minmax=[(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)],
             )
             ase.io.write("train.extxyz", atoms_with_sigma, format="extxyz")
         if self.separated:
