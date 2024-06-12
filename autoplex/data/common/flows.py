@@ -149,7 +149,7 @@ class GenerateTrainingDataForTesting(Maker):
                 )
                 jobs.append(plots)
 
-        return Flow(jobs)  # , plots.output)
+        return Flow(jobs=jobs, name=self.name)  # , plots.output)
 
     @job
     def static_run_and_convert(

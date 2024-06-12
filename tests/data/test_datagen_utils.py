@@ -15,7 +15,7 @@ def test_energy_forces(clean_dir, test_dir):
     os.chdir(test_dir / "data")
     energy_forces = plot_energy_forces("regularization 0.1", 0.0005, 0.15)
 
-    assert os.path.isfile("energy_forces.eps")
+    assert os.path.isfile("energy_forces.pdf")
     assert os.path.isfile("energy_forces.png")
 
     for file_name in os.listdir(os.getcwd()):

@@ -375,6 +375,32 @@ def mc_rattle(
     return [AseAtomsAdaptor.get_structure(xtal) for xtal in mc_rattle]
 
 
+def extract_base_name(filename, is_out=False):
+    """
+    Extract the base of a file name to easier manipulate other file names.
+
+    Parameters
+    ----------
+    filename:
+        The name of the file.
+    is_out:
+        If it is an out_file (i.e. prefix is "quip_")
+
+    """
+    if is_out:
+        # Extract "quip_train" or "quip_test"
+        if "quip_train" in filename:
+            return "quip_train"
+        if "quip_test" in filename:
+            return "quip_test"
+    else:
+        # Extract "train" or "test"
+        base_name = filename.split(".", 1)[0]
+        return base_name.split("_", 1)[0]
+
+    return "A problem with the files occurred."
+
+
 def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
     """
     Filter data outliers per energy criteria and write them into files.
@@ -410,9 +436,23 @@ def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
         else:
             outliers.append(at_in)
 
-    write("filtered_in_energy.extxyz", atoms_in, append=True)
-    write("filtered_out_energy.extxyz", atoms_out, append=True)
-    write("outliers_energy.extxyz", outliers, append=True)
+    write(
+        in_file.replace(extract_base_name(in_file), "filtered_in_energy"),
+        atoms_in,
+        append=True,
+    )
+    write(
+        out_file.replace(
+            extract_base_name(out_file, is_out=True), "filtered_out_energy"
+        ),
+        atoms_out,
+        append=True,
+    )
+    write(
+        in_file.replace(extract_base_name(in_file), "outliers_energy"),
+        outliers,
+        append=True,
+    )
 
 
 def filter_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
@@ -461,9 +501,23 @@ def filter_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1)
         else:
             outliers.append(at_in)
 
-    write("filtered_in_force.extxyz", atoms_in, append=True)
-    write("filtered_out_force.extxyz", atoms_out, append=True)
-    write("outliers_force.extxyz", outliers, append=True)
+    write(
+        in_file.replace(extract_base_name(in_file), "filtered_in_force"),
+        atoms_in,
+        append=True,
+    )
+    write(
+        out_file.replace(
+            extract_base_name(out_file, is_out=True), "filtered_out_force"
+        ),
+        atoms_out,
+        append=True,
+    )
+    write(
+        in_file.replace(extract_base_name(in_file), "outliers_force"),
+        outliers,
+        append=True,
+    )
 
 
 # copied from libatoms GAP tutorial page and adjusted
@@ -550,7 +604,7 @@ def force_plot(
     symbol: str = "Si",
     title: str = "Plot of force",
     label: str = "force for ",
-):  # make general symbol
+):
     """
     Plot the distribution of force components per atom on the output vs the input.
 
@@ -638,6 +692,8 @@ def plot_energy_forces(
     energy_limit: float,
     force_limit: float,
     species_list: list | None = None,
+    train_name: str = "train.extxyz",
+    test_name: str = "test.extxyz",
 ):
     """
     Plot energy and forces of the data.
@@ -661,60 +717,58 @@ def plot_energy_forces(
     fig.set_size_inches(15, 20)
     ax_list = ax_list.flat[:]
 
-    energy_plot(
-        "train.extxyz", "quip_train.extxyz", ax_list[0], "Energy on training data"
-    )
+    energy_plot(train_name, "quip_" + train_name, ax_list[0], "Energy on training data")
     # rmse_train =
     for species in species_list:
         force_plot(
-            "train.extxyz",
-            "quip_train.extxyz",
+            train_name,
+            "quip_" + train_name,
             ax_list[1],
             species,
             f"Force on training data - {species}",
         )
-    energy_plot("test.extxyz", "quip_test.extxyz", ax_list[2], "Energy on test data")
-    filter_outlier_energy("train.extxyz", "quip_train.extxyz", energy_limit)
-    filter_outlier_energy("test.extxyz", "quip_test.extxyz", energy_limit)
+    energy_plot(test_name, "quip_" + test_name, ax_list[2], "Energy on test data")
+    filter_outlier_energy(train_name, "quip_" + train_name, energy_limit)
+    filter_outlier_energy(test_name, "quip_" + test_name, energy_limit)
     # rmse_test =
     for species in species_list:
         force_plot(
-            "test.extxyz",
-            "quip_test.extxyz",
+            test_name,
+            "quip_" + test_name,
             ax_list[3],
             species,
             f"Force on test data - {species}",
         )
-        filter_outlier_forces("train.extxyz", "quip_train.extxyz", species, force_limit)
-        filter_outlier_forces("test.extxyz", "quip_test.extxyz", species, force_limit)
+        filter_outlier_forces(train_name, "quip_" + train_name, species, force_limit)
+        filter_outlier_forces(test_name, "quip_" + test_name, species, force_limit)
 
     energy_plot(
-        "filtered_in_energy.extxyz",
-        "filtered_out_energy.extxyz",
+        train_name.replace("train", "filtered_in_energy"),
+        train_name.replace("train", "filtered_out_energy"),
         ax_list[4],
         "Energy on filtered data",
         "energy-filtered data, energy",
     )
     for species in species_list:
         force_plot(
-            "filtered_in_energy.extxyz",
-            "filtered_out_energy.extxyz",
+            train_name.replace("train", "filtered_in_force"),
+            train_name.replace("train", "filtered_out_force"),
             ax_list[5],
             species,
             f"Force on filtered data - {species}",
             "energy-filtered data, force for ",
         )
     energy_plot(
-        "filtered_in_force.extxyz",
-        "filtered_out_force.extxyz",
+        train_name.replace("train", "filtered_in_energy"),
+        train_name.replace("train", "filtered_out_energy"),
         ax_list[4],
         "Energy on filtered data",
         "force-filtered data, energy",
     )
     for species in species_list:
         force_plot(
-            "filtered_in_force.extxyz",
-            "filtered_out_force.extxyz",
+            train_name.replace("train", "filtered_in_force"),
+            train_name.replace("train", "filtered_out_force"),
             ax_list[5],
             species,
             f"Force on filtered data - {species}",
@@ -723,8 +777,11 @@ def plot_energy_forces(
 
     fig.suptitle(title, fontsize=16)
 
-    plt.savefig("energy_forces.eps", format="eps")
-    plt.savefig("energy_forces.png")
+    plt.savefig(
+        train_name.replace("train", "energy_forces").replace(".extxyz", ".pdf"),
+        format="pdf",
+    )
+    plt.savefig(train_name.replace("train", "energy_forces").replace(".extxyz", ".png"))
     plt.show()
 
 
