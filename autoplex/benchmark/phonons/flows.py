@@ -62,11 +62,9 @@ class PhononBenchmarkMaker(Maker):
         benchmark_job = compute_bandstructure_benchmark_metrics(
             ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,
             dft_phonon_bs=dft_phonon_task_doc.phonon_bandstructure,
-            dft_imag_modes=dft_phonon_task_doc.has_imaginary_modes,
-            ml_imag_modes=ml_phonon_task_doc.has_imaginary_modes,
             structure=structure,
         )
         jobs.append(benchmark_job)
 
         # create a flow including all jobs
-        return Flow(jobs=jobs, output=benchmark_job.output, name=self.name)
+        return Flow(jobs, benchmark_job.output)

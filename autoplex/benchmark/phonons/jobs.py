@@ -17,9 +17,7 @@ def compute_bandstructure_benchmark_metrics(
     structure: Structure,
     ml_phonon_bs: PhononBandStructureSymmLine,
     dft_phonon_bs: PhononBandStructureSymmLine,
-    ml_imag_modes: bool,
-    dft_imag_modes: bool,
-):
+):  # TODO include which pot. method has been used (GAP, ACE, etc.)
     """
     Compute phonon band-structure benchmark metrics and generate associated plots.
 
@@ -28,13 +26,9 @@ def compute_bandstructure_benchmark_metrics(
     structure : .Structure
      A structure object.
     ml_phonon_bs: PhononBandStructureSymmLine.
-       ML generated pymatgen phonon band-structure object.
+       ML generated pymatgen phonon band-structure object
     dft_phonon_bs: PhononBandStructureSymmLine.
-       DFT generated pymatgen phonon band-structure object.
-    ml_imag_modes: bool
-        Whether the ML-based phonon band structure shows imaginary modes.
-    dft_imag_modes: bool
-        Whether the DFT-based phonon band structure shows imaginary modes.
+       DFT generated pymatgen phonon band-structure object
 
     Returns
     -------
@@ -45,104 +39,58 @@ def compute_bandstructure_benchmark_metrics(
     overall_rmse = get_rmse(ml_bs=ml_phonon_bs, dft_bs=dft_phonon_bs)
 
     # saves rmse k-dependent plot
-    file_name = f"{structure.composition.reduced_formula}_rmse_phonons.pdf"
+    file_name = f"{structure.composition.reduced_formula}_rmse_phonons.eps"
     _ = rmse_kdep_plot(
         ml_bs=ml_phonon_bs,
         dft_bs=dft_phonon_bs,
         which_k_path=2,
         file_name=file_name,
-        img_format="pdf",
+        img_format="eps",
     )
 
     # saves DFT and ML phonon band-structure overlay plot
-    file_name = f"{structure.composition.reduced_formula}_band_comparison.pdf"
+    file_name = f"{structure.composition.reduced_formula}_band_comparison.eps"
     _ = compare_plot(
         ml_bs=ml_phonon_bs,
         dft_bs=dft_phonon_bs,
         file_name=file_name,
     )
 
-    return Response(
-        output={
-            "benchmark_phonon_rmse": overall_rmse,
-            "dft_imaginary_modes": dft_imag_modes,
-            "ml_imaginary_modes": ml_imag_modes,
-        }
-    )  # TODO TaskDoc
+    return Response(output=overall_rmse)  # TODO TaskDoc
 
 
 @job
-def write_benchmark_metrics(
-    ml_models: list[str],
-    benchmark_structures: list[Structure],
-    benchmark_mp_ids: list[str],
-    metrics: list,
-    displacements: list[float],
-    hyper_list=None,
-):
+def write_benchmark_metrics(benchmark_structure: Structure, mp_id, rmse, displacements):
     """
     Generate a text file with evaluated benchmark metrics.
 
     Parameters
     ----------
-    benchmark_structures: List[Structure].
+    benchmark_structure: Structure.
         Structure used for benchmarking.
-    benchmark_mp_ids: List[str]
+    mp_id: str
         materials project ID corresponding to the structure
-    metrics: List[float]
+    rmse: List[float]
         root mean squared error between band structures
     displacements: List[float]
         Phonon displacement used for phonon computations
-    hyper_list:
-        List of tested atomwise regularization parameter and SOAP hyperparameters.
 
     Returns
     -------
     A text file with root mean squared error between DFT and ML potential phonon band-structure
     """
-    if hyper_list is None:
-        hyper_list = ["default"]
-    metrics_flattened = [item for sublist in metrics for item in sublist]
-    for ml_model in ml_models:
-        for benchmark_structure, mp_id in zip(benchmark_structures, benchmark_mp_ids):
-            structure_composition = benchmark_structure.composition.reduced_formula
-            with open(
-                f"results_{structure_composition}.txt",
-                "a",
-                encoding="utf-8",
-            ) as file:
-                file.write(
-                    "%-11s%-11s%-12s%-18s%-12s%-55s%-16s%-14s"
-                    % (
-                        "Potential",
-                        "Structure",
-                        "MPID",
-                        "Displacement (Å)",
-                        "RMSE (THz)",
-                        "Hyperparameters (atom-wise f, n_sparse, SOAP delta)",
-                        "imagmodes(pot)",
-                        "imagmodes(dft)",
-                    )
-                )
-            for displacement in displacements:
-                for metric, hyper in zip(metrics_flattened, hyper_list):
-                    with open(
-                        f"results_{structure_composition}.txt",
-                        "a",
-                        encoding="utf-8",
-                    ) as file:
-                        file.write(
-                            "\n%-11s%-11s%-12s%-18.2f%-12.5f%-55s%-16s%-5s"
-                            % (
-                                ml_model,
-                                structure_composition,
-                                mp_id,
-                                displacement,
-                                metric["benchmark_phonon_rmse"],
-                                str(hyper),
-                                str(metric["ml_imaginary_modes"]),
-                                str(metric["dft_imaginary_modes"]),
-                            )
-                        )
+    structure_composition = benchmark_structure.composition.reduced_formula
+    with open(
+        f"results_{structure_composition}.txt",
+        "a",
+        encoding="utf-8",
+    ) as file:
+        file.write(
+            f"Pot Structure mpid displacements RMS imagmodes(pot) imagmodes(dft) "
+            f"\nGAP {structure_composition} {mp_id} {displacements} {rmse}"
+        )
+        # TODO include which pot. method has been used (GAP, ACE, etc.)
+        # TODO has img modes + ' ' + ' ' + str(ml.has_imag_modes(0.1))
+        #  + ' ' + str(dft.has_imag_modes(0.1))
 
-    return Response(output=metrics)
+    return Response

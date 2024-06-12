@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
@@ -14,16 +14,14 @@ if TYPE_CHECKING:
 from jobflow import Flow, Maker
 
 from autoplex.auto.phonons.jobs import (
-    complete_benchmark,
+    MLPhononMaker,
     dft_phonopy_gen_data,
     dft_random_gen_data,
     get_iso_atom,
 )
+from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
-from autoplex.data.phonons.flows import (
-    TightDFTStaticMaker,
-    TightDFTStaticMakerBigSupercells,
-)
+from autoplex.data.phonons.flows import DFTPhononMaker, TightDFTStaticMaker
 from autoplex.fitting.common.flows import MLIPFitMaker
 
 __all__ = ["CompleteDFTvsMLBenchmarkWorkflow"]
@@ -113,22 +111,13 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Default=10.
     ml_models: list[str]
         list of the ML models to be used. Default is GAP.
-    mlip_hyper: dict
-        basic MLIP hyperparameters
-    HPloop: bool
-        making it easier to loop through several hyperparameter sets.
-    atomwise_regularization_list: list
-        List of atom-wise regularization parameters that are checked.
-    soap_delta_list: list
-        List of SOAP delta values that are checked.
-    n_sparse_list: list
-        List of GAP n_sparse values that are checked.
     """
 
     name: str = "add_data"
     add_dft_phonon_struct: bool = True
     add_dft_random_struct: bool = True
     add_rss_struct: bool = False
+
     phonon_displacement_maker: BaseVaspMaker = field(
         default_factory=TightDFTStaticMaker
     )
@@ -150,11 +139,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
-    mlip_hyper: dict | None = None
-    HPloop: bool = False
-    atomwise_regularization_list: list | None = None
-    soap_delta_list: list | None = None
-    n_sparse_list: list | None = None
 
     def make(
         self,
@@ -167,7 +151,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         atomwise_regularization_parameter: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
-        auto_delta: bool = False,
+        auto_delta: bool = True,
         dft_references: list[PhononBSDOSDoc] | None = None,
         benchmark_structures: list[Structure] | None = None,
         benchmark_mp_ids: list[str] | None = None,
@@ -209,8 +193,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         """
         flows = []
         fit_input = {}
-        hyper_list: list[dict[Any, Any]] = []
-        bm_outputs = []
+        collect = []
+
         for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
@@ -235,8 +219,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
-                if self.min_length >= 20:
-                    self.phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
                 addDFTphon = self.add_dft_phonons(
                     structure,
                     self.displacements,
@@ -260,9 +242,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             )
 
         for ml_model in self.ml_models:
-            add_data_fit = MLIPFitMaker(
-                mlip_type=ml_model, mlip_hyper=self.mlip_hyper
-            ).make(
+            add_data_fit = MLIPFitMaker(mlip_type=ml_model).make(
                 species_list=isoatoms.output["species"],
                 isolated_atoms_energy=isoatoms.output["energies"],
                 fit_input=fit_input,
@@ -277,121 +257,67 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 **fit_kwargs,
             )
             flows.append(add_data_fit)
-            if "regularization" in fit_kwargs and fit_kwargs["regularization"]:
-                hyper_list.append(
-                    {
-                        "f="
-                        + str(atomwise_regularization_parameter): "default with sigma"
-                    }
-                )
-            hyper_list.append(
-                {"f=" + str(atomwise_regularization_parameter): "default"}
-            )
-            if "separated" in fit_kwargs and fit_kwargs["separated"]:
-                hyper_list.append(
-                    {"f=" + str(atomwise_regularization_parameter): "default phonon"}
-                )
-                hyper_list.append(
-                    {"f=" + str(atomwise_regularization_parameter): "default randstruc"}
-                )
 
-            if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
-                for ibenchmark_structure, benchmark_structure in enumerate(
-                    benchmark_structures
-                ):
-                    complete_bm = complete_benchmark(
-                        ibenchmark_structure=ibenchmark_structure,
-                        benchmark_structure=benchmark_structure,
-                        min_length=self.min_length,
-                        ml_model=add_data_fit.output["mlip_path"],
-                        mp_ids=mp_ids,
-                        benchmark_mp_ids=benchmark_mp_ids,
-                        add_dft_phonon_struct=self.add_dft_phonon_struct,
-                        fit_input=fit_input,
-                        symprec=self.symprec,
-                        phonon_displacement_maker=self.phonon_displacement_maker,
-                        dft_references=dft_references,
+        bm_outputs = []
+
+        if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
+            for ibenchmark_structure, benchmark_structure in enumerate(
+                benchmark_structures
+            ):
+                add_data_ml_phonon = MLPhononMaker(
+                    min_length=self.min_length,
+                ).make_from_ml_model(
+                    structure=benchmark_structure,
+                    ml_model=add_data_fit.output["mlip_xml"],
+                )
+                flows.append(add_data_ml_phonon)
+
+                if dft_references is None and benchmark_mp_ids is not None:
+                    if (
+                        benchmark_mp_ids[ibenchmark_structure] in mp_ids
+                    ) and self.add_dft_phonon_struct:
+                        dft_references = fit_input[
+                            benchmark_mp_ids[ibenchmark_structure]
+                        ]["phonon_data"]["001"]
+                    elif (
+                        benchmark_mp_ids[ibenchmark_structure] not in mp_ids
+                    ) or (  # else?
+                        self.add_dft_phonon_struct is False
+                    ):
+                        dft_phonons = DFTPhononMaker(
+                            symprec=self.symprec,
+                            phonon_displacement_maker=self.phonon_displacement_maker,
+                            born_maker=None,
+                            min_length=self.min_length,
+                        ).make(structure=benchmark_structure)
+                        flows.append(dft_phonons)
+                        dft_references = dft_phonons.output
+
+                    add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                        structure=benchmark_structure,
+                        benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
+                        ml_phonon_task_doc=add_data_ml_phonon.output,
+                        dft_phonon_task_doc=dft_references,
                     )
-                    flows.append(complete_bm)
-                    bm_outputs.append(complete_bm.output)
+                else:
+                    add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                        structure=benchmark_structure,
+                        benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
+                        ml_phonon_task_doc=add_data_ml_phonon.output,
+                        dft_phonon_task_doc=dft_references[ibenchmark_structure],
+                    )
+                flows.append(add_data_bm)
+                collect.append(add_data_bm.output)
 
-            if self.HPloop:
-                if self.atomwise_regularization_list is None:
-                    self.atomwise_regularization_list = [0.1, 0.01, 0.001, 0.0001]
-                if self.soap_delta_list is None:
-                    self.soap_delta_list = [0.5, 1.0, 1.5]
-                if self.n_sparse_list is None:
-                    self.n_sparse_list = [
-                        1000,
-                        2000,
-                        3000,
-                        4000,
-                        5000,
-                        6000,
-                        7000,
-                        8000,
-                        9000,
-                    ]
-                for atomwise_regularization in self.atomwise_regularization_list:
-                    for n_sparse in self.n_sparse_list:
-                        for delta in self.soap_delta_list:
-                            soap_dict = {
-                                "n_sparse": n_sparse,
-                                "delta": delta,
-                            }
-                            loop_data_fit = MLIPFitMaker(
-                                mlip_type=ml_model, mlip_hyper=self.mlip_hyper
-                            ).make(
-                                species_list=isoatoms.output["species"],
-                                isolated_atoms_energy=isoatoms.output["energies"],
-                                fit_input=fit_input,
-                                split_ratio=split_ratio,
-                                f_max=f_max,
-                                pre_xyz_files=pre_xyz_files,
-                                pre_database_dir=pre_database_dir,
-                                atomwise_regularization_param=atomwise_regularization,
-                                f_min=f_min,
-                                atom_wise_regularization=atom_wise_regularization,
-                                auto_delta=auto_delta,
-                                soap=soap_dict,
-                            )
-                            flows.append(loop_data_fit)
-                            hyper_list.append(
-                                {"f=" + str(atomwise_regularization): soap_dict}
-                            )
-                            if (benchmark_structures is not None) and (
-                                benchmark_mp_ids is not None
-                            ):
-                                for (
-                                    ibenchmark_structure,
-                                    benchmark_structure,
-                                ) in enumerate(benchmark_structures):
-                                    complete_bm = complete_benchmark(
-                                        ibenchmark_structure=ibenchmark_structure,
-                                        benchmark_structure=benchmark_structure,
-                                        min_length=self.min_length,
-                                        ml_model=loop_data_fit.output["mlip_path"],
-                                        mp_ids=mp_ids,
-                                        benchmark_mp_ids=benchmark_mp_ids,
-                                        add_dft_phonon_struct=self.add_dft_phonon_struct,
-                                        fit_input=fit_input,
-                                        symprec=self.symprec,
-                                        phonon_displacement_maker=self.phonon_displacement_maker,
-                                        dft_references=dft_references,
-                                    )
-                                    flows.append(complete_bm)
-                                    bm_outputs.append(complete_bm.output)
-        collect_bm = write_benchmark_metrics(
-            ml_models=self.ml_models,
-            benchmark_structures=benchmark_structures,
-            benchmark_mp_ids=benchmark_mp_ids,
-            metrics=bm_outputs,
-            displacements=self.displacements,
-            hyper_list=hyper_list,
-        )
-        flows.append(collect_bm)
-
-        return Flow(jobs=flows, output=collect_bm, name=self.name)
+                collect_bm = write_benchmark_metrics(
+                    benchmark_structure=benchmark_structure,
+                    mp_id=benchmark_mp_ids[ibenchmark_structure],
+                    rmse=collect,
+                    displacements=self.displacements,
+                )
+                flows.append(collect_bm)
+                bm_outputs.append(collect_bm.output)
+        return Flow(flows, bm_outputs)
 
     def add_dft_phonons(
         self,
@@ -424,12 +350,11 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         )
 
         return Flow(
-            jobs=additonal_dft_phonon,  # flows
+            additonal_dft_phonon,  # flows
             output={
                 "phonon_dir": additonal_dft_phonon.output["dirs"],
                 "phonon_data": additonal_dft_phonon.output["data"],
             },
-            name=self.name,
         )
 
     def add_dft_random(
@@ -526,7 +451,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             min_distance=min_distance,
         )
         return Flow(
-            jobs=additonal_dft_random,
+            additonal_dft_random,
             output={"rand_struc_dir": additonal_dft_random.output},
-            name=self.name,
         )

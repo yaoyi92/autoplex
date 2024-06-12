@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
+from pymatgen.io.phonopy import get_ph_bs_symm_line
 
 
 def test_benchmark(test_dir, clean_dir):
@@ -31,12 +32,13 @@ def test_benchmark(test_dir, clean_dir):
 
     responses = run_locally(benchmark_flow, create_folders=False, ensure_success=True)
 
-    assert responses[benchmark_flow.output.uuid][1].output["benchmark_phonon_rmse"] == pytest.approx(0.0)
-    #0.5716963823412201, abs=0.02
+    assert responses[benchmark_flow.output.uuid][1].output == pytest.approx(
+        0.0  #0.5716963823412201, abs=0.02
+    )
 
     # get list of generated plot files
     test_files_dir = Path(test_dir / "benchmark").resolve()
-    path_to_plot_files = list(test_files_dir.glob("LiCl*.pdf"))
+    path_to_plot_files = list(test_files_dir.glob("LiCl*.eps"))
 
     # ensure two plots are generated
     assert len(path_to_plot_files) == 2

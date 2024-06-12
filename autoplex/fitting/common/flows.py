@@ -13,9 +13,10 @@ from jobflow import Flow, Maker, job
 from autoplex.fitting.common.jobs import machine_learning_fit
 from autoplex.fitting.common.regularization import set_sigma
 from autoplex.fitting.common.utils import (
+    data_distillation,
     get_list_of_vasp_calc_dirs,
+    stratified_dataset_split,
     vaspoutput_2_extended_xyz,
-    write_after_distillation_data_split,
 )
 
 __all__ = [
@@ -55,14 +56,13 @@ class MLIPFitMaker(Maker):
         isol_es: dict | None = None,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
-        regularization: bool = False,
-        separated: bool = False,
+        regularization: bool = True,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
         atomwise_regularization_param: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
-        auto_delta: bool = False,
+        auto_delta: bool = True,
         glue_xml: bool = False,
         num_processes: int = 32,
         **fit_kwargs,
@@ -104,7 +104,6 @@ class MLIPFitMaker(Maker):
         data_prep_job = DataPreprocessing(
             split_ratio=split_ratio,
             regularization=regularization,
-            separated=separated,
             distillation=True,
             f_max=f_max,
         ).make(
@@ -138,7 +137,7 @@ class MLIPFitMaker(Maker):
         jobs.append(mlip_fit_job)  # type: ignore
 
         # create a flow including all jobs
-        return Flow(jobs=jobs, output=mlip_fit_job.output, name=self.name)
+        return Flow(jobs, mlip_fit_job.output)
 
 
 @dataclass
@@ -155,8 +154,6 @@ class DataPreprocessing(Maker):
         A value of 0.1 means that the ratio of the training set to the test set is 9:1
     regularization: bool
         For using sigma regularization.
-    separated: bool
-        Repeat the fit for each data_type available in the (combined) database.
     distillation: bool
         For using distillation.
     f_max: float
@@ -167,7 +164,6 @@ class DataPreprocessing(Maker):
     name: str = "data_preprocessing_for_fitting"
     split_ratio: float = 0.5
     regularization: bool = False
-    separated: bool = False
     distillation: bool = False
     f_max: float = 40.0
 
@@ -244,12 +240,25 @@ class DataPreprocessing(Maker):
             atom_wise_regularization=atom_wise_regularization,
         )
 
-        write_after_distillation_data_split(
-            self.distillation, self.f_max, self.split_ratio
+        # reject structures with large force components
+        atoms = (
+            data_distillation("vasp_ref.extxyz", self.f_max)
+            if self.distillation
+            else ase.io.read("vasp_ref.extxyz", index=":")
         )
+
+        # split dataset into training and testing datasets with a ratio of 9:1
+        (train_structures, test_structures) = stratified_dataset_split(
+            atoms, self.split_ratio
+        )
+
+        ase.io.write("train.extxyz", train_structures, format="extxyz", append=True)
+        ase.io.write("test.extxyz", test_structures, format="extxyz", append=True)
 
         # Merging database
         if pre_database_dir and os.path.exists(pre_database_dir):
+            current_working_directory = os.getcwd()
+
             if len(pre_xyz_files) == 2:
                 files_new = ["train.extxyz", "test.extxyz"]
                 for file_name, file_new in zip(pre_xyz_files, files_new):
@@ -263,43 +272,13 @@ class DataPreprocessing(Maker):
                 raise ValueError(
                     "Please provide a train and a test extxyz file (two files in total) for the pre_xyz_files."
                 )
+
         if self.regularization:
             atoms = ase.io.read("train.extxyz", index=":")
-            ase.io.write("train_wo_sigma.extxyz", atoms, format="extxyz")
-            atoms_with_sigma = set_sigma(
+            atom_with_sigma = set_sigma(
                 atoms,
-                reg_minmax=[(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)],
+                etup=[(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)],
             )
-            ase.io.write("train.extxyz", atoms_with_sigma, format="extxyz")
-        if self.separated:
-            atoms_train = ase.io.read("train.extxyz", index=":")
-            atoms_test = ase.io.read("test.extxyz", index=":")
-            for dt in set(data_types):
-                data_type = dt.rstrip("_dir")
-                if data_type != "iso_atoms":
-                    for atoms in atoms_train + atoms_test:
-                        if atoms.info["data_type"] == "iso_atoms":
-                            ase.io.write(
-                                f"vasp_ref_{data_type}.extxyz",
-                                atoms,
-                                format="extxyz",
-                                append=True,
-                            )
-                        if atoms.info["data_type"] == data_type:
-                            ase.io.write(
-                                f"vasp_ref_{data_type}.extxyz",
-                                atoms,
-                                format="extxyz",
-                                append=True,
-                            )
-
-                    write_after_distillation_data_split(
-                        distillation=self.distillation,
-                        f_max=self.f_max,
-                        split_ratio=self.split_ratio,
-                        vasp_ref_name=f"vasp_ref_{data_type}.extxyz",
-                        train_name=f"train_{data_type}.extxyz",
-                        test_name=f"test_{data_type}.extxyz",
-                    )
+            ase.io.write("train_with_sigma.extxyz", atom_with_sigma, format="extxyz")
 
         return Path.cwd()

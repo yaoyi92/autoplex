@@ -6,6 +6,7 @@ from pymatgen.core.structure import Structure
 from autoplex.auto.phonons.jobs import (
     get_iso_atom,
     dft_phonopy_gen_data,
+    MLPhononMaker,
 )
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from autoplex.data.phonons.flows import TightDFTStaticMaker
@@ -13,6 +14,27 @@ from jobflow import run_locally
 
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
+
+
+def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
+    potential_file_dir = test_dir / "fitting" / "ref_files" / "gap_file.xml"
+    path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    gap_phonon_jobs = MLPhononMaker(min_length=20).make_from_ml_model(
+        structure=structure, ml_model=potential_file_dir,
+    )
+
+    responses = run_locally(
+        gap_phonon_jobs, create_folders=True, ensure_success=True, store=memory_jobstore
+    )
+
+    assert gap_phonon_jobs.name == "phonon"
+    assert responses[gap_phonon_jobs.output.uuid][1].replace[0].name == "MLFF.GAP relax"
+    assert responses[gap_phonon_jobs.output.uuid][1].replace[2].name == "MLFF.GAP static"
+
+    ml_phonon_bs_doc = responses[gap_phonon_jobs.output.uuid][1].output.resolve(store=memory_jobstore)
+    assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
 
 
 def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):

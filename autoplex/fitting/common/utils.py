@@ -33,7 +33,6 @@ from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
 from matgl.utils.training import PotentialLightningModule
 from nequip.ase import NequIPCalculator
-from numpy import ndarray
 from pymatgen.io.ase import AseAtomsAdaptor
 from pytorch_lightning.loggers import CSVLogger
 from scipy.spatial import ConvexHull
@@ -57,8 +56,6 @@ def gap_fitting(
     auto_delta: bool = True,
     glue_xml: bool = False,
     regularization: bool = True,
-    train_name: str = "train.extxyz",
-    test_name: str = "test.extxyz",
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
 ):
     """
@@ -96,20 +93,19 @@ def gap_fitting(
         A dictionary with train_error, test_error
 
     """
-    gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     mlip_path: Path = prepare_fit_environment(
-        db_dir, Path.cwd(), glue_xml, regularization, train_name, test_name
+        db_dir, Path.cwd(), glue_xml, regularization
     )
 
-    db_atoms = ase.io.read(os.path.join(db_dir, train_name), index=":")
-    train_data_path = os.path.join(db_dir, train_name)
-    test_data_path = os.path.join(db_dir, test_name)
+    db_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
+    train_data_path = os.path.join(
+        db_dir, "train_with_sigma.extxyz" if regularization else "train.extxyz"
+    )
+    test_data_path = os.path.join(db_dir, "test.extxyz")
 
     gap_default_hyperparameters = load_gap_hyperparameter_defaults(
         gap_fit_parameter_file_path=path_to_default_hyperparameters
     )
-
-    gap_default_hyperparameters["general"].update({"gp_file": gap_file_xml})
 
     for parameter in gap_default_hyperparameters:
         if fit_kwargs:
@@ -129,12 +125,12 @@ def gap_fitting(
         )
 
         run_gap(num_processes, fit_parameters_list)
-        run_quip(num_processes, train_data_path, gap_file_xml, "quip_" + train_name)
+        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_train.extxyz")
 
     if include_three_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
         if auto_delta:
-            delta_3b = energy_remain("quip_" + train_name)
+            delta_3b = energy_remain("quip_train.extxyz")
             delta_3b = delta_3b / num_triplet
             gap_default_hyperparameters["threeb"].update({"delta": delta_3b})
 
@@ -145,7 +141,7 @@ def gap_fitting(
         )
 
         run_gap(num_processes, fit_parameters_list)
-        run_quip(num_processes, train_data_path, gap_file_xml, "quip_" + train_name)
+        run_quip(num_processes, train_data_path, "gap_file.xml", "quip_train.extxyz")
 
     if glue_xml:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -162,14 +158,14 @@ def gap_fitting(
         run_quip(
             num_processes,
             train_data_path,
-            gap_file_xml,
-            "quip_" + train_name,
+            "gap_file.xml",
+            "quip_train.extxyz",
             glue_xml,
         )
 
     if include_soap:
         delta_soap = (
-            energy_remain("quip_" + train_name)
+            energy_remain("quip_train.extxyz")
             if include_two_body or include_three_body
             else 1
         )
@@ -188,18 +184,20 @@ def gap_fitting(
         run_quip(
             num_processes,
             train_data_path,
-            gap_file_xml,
-            "quip_" + train_name,
+            "gap_file.xml",
+            "quip_train.extxyz",
             glue_xml,
         )
 
     # Calculate training error
-    train_error = energy_remain("quip_" + train_name)
+    train_error = energy_remain("quip_train.extxyz")
     print("Training error of MLIP (eV/at.):", round(train_error, 7))
 
     # Calculate testing error
-    run_quip(num_processes, test_data_path, gap_file_xml, "quip_" + test_name, glue_xml)
-    test_error = energy_remain("quip_" + test_name)
+    run_quip(
+        num_processes, test_data_path, "gap_file.xml", "quip_test.extxyz", glue_xml
+    )
+    test_error = energy_remain("quip_test.extxyz")
     print("Testing error of MLIP (eV/at.):", round(test_error, 7))
 
     if not glue_xml:
@@ -208,15 +206,12 @@ def gap_fitting(
             energy_limit=0.005,
             force_limit=0.1,
             species_list=species_list,
-            train_name=train_name,
-            test_name=test_name,
         )
 
     return {
         "train_error": train_error,
         "test_error": test_error,
         "mlip_path": mlip_path,
-        "mlip_pot": mlip_path.joinpath(gap_file_xml),
     }
 
 
@@ -1202,7 +1197,7 @@ def vaspoutput_2_extended_xyz(
     ):
         # strip hostname if it exists in the path
         path_without_hostname = Path(strip_hostname(path)).joinpath("vasprun.xml.gz")
-        # read the vasp output
+        # read the outcar
         file = read(path_without_hostname, index=":")
         for i in file:
             virial_list = -voigt_6_to_full_3x3_stress(i.get_stress()) * i.get_volume()
@@ -1555,7 +1550,7 @@ def plot_convex_hull(all_points, hull_points):
     plt.show()
 
 
-def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]:
+def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, float]:
     """
     Calculate the delta parameter and average number of triplets for gap-fitting.
 
@@ -1726,12 +1721,7 @@ def run_mace(hypers: list):
 
 
 def prepare_fit_environment(
-    database_dir,
-    mlip_path,
-    glue_xml: bool,
-    regularization: bool,
-    train_name: str = "train.extxyz",
-    test_name: str = "test.extxyz",
+    database_dir, mlip_path, glue_xml: bool, regularization: bool
 ):
     """
     Prepare the environment for the fit.
@@ -1751,13 +1741,18 @@ def prepare_fit_environment(
     -------
     the MLIP path.
     """
+    if regularization:
+        shutil.copy(
+            os.path.join(database_dir, "train_with_sigma.extxyz"),
+            os.path.join(mlip_path, "train_with_sigma.extxyz"),
+        )
     shutil.copy(
-        os.path.join(database_dir, test_name),
-        os.path.join(mlip_path, test_name),
+        os.path.join(database_dir, "test.extxyz"),
+        os.path.join(mlip_path, "test.extxyz"),
     )
     shutil.copy(
-        os.path.join(database_dir, train_name),
-        os.path.join(mlip_path, train_name),
+        os.path.join(database_dir, "train.extxyz"),
+        os.path.join(mlip_path, "train.extxyz"),
     )
     if glue_xml:
         shutil.copy(
@@ -1792,34 +1787,3 @@ def convert_xyz_to_structure(atoms_list, include_forces=True, include_stresses=T
     print(f"Loaded {len(structures)} structures.")
 
     return structures, energies, forces, stresses
-
-
-def write_after_distillation_data_split(
-    distillation,
-    f_max,
-    split_ratio,
-    vasp_ref_name: str = "vasp_ref.extxyz",
-    train_name: str = "train.extxyz",
-    test_name: str = "test.extxyz",
-):
-    """
-    Write train.extxyz and test.extxyz after data distillation and split.
-
-    Parameters
-    ----------
-    distillation
-    f_max
-    split_ratio
-    """
-    # reject structures with large force components
-    atoms = (
-        data_distillation(vasp_ref_name, f_max)
-        if distillation
-        else ase.io.read(vasp_ref_name, index=":")
-    )
-
-    # split dataset into training and testing datasets
-    (train_structures, test_structures) = stratified_dataset_split(atoms, split_ratio)
-
-    ase.io.write(train_name, train_structures, format="extxyz", append=True)
-    ase.io.write(test_name, test_structures, format="extxyz", append=True)
