@@ -19,6 +19,11 @@ from ase.io import read, write
 from jobflow.core.job import job
 from phonopy.structure.cells import get_supercell
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
+from jobflow import job, Maker
+from dataclasses import dataclass, field
+from pymatgen.core.structure import Structure
+from pymatgen.io.ase import AseAtomsAdaptor
+import traceback
 
 from autoplex.data.common.utils import (
     mc_rattle,
@@ -26,6 +31,9 @@ from autoplex.data.common.utils import (
     scale_cell,
     std_rattle,
     to_ase_trajectory,
+    Species,
+    cur_select,
+    boltzhist_CUR,
 )
 
 
@@ -297,3 +305,149 @@ def generate_randomized_structures(
         raise TypeError("rattle_type is not recognized")
 
     return list(chain.from_iterable(rattled_cells))
+
+
+@dataclass
+class Sampling(Maker):
+
+    """
+    Maker to create random structures by 'buildcell'
+    
+    Parameters
+    ----------
+    name : str
+        Name of the flows produced by this maker.
+    SOAP descriptor:
+        {l_max, n_max, atom_sigma, cutoff, n_species, species_Z, cutoff_transition_width, average}
+    T: float
+        temperature / eV for boltzmann weighting
+    P: float 
+        list of pressures at which Atoms have been optimisied
+          - required for boltzhist_CUR
+    selection_method: str 
+        CUR - pure CUR
+        boltzhist_CUR - boltzmann flat histogram in enthalpy, then CUR
+    num_of_cur: int
+        pure cur selection number
+    num_of_bcur : int
+        flat boltzmann selection number
+    zeta: float
+        exponent for dot-product SOAP kernel
+    """
+    
+    name: str = "sampling"
+    selection_method: str = None,
+    num_of_selection : int = 5,
+    bcur_params: dict = field(default_factory=lambda: {
+                            'soap_paras': {
+                                'l_max': 8,
+                                'n_max': 8,
+                                'atom_sigma': 0.75,
+                                'cutoff': 5.5,
+                                'cutoff_transition_width': 1.0,
+                                'zeta': 4.0,
+                                'average': True,
+                                'species': True,
+                            },
+                            'kT': 0.3,
+                            'frac_of_bcur': 0.1,
+                            'bolt_max_num': 3000,
+                            'kernel_exp': 4.0,
+                            'energy_label': 'energy'
+                            })
+
+
+    @job
+    def make(self, dir=None, structure: list[Structure]=None, traj_info: list=None, isol_es=None):
+        
+        if dir is not None:
+            atoms = read(dir, index=':')
+
+        elif structure is not None:
+            atoms = [AseAtomsAdaptor().get_atoms(at) for at in structure]
+            
+        else:  
+            atoms = []
+            pressures = []
+            for traj in traj_info:
+                if traj is not None:
+                    print('traj:', traj)
+                    at = read(traj['traj_path'],index=':')
+                    atoms.extend(at)
+                    pressure = [traj['pressure']] * len(at)
+                    pressures.extend(pressure)
+
+        if self.selection_method == 'cur' or self.selection_method == 'boltzhist_CUR':
+
+            n_species = Species(atoms).get_number_of_species()
+            species_Z = Species(atoms).get_species_Z()
+
+            soap_paras = self.bcur_params['soap_paras']
+            descriptor = 'soap l_max=' + str(soap_paras['l_max']) + \
+                        ' n_max=' + str(soap_paras['n_max']) + \
+                        ' atom_sigma=' + str(soap_paras['atom_sigma']) + \
+                        ' cutoff=' + str(soap_paras['cutoff']) + \
+                        ' n_species=' + str(n_species) + \
+                        ' species_Z=' + species_Z + \
+                        ' cutoff_transition_width=' + str(soap_paras['cutoff_transition_width']) + \
+                        ' average =' + str(soap_paras['average'])
+
+            if self.selection_method == 'cur':
+        
+                selected_atoms = cur_select(atoms=atoms, 
+                                            selected_descriptor=descriptor,
+                                            kernel_exp=self.bcur_params['kernel_exp'], 
+                                            select_nums=self.num_of_selection, 
+                                            stochastic=True)
+
+                write('sample_cur.extxyz', selected_atoms, parallel=False)
+
+
+            elif self.selection_method == 'boltzhist_CUR':
+
+                isol_es = {int(k): v for k, v in isol_es.items()}
+
+                selected_atoms = boltzhist_CUR(atoms=atoms,
+                                            isol_es=isol_es,
+                                            bolt_frac=self.bcur_params['frac_of_bcur'], 
+                                            bolt_max_num=self.bcur_params['bolt_max_num'],
+                                            cur_num=self.num_of_selection, 
+                                            kernel_exp=self.bcur_params['kernel_exp'], 
+                                            kT=self.bcur_params['kT'], 
+                                            energy_label=self.bcur_params['energy_label'],
+                                            P=pressures,
+                                            descriptor=descriptor
+                                            )
+
+            selected_atoms = [AseAtomsAdaptor().get_structure(at) for at in selected_atoms]
+
+            return selected_atoms
+        
+        elif self.selection_method == 'random':
+            
+            structure = [AseAtomsAdaptor().get_structure(at) for at in atoms]
+
+            try: 
+                selection = np.random.choice(0, len(structure), self.num_of_selection)
+                selected_atoms = [at for i, at in enumerate(structure) if i in selection]
+    
+            except:
+                print('[log] The number of selected structures must be less than the total!')
+                traceback.print_exc()
+
+            return selected_atoms
+        
+        elif self.selection_method == 'uniform':
+
+            try: 
+                indices = np.linspace(0, len(atoms) - 1, self.num_of_selection, dtype=int)
+                structure = [AseAtomsAdaptor().get_structure(at) for at in atoms]
+                selected_atoms = [structure[idx] for idx in indices]
+
+            except:
+                print('[log] The number of selected structures must be less than the total!')
+                traceback.print_exc()
+
+            return selected_atoms
+        
+        

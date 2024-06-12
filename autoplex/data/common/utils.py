@@ -783,3 +783,85 @@ def plot_energy_forces(
     )
     plt.savefig(train_name.replace("train", "energy_forces").replace(".extxyz", ".png"))
     plt.show()
+
+
+class Species:
+    """
+    A class to handle different species operations for a collection of atoms.
+
+    The Species class provides methods to extract unique chemical elements (species),
+    determine all possible pairs of these species, and retrieve their atomic numbers
+    in a formatted string. 
+    
+    Methods:
+        get_species():
+            Extracts a list of unique species (chemical elements) from the atoms.
+
+        find_element_pairs(symb_list=None):
+            Generates a list of all possible unique pairs of species. It can operate
+            on an optional list of symbols or default to using the species extracted
+            from the atoms.
+
+        get_number_of_species():
+            Returns the number of unique species present among the atoms.
+
+        get_species_Z():
+            Returns a formatted string of atomic numbers of the unique species, enclosed in curly braces.
+    """
+
+    def __init__(self, atoms):
+        
+        self.atoms = atoms
+
+    def get_species(self):
+
+        sepcies_list = []
+
+        for at in self.atoms:
+            sym_all = at.get_chemical_symbols()
+            syms = list(set(sym_all))
+            for sym in syms:
+                if sym in sepcies_list: 
+                    continue
+                else: 
+                    sepcies_list.append(sym)
+
+        return sepcies_list
+
+
+    def find_element_pairs(self, symb_list = None):
+
+        if symb_list is None:
+            species_list = self.get_species()
+
+        else:
+            species_list = symb_list
+
+        pairs = []  
+
+        for i in range(len(species_list)):
+            for j in range(i, len(species_list)):
+                pair = (species_list[i], species_list[j])  
+                pairs.append(pair)  
+
+        return pairs
+    
+
+    def get_number_of_species(self):
+
+        return int(len(self.get_species()))
+    
+
+    def get_species_Z(self):
+    
+        atom_numbers = []
+        for atom_type in self.get_species():
+            atom = Atoms(atom_type, [(0, 0, 0)]) 
+            atom_numbers.append(int(atom.get_atomic_numbers()[0]))
+        
+        species_Z = '{'
+        for i in range(len(atom_numbers)-1):
+            species_Z += (str(atom_numbers[i]) + ' ')
+        species_Z += str(atom_numbers[-1]) + '}'
+        
+        return species_Z
