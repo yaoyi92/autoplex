@@ -79,14 +79,12 @@ def set_sigma(
             at.calc = None  # TODO side-effect alert
             del at.info["force_sigma"]
             del at.info["virial_sigma"]
-            atoms_modi.append(at)
             continue
 
         if at.info["config_type"] == "dimer":
             with suppress(Exception):
                 del at.info[virial_name]
 
-            atoms_modi.append(at)
             continue
 
     if scheme == "linear-hull":
