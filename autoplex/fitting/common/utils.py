@@ -1533,7 +1533,7 @@ def plot_convex_hull(all_points, hull_points):
     plt.ylabel("Energy")
     plt.title("Convex Hull with All Points")
     plt.legend()
-    plt.show()
+    plt.savefig("ConvexHull.png")
 
 
 def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]:

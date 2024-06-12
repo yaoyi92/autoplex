@@ -114,14 +114,12 @@ def plot_force_distribution(
         plt.title(f"Data for factor {cell_factor}")
 
         plt.savefig("Data_factor_" + str(cell_factor).replace(".", "") + ".png")
-        plt.show()
 
         plot_total += plot_data
     plt.hist(plot_total, bins=bins, edgecolor="black")
     plt.title("Data")
 
     plt.savefig("Total_data.png")
-    plt.show()
 
 
 @job

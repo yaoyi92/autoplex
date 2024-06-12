@@ -792,4 +792,3 @@ def plot_energy_forces(
         format="pdf",
     )
     plt.savefig(train_name.replace("train", "energy_forces").replace(".extxyz", ".png"))
-    plt.show()
