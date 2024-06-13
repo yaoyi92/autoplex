@@ -46,17 +46,6 @@ pip install atomate2[strict]
 pip install ase@git+https://gitlab.com/ase/ase.git@aae51d57721847624cea569f3a2d4bb6aa5032b4
 ```
 
-For data generation using Random Structure Search, autoplex uses the `buildcell` code, which is part of [AIRSS](https://airss-docs.github.io).  
-This can be installed using the following commands (requires gcc and gfortran >= 5.0.0)
-
-```bash
-curl -O https://www.mtg.msm.cam.ac.uk/system/files/documents/airss-0.9.1.tgz
-tar -xf airss-0.9.1.tgz
-rm airss-0.9.1.tgz
-cd airss-0.9.1
-make ; make install ; make neat
-```
-
 Additionally, to be able to fit and validate `ACEpotentials`, one also needs to install julia as autoplex relies on [ACEpotentials](https://acesuit.github.io/ACEpotentials.jl/dev/gettingstarted/installation/) which support fitting of linear ACE and currently no python package exists for the same.
 Please run following commands to enable ACEpotentials fitting and functionality.
 
