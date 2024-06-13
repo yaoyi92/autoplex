@@ -90,7 +90,7 @@ def write_benchmark_metrics(
     benchmark_structures: List[Structure].
         list of benchmark Structure used for benchmarking.
     benchmark_mp_ids: List[str]
-        lis of benchmark structure materials project ID.
+        list of benchmark structure materials project ID.
     metrics: List[float]
         root mean squared error between band structures, imagmodesdft-bool and imagmodesml-bool.
     displacements: List[float]
