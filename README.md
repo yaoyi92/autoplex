@@ -37,7 +37,7 @@ Please check out atomate2 for example code (https://github.com/materialsproject/
 # Installation
 autoplex relies on the atomate2 and ase frameworks.
 
-Developers installation: Navigate to autoplex and install it by `pip install -e .[docs,strict,dev] python==3.11`.
+Developers installation: Navigate to autoplex and install it by `pip install -e .[docs,strict,dev] python==3.10`.
 
 Alternatively, the dependencies atomate2 and ase can be installed individually via
 ```bash
