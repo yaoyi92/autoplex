@@ -2,6 +2,7 @@
 :caption: User Guide
 :hidden:
 user/index
+user/setup
 user/tutorials
 ```
 
@@ -26,7 +27,9 @@ about/contributing
 about/license
 ```
 
+![autoplex documentation](_static/autoplex_logo_tmp.png)
 # autoplex documentation
+
 
 **Date**: {sub-ref}`today`
 

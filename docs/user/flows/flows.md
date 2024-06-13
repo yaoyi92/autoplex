@@ -39,7 +39,7 @@ for mpbm in mpbenchmark:
     benchmark_structure_list.append(bm_structure)
 
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow().make(
-    structure_list=struc_list, mp_ids=mpids, 
+    structure_list=structure_list, mp_ids=mpids, 
     benchmark_structures=benchmark_structure_list, benchmark_mp_ids=mpbenchmark)
 
 autoplex_flow = Flow([complete_flow], name="tutorial", output=None, uuid=None, hosts=None)
