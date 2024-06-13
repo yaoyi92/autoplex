@@ -875,8 +875,27 @@ class Species:
         
         return species_Z
 
-def parallel_calc_descriptor_vec(atom, selected_descriptor):
 
+def parallel_calc_descriptor_vec(atom, selected_descriptor):
+    """
+    Calculate the SOAP descriptor vector for a given atom and hypers in parallel.
+
+    Parameters
+    ----------
+    atom : ase.Atoms
+        The atom for which to calculate the descriptor vector.
+    selected_descriptor : str
+        The quip descriptor string to use for the calculation.
+
+    Returns
+    -------
+    ase.Atom
+        The input atoms, with the descriptor vector added to its info dictionary.
+
+    Notes
+    -----
+    The descriptor vector is added to the atom's info dictionary with the key 'descriptor_vec'.
+    """
     desc_object = descriptors.Descriptor(selected_descriptor)
     atom.info["descriptor_vec"] = desc_object.calc(atom)['data']
 
@@ -884,17 +903,42 @@ def parallel_calc_descriptor_vec(atom, selected_descriptor):
 
 
 def cur_select(atoms, selected_descriptor, kernel_exp, select_nums, stochastic=True):
+    """
+    Perform CUR selection on a set of atoms to get representative SOAP descriptors.
 
+    Parameters
+    ----------
+    atoms : list of ase.Atoms
+        The atoms for which to perform CUR selection.
+    selected_descriptor : str
+        The quip descriptor string to use for the calculation.
+    kernel_exp : float
+        The kernel exponent to use in the calculation.
+    select_nums : int
+        The number of atoms to select.
+    stochastic : bool, optional
+        Whether to perform stochastic CUR selection. Default is True.
+
+    Returns
+    -------
+    list of ase.Atoms
+        The selected atoms.
+
+    Notes
+    -----
+    This function calculates the descriptor vector for each atom, then performs CUR selection on the resulting vectors.
+    """
     if isinstance(atoms[0], list):
         print('flattening')
         fatoms = flatten(atoms, recursive=True)
     else:
         fatoms = atoms
     
-    with Pool() as pool:
-        ats = pool.starmap(parallel_calc_descriptor_vec, [(atom, selected_descriptor) for atom in fatoms])
+    with Pool() as pool: # TODO: implement argument for number of cores throughout
+        ats = pool.starmap(parallel_calc_descriptor_vec, 
+                           [(atom, selected_descriptor) for atom in fatoms])
 
-    if isinstance(ats, list) & (len(ats) != 0):  #waiting until all soap vectors are calculated
+    if isinstance(ats, list) & (len(ats) != 0):  # wait until all soap vectors are calculated
 
         at_descs = np.array([at.info["descriptor_vec"] for at in ats]).T
         if kernel_exp > 0.0:
@@ -930,7 +974,29 @@ def cur_select(atoms, selected_descriptor, kernel_exp, select_nums, stochastic=T
     
         return selected_atoms
 
+
 def boltz(e, emin, kT):
+    """
+    Calculate the Boltzmann factor for a given energy.
+
+    Parameters
+    ----------
+    e : float
+        The energy for which to calculate the Boltzmann factor.
+    emin : float
+        The minimum energy to consider in the calculation.
+    kT : float
+        The product of the Boltzmann constant and the temperature.
+
+    Returns
+    -------
+    float
+        The calculated Boltzmann factor.
+
+    Notes
+    -----
+    The Boltzmann factor is calculated as exp(-(e - emin) / kT).
+    """
     return np.exp(-(e-emin)/(kT))
 
 
@@ -946,21 +1012,36 @@ def boltzhist_CUR(atoms,
                   descriptor=None
                   ):
 
-    '''
-    Select most diverse atoms from list based on chosen algorithm
-    Parameters:
-        atoms        :: list of ase.Atoms. Flattened if list of lists
-        bolt_frac    :: fraction to control flat boltzmann selection number
-        bolt_max_num :: max slected number by Boltzhistgram 
-        descriptor   :: quippy descriptor string for CUR
-        kernel_exp   :: exponent for dot-product SOAP kernel
-        kT           :: eV for boltzmann weighting, (Kb x T)
-        P            :: list of pressures at which Atoms have been optimisied, unit: GPa
-    
-    Returns:
-        list of (copies of) selected atoms
+    """
+    Sample atoms from a list according to boltzmann energy weighting and CUR diversity.
 
-    '''
+    Parameters
+    ----------
+    atoms : list of ase.Atoms
+        The atoms from which to select. If this is a list of lists, it is flattened.
+    bolt_frac : float
+        The fraction to control the flat Boltzmann selection number.
+    bolt_max_num : int
+        The maximum number of atoms to select by Boltzmann-weighted flat histogram.
+    descriptor : str
+        The quippy SOAP descriptor string for CUR.
+    kernel_exp : float
+        The exponent for the dot-product SOAP kernel.
+    kT : float
+        The product of the Boltzmann constant and the temperature, in eV.
+    P : list of float
+        The pressures at which the atoms have been optimized, in GPa.
+
+    Returns
+    -------
+    list of ase.Atoms
+        The selected atoms. These are copies of the atoms in the input list.
+
+    Notes
+    -----
+    This function selects the most diverse atoms based on the chosen algorithm. 
+    The algorithm uses a combination of CUR selection and Boltzmann weighting to select the atoms.
+    """
 
     if isinstance(atoms[0], list):
         print('flattening')
@@ -983,7 +1064,9 @@ def boltzhist_CUR(atoms,
     enthalpies = []
 
     at_ids = [atom.get_atomic_numbers() for atom in fatoms]
-    ener_relative = np.array([(atom.info['energy'] - sum([isol_es[j] for j in at_ids[ct]])) / len(atom) for ct, atom in enumerate(fatoms)])
+    ener_relative = np.array([(atom.info['energy'] - 
+                               sum([isol_es[j] for j in at_ids[ct]])) 
+                              / len(atom) for ct, atom in enumerate(fatoms)])
     for i, at in enumerate(fatoms):
         enthalpy = (ener_relative[i] + at.get_volume() * ps[i] * GPa) / len(at)
         enthalpies.append(enthalpy)
@@ -1035,7 +1118,7 @@ def boltzhist_CUR(atoms,
     else: 
         selected_atoms = selected_bolt_ats
 
-    ase.io.write('boltzhist_CUR.extxyz', selected_atoms, parallel=False)
+    ase.io.write('boltzhist_CUR.extxyz', selected_atoms, parallel=False) # TODO: should we be writing random files like this?
 
     return selected_atoms
 
@@ -1053,20 +1136,45 @@ def convexhull_CUR(atoms,
                    scheme='linear-hull',
                    ):
     
-    '''
-    Select most diverse atoms from list based on chosen algorithm
-    Parameters:
-        atoms        :: list of ase.Atoms. Flattened if list of lists
-        bolt_frac    :: fraction to control flat boltzmann selection number
-        bolt_max_num :: max slected number by Boltzhistgram 
-        descriptor   :: quippy descriptor string for CUR
-        kernel_exp   :: exponent for dot-product SOAP kernel
-        kT           :: eV for boltzmann weighting, (Kb x T)
-    
-    Returns:
-        list of (copies of) selected atoms
+    """
+    Sample atoms from a list according to Boltzmann energy weighting relative to convex hull and CUR diversity.
 
-    '''
+    Parameters
+    ----------
+    atoms : list of ase.Atoms
+        The atoms for which to perform CUR selection.
+    bolt_frac : float
+        The fraction to control the proportion of atoms kept during the Boltzmann selection step.
+    bolt_max_num : int
+        The maximum number of atoms to select by Boltzmann flat histogram.
+    cur_num : int
+        The number of atoms to select by CUR.
+    kernel_exp : float
+        The kernel exponent to use in the calculation.
+    kT : float
+        The product of the Boltzmann constant and the temperature, in eV.
+    energy_label : str
+        The label for the energy property in the atoms.
+    descriptor : str, optional
+        The quip descriptor string to use for the calculation.
+    isol_es : list of float, optional
+        The isolated atom energies for each element in the system.
+    element_order : list of str, optional
+        The order of elements for the isolated atom energies.
+    scheme : str, optional
+        The scheme to use for the convex hull calculation. Default is 'linear-hull' (2D E,V hull). 
+        For 2-component systems with varying stoichiometry, use 'volume-stoichiometry' (3D E,V,mole-fraction hull).
+        TODO: need to generalise this to ND hulls for mcp systems. GST good test case.
+
+    Returns
+    -------
+    list of ase.Atoms
+        The selected atoms.
+
+    Notes
+    -----
+    This function calculates the descriptor vector for each atom, then performs CUR selection on the resulting vectors. The selection is based on the convex hull of the vectors.
+    """
 
     if isinstance(atoms[0], list):
         print('flattening')
@@ -1075,9 +1183,8 @@ def convexhull_CUR(atoms,
         fatoms = atoms
 
     if isol_es == None:
-        raise KeyError('isol_es must be supplied for convexhull_CUR')
+        raise KeyError('isol_es (isolated_atom_energies) must be supplied for convexhull_CUR')
 
-    ## 
     if scheme == 'linear-hull':
         hull, p = get_convex_hull(atoms, energy_name=energy_label)
         des = np.array([get_e_distance_to_hull(hull, 
@@ -1100,6 +1207,9 @@ def convexhull_CUR(atoms,
                                     for at in atoms])
         print('it will be coming soon!')
 
+    else:
+        raise ValueError('scheme must be either "linear-hull" or "volume-stoichiometry"')
+    
     histo = np.histogram(des)
     config_prob = []
     min_ec = np.min(des)
