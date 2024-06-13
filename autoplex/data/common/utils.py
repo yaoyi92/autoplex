@@ -6,6 +6,9 @@ import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
+from scipy.sparse.linalg import LinearOperator, svds
+from quippy import descriptors
+from multiprocessing import Pool
 
 if TYPE_CHECKING:
     from pymatgen.core import Structure
@@ -16,9 +19,15 @@ from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase.io import Trajectory as AseTrajectory
 from ase.io import write
+from ase.units import GPa
 from hiphive.structure_generation import generate_mc_rattled_structures
 from pymatgen.io.ase import AseAtomsAdaptor
-
+from autoplex.fitting.common.regularization import (
+    label_stoichiometry_volume, calculate_hull_3D, 
+    get_e_distance_to_hull_3D, get_e_distance_to_hull, 
+    get_convex_hull,
+    )
+from autoplex.data.common import flatten
 
 def rms_dict(x_ref, x_pred) -> dict:
     """Compute RMSE and standard deviation of predictions with reference data.
@@ -865,3 +874,279 @@ class Species:
         species_Z += str(atom_numbers[-1]) + '}'
         
         return species_Z
+
+def parallel_calc_descriptor_vec(atom, selected_descriptor):
+
+    desc_object = descriptors.Descriptor(selected_descriptor)
+    atom.info["descriptor_vec"] = desc_object.calc(atom)['data']
+
+    return atom
+
+
+def cur_select(atoms, selected_descriptor, kernel_exp, select_nums, stochastic=True):
+
+    if isinstance(atoms[0], list):
+        print('flattening')
+        fatoms = flatten(atoms, recursive=True)
+    else:
+        fatoms = atoms
+    
+    with Pool() as pool:
+        ats = pool.starmap(parallel_calc_descriptor_vec, [(atom, selected_descriptor) for atom in fatoms])
+
+    if isinstance(ats, list) & (len(ats) != 0):  #waiting until all soap vectors are calculated
+
+        at_descs = np.array([at.info["descriptor_vec"] for at in ats]).T
+        if kernel_exp > 0.0:
+            m = np.matmul((np.squeeze(at_descs)).T,
+                        np.squeeze(at_descs)) ** kernel_exp
+        else:
+            m = at_descs
+
+        def descriptor_svd(at_descs, num, do_vectors='vh'):
+            def mv(v):
+                return np.dot(at_descs, v)
+
+            def rmv(v):
+                return np.dot(at_descs.T, v)
+
+            A = LinearOperator(at_descs.shape, matvec=mv,
+                            rmatvec=rmv, matmat=mv)
+            return svds(A, k=num, return_singular_vectors=do_vectors)
+
+        (_, _, vt) = descriptor_svd(
+            m, min(max(1, int(select_nums / 2)), min(m.shape) - 1))
+        c_scores = np.sum(vt ** 2, axis=0) / vt.shape[0]
+        if stochastic:
+            selected = sorted(np.random.choice(
+                range(len(ats)), size=select_nums, replace=False, p=c_scores))
+        else:
+            selected = sorted(np.argsort(c_scores)[-select_nums:])
+
+        selected_atoms = [ats[i] for i in selected]
+        
+        for at in selected_atoms:
+            del at.info["descriptor_vec"]
+    
+        return selected_atoms
+
+def boltz(e, emin, kT):
+    return np.exp(-(e-emin)/(kT))
+
+
+def boltzhist_CUR(atoms,
+                  isol_es=None,
+                  bolt_frac=0.1, 
+                  bolt_max_num=3000,
+                  cur_num=100, 
+                  kernel_exp=4, 
+                  kT=0.3, 
+                  energy_label='energy',
+                  P=None,
+                  descriptor=None
+                  ):
+
+    '''
+    Select most diverse atoms from list based on chosen algorithm
+    Parameters:
+        atoms        :: list of ase.Atoms. Flattened if list of lists
+        bolt_frac    :: fraction to control flat boltzmann selection number
+        bolt_max_num :: max slected number by Boltzhistgram 
+        descriptor   :: quippy descriptor string for CUR
+        kernel_exp   :: exponent for dot-product SOAP kernel
+        kT           :: eV for boltzmann weighting, (Kb x T)
+        P            :: list of pressures at which Atoms have been optimisied, unit: GPa
+    
+    Returns:
+        list of (copies of) selected atoms
+
+    '''
+
+    if isinstance(atoms[0], list):
+        print('flattening')
+        fatoms = flatten(atoms, recursive=True)
+    else:
+        fatoms = atoms
+
+    if P is None:
+        
+        print('[log] pressures not supplied, attempting to use pressure in atoms dict')
+
+        try:
+            ps = np.array([at.info['pressure'] for at in fatoms])
+        except:
+            raise RuntimeError('No pressures, so can\'t Boltzmann weight')
+    
+    else:
+        ps = P
+
+    enthalpies = []
+
+    at_ids = [atom.get_atomic_numbers() for atom in fatoms]
+    ener_relative = np.array([(atom.info['energy'] - sum([isol_es[j] for j in at_ids[ct]])) / len(atom) for ct, atom in enumerate(fatoms)])
+    for i, at in enumerate(fatoms):
+        enthalpy = (ener_relative[i] + at.get_volume() * ps[i] * GPa) / len(at)
+        enthalpies.append(enthalpy)
+   
+    enthalpies = np.array(enthalpies)
+    min_H = np.min(enthalpies)
+    config_prob = []
+    histo = np.histogram(enthalpies)
+    for H in enthalpies:
+        bin_i = np.searchsorted(histo[1][1:], H, side='right')
+        if bin_i == len(histo[1][1:]):
+            bin_i = bin_i - 1
+        if histo[0][bin_i] > 0.0:
+            p = 1.0 / histo[0][bin_i]
+        else:
+            p = 0.0
+        if kT > 0.0:
+            p *= np.exp(-(H - min_H) / kT)
+        config_prob.append(p)
+
+    select_num = round(bolt_frac * len(fatoms))
+
+    if select_num < bolt_max_num:
+        select_num = select_num
+    else:
+        select_num = bolt_max_num
+
+    config_prob = np.array(config_prob)
+    selected_bolt_ats = []
+    for _ in range(select_num):
+        config_prob /= np.sum(config_prob)
+        cumul_prob = np.cumsum(config_prob)  # cumulate prob
+        rv = np.random.uniform()
+        config_i = np.searchsorted(cumul_prob, rv)
+        selected_bolt_ats.append(fatoms[config_i])
+        # remove from config_prob by converting to list
+        config_prob = np.delete(config_prob, config_i)
+        # remove from other lists
+        del fatoms[config_i]
+        enthalpies = np.delete(enthalpies, config_i)
+
+    ## implement CUR
+    if cur_num < select_num:
+        selected_atoms = cur_select(atoms=selected_bolt_ats, 
+                                    selected_descriptor=descriptor,
+                                    kernel_exp=kernel_exp, 
+                                    select_nums=cur_num, 
+                                    stochastic=True)
+    else: 
+        selected_atoms = selected_bolt_ats
+
+    ase.io.write('boltzhist_CUR.extxyz', selected_atoms, parallel=False)
+
+    return selected_atoms
+
+
+def convexhull_CUR(atoms,
+                   bolt_frac=0.1,
+                   bolt_max_num=3000,
+                   cur_num=100,
+                   kernel_exp=4,
+                   kT=0.5,
+                   energy_label='REF_energy',
+                   descriptor=None,
+                   isol_es=None,
+                   element_order=None,
+                   scheme='linear-hull',
+                   ):
+    
+    '''
+    Select most diverse atoms from list based on chosen algorithm
+    Parameters:
+        atoms        :: list of ase.Atoms. Flattened if list of lists
+        bolt_frac    :: fraction to control flat boltzmann selection number
+        bolt_max_num :: max slected number by Boltzhistgram 
+        descriptor   :: quippy descriptor string for CUR
+        kernel_exp   :: exponent for dot-product SOAP kernel
+        kT           :: eV for boltzmann weighting, (Kb x T)
+    
+    Returns:
+        list of (copies of) selected atoms
+
+    '''
+
+    if isinstance(atoms[0], list):
+        print('flattening')
+        fatoms = flatten(atoms, recursive=True)
+    else:
+        fatoms = atoms
+
+    if isol_es == None:
+        raise KeyError('isol_es must be supplied for convexhull_CUR')
+
+    ## 
+    if scheme == 'linear-hull':
+        hull, p = get_convex_hull(atoms, energy_name=energy_label)
+        des = np.array([get_e_distance_to_hull(hull, 
+                                               at, 
+                                               energy_name=energy_label)
+                                               for at in atoms])
+
+    elif scheme == 'volume-stoichiometry':
+        points = label_stoichiometry_volume(atoms, 
+                                            isol_es=isol_es, 
+                                            e_name=energy_label, 
+                                            element_order=element_order)
+        hull = calculate_hull_3D(points)
+
+        des = np.array([get_e_distance_to_hull_3D(hull,
+                                    at,
+                                    isol_es=isol_es,
+                                    energy_name=energy_label,
+                                    element_order=element_order) 
+                                    for at in atoms])
+        print('it will be coming soon!')
+
+    histo = np.histogram(des)
+    config_prob = []
+    min_ec = np.min(des)
+
+    for ec in des:
+        bin_i = np.searchsorted(histo[1][1:], ec, side='right')
+        if bin_i == len(histo[1][1:]):
+            bin_i = bin_i - 1
+        if histo[0][bin_i] > 0.0:
+            p = 1.0 / histo[0][bin_i]
+        else:
+            p = 0.0
+        if kT > 0.0:
+            p *= np.exp(-(ec - min_ec) / kT)
+        config_prob.append(p)
+
+    select_num = round(bolt_frac * len(fatoms))
+
+    if select_num < bolt_max_num:
+        select_num = select_num
+    else:
+        select_num = bolt_max_num
+
+    config_prob = np.array(config_prob)
+    selected_bolt_ats = []
+    for _ in range(select_num):
+        config_prob /= np.sum(config_prob)
+        cumul_prob = np.cumsum(config_prob)  # cumulate prob
+        rv = np.random.uniform()
+        config_i = np.searchsorted(cumul_prob, rv)
+        selected_bolt_ats.append(fatoms[config_i])
+        # remove from config_prob by converting to list
+        config_prob = np.delete(config_prob, config_i)
+        # remove from other lists
+        del fatoms[config_i]
+        des = np.delete(des, config_i)
+
+    ## implement CUR
+    if cur_num < select_num:
+        selected_atoms = cur_select(atoms=selected_bolt_ats, 
+                                    selected_descriptor=descriptor,
+                                    kernel_exp=kernel_exp, 
+                                    select_nums=cur_num, 
+                                    stochastic=True)
+    else: 
+        selected_atoms = selected_bolt_ats
+
+    ase.io.write('boltzhist_CUR.extxyz', selected_atoms, parallel=False)
+
+    return selected_atoms
