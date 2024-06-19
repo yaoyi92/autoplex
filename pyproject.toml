@@ -25,10 +25,10 @@ classifiers = [
 requires-python = ">=3.9"
 dependencies = [
      #"pymatgen>=2023.9.10",
-     "atomate2[strict]@git+https://github.com/materialsproject/atomate2.git@c369c86b9ede4c25ac281536132753f11ce113d0",
+     "atomate2[strict]@git+https://github.com/materialsproject/atomate2.git@50ae3c05daa5d6e2deaeda4c37a4277e7b7ac4f5",
      #"FireWorks>=2.0.3",
      "ase==3.23.0",
-     "matgl==1.1.1",
+     "matgl==1.1.2",
      #"quippy-ase==0.9.14",
      "numpy",
      "typing",
@@ -59,7 +59,7 @@ docs = [
 
 strict = [
      #"pymatgen==2023.9.10",
-     "atomate2[strict]",
+     "atomate2[strict]@git+https://github.com/materialsproject/atomate2.git@50ae3c05daa5d6e2deaeda4c37a4277e7b7ac4f5",
      #"FireWorks==2.0.3",
      # last known working ASE version: https://gitlab.com/ase/ase@2bab58f4e
      #"ase@git+https://gitlab.com/ase/ase.git@2bab58f4e",
