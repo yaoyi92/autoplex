@@ -56,13 +56,13 @@ The workflow is easy to customize and every aspect of the workflow (data generat
 
 ## Output and results
 
-The default `autoplex` workflow provides you with diagnostic and benchmark output plots and results.
+The default `autoplex` workflow provides you with diagnostic and benchmark output plots and results. Please note that the current shown results are the autoplex unit test examples and have not been produced by the tutorial settings.
 
 After the MLIP fit is finished, `autoplex` outputs the training and the testing error of the current potential that is fitted.
 
 ```bash
 Training error of MLIP (eV/at.): 0.0049634
-Testing error of MLIP (eV/at.): 0.0023634
+Testing error of MLIP (eV/at.): 0.0023569
 ```
 
 "MLIP vs. DFT" plots for the energy and force values will be automatically saved which provides you with information about the quality of your fit.
