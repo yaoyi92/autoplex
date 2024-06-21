@@ -51,7 +51,7 @@ def machine_learning_fit(
         optional dictionary with parameters for gap fitting.
     mlip_type: str
         Choose one specific MLIP type:
-        'GAP' | 'ACE' | 'Nequip' | 'M3GNet' | 'MACE'
+        'GAP' | 'J-ACE' | 'P-ACE' | 'Nequip' | 'M3GNet' | 'MACE'
     mlip_hyper: dict
         basic MLIP hyperparameters
     regularization: bool
