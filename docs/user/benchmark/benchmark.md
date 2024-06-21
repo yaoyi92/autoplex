@@ -9,6 +9,11 @@ This tutorial will help you understand all the `autoplex` benchmark specificatio
 For the benchmark, you do not have to worry about a lot of settings. The crucial part here is the number of benchmark structures you are interested in.
 
 ```python
+from mp_api.client import MPRester
+from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
+from atomate2.common.schemas.phonons import PhononBSDOSDoc
+from monty.serialization import loadfn
+
 mpr = MPRester(api_key='YOUR_MP_API_KEY')
 structure_list = []
 benchmark_structure_list = []
