@@ -63,3 +63,34 @@ Pkg.add("ACEpotentials")
 Pkg.add("DataFrames")
 Pkg.add("CSV")
 ```
+
+# Workflow overview
+
+```mermaid
+flowchart TD
+    f831581e-1d20-4fa8-aa7d-773ae45a78aa(external) -->|output| 25f1b412-6e80-4ea0-a669-126b1d2eefdc(data_preprocessing_for_fitting)
+    f831581e-1d20-4fa8-aa7d-773ae45a78aa(external) -->|output| 75cee155-2708-4dcf-b8b3-d184d450ed4f(complete_benchmark)
+    e99258a7-6717-4cc9-b629-709bee881cfa(external) -->|'dirs', 'data'| 25f1b412-6e80-4ea0-a669-126b1d2eefdc(data_preprocessing_for_fitting)
+    e99258a7-6717-4cc9-b629-709bee881cfa(external) -->|'dirs', 'data'| 75cee155-2708-4dcf-b8b3-d184d450ed4f(complete_benchmark)
+    38349844-bee1-4869-839f-74ccd753524e(external) -->|'dirs'| 25f1b412-6e80-4ea0-a669-126b1d2eefdc(data_preprocessing_for_fitting)
+    38349844-bee1-4869-839f-74ccd753524e(external) -->|'energies', 'species'| 0a11a48c-3d9b-454a-9959-f7732967b49f(machine_learning_fit)
+    38349844-bee1-4869-839f-74ccd753524e(external) -->|'dirs'| 75cee155-2708-4dcf-b8b3-d184d450ed4f(complete_benchmark)
+    25f1b412-6e80-4ea0-a669-126b1d2eefdc(data_preprocessing_for_fitting) -->|output| 0a11a48c-3d9b-454a-9959-f7732967b49f(machine_learning_fit)
+    0a11a48c-3d9b-454a-9959-f7732967b49f(machine_learning_fit) -->|'mlip_path'| 75cee155-2708-4dcf-b8b3-d184d450ed4f(complete_benchmark)
+    75cee155-2708-4dcf-b8b3-d184d450ed4f(complete_benchmark) -->|output| d5b02fd6-806d-43f4-9f3f-d9de5f0f28e3(write_benchmark_metrics)
+    subgraph 2bc86ca5-f4bd-47dc-aa9d-45f72d0ab527 [add_data]
+        subgraph 821b6198-a8c5-45c5-939f-8ff0edd9f5b0 [add_data]
+            f831581e-1d20-4fa8-aa7d-773ae45a78aa(dft_random_gen_data)
+        end
+        subgraph 75368ebe-fe58-48a9-aeba-6e81ca9169d6 [add_data]
+            e99258a7-6717-4cc9-b629-709bee881cfa(dft_phonopy_gen_data)
+        end
+        38349844-bee1-4869-839f-74ccd753524e(get_iso_atom)
+        subgraph cdcce0a3-83fe-4590-993c-0b6e3ff5adcb [MLpotentialFit]
+            25f1b412-6e80-4ea0-a669-126b1d2eefdc(data_preprocessing_for_fitting)
+            0a11a48c-3d9b-454a-9959-f7732967b49f(machine_learning_fit)
+        end
+        75cee155-2708-4dcf-b8b3-d184d450ed4f(complete_benchmark)
+        d5b02fd6-806d-43f4-9f3f-d9de5f0f28e3(write_benchmark_metrics)
+    end
+```
