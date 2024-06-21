@@ -4,6 +4,8 @@
 
 This tutorial will show you how to control the MLIP fit settings with the `autoplex` workflow. The choice of the correct fit setup and hyperparameter settings has a significant influence on the final result.
 
+## General settings
+
 There are two categories of fit settings that you can change. The first type concerns the general fit setup, that will affect the fit regardless of the chosen MLIP method, and e.g. changes database specific settings (like the split-up into training and test data). The other type of settings influences the MLIP specific setup like e.g. the choice of hyperparameters.
 
 In case of the general settings, you can pass the MLIP model you want to use with the `ml_models` parameter and set the basic hyperparameters using `mlip_hyper`.
@@ -199,8 +201,8 @@ fit_input_dict = {
     
     
 mlip_fit = MLIPFitMaker(mlip_type="GAP", mlip_hyper= {...}).make(
-        species_list=["Si"],
-        isolated_atoms_energy=[-0.30],
+        species_list=["Li", "Cl"],
+        isolated_atoms_energy=[-0.28649227, -0.25638457],
         fit_input=fit_input_dict,
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir="/path/to/pre_database",
