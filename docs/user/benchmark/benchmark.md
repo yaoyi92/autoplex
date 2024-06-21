@@ -34,14 +34,14 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow().make(
     dft_references=[dft_reference])
 ```
 In case you have pre-existing DFT calculations, you can pass them as a list via the `dft_references` parameters. Make sure, it is the same order as in the benchmark MP-IDs and structures.
-Without any DFT reference calculations given, `autoplex` will automatically execute the VASP calculations. A mix of pre-existing and missing DFT references is not supported.
+It is important to provide the pre-existing DFT data in form of a `PhononBSDOSDoc` task document object (from `atomate2`). Without any DFT reference calculations given, `autoplex` will automatically execute the VASP calculations. A mix of pre-existing and missing DFT references is not supported.
 
 ## Error metrics
 `autoplex` automatically provides you with a phonon bandstructure comparison plot, a q-point wise RMSE plot and an overall RMSE value (`results_XY.txt` file). For examples see [here](../flows/flows.md#output-and-results).
 
 ## Run a benchmark with a pre-existing DFT calculation and GAP potential
 
-If you want to run or repeat the benchmark with your pre-existing DFT calculation and your pre-existing GAP potential, you can use the following Python script as atemplate.
+If you want to run or repeat the benchmark with your pre-existing DFT calculation and your pre-existing GAP potential, you can use the following Python script as a template.
 It is important to provide the pre-existing DFT data in form of a `PhononBSDOSDoc` task document object (from `atomate2`).
 
 ```python
