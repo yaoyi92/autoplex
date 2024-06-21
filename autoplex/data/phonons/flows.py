@@ -242,6 +242,8 @@ class DFTPhononMaker(PhononMaker):
     prefer_90_degrees: bool = True
     get_supercell_size_kwargs: dict = field(default_factory=lambda: {"max_atoms": 1500})
     use_symmetrized_structure: str | None = None
+    create_thermal_displacements: bool = False
+    store_force_constants: bool = False
     generate_frequencies_eigenvectors_kwargs: dict = field(
         default_factory=lambda: {"tol_imaginary_modes": 1e-1}
     )
