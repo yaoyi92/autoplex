@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-
 from jobflow import job
-
+from ase.io import read, write
 from autoplex.fitting.common.utils import (
     ace_fitting,
     check_convergence,
@@ -12,7 +11,12 @@ from autoplex.fitting.common.utils import (
     m3gnet_fitting,
     mace_fitting,
     nequip_fitting,
+    stratified_dataset_split,
+    data_distillation,
 )
+from autoplex.fitting.common.regularization import set_sigma
+import shutil
+import os
 
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
@@ -76,61 +80,66 @@ def machine_learning_fit(
         "test_rand_struc.extxyz",
     ]
 
-    if mlip_hyper is None:
-        if mlip_type == "GAP":
-            mlip_hyper = {"two_body": True, "three_body": False, "soap": True}
+    if mlip_type == "GAP":
+        defult_mlip_hyper = {"two_body": True, "three_body": False, "soap": True}
 
-        elif mlip_type == "J-ACE":
-            mlip_hyper = {"order": 3, "totaldegree": 6, "cutoff": 2.0, "solver": "BLR"}
+    elif mlip_type == "J-ACE":
+        defult_mlip_hyper = {"order": 3, "totaldegree": 6, "cutoff": 2.0, "solver": "BLR"}
 
-        elif mlip_type == "NEQUIP":
-            mlip_hyper = {
-                "r_max": 4.0,
-                "num_layers": 4,
-                "l_max": 2,
-                "num_features": 32,
-                "num_basis": 8,
-                "invariant_layers": 2,
-                "invariant_neurons": 64,
-                "batch_size": 5,
-                "learning_rate": 0.005,
-                "max_epochs": 10000,
-                "default_dtype": "float32",
-                "device": "cuda",
-            }
+    elif mlip_type == "NEQUIP":
+        defult_mlip_hyper = {
+            "r_max": 4.0,
+            "num_layers": 4,
+            "l_max": 2,
+            "num_features": 32,
+            "num_basis": 8,
+            "invariant_layers": 2,
+            "invariant_neurons": 64,
+            "batch_size": 5,
+            "learning_rate": 0.005,
+            "max_epochs": 10000,
+            "default_dtype": "float32",
+            "device": "cuda",
+        }
 
-        elif mlip_type == "M3GNET":
-            mlip_hyper = {
-                "exp_name": "training",
-                "results_dir": "m3gnet_results",
-                "cutoff": 5.0,
-                "threebody_cutoff": 4.0,
-                "batch_size": 10,
-                "max_epochs": 1000,
-                "include_stresses": True,
-                "hidden_dim": 128,
-                "num_units": 128,
-                "max_l": 4,
-                "max_n": 4,
-                "device": "cuda",
-                "test_equal_to_val": True,
-            }
+    elif mlip_type == "M3GNET":
+        defult_mlip_hyper = {
+            "exp_name": "training",
+            "results_dir": "m3gnet_results",
+            "cutoff": 5.0,
+            "threebody_cutoff": 4.0,
+            "batch_size": 10,
+            "max_epochs": 1000,
+            "include_stresses": True,
+            "hidden_dim": 128,
+            "num_units": 128,
+            "max_l": 4,
+            "max_n": 4,
+            "device": "cuda",
+            "test_equal_to_val": True,
+        }
 
-        else:
-            mlip_hyper = {
-                "model": "MACE",
-                "config_type_weights": '{"Default":1.0}',
-                "hidden_irreps": "128x0e + 128x1o",
-                "r_max": 5.0,
-                "batch_size": 10,
-                "max_num_epochs": 1500,
-                "start_swa": 1200,
-                "ema_decay": 0.99,
-                "correlation": 3,
-                "loss": "huber",
-                "default_dtype": "float32",
-                "device": "cuda",
-            }
+    else:
+        defult_mlip_hyper = {
+            "model": "MACE",
+            "config_type_weights": '{"Default":1.0}',
+            "hidden_irreps": "128x0e + 128x1o",
+            "r_max": 5.0,
+            "batch_size": 10,
+            "max_num_epochs": 1500,
+            "start_swa": 1200,
+            "ema_decay": 0.99,
+            "correlation": 3,
+            "loss": "huber",
+            "default_dtype": "float32",
+            "device": "cuda",
+        }
+
+    if mlip_hyper is not None:
+
+        defult_mlip_hyper.update(mlip_hyper)
+
+    mlip_hyper = defult_mlip_hyper
 
     if mlip_type == "GAP":
         for train_name, test_name in zip(train_files, test_files):
@@ -162,6 +171,7 @@ def machine_learning_fit(
             solver=mlip_hyper["solver"],
             isol_es=isol_es,
             num_processes=num_processes,
+            fit_kwargs=kwargs,
         )
 
     elif mlip_type == "NEQUIP":
@@ -225,3 +235,44 @@ def machine_learning_fit(
         "test_error": train_test_error["test_error"],
         "convergence": check_conv,
     }
+
+
+@job
+def data_preprocessing(split_ratio: float = 0.5,
+                       regularization: bool = False,
+                       distillation: bool = False,
+                       f_max: float = 40.0,
+                       vasp_ref_dir: str = None,
+                       pre_database_dir: str = None):
+
+    # reject strucutres with large force components
+    if distillation:
+        atoms = data_distillation(vasp_ref_dir, f_max)
+    else:
+        atoms = read(vasp_ref_dir, index=':')
+
+    # split dataset into training and testing datasets with a ratio of 9:1
+    train_structures, test_structures = stratified_dataset_split(atoms, split_ratio)
+
+    # Merging database
+    if pre_database_dir and os.path.exists(pre_database_dir):
+        files_to_copy = ['train.extxyz', 'test.extxyz']
+        current_working_directory = os.getcwd()
+
+        for file_name in files_to_copy:
+            source_file_path = os.path.join(pre_database_dir, file_name)
+            destination_file_path = os.path.join(current_working_directory, file_name)
+            shutil.copy(source_file_path, destination_file_path)
+            print(f"File {file_name} has been copied to {destination_file_path}")
+
+    write('train.extxyz', train_structures, format='extxyz', append=True)
+    write('test.extxyz', test_structures, format='extxyz', append=True)
+
+    if regularization:
+        atoms = read('train.extxyz', index=':')
+        atom_with_sigma = set_sigma(atoms, etup = [(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)])
+        write('train_with_sigma.extxyz',atom_with_sigma,format='extxyz')
+
+    database_path = Path.cwd()
+
+    return database_path

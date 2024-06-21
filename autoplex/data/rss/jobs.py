@@ -9,6 +9,9 @@ from subprocess import run
 import numpy as np
 from pathlib import Path
 from ase.data import atomic_numbers, covalent_radii
+from typing import List, Optional, Dict, Tuple
+from pymatgen.core import Structure
+from autoplex.data.rss.utils import minimize_structures
 
 
 @dataclass
@@ -225,3 +228,95 @@ class RandomizedStructure(Maker):
             os.remove(tmp_file_name)
 
         return atom
+    
+
+@job
+def do_rss(mlip_type: Optional[str] = None,
+           iteration_index: Optional[str] = None,
+           mlip_path: Optional[str] = None,
+           structure: Optional[List[Structure]] = None,
+           scalar_pressure_method: str = 'exp',
+           scalar_exp_pressure: float = 100,
+           scalar_pressure_exponential_width: float = 0.2,
+           scalar_pressure_low: float = 0,
+           scalar_pressure_high: float = 50,
+           max_steps: int = 1000,
+           force_tol: float = 0.01,
+           stress_tol: float = 0.01,
+           Hookean_repul: bool = False,
+           hookean_paras: Optional[Dict[Tuple[int, int], Tuple[float, float]]] = None,
+           write_traj: bool = True,
+           num_processes: int = 1,
+           device: str = "cpu",
+           isol_es: Optional[Dict[int, float]] = None) -> dict:
+
+    """
+    Perform sandom structure searching (RSS) using a MLIP.
+
+    Parameters
+    ----------
+    mlip_type : str, mandatory
+        Choose one specific MLIP type: 
+        'GAP' | 'ACE' | 'NequIP' | 'M3GNet' | 'MACE'.
+    iteration_index : str, mandatory
+        Index for the current iteration.
+    mlip_path : str, mandatory
+        Path to the MLIP model.
+    structure : list of Structure, mandatory
+        List of structures to be relaxed.
+    scalar_pressure_method : str, optional
+        Method for scalar pressure. Default is 'exp'.
+    scalar_exp_pressure : float, optional
+        Scalar exponential pressure. Default is 100.
+    scalar_pressure_exponential_width : float, optional
+        Width for scalar pressure exponential. Default is 0.2.
+    scalar_pressure_low : float, optional
+        Low limit for scalar pressure. Default is 0.
+    scalar_pressure_high : float, optional
+        High limit for scalar pressure. Default is 50.
+    max_steps : int, optional
+        Maximum number of steps for relaxation. Default is 1000.
+    force_tol : float, optional
+        Force tolerance for relaxation. Default is 0.01.
+    stress_tol : float, optional
+        Stress tolerance for relaxation. Default is 0.01.
+    Hookean_repul : bool, optional
+        Whether to apply Hookean repulsion. Default is False.
+    hookean_paras : dict, optional
+        Parameters for Hookean repulsion as a dictionary of tuples. Default is None.
+    write_traj : bool, optional
+        Whether to write trajectory. Default is True.
+    num_processes: int, optional
+        Number of processes used for running RSS.
+    device: str, optional
+        specify device to use cuda or cpu.
+    
+    Returns
+    -------
+    dict
+        Output dictionary containing the results of the RSS relaxation.
+    """
+    
+    output = minimize_structures(
+        mlip_path=mlip_path,
+        index=iteration_index,
+        input_structure=structure,
+        output_file_name='RSS_relax_results',
+        mlip_type=mlip_type,
+        scalar_pressure_method=scalar_pressure_method,
+        scalar_exp_pressure=scalar_exp_pressure,
+        scalar_pressure_exponential_width=scalar_pressure_exponential_width,
+        scalar_pressure_low=scalar_pressure_low,
+        scalar_pressure_high=scalar_pressure_high,
+        max_steps=max_steps,
+        force_tol=force_tol,
+        stress_tol=stress_tol,
+        Hookean_repul=Hookean_repul, 
+        hookean_paras=hookean_paras, 
+        write_traj=write_traj,
+        num_processes=num_processes,
+        device=device,
+        isol_es=isol_es,
+    )
+    
+    return output

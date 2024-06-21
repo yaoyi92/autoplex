@@ -27,7 +27,38 @@ from autoplex.fitting.common.regularization import (
     get_e_distance_to_hull_3D, get_e_distance_to_hull, 
     get_convex_hull,
     )
-from autoplex.data.common import flatten
+from collections.abc import Iterable
+
+
+def flatten(atoms_object, recursive=False):
+    """
+    Flatten an iterable fully, but excluding Atoms objects.
+
+    Parameters
+    ----------
+    atoms_object: Atoms object
+    recursive: bool
+        set the recursive boolean.
+
+    Returns
+    -------
+    a flattened object, excluding the Atoms objects.
+
+    """
+    iteration_list = []
+
+    if recursive:
+        for element in atoms_object:
+            if isinstance(element, Iterable) and not isinstance(
+                element, (str, bytes, ase.atoms.Atoms, ase.Atoms)
+            ):
+                iteration_list.extend(flatten(element, recursive=True))
+            else:
+                iteration_list.append(element)
+        return iteration_list
+
+    return [item for sublist in atoms_object for item in sublist]
+
 
 def rms_dict(x_ref, x_pred) -> dict:
     """Compute RMSE and standard deviation of predictions with reference data.
@@ -1118,8 +1149,6 @@ def boltzhist_CUR(atoms,
     else: 
         selected_atoms = selected_bolt_ats
 
-    ase.io.write('boltzhist_CUR.extxyz', selected_atoms, parallel=False) # TODO: should we be writing random files like this?
-
     return selected_atoms
 
 
@@ -1256,7 +1285,5 @@ def convexhull_CUR(atoms,
                                     stochastic=True)
     else: 
         selected_atoms = selected_bolt_ats
-
-    ase.io.write('boltzhist_CUR.extxyz', selected_atoms, parallel=False)
 
     return selected_atoms

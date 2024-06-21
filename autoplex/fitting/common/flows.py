@@ -46,24 +46,25 @@ class MLIPFitMaker(Maker):
     name: str = "MLpotentialFit"
     mlip_type: str = "GAP"
     mlip_hyper: dict | None = None
+    data_preprocessing: bool = True
 
+    ## TO DO: Combine parameters used only for gap into one category (as noted below), otherwise it will be too specific.
     def make(
         self,
         fit_input: dict,
-        species_list: list | None = None,
-        isolated_atoms_energy: list | None = None,
-        isol_es: dict | None = None,
+        species_list: list | None = None,    # This is only used for GAP.
+        isol_es: dict | None = None,        
         split_ratio: float = 0.4,
         f_max: float = 40.0,
-        regularization: bool = False,
-        separated: bool = False,
-        pre_xyz_files: list[str] | None = None,
+        regularization: bool = False,        # This is only used for GAP.
+        separated: bool = False,             
+        pre_xyz_files: list[str] | None = None, 
         pre_database_dir: str | None = None,
-        atomwise_regularization_param: float = 0.1,
+        atomwise_regularization_param: float = 0.1,   # This is only used for GAP.
         f_min: float = 0.01,  # unit: eV Å-1
-        atom_wise_regularization: bool = True,
-        auto_delta: bool = False,
-        glue_xml: bool = False,
+        atom_wise_regularization: bool = True,    # This is only used for GAP.
+        auto_delta: bool = False,    # This is only used for GAP.
+        glue_xml: bool = False,    # This is only used for GAP.
         num_processes: int = 32,
         **fit_kwargs,
     ):

@@ -10,7 +10,6 @@ import shutil
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
-from collections.abc import Iterable
 from functools import partial
 from itertools import combinations
 from pathlib import Path
@@ -1304,36 +1303,6 @@ class Species:
         return species_Z
 
 
-def flatten(atoms_object, recursive=False):
-    """
-    Flatten an iterable fully, but excluding Atoms objects.
-
-    Parameters
-    ----------
-    atoms_object: Atoms object
-    recursive: bool
-        set the recursive boolean.
-
-    Returns
-    -------
-    a flattened object, excluding the Atoms objects.
-
-    """
-    iteration_list = []
-
-    if recursive:
-        for element in atoms_object:
-            if isinstance(element, Iterable) and not isinstance(
-                element, (str, bytes, ase.atoms.Atoms, ase.Atoms)
-            ):
-                iteration_list.extend(flatten(element, recursive=True))
-            else:
-                iteration_list.append(element)
-        return iteration_list
-
-    return [item for sublist in atoms_object for item in sublist]
-
-
 def gcm3_to_Vm(gcm3, mr, n_atoms=1):
     """
     Convert gcm3 to Vm.
@@ -1823,3 +1792,5 @@ def write_after_distillation_data_split(
 
     ase.io.write(train_name, train_structures, format="extxyz", append=True)
     ase.io.write(test_name, test_structures, format="extxyz", append=True)
+
+
