@@ -16,10 +16,10 @@ from itertools import combinations
 from pathlib import Path
 
 import ase
+import lightning as pl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pytorch_lightning as pl
 import torch
 from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
@@ -261,7 +261,7 @@ def ace_fitting(
 
     Raises
     ------
-    - ValueError: If the `isol_es` dictionary is empty or not provided when required.
+    - ValueError: If the `isolated_atoms_energies` dictionary is empty or not provided when required.
 
     Example:
     >>> result = ace_fitting('/path/to/data', order=2, totaldegree=12, cutoff=6.0, solver='BLR', num_processes=4)
@@ -270,21 +270,30 @@ def ace_fitting(
     train_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     source_file_path = os.path.join(db_dir, "test.extxyz")
     shutil.copy(source_file_path, ".")
-    isol_es_update = {}
+    isolated_atoms_energies_update = {}
 
     if isolated_atoms_energies:
         for e_num, e_energy in isolated_atoms_energies.items():
-            isol_es_update[chemical_symbols[int(e_num)]] = e_energy
+            isolated_atoms_energies_update[chemical_symbols[int(e_num)]] = e_energy
     else:
         raise ValueError("isolated_atoms_energies parameter is empty or not defined!")
 
-    formatted_isol_es = (
+    formatted_isolated_atoms_energies = (
         "["
-        + ", ".join([f":{key} => {value}" for key, value in isol_es_update.items()])
+        + ", ".join(
+            [
+                f":{key} => {value}"
+                for key, value in isolated_atoms_energies_update.items()
+            ]
+        )
         + "]"
     )
     formatted_species = (
-        "[" + ", ".join([f":{key}" for key, value in isol_es_update.items()]) + "]"
+        "["
+        + ", ".join(
+            [f":{key}" for key, value in isolated_atoms_energies_update.items()]
+        )
+        + "]"
     )
 
     train_ace = [
@@ -309,7 +318,7 @@ model = acemodel(elements={formatted_species},
                 order={order},
                 totaldegree={totaldegree},
                 rcut={cutoff},
-                Eref={formatted_isol_es})
+                Eref={formatted_isolated_atoms_energies})
 
 weights = Dict(
             "crystal" => Dict("E" => 30.0, "F" => 1.0 , "V" => 1.0 ),
@@ -423,7 +432,7 @@ def nequip_fitting(
 
     Raises
     ------
-    - ValueError: If the `isol_es` dictionary is empty or not provided when required.
+    - ValueError: If the `isolated_atoms_energies` dictionary is empty or not provided when required.
     """
     train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     train_nequip = [
@@ -443,7 +452,7 @@ def nequip_fitting(
             isolated_atoms_energies_update += element_symbol
             ele_syms.append(chemical_symbols[int(e_num)])
     else:
-        raise ValueError("isol_es is empty or not defined!")
+        raise ValueError("isolated_atoms_energies is empty or not defined!")
 
     nequip_text = f"""root: results
 run_name: autoplex
@@ -1556,7 +1565,7 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]
 
     """
     at_ids = [atom.get_atomic_numbers() for atom in atoms_db]
-    isol_es = {
+    isolated_atoms_energies = {
         atom.get_atomic_numbers()[0]: atom.info[e_name]
         for atom in atoms_db
         if "config_type" in atom.info and "IsolatedAtom" in atom.info["config_type"]
@@ -1564,7 +1573,8 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]
 
     es_visol = np.array(
         [
-            (atom.info[e_name] - sum([isol_es[j] for j in at_ids[ct]])) / len(atom)
+            (atom.info[e_name] - sum([isolated_atoms_energies[j] for j in at_ids[ct]]))
+            / len(atom)
             for ct, atom in enumerate(atoms_db)
         ]
     )

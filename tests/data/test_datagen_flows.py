@@ -287,7 +287,3 @@ def test_generate_training_data_for_testing(
     responses = run_locally(
         generate_data, create_folders=True, ensure_success=False, store=memory_jobstore
     )
-
-
-# TODO: update pymatgen with ForceFieldTaskDocument.from_ase_compatible_result() with attribute dir_name,
-# then ensure_success can be set to True

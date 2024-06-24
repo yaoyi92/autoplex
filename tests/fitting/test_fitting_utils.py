@@ -19,7 +19,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
     # test if string for all possible args true
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -52,7 +52,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
     # test if string for include_soap==False
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -83,7 +83,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
 
     ref_list_exp = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -120,7 +120,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
 
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -149,7 +149,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
 
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -182,7 +182,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
 
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",

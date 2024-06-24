@@ -36,20 +36,20 @@ def test_set_sigma(test_dir):
         atoms.set_cell([10, 10, 10])
     for atoms in atoms_modi[4:]:
         atoms.set_cell([11, 11, 11])
-    atoms_modi = set_sigma(test_atoms, 
-              reg_minmax,
-              scheme='linear-hull',
-              max_energy=0.05,
-              isol_es=isol_es
-              )
+    atoms_modi = set_sigma(test_atoms,
+                           reg_minmax,
+                           scheme='linear-hull',
+                           max_energy=0.05,
+                           isolated_atoms_energies=isol_es
+                           )
     assert len(atoms_modi) < len(test_atoms)
     
     
     atoms_modi[0].append(Atom('Li', [1,1,1]))
-    atoms_modi = set_sigma(test_atoms, 
-              reg_minmax,
-              scheme='volume-stoichiometry',
-              isol_es=isol_es
-              )
+    atoms_modi = set_sigma(test_atoms,
+                           reg_minmax,
+                           scheme='volume-stoichiometry',
+                           isolated_atoms_energies=isol_es
+                           )
     assert True # TODO: modify this to test actual condition
     

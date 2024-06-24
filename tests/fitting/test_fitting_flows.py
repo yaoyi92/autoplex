@@ -204,7 +204,7 @@ def test_mlip_fit_maker_jace(
             "solver": "BLR",
         },
     ).make(
-        isol_es={3: -0.28649227, 17: -0.25638457},
+        isolated_atoms_energies={3: -0.28649227, 17: -0.25638457},
         fit_input=fit_input_dict,
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
@@ -258,7 +258,7 @@ def test_mlip_fit_maker_nequip(
         },
     ).make(
         fit_input=fit_input_dict,
-        isol_es={3: -0.28649227, 17: -0.25638457},
+        isolated_atoms_energies={3: -0.28649227, 17: -0.25638457},
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
         num_processes=1,
@@ -312,7 +312,7 @@ def test_mlip_fit_maker_m3gnet(
         },
     ).make(
         fit_input=fit_input_dict,
-        isol_es={3: -0.28649227, 17: -0.25638457},
+        isolated_atoms_energies={3: -0.28649227, 17: -0.25638457},
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
         num_processes=1,
