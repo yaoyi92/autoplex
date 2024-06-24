@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 # -- Project information -----------------------------------------------------
 
 project = "autoplex"
-copyright = "2023, autoplex development team"  # noqa: A001
+copyright = "2024, autoplex development team"  # noqa: A001
 author = "Christina Ertural"
 
 # The short X.Y version
@@ -51,7 +51,12 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["Thumbs.db", ".DS_Store", "test*.py"]
+exclude_patterns = ["Thumbs.db", ".DS_Store", "test*.py", "_build"]
+
+# mermaid settings
+mermaid_version = "8.8.4"
+mermaid_output_format = 'raw'
+mermaid_params = ['--theme', 'base']
 
 myst_heading_anchors = 2  # enable headings as link targets
 myst_enable_extensions = [
@@ -73,7 +78,10 @@ napoleon_use_rtype = True
 napoleon_use_ivar = True
 
 # The suffix(es) of source filenames.
-source_suffix = [".rst", ".md"]
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 mathjax3_config = {
     "tex": {
