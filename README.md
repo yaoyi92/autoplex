@@ -37,7 +37,7 @@ Please check out atomate2 for example code (https://github.com/materialsproject/
 # Installation
 autoplex relies on the atomate2 and ase frameworks.
 
-Developers installation: Navigate to autoplex and install it by `pip install -e .[docs,strict,dev] python==3.10`.
+Developers installation: Navigate to autoplex and install it by `pip install -e .[docs,strict,dev]`.
 
 Alternatively, the dependencies atomate2 and ase can be installed individually via
 ```bash
@@ -66,7 +66,7 @@ Pkg.add("CSV")
 
 # Workflow overview
 
-```mermaid
+```{mermaid}
 flowchart TD
     f831581e-1d20-4fa8-aa7d-773ae45a78aa(external) -->|output| 25f1b412-6e80-4ea0-a669-126b1d2eefdc(data_preprocessing_for_fitting)
     f831581e-1d20-4fa8-aa7d-773ae45a78aa(external) -->|output| 75cee155-2708-4dcf-b8b3-d184d450ed4f(complete_benchmark)
