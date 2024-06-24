@@ -4,7 +4,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from jobflow import Flow, Response, job
 
 if TYPE_CHECKING:
@@ -142,7 +141,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
     return Response(replace=jobs, output=collect_output)
 
 
-@job(data=[PhononBSDOSDoc])
+@job(data=["data"])
 def dft_phonopy_gen_data(
     structure: Structure, displacements, symprec, phonon_displacement_maker, min_length
 ):
