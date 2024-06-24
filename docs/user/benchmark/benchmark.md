@@ -73,14 +73,17 @@ dft_reference: PhononBSDOSDoc = dft_data["output"]
 potential_filename = "/path/to/GAP/file/gap_file.xml"
 
 phojob = PhononMaker(
-        bulk_relax_maker=GAPRelaxMaker(calculator_kwargs={"args_str": "IP GAP", "param_filename": potential_filename}, relax_cell=True, relax_kwargs={"interval": 500, "fmax": 0.00001}, steps=10000
+        bulk_relax_maker=GAPRelaxMaker(calculator_kwargs={"args_str": "IP GAP", "param_filename": potential_filename}, 
+        relax_cell=True, relax_kwargs={"interval": 500, "fmax": 0.00001}, steps=10000
             ),
         phonon_displacement_maker=GAPStaticMaker(calculator_kwargs={"args_str": "IP GAP", "param_filename": potential_filename}),
         static_energy_maker=GAPStaticMaker(calculator_kwargs={"args_str": "IP GAP", "param_filename": potential_filename}),
         store_force_constants=False, min_length=18,
         generate_frequencies_eigenvectors_kwargs={"units": "THz"}).make(structure=structure)
         
-bm = PhononBenchmarkMaker(name="Benchmark").make(structure=structure, benchmark_mp_id = "mp-22905", ml_phonon_task_doc = phojob.output, dft_phonon_task_doc = dft_reference)
+bm = PhononBenchmarkMaker(name="Benchmark").make(
+    structure=structure, benchmark_mp_id = "mp-22905", 
+    ml_phonon_task_doc = phojob.output, dft_phonon_task_doc = dft_reference)
 
 comp_bm = write_benchmark_metrics(
             ml_models=["GAP"],
