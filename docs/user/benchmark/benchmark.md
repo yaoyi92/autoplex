@@ -74,8 +74,7 @@ potential_filename = "/path/to/GAP/file/gap_file.xml"
 
 phojob = PhononMaker(
         bulk_relax_maker=GAPRelaxMaker(calculator_kwargs={"args_str": "IP GAP", "param_filename": potential_filename}, 
-        relax_cell=True, relax_kwargs={"interval": 500, "fmax": 0.00001}, steps=10000
-            ),
+        relax_cell=True, relax_kwargs={"interval": 500, "fmax": 0.00001}, steps=10000),
         phonon_displacement_maker=GAPStaticMaker(calculator_kwargs={"args_str": "IP GAP", "param_filename": potential_filename}),
         static_energy_maker=GAPStaticMaker(calculator_kwargs={"args_str": "IP GAP", "param_filename": potential_filename}),
         store_force_constants=False, min_length=18,
