@@ -235,6 +235,3 @@ def test_plot_force_distribution(test_dir, memory_jobstore, clean_dir):
             print(f'Removed file: {file}')
         except Exception as e:
             print(f'Error removing file {file}: {e}')
-
-
-

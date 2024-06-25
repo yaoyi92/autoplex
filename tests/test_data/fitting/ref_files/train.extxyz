@@ -1,8 +1,8 @@
 1
-Lattice="20.0 0.0 0.0 0.0 20.0 0.0 0.0 0.0 20.0" Properties=species:S:1:pos:R:3:REF_forces:R:3 REF_virial="-0.0006448727228862582 -0.0 -0.0 -0.0 -0.0006448727228862582 -0.0 -0.0 -0.0 -0.0006448727228862582" REF_energy=-0.27567309 config_type=isolated_atom data_type=iso_atoms pbc="T T T"
+Lattice="20.0 0.0 0.0 0.0 20.0 0.0 0.0 0.0 20.0" Properties=species:S:1:pos:R:3:REF_forces:R:3 REF_virial="-0.0006448727228862582 -0.0 -0.0 -0.0 -0.0006448727228862582 -0.0 -0.0 -0.0 -0.0006448727228862582" REF_energy=-0.27567309 config_type=IsolatedAtom data_type=iso_atoms pbc="T T T"
 Cl      10.00000000      10.00000000      10.00000000      -0.00000000       0.00000000       0.00000000
 1
-Lattice="20.0 0.0 0.0 0.0 20.0 0.0 0.0 0.0 20.0" Properties=species:S:1:pos:R:3:REF_forces:R:3 REF_virial="-0.02475762003080154 -0.0 -0.0 -0.0 -0.02475762003080154 -0.0 -0.0 -0.0 -0.02475762003080154" REF_energy=-0.28663766 config_type=isolated_atom data_type=iso_atoms pbc="T T T"
+Lattice="20.0 0.0 0.0 0.0 20.0 0.0 0.0 0.0 20.0" Properties=species:S:1:pos:R:3:REF_forces:R:3 REF_virial="-0.02475762003080154 -0.0 -0.0 -0.0 -0.02475762003080154 -0.0 -0.0 -0.0 -0.02475762003080154" REF_energy=-0.28663766 config_type=IsolatedAtom data_type=iso_atoms pbc="T T T"
 Li      10.00000000      10.00000000      10.00000000       0.00000000       0.00000000      -0.00000000
 64
 Lattice="10.42270159 0.0 0.0 0.0 10.42270159 0.0 0.0 0.0 10.42270159" Properties=species:S:1:pos:R:3:REF_forces:R:3 REF_virial="-17.969397385940137 0.0004251815806758506 0.003901013618364103 0.0004251815806758506 -17.966126720887416 -0.015537745510247213 0.003901013618364103 -0.015537745510247213 -18.025356681088265" REF_energy=-243.60764884 config_type=test data_type=rand_struc pbc="T T T"

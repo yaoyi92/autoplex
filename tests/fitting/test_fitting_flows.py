@@ -252,7 +252,7 @@ def test_mlip_fit_maker_nequip(
             "invariant_neurons": 64,
             "batch_size": 1,
             "learning_rate": 0.005,
-            "max_epochs": 1,  # reduced  it to 1 to minimize the test execution time
+            "max_epochs": 1,  # reduced to 1 to minimize the test execution time
             "default_dtype": "float32",
             "device": "cpu",
         },
