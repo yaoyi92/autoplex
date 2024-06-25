@@ -28,6 +28,12 @@ def test_machine_learning_fit_jace(test_dir, memory_jobstore, clean_dir):
 
     jacefit = machine_learning_fit(
         mlip_type="J-ACE",
+        mlip_hyper={
+            "order": 3,
+            "totaldegree": 6,
+            "cutoff": 2.0,
+            "solver": "BLR",
+        },
         database_dir=(test_dir / "fitting" / "ref_files"),
         species_list=["Li", "Cl"],
         isolated_atoms_energies={3: -0.28649227, 17: -0.25638457},

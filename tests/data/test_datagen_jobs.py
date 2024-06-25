@@ -208,7 +208,8 @@ def test_convert_to_extxyz(test_dir, memory_jobstore, clean_dir):
 
     responses = run_locally(
         conv, create_folders=True, ensure_success=False, store=memory_jobstore
-        # atomate2 swithced from pkl to json files for the trajectories, therfore success False. This job is also not needed for the main workflow
+        # atomate2 switched from pkl to json files for the trajectories, therefore success False.
+        # This job is also not needed for the main workflow
     )
 
 
