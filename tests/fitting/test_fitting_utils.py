@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import os.path
+
 from autoplex.fitting.common.jobs import GAP_DEFAULTS_FILE_PATH  # this will not be needed anymore
 from autoplex.fitting.common.utils import (
     load_gap_hyperparameter_defaults,
@@ -307,14 +310,12 @@ def test_mace_fitting(test_dir, clean_dir):
 
 
 def test_check_convergence():
-
     check_convergence(0.002)
 
     assert True
 
 
 def test_data_distillation(test_dir):
-
     atoms = data_distillation((test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz"), 35.0)
 
     for atom in atoms:
@@ -322,8 +323,11 @@ def test_data_distillation(test_dir):
             assert True
 
 
+def test_prepare_fit_environment(test_dir, clean_dir):
+    prepare = prepare_fit_environment(
+        database_dir=(test_dir / "data"),
+        mlip_path=(test_dir / "fitting"),
+        glue_xml=False,
+    )
 
-
-
-#def test_prepare_fit_environment():
-
+    assert os.path.isdir(prepare)
