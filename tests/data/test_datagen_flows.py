@@ -269,7 +269,7 @@ def test_iso_atom_maker(mock_vasp, clean_dir):
 
 
 def test_generate_training_data_for_testing(
-    vasp_test_dir, test_dir, memory_jobstore, clean_dir
+    vasp_test_dir, test_dir, memory_jobstore, #clean_dir
 ):
     from jobflow import run_locally
 
