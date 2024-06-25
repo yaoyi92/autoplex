@@ -246,7 +246,8 @@ def get_convex_hull(atoms, energy_name="energy", **kwargs):
         except Exception:
             ct += 1
     if ct > 0:
-        print(f"Convex hull failed to include {ct}/{len(atoms)} structures")
+        raise ValueError(f"Convex hull failed to include {ct}/{len(atoms)} structures")
+
     p = np.array(p)
     p = p.T[:, np.argsort(p.T[0])].T  # sort in volume axis
 
@@ -275,7 +276,7 @@ def get_convex_hull(atoms, energy_name="energy", **kwargs):
     return lower_half_hull_points, p
 
 
-def get_e_distance_to_hull(hull, at, energy_name="energy", **kwargs):
+def get_e_distance_to_hull(hull: np.array, at, energy_name="energy", **kwargs):
     """
     Calculate the distance of a structure to the linear convex hull in energy.
 
