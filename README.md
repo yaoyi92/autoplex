@@ -66,7 +66,8 @@ Pkg.add("CSV")
 
 # Workflow overview
 
-```{mermaid}
+The following diagram will give you an overview of the flows and jobs in the default autoplex workflow:
+```mermaid
 flowchart TD
     f831581e-1d20-4fa8-aa7d-773ae45a78aa(external) -->|output| 25f1b412-6e80-4ea0-a669-126b1d2eefdc(data_preprocessing_for_fitting)
     f831581e-1d20-4fa8-aa7d-773ae45a78aa(external) -->|output| 75cee155-2708-4dcf-b8b3-d184d450ed4f(complete_benchmark)
@@ -94,3 +95,6 @@ flowchart TD
         d5b02fd6-806d-43f4-9f3f-d9de5f0f28e3(write_benchmark_metrics)
     end
 ```
+The workflow starts with three flows that add data to a database: The first flow is preparing the VASP calculation for the isolated atoms (`get_iso_atom`). A second flow is preparing the `phonopy` calculations to collect the VASP data from the single-atom displaced supercells (`dft_phonopy_gen_data`). The third flow is constructing randomized supercells by rattling the atoms, i.e. displacing all atoms' positions (in the default setup), preparing the VASP calculations and collecting the data for the MLIP fit (`dft_random_gen_data`).
+After a few data preprocessing steps (`data_preprocessing_for_fitting`) to filter out data with too strong force values, the MLIP fit (`machine_learning_fit`) is run and the resulting potential is used for the benchmark against DFT data (`complete_benchmark`).
+Finally, the result metrics are collected in form of output plots and files (`write_benchmark_metrics`).
