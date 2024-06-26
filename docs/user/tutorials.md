@@ -1,7 +1,7 @@
 Tutorials
 ==========
 
-`autoplex` tutorials written by Christina Ertural ([christina.ertural@bam.de](mailto:christina.ertural@bam.de)).
+*`autoplex` tutorials written by Christina Ertural ([christina.ertural@bam.de](mailto:christina.ertural@bam.de)).*
 
 The user is advised to have a general familiarity with the following software packages and tools:
  * VASP
@@ -12,11 +12,13 @@ The user is advised to have a general familiarity with the following software pa
  * basic Python knowledge
 
 The tutorials are aimed to demonstrate the usage of `autoplex` to generate MLIPs and benchmark it to DFT results.
-By the end of this tutorial, you should be able to:
+By the end of these tutorials, you should be able to:
 
 * use `autoplex` out of the box with default settings
 * customize the workflow settings
 * use any of the submodule workflows to build your own workflows
+
+## Tutorial table of content
 
 ```{toctree}
 :maxdepth: 2

@@ -1,5 +1,7 @@
 (fitting)=
 
+*Tutorials written by Christina Ertural ([christina.ertural@bam.de](mailto:christina.ertural@bam.de)).*
+
 # Fitting potentials
 
 This tutorial will show you how to control the MLIP fit settings with the `autoplex` workflow. The choice of the correct fit setup and hyperparameter settings has a significant influence on the final result.
