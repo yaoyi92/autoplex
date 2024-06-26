@@ -144,3 +144,22 @@ def test_phonon_wf_only_displacements3(mock_vasp, clean_dir):
             11255.660261586278,
         ],
     )
+
+
+def test_cleanup_auxiliary_files(test_dir, clean_dir):
+    import os
+    import shutil
+
+    # for some reason, not all the auxiliary files are removed at the end
+    os.chdir(test_dir / "data" / "ref_data")
+    for file_name in os.listdir(os.getcwd()):
+        if file_name not in ['train_Si.extxyz', 'test_Si.extxyz', 'quip_train_Si.extxyz', 'quip_test_Si.extxyz']:
+            file_path = os.path.join(os.getcwd(), file_name)
+            try:
+                # Check if it's a file or directory
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)  # Remove the file
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)  # Remove the directory and its contents
+            except Exception as e:
+                print(f'Failed to delete {file_path}. Reason: {e}')
