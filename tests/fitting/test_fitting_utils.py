@@ -325,8 +325,8 @@ def test_data_distillation(test_dir):
 
 def test_prepare_fit_environment(test_dir, clean_dir):
     prepare = prepare_fit_environment(
-        database_dir=(test_dir / "data"),
-        mlip_path=(test_dir / "fitting"),
+        database_dir=(test_dir / "fitting" / "ref_files"),
+        mlip_path=(test_dir / "fitting" / "test_mlip_path"),
         glue_xml=False,
     )
 

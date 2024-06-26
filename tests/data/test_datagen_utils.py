@@ -12,7 +12,7 @@ fig.set_size_inches(15, 20)
 
 def test_energy_forces(clean_dir, test_dir):
     parent_dir = os.getcwd()
-    os.chdir(test_dir / "data")
+    os.chdir(test_dir / "data" / "ref_data")
     energy_forces = plot_energy_forces("regularization 0.1", 0.0005, 0.15)
 
     assert os.path.isfile("energy_forces.pdf")
@@ -26,14 +26,14 @@ def test_energy_forces(clean_dir, test_dir):
 
 def test_energy_plot(test_dir, clean_dir):
     parent_dir = os.getcwd()
-    os.chdir(test_dir / "data")
+    os.chdir(test_dir / "data" / "ref_data")
     energy = energy_plot("train.extxyz", "quip_train.extxyz", ax_list, "Energy on training data")
     plt.savefig("test_energy.png")
     assert os.path.isfile("test_energy.png")
 
 def test_force_plot(test_dir, clean_dir):
     parent_dir = os.getcwd()
-    os.chdir(test_dir / "data")
+    os.chdir(test_dir / "data" / "ref_data")
     force = force_plot("train.extxyz", "quip_train.extxyz", ax_list, "Si", "Force on training data - Si",)
     plt.savefig("test_force.png")
     assert os.path.isfile("test_force.png")
@@ -46,7 +46,7 @@ def test_force_plot(test_dir, clean_dir):
 
 def test_filter_outliers(test_dir, clean_dir):
     parent_dir = os.getcwd()
-    os.chdir(test_dir / "data")
+    os.chdir(test_dir / "data" / "ref_data")
     filter_energy = filter_outlier_energy("train.extxyz", "quip_train.extxyz", 0.005)
     filter_forces = filter_outlier_forces("train.extxyz", "quip_train.extxyz", "Si", 0.1)
 
