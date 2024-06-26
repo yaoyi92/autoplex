@@ -324,8 +324,6 @@ def test_data_distillation(test_dir):
 
 
 def test_prepare_fit_environment(test_dir, clean_dir):
-    import os
-    import shutil
     prepare = prepare_fit_environment(
         database_dir=(test_dir / "fitting" / "ref_files"),
         mlip_path=(test_dir / "fitting" / "test_mlip_path"),
@@ -334,7 +332,11 @@ def test_prepare_fit_environment(test_dir, clean_dir):
 
     assert os.path.isdir(prepare)
 
-    # remove all auxiliary files
+def test_cleanup_auxiliary_files(test_dir, clean_dir):
+    import os
+    import shutil
+
+    # for some reason, not all the auxiliary files are removed at the end
     os.chdir(test_dir / "data" / "ref_data")
     for file_name in os.listdir(os.getcwd()):
         if file_name not in ['train_Si.extxyz', 'test_Si.extxyz', 'quip_train_Si.extxyz', 'quip_test_Si.extxyz']:
