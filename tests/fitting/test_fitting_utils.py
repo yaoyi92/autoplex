@@ -331,3 +331,9 @@ def test_prepare_fit_environment(test_dir, clean_dir):
     )
 
     assert os.path.isdir(prepare)
+
+    # remove all auxiliary files
+    os.chdir(test_dir / "data" / "ref_data")
+    for file_name in os.listdir(os.getcwd()):
+        if file_name not in ['train_Si.extxyz', 'test_Si.extxyz', 'quip_train_Si.extxyz', 'quip_test_Si.extxyz']:
+            os.remove(os.path.join(os.getcwd(), file_name))
