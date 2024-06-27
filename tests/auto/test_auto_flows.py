@@ -368,7 +368,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
     )
 
 
-def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization(
+def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
 ):
     from jobflow import run_locally
@@ -507,7 +507,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             min_length=8,
             displacements=[0.01],
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
+            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -558,7 +558,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_phonon_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
+            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -606,7 +606,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_phonon_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
+            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -641,7 +641,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_random_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
+            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -675,7 +675,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             min_length=8,
             displacements=[0.01],
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper={"two_body": True, "three_body": False, "soap": False},
+            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["mp-22905"],
@@ -702,7 +702,7 @@ def test_phonon_dft_ml_data_generation_flow(
 
     flow_data_generation = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, min_length=10, symprec=1e-2, volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        mlip_hyper={"two_body": True, "three_body": False, "soap": False},
+        mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
     ).make(structure_list=structure_list,
            mp_ids=mp_ids,
            benchmark_structures=structure_list,
@@ -714,7 +714,7 @@ def test_phonon_dft_ml_data_generation_flow(
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, min_length=10, symprec=1e-2, add_dft_random_struct=False,
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        mlip_hyper={"two_body": True, "three_body": False, "soap": False},
+        mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
     ).make(structure_list=structure_list,
            mp_ids=mp_ids,
            benchmark_structures=structure_list,

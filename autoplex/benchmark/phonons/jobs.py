@@ -14,6 +14,7 @@ from autoplex.benchmark.phonons.utils import compare_plot, get_rmse, rmse_qdep_p
 
 @job
 def compute_bandstructure_benchmark_metrics(
+    ml_model: str,
     structure: Structure,
     ml_phonon_bs: PhononBandStructureSymmLine,
     dft_phonon_bs: PhononBandStructureSymmLine,
@@ -25,8 +26,10 @@ def compute_bandstructure_benchmark_metrics(
 
     Parameters
     ----------
+    ml_model: str
+        ML model to be used. Default is GAP.
     structure : .Structure
-     A structure object.
+        A structure object.
     ml_phonon_bs: PhononBandStructureSymmLine.
        ML generated pymatgen phonon band-structure object.
     dft_phonon_bs: PhononBandStructureSymmLine.
@@ -57,6 +60,7 @@ def compute_bandstructure_benchmark_metrics(
     # saves DFT and ML phonon band-structure overlay plot
     file_name = f"{structure.composition.reduced_formula}_band_comparison.pdf"
     _ = compare_plot(
+        ml_model=ml_model,
         ml_bs=ml_phonon_bs,
         dft_bs=dft_phonon_bs,
         file_name=file_name,

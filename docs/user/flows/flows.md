@@ -207,6 +207,6 @@ This will give you feedback of the overall quality of the generated ML potential
 results of your workflow setup.
 ```text
 Potential  Structure  MPID        Displacement (Å)  RMSE (THz)  Hyperparameters (atom-wise f, n_sparse, SOAP delta)    imagmodes(pot)  imagmodes(dft)
-GAP        LiCl       mp-22905    0.01              0.47608     {'f=0.1': 'default'}                                   False           False
+GAP        LiCl       mp-22905    0.01              0.57608     {'f=0.1': 'default'}                                   False           False
 ```
 

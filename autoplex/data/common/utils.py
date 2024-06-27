@@ -727,6 +727,8 @@ def plot_energy_forces(
     fig.set_size_inches(15, 20)
     ax_list = ax_list.flat[:]
 
+    pretty_species_list = str(species_list).replace("['", "").replace("']", "")
+
     energy_plot(train_name, "quip_" + train_name, ax_list[0], "Energy on training data")
     # rmse_train =
     for species in species_list:
@@ -735,7 +737,7 @@ def plot_energy_forces(
             "quip_" + train_name,
             ax_list[1],
             species,
-            f"Force on training data - {species}",
+            f"Force on training data - {pretty_species_list}",
         )
     energy_plot(test_name, "quip_" + test_name, ax_list[2], "Energy on test data")
     filter_outlier_energy(train_name, "quip_" + train_name, energy_limit)
@@ -747,7 +749,7 @@ def plot_energy_forces(
             "quip_" + test_name,
             ax_list[3],
             species,
-            f"Force on test data - {species}",
+            f"Force on test data - {pretty_species_list}",
         )
         filter_outlier_forces(train_name, "quip_" + train_name, species, force_limit)
         filter_outlier_forces(test_name, "quip_" + test_name, species, force_limit)
@@ -765,7 +767,7 @@ def plot_energy_forces(
             train_name.replace("train", "filtered_out_force"),
             ax_list[5],
             species,
-            f"Force on filtered data - {species}",
+            f"Force on filtered data - {pretty_species_list}",
             "energy-filtered data, force for ",
         )
     energy_plot(
@@ -781,7 +783,7 @@ def plot_energy_forces(
             train_name.replace("train", "filtered_out_force"),
             ax_list[5],
             species,
-            f"Force on filtered data - {species}",
+            f"Force on filtered data - {pretty_species_list}",
             "force-filtered data, force for ",
         )
 

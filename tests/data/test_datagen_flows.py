@@ -44,14 +44,14 @@ def test_data_generation_distort_type_0(vasp_test_dir, mock_vasp, clean_dir):
     test_mpid = "mp-22905"
     ref_paths = {
         "tight relax": "dft_ml_data_generation/tight_relax_1/",
-        "phonon static 1/1": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 1/1": "dft_ml_data_generation/rand_static_1/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
         "tight relax": {"incar_settings": ["NSW"]},
-        "phonon static 1/1": {
+        "dft rattle static 1/1": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
@@ -71,7 +71,7 @@ def test_data_generation_distort_type_0(vasp_test_dir, mock_vasp, clean_dir):
     responses = run_locally(data_gen_dt_0, create_folders=True, ensure_success=True)
 
     assert len(responses[data_gen_dt_0.output[0].uuid][2].output["dirs"]) == 1
-    job_names = ["phonon static 1/1"]
+    job_names = ["dft rattle static 1/1"]
     for inx, name in enumerate(job_names):
         assert responses[data_gen_dt_0.output[0].uuid][1].replace.jobs[inx].name == name
 
@@ -85,24 +85,24 @@ def test_data_generation_distort_type_1(vasp_test_dir, mock_vasp, clean_dir):
     test_mpid = "mp-22905"
     ref_paths = {
         "tight relax": "dft_ml_data_generation/tight_relax_1/",
-        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
+        "dft rattle static 1/3": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/3": "dft_ml_data_generation/rand_static_2/",
+        "dft rattle static 3/3": "dft_ml_data_generation/rand_static_3/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
         "tight relax": {"incar_settings": ["NSW"]},
-        "phonon static 1/3": {
+        "dft rattle static 1/3": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "phonon static 2/3": {
+        "dft rattle static 2/3": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "phonon static 3/3": {
+        "dft rattle static 3/3": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
@@ -122,7 +122,7 @@ def test_data_generation_distort_type_1(vasp_test_dir, mock_vasp, clean_dir):
     responses = run_locally(data_gen_dt_1, create_folders=True, ensure_success=True)
 
     assert len(responses[data_gen_dt_1.output[0].uuid][2].output["dirs"]) == 3
-    job_names = ["phonon static 1/3", "phonon static 2/3", "phonon static 3/3"]
+    job_names = ["dft rattle static 1/3", "dft rattle static 2/3", "dft rattle static 3/3"]
     for inx, name in enumerate(job_names):
         assert responses[data_gen_dt_1.output[0].uuid][1].replace.jobs[inx].name == name
 
@@ -136,19 +136,19 @@ def test_data_generation_distort_type_2(vasp_test_dir, mock_vasp, clean_dir):
     test_mpid = "mp-22905"
     ref_paths = {
         "tight relax": "dft_ml_data_generation/tight_relax_1/",
-        "phonon static 1/2": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/2": "dft_ml_data_generation/rand_static_2/",
+        "dft rattle static 1/2": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/2": "dft_ml_data_generation/rand_static_2/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
         "tight relax": {"incar_settings": ["NSW"]},
-        "phonon static 1/2": {
+        "dft rattle static 1/2": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "phonon static 2/2": {
+        "dft rattle static 2/2": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
@@ -171,7 +171,7 @@ def test_data_generation_distort_type_2(vasp_test_dir, mock_vasp, clean_dir):
     responses = run_locally(data_gen_dt_2, create_folders=True, ensure_success=True)
 
     assert len(responses[data_gen_dt_2.output[0].uuid][2].output["dirs"]) == 2
-    job_names = ["phonon static 1/2", "phonon static 2/2"]
+    job_names = ["dft rattle static 1/2", "dft rattle static 2/2"]
     for inx, name in enumerate(job_names):
         assert responses[data_gen_dt_2.output[0].uuid][1].replace.jobs[inx].name == name
 
@@ -185,29 +185,29 @@ def test_data_generation_volume_range(vasp_test_dir, mock_vasp, clean_dir):
     test_mpid = "mp-22905"
     ref_paths = {
         "tight relax": "dft_ml_data_generation/tight_relax_1/",
-        "phonon static 1/4": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/4": "dft_ml_data_generation/rand_static_4/",
-        "phonon static 3/4": "dft_ml_data_generation/rand_static_7/",
-        "phonon static 4/4": "dft_ml_data_generation/rand_static_10/",
+        "dft rattle static 1/4": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/4": "dft_ml_data_generation/rand_static_4/",
+        "dft rattle static 3/4": "dft_ml_data_generation/rand_static_7/",
+        "dft rattle static 4/4": "dft_ml_data_generation/rand_static_10/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
         "tight relax": {"incar_settings": ["NSW"]},
-        "phonon static 1/4": {
+        "dft rattle static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "phonon static 2/4": {
+        "dft rattle static 2/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "phonon static 3/4": {
+        "dft rattle static 3/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "phonon static 4/4": {
+        "dft rattle static 4/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
@@ -228,10 +228,10 @@ def test_data_generation_volume_range(vasp_test_dir, mock_vasp, clean_dir):
 
     assert len(responses[data_gen_vol.output[0].uuid][2].output["dirs"]) == 4
     job_names = [
-        "phonon static 1/4",
-        "phonon static 2/4",
-        "phonon static 3/4",
-        "phonon static 4/4",
+        "dft rattle static 1/4",
+        "dft rattle static 2/4",
+        "dft rattle static 3/4",
+        "dft rattle static 4/4",
     ]
     for inx, name in enumerate(job_names):
         assert responses[data_gen_vol.output[0].uuid][1].replace.jobs[inx].name == name
@@ -269,7 +269,7 @@ def test_iso_atom_maker(mock_vasp, clean_dir):
 
 
 def test_generate_training_data_for_testing(
-    vasp_test_dir, test_dir, memory_jobstore, #clean_dir
+    vasp_test_dir, test_dir, memory_jobstore, clean_dir
 ):
     from jobflow import run_locally
 
@@ -286,4 +286,4 @@ def test_generate_training_data_for_testing(
 
     responses = run_locally(
         generate_data, create_folders=True, ensure_success=False, store=memory_jobstore
-    )
+    )  # atomate2 switched from pckl to json files for the trajectories --> job fails in its current state

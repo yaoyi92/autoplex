@@ -34,6 +34,7 @@ class PhononBenchmarkMaker(Maker):
 
     def make(
         self,
+        ml_model: str,
         structure: Structure,
         benchmark_mp_id: str,
         ml_phonon_task_doc: PhononBSDOSDoc,
@@ -44,7 +45,9 @@ class PhononBenchmarkMaker(Maker):
 
         Parameters
         ----------
-        structure :
+        ml_model: str
+            ML model to be used. Default is GAP.
+        structure:
             Pymatgen structures drawn from the Materials Project.
         benchmark_mp_id: str.
             Materials project IDs for the structure.
@@ -56,6 +59,7 @@ class PhononBenchmarkMaker(Maker):
         jobs = []
 
         benchmark_job = compute_bandstructure_benchmark_metrics(
+            ml_model=ml_model,
             ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,
             dft_phonon_bs=dft_phonon_task_doc.phonon_bandstructure,
             dft_imag_modes=dft_phonon_task_doc.has_imaginary_modes,

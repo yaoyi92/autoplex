@@ -123,27 +123,27 @@ def test_dft_task_doc(vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean
         "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
         "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
         "static": "dft_ml_data_generation/static/",
-        "phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
-        "phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "phonon static 1/3": "dft_ml_data_generation/rand_static_1/",
-        "phonon static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "phonon static 3/3": "dft_ml_data_generation/rand_static_3/",
+        "dft phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
+        "dft phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
+        "dft rattle static 1/3": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/3": "dft_ml_data_generation/rand_static_2/",
+        "dft rattle static 3/3": "dft_ml_data_generation/rand_static_3/",
     }
 
     fake_run_vasp_kwargs = {
         "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
         "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "phonon static 1/2": {"incar_settings": ["NSW"]},
-        "phonon static 2/2": {"incar_settings": ["NSW"]},
-        "phonon static 1/3": {
+        "dft phonon static 1/2": {"incar_settings": ["NSW"]},
+        "dft phonon static 2/2": {"incar_settings": ["NSW"]},
+        "dft rattle static 1/3": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 2/3": {
+        "dft rattle static 2/3": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },
-        "phonon static 3/3": {
+        "dft rattle static 3/3": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints", "potcar"],
         },

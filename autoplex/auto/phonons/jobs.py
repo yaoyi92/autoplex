@@ -24,11 +24,12 @@ from autoplex.data.phonons.flows import (
 
 @job
 def complete_benchmark(  # this function was put here to prevent circular import
+    ml_path: str,
     ml_model: str,
     ibenchmark_structure: int,
     benchmark_structure: Structure,
     mp_ids,
-    benchmark_mp_ids,
+    benchmark_mp_ids,  # list[str] mypy: Value of type "list[Any] | None" is not indexable
     add_dft_phonon_struct: bool,
     min_length: float,
     fit_input,
@@ -48,18 +49,18 @@ def complete_benchmark(  # this function was put here to prevent circular import
 
     Parameters
     ----------
+    ml_path: str
+        Path to MLIP file. Default is path to gap_file.xml
     ml_model: str
         ML model to be used. Default is GAP.
     ibenchmark_structure: int
         ith benchmark structure.
     benchmark_structure: Structure
         pymatgen structure for benchmarking.
-    benchmark_mp_ids: str
+    benchmark_mp_ids: list[str]
         Materials Project ID of the benchmarking structure.
     mp_ids:
         materials project IDs.
-    benchmark_mp_ids:
-        materials project IDs of th benchmark structures.
     add_dft_phonon_struct: bool.
         If True, will add displaced supercells via phonopy for DFT calculation.
     min_length: float
@@ -83,12 +84,13 @@ def complete_benchmark(  # this function was put here to prevent circular import
     if min_length >= 18:
         phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
     for suffix in ["", "_wo_sigma", "_phonon", "_rand_struc"]:
-        if Path(Path(ml_model) / f"gap_file{suffix}.xml").exists():
+        if Path(Path(ml_path) / f"gap_file{suffix}.xml").exists():
+            # TODO: this needs to beextended for the other MLIPs
             add_data_ml_phonon = MLPhononMaker(
                 min_length=min_length,
             ).make_from_ml_model(
                 structure=benchmark_structure,
-                ml_model=ml_model,
+                ml_model=ml_path,
                 suffix=suffix,
             )
             jobs.append(add_data_ml_phonon)
@@ -114,6 +116,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                     dft_references = dft_phonons.output
 
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                    ml_model=ml_model,
                     structure=benchmark_structure,
                     benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                     ml_phonon_task_doc=add_data_ml_phonon.output,
@@ -128,6 +131,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                     add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
                         # this is important for re-using the same internally calculated DFT reference
                         # for looping through several settings
+                        ml_model=ml_model,
                         structure=benchmark_structure,
                         benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                         ml_phonon_task_doc=add_data_ml_phonon.output,
@@ -136,6 +140,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
             else:
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
                     # this is important for using a provided DFT reference
+                    ml_model=ml_model,
                     structure=benchmark_structure,
                     benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                     ml_phonon_task_doc=add_data_ml_phonon.output,

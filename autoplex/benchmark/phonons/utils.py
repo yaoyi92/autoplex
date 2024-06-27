@@ -90,6 +90,7 @@ def rmse_qdep_plot(
 
 
 def compare_plot(
+    ml_model: str,
     ml_bs: PhononBandStructureSymmLine,
     dft_bs: PhononBandStructureSymmLine,
     file_name: str = "band_comparison.pdf",
@@ -99,6 +100,8 @@ def compare_plot(
 
     Parameters
     ----------
+    ml_model: str
+        ML model to be used. Default is GAP.
     ml_bs : PhononBandStructureSymmLine.
         ML generated pymatgen phonon band-structure object
     dft_bs : PhononBandStructureSymmLine.
@@ -113,7 +116,9 @@ def compare_plot(
     """
     plotter = PhononBSPlotter(bs=ml_bs)
     plotter2 = PhononBSPlotter(bs=dft_bs)
-    new_plotter = plotter.plot_compare(plotter2)
+    new_plotter = plotter.plot_compare(
+        other_plotter={"DFT": plotter2}, self_label=ml_model
+    )
 
     new_plotter.figure.savefig(fname=file_name)
 
