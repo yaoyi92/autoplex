@@ -113,9 +113,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Default=10.
     ml_models: list[str]
         list of the ML models to be used. Default is GAP.
-    mlip_hyper: dict
-        basic MLIP hyperparameters
-    HPloop: bool
+    mlip_hyper: list[dict]
+        list with basic MLIP hyperparameters for each model.
+        Default are basic GAP hyperparameters {"two_body": True, "three_body": False, "soap": True}.
+    hyper_para_loop: bool
         making it easier to loop through several hyperparameter sets.
     atomwise_regularization_list: list
         List of atom-wise regularization parameters that are checked.
@@ -150,8 +151,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
-    mlip_hyper: dict | None = None
-    HPloop: bool = False
+    mlip_hyper: list[dict] | None = None
+    hyper_para_loop: bool = False
     atomwise_regularization_list: list | None = None
     soap_delta_list: list | None = None
     n_sparse_list: list | None = None
@@ -213,6 +214,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         fit_input = {}
         hyper_list: list[dict[Any, Any]] = []
         bm_outputs = []
+        if self.mlip_hyper is None:
+            self.mlip_hyper = [{"two_body": True, "three_body": False, "soap": True}]
+
         for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
@@ -261,9 +265,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 {"IsolatedAtom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
             )
 
-        for ml_model in self.ml_models:
+        for ml_model, ml_hyper in zip(self.ml_models, self.mlip_hyper):
             add_data_fit = MLIPFitMaker(
-                mlip_type=ml_model, mlip_hyper=self.mlip_hyper
+                mlip_type=ml_model,
+                mlip_hyper=ml_hyper,
             ).make(
                 species_list=isoatoms.output["species"],
                 isolated_atoms_energy=isoatoms.output["energies"],
@@ -317,7 +322,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     flows.append(complete_bm)
                     bm_outputs.append(complete_bm.output)
 
-            if self.HPloop:
+            if self.hyper_para_loop:
                 if self.atomwise_regularization_list is None:
                     self.atomwise_regularization_list = [0.1, 0.01, 0.001, 0.0001]
                 if self.soap_delta_list is None:
@@ -342,7 +347,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 "delta": delta,
                             }
                             loop_data_fit = MLIPFitMaker(
-                                mlip_type=ml_model, mlip_hyper=self.mlip_hyper
+                                mlip_type=ml_model, mlip_hyper=ml_hyper
                             ).make(
                                 species_list=isoatoms.output["species"],
                                 isolated_atoms_energy=isoatoms.output["energies"],

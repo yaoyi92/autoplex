@@ -10,12 +10,12 @@ This tutorial will show you how to control the MLIP fit settings with the `autop
 
 There are two categories of fit settings that you can change. The first type concerns the general fit setup, that will affect the fit regardless of the chosen MLIP method, and e.g. changes database specific settings (like the split-up into training and test data). The other type of settings influences the MLIP specific setup like e.g. the choice of hyperparameters.
 
-In case of the general settings, you can pass the MLIP model you want to use with the `ml_models` parameter and set the basic hyperparameters using `mlip_hyper`.
+In case of the general settings, you can pass the MLIP model you want to use with the `ml_models` parameter list and set the basic hyperparameters using the `mlip_hyper` list.
 You can set the maximum force threshold `f_max` for filtering the data ("distillation") in the MLIP fit preprocess step. In principle, the distillation step be turned off by passing `"distillation": False` in the `fit_kwargs` keyword arguments, but it is strongly advised to filter out too high force data points.
 Further parameters can be passed using `fit_kwargs` (or `**{...}`), like e.g. you can set the `split_ratio` to split the database up into a training and a test set, or adjust the number of processes `num_processes`.
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    ml_models=["GAP", "MACE"], mlip_hyper={...}).make(..., f_max=40.0,
+    ml_models=["GAP", "MACE"], mlip_hyper=[{...}, {...}]).make(..., f_max=40.0,
     fit_kwargs={
         "split_ratio": 0.4,
         "num_processes": 32,
@@ -27,7 +27,7 @@ The MLIP model specific settings and hyperparameters setup varies from model to 
 ## GAP
 
 There are several overall settings for the GAP fit that will change the mode in which `autoplex` runs.
-When `HPloop` is set to `True`, `autoplex` wil automatically iterate through a set of several hyperparameters (`atomwise_regularization_list`, `soap_delta_list` and `n_sparse_list`) and repeat the GAP fit for each combination.
+When `hyper_para_loop` is set to `True`, `autoplex` wil automatically iterate through a set of several hyperparameters (`atomwise_regularization_list`, `soap_delta_list` and `n_sparse_list`) and repeat the GAP fit for each combination.
 More information on the atom-wise regularization parameter can be found in [J. Chem. Phys. 153, 044104 (2020)](https://pubs.aip.org/aip/jcp/article/153/4/044104/1056348/Combining-phonon-accuracy-with-high) and a comprehensive list GAP hyperparameters can be found in the [QUIP/GAP user guide](https://libatoms.github.io/GAP/gap_fit.html#command-line-example).
 The other keywords to change `autoplex`'s mode are `glue_xml` (use glue.xml core potential instead of 2b/3b terms), `regularization` (use a sigma regularization) and `separated` (repeat the GAP fit for the combined database and each separated subset).
 The parameter `atom_wise_regularization` can turn the atom-wise regularization on and off, `atomwise_regularization_parameter` is the value that shall be set and `f_min` is the lower bound cutoff of forces taken into account for the atom-wise regularization or otherwise be replaced by the f_min value.
@@ -35,8 +35,8 @@ The parameter `atom_wise_regularization` can turn the atom-wise regularization o
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     ml_models=["GAP"],
-    mlip_hyper={"two_body": True, "three_body": False,"soap": False}, 
-    HPloop=False, 
+    mlip_hyper=[{"two_body": True, "three_body": False,"soap": False}], 
+    hyper_para_loop=False, 
     atomwise_regularization_list=[0.01, 0.1], 
     soap_delta_list=[0.5, 1.0, 1.5], 
     n_sparse_list=[1000, 3000, 6000, 9000]).make(..., 
@@ -77,10 +77,10 @@ For fitting and validating ACE potentials, one needs to install **julia** as `au
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     ml_models=["J-ACE"],
-    mlip_hyper={"order": 3, 
+    mlip_hyper=[{"order": 3, 
                 "totaldegree": 6, 
                 "cutoff": 2.0, 
-                "solver": "BLR"}
+                "solver": "BLR"}]
 ).make(...)
 ```
 The ACE fit hyperparameters can be passed as a dict using `mlip_hyper`.
