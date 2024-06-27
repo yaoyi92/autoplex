@@ -17,6 +17,8 @@ from autoplex.data.phonons.flows import (
     IsoAtomMaker,
     MLPhononMaker,
     RandomStructuresDataGenerator,
+    TightDFTStaticMaker,
+    TightDFTStaticMakerBigSupercells,
 )
 
 
@@ -76,6 +78,10 @@ def complete_benchmark(  # this function was put here to prevent circular import
     """
     jobs = []
     collect_output = []
+    if phonon_displacement_maker is None:
+        phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
+    if min_length >= 18:
+        phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
     for suffix in ["", "_wo_sigma", "_phonon", "_rand_struc"]:
         if Path(Path(ml_model) / f"gap_file{suffix}.xml").exists():
             add_data_ml_phonon = MLPhononMaker(
@@ -167,6 +173,11 @@ def dft_phonopy_gen_data(
     jobs = []
     dft_phonons_output = {}
     dft_phonons_dir_output = []
+
+    if phonon_displacement_maker is None:
+        phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
+    if min_length >= 18:
+        phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(
@@ -264,6 +275,9 @@ def dft_random_gen_data(
         Default=10.
     """
     jobs = []
+
+    if phonon_displacement_maker is None:
+        phonon_displacement_maker = TightDFTStaticMaker(name="dft rattle static")
 
     random_datagen = RandomStructuresDataGenerator(
         name="RandomDataGen",

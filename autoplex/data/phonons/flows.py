@@ -70,6 +70,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
         ``{"my_file:txt": "contents of the file"}``.
     """
 
+    name: str = "dft static"
     run_vasp_kwargs: dict = field(default_factory=lambda: {"handlers": ()})
 
     input_set_generator: VaspInputGenerator = field(
@@ -127,6 +128,7 @@ class TightDFTStaticMakerBigSupercells(PhononDisplacementMaker):
         ``{"my_file:txt": "contents of the file"}``.
     """
 
+    name: str = "dft phonon static big supercell"
     run_vasp_kwargs: dict = field(default_factory=lambda: {"handlers": ()})
 
     input_set_generator: VaspInputGenerator = field(
@@ -234,7 +236,7 @@ class DFTPhononMaker(PhononMaker):
         if True, force constants will be stored
     """
 
-    name: str = "phonon"
+    name: str = "dft phonon"
     sym_reduce: bool = True
     symprec: float = 1e-4
     displacement: float = 0.01
@@ -265,7 +267,7 @@ class DFTPhononMaker(PhononMaker):
         )
     )
 
-    phonon_displacement_maker: BaseVaspMaker = field(
+    phonon_displacement_maker: BaseVaspMaker | None = field(
         default_factory=TightDFTStaticMaker
     )
 
@@ -364,6 +366,7 @@ class MLPhononMaker(FFPhononMaker):
         if True, force constants will be stored
     """
 
+    name: str = "ml phonon"
     min_length: float | None = 20.0
     bulk_relax_maker: ForceFieldRelaxMaker | None = field(
         default_factory=lambda: GAPRelaxMaker(
@@ -371,7 +374,7 @@ class MLPhononMaker(FFPhononMaker):
         )
     )
     phonon_displacement_maker: ForceFieldStaticMaker | None = field(
-        default_factory=lambda: GAPStaticMaker()
+        default_factory=lambda: GAPStaticMaker(name="ml phonon static")
     )
     static_energy_maker: ForceFieldStaticMaker | None = field(
         default_factory=lambda: GAPStaticMaker()
@@ -545,7 +548,7 @@ class RandomStructuresDataGenerator(Maker):
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
-    phonon_displacement_maker: BaseVaspMaker = field(
+    phonon_displacement_maker: BaseVaspMaker | None = field(
         default_factory=TightDFTStaticMaker
     )
     bulk_relax_maker: BaseVaspMaker = field(

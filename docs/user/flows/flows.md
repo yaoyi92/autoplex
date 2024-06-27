@@ -145,10 +145,15 @@ resources = {"nodes": N, "partition": "name", "time": "01:00:00", "ntasks": ntas
 resources_phon = {"nodes": N, "partition": "name", "time": "05:00:00", "ntasks": ntasks, "qverbatim": "#SBATCH --get-user-env",
              "mail_user": "your_email@adress", "mail_type": "ALL"}
 
+resources_ratt = {"nodes": N, "partition": "micro", "time": "03:00:00", "ntasks": ntasks, "qverbatim": "#SBATCH --get-user-env",
+             "mail_user": "your_email@adress", "mail_type": "ALL"}
+
 resources_mlip = {"nodes": N, "partition": "name", "time": "02:00:00", "ntasks": ntasks, "qverbatim": "#SBATCH --get-user-env",
              "mail_user": "your_email@adress", "mail_type": "ALL"}
 
-autoplex_flow = set_run_config(autoplex_flow, name_filter="phonon static", resources=resources_phon)
+autoplex_flow = set_run_config(autoplex_flow, name_filter="dft phonon static", resources=resources_phon)
+
+auto_flow = set_run_config(autoplex_flow, name_filter="dft rattle static", resources=resources_ratt)
 
 autoplex_flow = set_run_config(autoplex_flow, name_filter="machine_learning_fit", resources=resources_mlip)
 

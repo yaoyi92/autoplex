@@ -20,10 +20,6 @@ from autoplex.auto.phonons.jobs import (
     get_iso_atom,
 )
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
-from autoplex.data.phonons.flows import (
-    TightDFTStaticMaker,
-    TightDFTStaticMakerBigSupercells,
-)
 from autoplex.fitting.common.flows import MLIPFitMaker
 
 __all__ = ["CompleteDFTvsMLBenchmarkWorkflow"]
@@ -130,9 +126,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     add_dft_phonon_struct: bool = True
     add_dft_random_struct: bool = True
     add_rss_struct: bool = False
-    phonon_displacement_maker: BaseVaspMaker = field(
-        default_factory=TightDFTStaticMaker
-    )
+    phonon_displacement_maker: BaseVaspMaker = None
     n_structures: int = 10
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
@@ -241,8 +235,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
-                if self.min_length >= 18:
-                    self.phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
                 addDFTphon = self.add_dft_phonons(
                     structure,
                     self.displacements,
