@@ -24,7 +24,8 @@ Using the `MPRester` is a convenient way to draw structures from the Materials P
 The only module we need to import from `autoplex` is the `CompleteDFTvsMLBenchmarkWorkflow`.
 
 
-Next, we are going to construct the workflow based on the rocksalt-type LiCl ([*mp-22905*](https://next-gen.materialsproject.org/materials/mp-22905?material_ids=mp-22905)). Don't forget to replace `YOUR_MP_API_KEY` with your personal [Materials Project API key](https://next-gen.materialsproject.org/api#api-key).
+Next, we are going to construct the workflow based on the rocksalt-type LiCl ([*mp-22905*](https://next-gen.materialsproject.org/materials/mp-22905?material_ids=mp-22905)). 
+Remember to replace `YOUR_MP_API_KEY` with your personal [Materials Project API key](https://next-gen.materialsproject.org/api#api-key).
 
 ```python
 mpr = MPRester(api_key='YOUR_MP_API_KEY')
@@ -46,9 +47,12 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow().make(
 
 autoplex_flow = Flow([complete_flow], name="tutorial", output=None, uuid=None, hosts=None)
 ```
-The only default information we need to provide is which structures we want to calculate and use for the MLIP fitting and which structures we want to benchmark to.
+The only default information we need to provide is which structures we want to calculate and use for the MLIP fitting 
+and which structures we want to benchmark to.
 The `autoplex` workflow will then perform automated VASP and `phonopy` calculations, MLIP fits, and benchmarks.
-Of course, you can change and adjust the settings to your own needs, e.g. by setting a smaller supercell for the `phonopy` calculations using `CompleteDFTvsMLBenchmarkWorkflow(min_length=15).make(...)`. You can find more details on the subsequent tutorial pages.
+Of course, you can change and adjust the settings to your own needs, e.g. by setting a smaller supercell for the 
+`phonopy` calculations using `CompleteDFTvsMLBenchmarkWorkflow(min_length=15).make(...)`. 
+You can find more details on the subsequent tutorial pages.
 
 The following workflow diagram will give you an overview of the flows and jobs in the default autoplex workflow:
 ```{mermaid}
@@ -84,15 +88,22 @@ The workflow starts with three flows that are supposed to generate data for our 
 * A second flow is preparing the `phonopy` calculations to collect the VASP data from the single-atom displaced supercells (`dft_phonopy_gen_data`). 
 * The third flow is constructing randomized supercells by rattling the atoms, i.e. displacing all atoms' positions (in the default setup), preparing the VASP calculations and collecting the data for the MLIP fit (`dft_random_gen_data`).
 
-After a few data preprocessing steps (`data_preprocessing_for_fitting`) to filter out data with too strong force values, the MLIP fit (`machine_learning_fit`) is run and the resulting potential is used for the benchmark against DFT data (`complete_benchmark`).
+After a few data preprocessing steps (`data_preprocessing_for_fitting`) to filter out data with too strong force values, 
+the MLIP fit (`machine_learning_fit`) is run and the resulting potential is used for the benchmark against DFT data 
+(`complete_benchmark`).
+
 Finally, the result metrics are collected in form of output plots and files (`write_benchmark_metrics`). 
 The lines connecting two flows or jobs are showing what type of data is passed on to the next step, like "data", "dirs" or "output". 
-"Output" is a generic name for the several job outputs, e.g. the output of `dft_random_gen_data` contains where `data_preprocessing_for_fitting` can find the files it needs for the MLIP fit. 
-"Data" contains the [phonon calculation task documents](https://materialsproject.github.io/atomate2/reference/atomate2.common.schemas.phonons.PhononBSDOSDoc.html#atomate2.common.schemas.phonons.PhononBSDOSDoc) and "dirs" contains the path to the directory where the jobs were executed.
+"Output" is a generic name for the several job outputs, e.g. the output of `dft_random_gen_data` contains where 
+`data_preprocessing_for_fitting` can find the files it needs for the MLIP fit. 
+"Data" contains the [phonon calculation task documents](https://materialsproject.github.io/atomate2/reference/atomate2.common.schemas.phonons.PhononBSDOSDoc.html#atomate2.common.schemas.phonons.PhononBSDOSDoc) and "dirs" contains the path to the directory where the jobs 
+were executed.
 "Energies" and "species" are isolated atoms' energies and a list of species used, and "mlip_path" is the path to the MLIP fit files.
 
-The workflow diagram was automatically generated using [Mermaid](https://mermaid.live/) and the job connection data collected by `jobflow` for a simple job default setup with only one MP-ID.
-You can add the following lines to your `autoplex` submission script to generate the specific Mermaid diagram for your own workflow setup:
+The workflow diagram was automatically generated using [Mermaid](https://mermaid.live/) and the job connection data collected by `jobflow` 
+for a simple job default setup with only one MP-ID.
+You can add the following lines to your `autoplex` submission script to generate the specific Mermaid diagram for your 
+own workflow setup:
 ```python
 from jobflow.utils.graph import to_mermaid
 
@@ -105,12 +116,14 @@ print(graph_source)  # show mermaid graph
 ```
 Then you can paste the printed text to the [Mermaid Live Online FlowChart & Diagrams Editor](https://mermaid.live/). 
 
-The `autoplex` workflow is easy to customize and every aspect of the workflow (data generation, MLIP fit, benchmark) is in the control of the user as demonstrated in the subsequent tutorial pages.
+The `autoplex` workflow is easy to customize and every aspect of the workflow (data generation, MLIP fit, benchmark) is 
+in the control of the user as demonstrated in the subsequent tutorial pages.
 
 ## Workflow management
 
 You can manage your `autoplex` workflow using [`FireWorks`](https://materialsproject.github.io/fireworks/) or [`jobflow-remote`](https://matgenix.github.io/jobflow-remote/). 
 Please follow the installation and setup instructions on the respective guide website.
+Both packages rely on the [MongoDB](https://www.mongodb.com/) database manager for data storage.
 
 Submission using `FireWorks`:
 ```python
@@ -164,7 +177,8 @@ print(submit_flow(autoplex_flow, worker="autoplex_worker", resources=resources, 
 
 ## Output and results
 
-The default `autoplex` workflow provides you with diagnostic and benchmark output plots and results. Please note that the current shown results are the autoplex unit test examples and have not been produced by the tutorial settings.
+The default `autoplex` workflow provides you with diagnostic and benchmark output plots and results. 
+Please note that the current shown results are the autoplex unit test examples and have not been produced by the tutorial settings.
 
 After the MLIP fit is finished, `autoplex` outputs the training and the testing error of the current potential that is fitted.
 
@@ -173,12 +187,15 @@ Training error of MLIP (eV/at.): 0.0049634
 Testing error of MLIP (eV/at.): 0.0023569
 ```
 
-"MLIP vs. DFT" plots for the energy and force values will be automatically saved which provides you with information about the quality of your fit.
+"MLIP vs. DFT" plots for the energy and force values will be automatically saved which provides you with information 
+about the quality of your fit.
 ![autoplex diagnostic](../../_static/energy_forces.png)
 The plot is divided into three sections. First, the energies and forces for the training data, and then for the test data is plotted. `autoplex` also automatically filters the data according to a certain energy threshold (eV) `energy_limit=0.005` as well as a certain force threshold (ev/Å) `force_limit=0.1` to catch outliers resulting from inconsistencies in the data.
-Finally, the energy and force filtered data is plotted in the third section. This can help you to figure out if there is a problem with your data in case the MLIP fit quality does not turn out as expected.
+Finally, the energy and force filtered data is plotted in the third section. This can help you to figure out if there is 
+a problem with your data in case the MLIP fit quality does not turn out as expected.
 
-At the end of each workflow run, `autoplex` also provides you with the benchmark plots for the phonon bandstructure comparison between the ML-based (self) and the DFT-based (other) result,  
+At the end of each workflow run, `autoplex` also provides you with the benchmark plots for the phonon bandstructure 
+comparison between the ML-based (self) and the DFT-based (other) result,  
 ![autoplex default](../../_static/LiCl_band_comparison.png)
 
 
@@ -186,7 +203,8 @@ as well as the q-point wise phonon RMSE plot.
 ![autoplex default](../../_static/LiCl_rmse_phonons.png)
 This will give you feedback of the overall quality of the generated ML potential.
 
-`autoplex` also prints the file `results_LiCl.txt` (here for the example of LiCl) with a summary of the essential results of your workflow setup.
+`autoplex` also prints the file `results_LiCl.txt` (here for the example of LiCl) with a summary of the essential 
+results of your workflow setup.
 ```text
 Potential  Structure  MPID        Displacement (Å)  RMSE (THz)  Hyperparameters (atom-wise f, n_sparse, SOAP delta)    imagmodes(pot)  imagmodes(dft)
 GAP        LiCl       mp-22905    0.01              0.47608     {'f=0.1': 'default'}                                   False           False

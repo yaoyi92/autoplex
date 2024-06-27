@@ -96,5 +96,54 @@ comp_bm = write_benchmark_metrics(
 
 run_locally([phojob, bm, comp_bm], create_folders=True, store=store)
 ```
-If you use another [`ForceFieldRelaxMaker` and `ForceFieldStaticMaker`](https://github.com/materialsproject/atomate2/blob/main/src/atomate2/forcefields/jobs.py), you can switch from GAP to one of the other [MLIP potentials](../fitting/fitting.md#fitting-potentials).
+If you use another [`ForceFieldRelaxMaker` and `ForceFieldStaticMaker`](https://github.com/materialsproject/atomate2/blob/main/src/atomate2/forcefields/jobs.py), you can switch from GAP to one of the other 
+[MLIP potentials](../fitting/fitting.md#fitting-potentials).
+
+You can extract a JSON file containing your pre-existing VASP DFT run from your MongoDB with the following script:
+```python
+from jobflow import SETTINGS
+from monty.json import jsanitize
+from monty.serialization import dumpfn
+
+store = SETTINGS.JOB_STORE
+store.connect()
+
+result = store.query( {'name': 'generate_frequencies_eigenvectors'}, load=True)
+phononbsdosdoc = store.query({'uuid': 'put the MongoDB UUID here'}, load=True)
+for i in phononbsdosdoc:
+    del i["_id"]
+    monty_encoded_json_doc = jsanitize(i, allow_bson=True, strict=True, enum_values=True)
+    
+    dumpfn(monty_encoded_json_doc, 'PhononBSDOSDoc_mp_22905.json')
+```
+
+And check if it contains the correct output with:
+```python
+from monty.serialization import loadfn
+
+data = loadfn('PhononBSDOSDoc_mp_22905.json')
+data['output'].structure  
+```
+
+Your output for `structure` should look like:
+```bash
+Structure Summary
+Lattice
+    abc : 5.061019144638489 5.061019144638489 5.061019144638489
+ angles : 90.0 90.0 90.0
+ volume : 129.63251308285152
+      A : 5.061019144638489 -0.0 3e-16
+      B : 8e-16 5.061019144638489 3e-16
+      C : 0.0 -0.0 5.061019144638489
+    pbc : True True True
+PeriodicSite: Li (0.0, 0.0, 0.0) [0.0, 0.0, 0.0]
+PeriodicSite: Li (4e-16, 2.531, 2.531) [0.0, 0.5, 0.5]
+PeriodicSite: Li (2.531, 0.0, 2.531) [0.5, 0.0, 0.5]
+PeriodicSite: Li (2.531, 2.531, 3e-16) [0.5, 0.5, 0.0]
+PeriodicSite: Cl (2.531, 0.0, 1.5e-16) [0.5, 0.0, 0.0]
+PeriodicSite: Cl (2.531, 2.531, 2.531) [0.5, 0.5, 0.5]
+PeriodicSite: Cl (0.0, 0.0, 2.531) [0.0, 0.0, 0.5]
+PeriodicSite: Cl (4e-16, 2.531, 1.5e-16) [0.0, 0.5, 0.0]
+```
+
 
