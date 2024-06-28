@@ -38,7 +38,7 @@ class MLIPFitMaker(Maker):
         Name of the flows produced by this maker.
     mlip_type: str
         Choose one specific MLIP type:
-        'GAP' | 'ACE' | 'Nequip' | 'M3GNet' | 'MACE'
+        'GAP' | 'J-ACE' | 'P-ACE' | 'Nequip' | 'M3GNet' | 'MACE'
     mlip_hyper: dict
         basic MLIP hyperparameters
     """
@@ -51,11 +51,11 @@ class MLIPFitMaker(Maker):
         self,
         fit_input: dict,
         species_list: list | None = None,
-        isolated_atoms_energy: list | None = None,
-        isol_es: dict | None = None,
+        isolated_atoms_energies: dict | None = None,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
         regularization: bool = False,
+        distillation: bool = True,
         separated: bool = False,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
@@ -74,15 +74,21 @@ class MLIPFitMaker(Maker):
         ----------
         species_list : list.
             List of element names (str)
-        isolated_atoms_energy : list.
-            List of isolated atoms energy
+        isolated_atoms_energies : dict
+            Dict of isolated atoms energies.
         fit_input : dict.
-            PhononDFTMLDataGenerationFlow output
+            CompletePhononDFTMLDataGenerationFlow output.
         split_ratio: float.
             Parameter to divide the training set and the test set.
             A value of 0.1 means that the ratio of the training set to the test set is 9:1.
         f_max: float
             Maximally allowed force in the data set.
+        regularization: bool
+            For using sigma regularization.
+        distillation: bool
+            For using data distillation.
+        separated: bool
+            Repeat the fit for each data_type available in the (combined) database.
         pre_xyz_files: list[str] or None
             names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
@@ -97,15 +103,17 @@ class MLIPFitMaker(Maker):
             automatically determine delta for 2b, 3b and soap terms.
         glue_xml: bool
             use the glue.xml core potential instead of fitting 2b terms.
+        num_processes: int
+            number of processes for fitting.
         fit_kwargs : dict.
-            dict including gap fit keyword args.
+            dict including MLIP fit keyword args.
         """
         jobs = []
         data_prep_job = DataPreprocessing(
             split_ratio=split_ratio,
             regularization=regularization,
             separated=separated,
-            distillation=True,
+            distillation=distillation,
             f_max=f_max,
         ).make(
             fit_input=fit_input,
@@ -125,7 +133,7 @@ class MLIPFitMaker(Maker):
 
         mlip_fit_job = machine_learning_fit(
             database_dir=data_prep_job.output,
-            isol_es=isol_es,
+            isolated_atoms_energies=isolated_atoms_energies,
             auto_delta=auto_delta,
             glue_xml=glue_xml,
             mlip_type=self.mlip_type,
@@ -158,7 +166,7 @@ class DataPreprocessing(Maker):
     separated: bool
         Repeat the fit for each data_type available in the (combined) database.
     distillation: bool
-        For using distillation.
+        For using data distillation.
     f_max: float
         Maximally allowed force in the data set.
 

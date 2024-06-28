@@ -70,12 +70,13 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
         ``{"my_file:txt": "contents of the file"}``.
     """
 
+    name: str = "dft static"
     run_vasp_kwargs: dict = field(default_factory=lambda: {"handlers": ()})
 
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
             user_incar_settings={
-                "IBRION": 2,
+                "IBRION": -1,
                 "ISPIN": 1,
                 "ISMEAR": 0,
                 "ISIF": 3,
@@ -127,13 +128,14 @@ class TightDFTStaticMakerBigSupercells(PhononDisplacementMaker):
         ``{"my_file:txt": "contents of the file"}``.
     """
 
+    name: str = "dft phonon static big supercell"
     run_vasp_kwargs: dict = field(default_factory=lambda: {"handlers": ()})
 
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
-            user_kpoints_settings={"reciprocal_density": 1000},
+            user_kpoints_settings={"reciprocal_density": 500},
             user_incar_settings={
-                "IBRION": 2,
+                "IBRION": -1,
                 "ISPIN": 1,
                 "ISMEAR": 0,
                 "ISIF": 3,
@@ -234,7 +236,7 @@ class DFTPhononMaker(PhononMaker):
         if True, force constants will be stored
     """
 
-    name: str = "phonon"
+    name: str = "dft phonon"
     sym_reduce: bool = True
     symprec: float = 1e-4
     displacement: float = 0.01
@@ -242,6 +244,8 @@ class DFTPhononMaker(PhononMaker):
     prefer_90_degrees: bool = True
     get_supercell_size_kwargs: dict = field(default_factory=lambda: {"max_atoms": 1500})
     use_symmetrized_structure: str | None = None
+    create_thermal_displacements: bool = False
+    store_force_constants: bool = False
     generate_frequencies_eigenvectors_kwargs: dict = field(
         default_factory=lambda: {"tol_imaginary_modes": 1e-1}
     )
@@ -263,7 +267,7 @@ class DFTPhononMaker(PhononMaker):
         )
     )
 
-    phonon_displacement_maker: BaseVaspMaker = field(
+    phonon_displacement_maker: BaseVaspMaker | None = field(
         default_factory=TightDFTStaticMaker
     )
 
@@ -362,6 +366,7 @@ class MLPhononMaker(FFPhononMaker):
         if True, force constants will be stored
     """
 
+    name: str = "ml phonon"
     min_length: float | None = 20.0
     bulk_relax_maker: ForceFieldRelaxMaker | None = field(
         default_factory=lambda: GAPRelaxMaker(
@@ -369,7 +374,7 @@ class MLPhononMaker(FFPhononMaker):
         )
     )
     phonon_displacement_maker: ForceFieldStaticMaker | None = field(
-        default_factory=lambda: GAPStaticMaker()
+        default_factory=lambda: GAPStaticMaker(name="ml phonon static")
     )
     static_energy_maker: ForceFieldStaticMaker | None = field(
         default_factory=lambda: GAPStaticMaker()
@@ -543,7 +548,7 @@ class RandomStructuresDataGenerator(Maker):
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
-    phonon_displacement_maker: BaseVaspMaker = field(
+    phonon_displacement_maker: BaseVaspMaker | None = field(
         default_factory=TightDFTStaticMaker
     )
     bulk_relax_maker: BaseVaspMaker = field(
@@ -693,6 +698,11 @@ class IsoAtomMaker(Maker):
                 name=str(species) + "-statisoatom",
                 input_set_generator=StaticSetGenerator(
                     user_kpoints_settings={"grid_density": 1},
+                    user_incar_settings={
+                        "ISPIN": 1,
+                        "LAECHG": False,
+                        "ISMEAR": 0,
+                    },
                 ),
             ).make(iso_atom)
 

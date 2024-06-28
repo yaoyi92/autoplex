@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
-    from pymatgen.core import Structure
 
 import os
 import pickle
@@ -18,6 +17,7 @@ from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
 from jobflow.core.job import job
 from phonopy.structure.cells import get_supercell
+from pymatgen.core import Structure
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.common.utils import (
@@ -48,7 +48,6 @@ def convert_to_extxyz(job_output, pkl_file, config_type, factor):
     """
     with open(Path(job_output.dir_name) / Path(pkl_file), "rb") as file:
         traj_obj = pickle.load(file)
-    # ForceFieldTaskDocument.from_ase_compatible_result() has no attribute dir_name implemented
     data = to_ase_trajectory(traj_obj=traj_obj)
     data[-1].write("tmp.xyz")
     file = read("tmp.xyz", index=":")
@@ -70,7 +69,7 @@ def convert_to_extxyz(job_output, pkl_file, config_type, factor):
 @job
 def plot_force_distribution(
     cell_factor: float,
-    path,
+    path: str,
     x_min: int = 0,
     x_max: int = 5,
     bin_width: float = 0.125,
@@ -82,6 +81,8 @@ def plot_force_distribution(
     ----------
     cell_factor: float
         factor to resize cell parameters.
+    path:
+        Path to the ref_XYZ.extxyz file.
     x_min: int
         minimum value for the plot x-axis.
     x_max: int
@@ -113,15 +114,13 @@ def plot_force_distribution(
         plt.hist(plot_data, bins=bins, edgecolor="black")
         plt.title(f"Data for factor {cell_factor}")
 
-        plt.savefig("Data_factor_" + str(cell_factor).replace(".", "") + ".png")
-        plt.show()
+        plt.savefig("data_factor_" + str(cell_factor).replace(".", "") + ".png")
 
         plot_total += plot_data
     plt.hist(plot_total, bins=bins, edgecolor="black")
     plt.title("Data")
 
-    plt.savefig("Total_data.png")
-    plt.show()
+    plt.savefig("total_data.png")
 
 
 @job
@@ -148,7 +147,7 @@ def get_supercell_job(structure: Structure, supercell_matrix: Matrix3D):
     return get_pmg_structure(supercell)
 
 
-@job
+@job(data=[Structure])
 def generate_randomized_structures(
     structure: Structure,
     supercell_matrix: Matrix3D | None = None,

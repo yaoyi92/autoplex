@@ -22,7 +22,7 @@ GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 def machine_learning_fit(
     database_dir: str,
     species_list: list,
-    isol_es: dict | None = None,
+    isolated_atoms_energies: dict | None = None,
     num_processes: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
@@ -39,8 +39,8 @@ def machine_learning_fit(
     ----------
     database_dir: str
         the database directory.
-    isol_es:
-        isolated es.
+    isolated_atoms_energies: dict | None
+        Dict of isolated atoms energies.
     num_processes: int
         number of processes for fitting.
     auto_delta: bool
@@ -51,7 +51,7 @@ def machine_learning_fit(
         optional dictionary with parameters for gap fitting.
     mlip_type: str
         Choose one specific MLIP type:
-        'GAP' | 'ACE' | 'Nequip' | 'M3GNet' | 'MACE'
+        'GAP' | 'J-ACE' | 'P-ACE' | 'Nequip' | 'M3GNet' | 'MACE'
     mlip_hyper: dict
         basic MLIP hyperparameters
     regularization: bool
@@ -160,7 +160,7 @@ def machine_learning_fit(
             totaldegree=mlip_hyper["totaldegree"],
             cutoff=mlip_hyper["cutoff"],
             solver=mlip_hyper["solver"],
-            isol_es=isol_es,
+            isolated_atoms_energies=isolated_atoms_energies,
             num_processes=num_processes,
         )
 
@@ -177,7 +177,7 @@ def machine_learning_fit(
             batch_size=mlip_hyper["batch_size"],
             learning_rate=mlip_hyper["learning_rate"],
             max_epochs=mlip_hyper["max_epochs"],
-            isol_es=isol_es,
+            isolated_atoms_energies=isolated_atoms_energies,
             default_dtype=mlip_hyper["default_dtype"],
             device=mlip_hyper["device"],
         )

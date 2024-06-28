@@ -27,7 +27,7 @@ def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     ml_bs = PhononBandStructureSymmLine.from_dict(dummy_bs_dict)
 
     benchmark_job = compute_bandstructure_benchmark_metrics(
-        structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
+        ml_model="GAP", structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
     )
 
     responses = run_locally(benchmark_job, create_folders=False, ensure_success=True)
@@ -64,7 +64,7 @@ def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
     ml_bs = get_ph_bs_symm_line(bands_path=ml_bs_file_path)
 
     benchmark_job = compute_bandstructure_benchmark_metrics(
-        structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
+        ml_model="GAP",structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
     )
 
     responses = run_locally(benchmark_job, create_folders=False, ensure_success=True)

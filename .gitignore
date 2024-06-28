@@ -49,6 +49,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+job*/
 
 # Translations
 *.mo
@@ -69,6 +70,8 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+_build/
+autoplex*.rst
 
 # PyBuilder
 .pybuilder/

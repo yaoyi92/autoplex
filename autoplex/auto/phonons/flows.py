@@ -20,10 +20,6 @@ from autoplex.auto.phonons.jobs import (
     get_iso_atom,
 )
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
-from autoplex.data.phonons.flows import (
-    TightDFTStaticMaker,
-    TightDFTStaticMakerBigSupercells,
-)
 from autoplex.fitting.common.flows import MLIPFitMaker
 
 __all__ = ["CompleteDFTvsMLBenchmarkWorkflow"]
@@ -71,7 +67,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Symmetry precision to use in the
         reduction of symmetry to find the primitive/conventional cell
         (use_primitive_standard_structure, use_conventional_standard_structure)
-        and to handle all symmetry-related tasks in phonopy
+        and to handle all symmetry-related tasks in phonopy.
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
@@ -113,9 +109,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Default=10.
     ml_models: list[str]
         list of the ML models to be used. Default is GAP.
-    mlip_hyper: dict
-        basic MLIP hyperparameters
-    HPloop: bool
+    mlip_hyper: list[dict]
+        list with basic MLIP hyperparameters for each model.
+        Default are basic GAP hyperparameters {"two_body": True, "three_body": False, "soap": True}.
+    hyper_para_loop: bool
         making it easier to loop through several hyperparameter sets.
     atomwise_regularization_list: list
         List of atom-wise regularization parameters that are checked.
@@ -129,9 +126,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     add_dft_phonon_struct: bool = True
     add_dft_random_struct: bool = True
     add_rss_struct: bool = False
-    phonon_displacement_maker: BaseVaspMaker = field(
-        default_factory=TightDFTStaticMaker
-    )
+    phonon_displacement_maker: BaseVaspMaker = None
     n_structures: int = 10
     displacements: list[float] = field(default_factory=lambda: [0.01])
     min_length: int = 20
@@ -150,8 +145,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
     ml_models: list[str] = field(default_factory=lambda: ["GAP"])
-    mlip_hyper: dict | None = None
-    HPloop: bool = False
+    mlip_hyper: list[dict] | None = None
+    hyper_para_loop: bool = False
     atomwise_regularization_list: list | None = None
     soap_delta_list: list | None = None
     n_sparse_list: list | None = None
@@ -181,7 +176,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         structure_list:
             list of pymatgen structures.
         mp_ids:
-            materials project id.
+            materials project IDs.
         split_ratio: float.
             Parameter to divide the training set and the test set.
             A value of 0.1 means that the ratio of the training set to the test set is 9:1.
@@ -200,17 +195,22 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         auto_delta: bool
             automatically determine delta for 2b, 3b and soap terms.
         dft_references: list[PhononBSDOSDoc] | None
-            DFT reference file containing the PhononBSDOCDoc object.
+            a list of DFT reference files containing the PhononBSDOCDoc object.
         benchmark_structures: list[Structure] | None
             pymatgen structure for benchmarking.
         benchmark_mp_ids: list[str] | None
             Materials Project ID of the benchmarking structure.
+        fit_kwargs : dict.
+            dict including MLIP fit keyword args.
 
         """
         flows = []
         fit_input = {}
         hyper_list: list[dict[Any, Any]] = []
         bm_outputs = []
+        if self.mlip_hyper is None:
+            self.mlip_hyper = [{"two_body": True, "three_body": False, "soap": True}]
+
         for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
@@ -235,8 +235,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
-                if self.min_length >= 20:
-                    self.phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
                 addDFTphon = self.add_dft_phonons(
                     structure,
                     self.displacements,
@@ -259,9 +257,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 {"IsolatedAtom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
             )
 
-        for ml_model in self.ml_models:
+        for ml_model, ml_hyper in zip(self.ml_models, self.mlip_hyper):
             add_data_fit = MLIPFitMaker(
-                mlip_type=ml_model, mlip_hyper=self.mlip_hyper
+                mlip_type=ml_model,
+                mlip_hyper=ml_hyper,
             ).make(
                 species_list=isoatoms.output["species"],
                 isolated_atoms_energy=isoatoms.output["energies"],
@@ -303,7 +302,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                         ibenchmark_structure=ibenchmark_structure,
                         benchmark_structure=benchmark_structure,
                         min_length=self.min_length,
-                        ml_model=add_data_fit.output["mlip_path"],
+                        ml_model=ml_model,
+                        ml_path=add_data_fit.output["mlip_path"],
                         mp_ids=mp_ids,
                         benchmark_mp_ids=benchmark_mp_ids,
                         add_dft_phonon_struct=self.add_dft_phonon_struct,
@@ -315,7 +315,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     flows.append(complete_bm)
                     bm_outputs.append(complete_bm.output)
 
-            if self.HPloop:
+            if self.hyper_para_loop:
                 if self.atomwise_regularization_list is None:
                     self.atomwise_regularization_list = [0.1, 0.01, 0.001, 0.0001]
                 if self.soap_delta_list is None:
@@ -340,7 +340,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 "delta": delta,
                             }
                             loop_data_fit = MLIPFitMaker(
-                                mlip_type=ml_model, mlip_hyper=self.mlip_hyper
+                                mlip_type=ml_model, mlip_hyper=ml_hyper
                             ).make(
                                 species_list=isoatoms.output["species"],
                                 isolated_atoms_energy=isoatoms.output["energies"],
@@ -370,7 +370,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                         ibenchmark_structure=ibenchmark_structure,
                                         benchmark_structure=benchmark_structure,
                                         min_length=self.min_length,
-                                        ml_model=loop_data_fit.output["mlip_path"],
+                                        ml_model=ml_model,
+                                        ml_path=loop_data_fit.output["mlip_path"],
                                         mp_ids=mp_ids,
                                         benchmark_mp_ids=benchmark_mp_ids,
                                         add_dft_phonon_struct=self.add_dft_phonon_struct,

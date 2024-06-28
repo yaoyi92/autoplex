@@ -13,7 +13,7 @@ from scipy.spatial import ConvexHull, Delaunay
 def set_sigma(
     atoms,
     reg_minmax,
-    isol_es: dict | None = None,
+    isolated_atoms_energies: dict | None = None,
     scheme="linear-hull",
     energy_name="REF_energy",
     force_name="REF_forces",
@@ -43,7 +43,7 @@ def set_sigma(
         name of force key in atoms.arrays
     virial_name: (str)
         name of virial key in atoms.info
-    isol_es: (dict)
+    isolated_atoms_energies: (dict)
         dictionary of isolated energies for each atomic number.
         Only needed for volume-x scheme e.g. {14: '-163.0', 8:'-75.0'}
         for SiO2
@@ -94,11 +94,11 @@ def set_sigma(
 
     elif scheme == "volume-stoichiometry":
         print("Regularising with 3D volume-mole fraction hull")
-        if isol_es == {}:
+        if isolated_atoms_energies == {}:
             raise ValueError("Need to supply dictionary of isolated energies.")
 
         p = label_stoichiometry_volume(
-            atoms, isol_es, energy_name, element_order=element_order
+            atoms, isolated_atoms_energies, energy_name, element_order=element_order
         )  # label atoms with volume and mole fraction
         hull = calculate_hull_3D(p)  # calculate 3D convex hull
         get_e_distance_func = get_e_distance_to_hull_3D  # type: ignore
@@ -127,7 +127,10 @@ def set_sigma(
 
         for val in atoms_group:
             de = get_e_distance_func(
-                hull, val, energy_name=energy_name, isol_es=isol_es
+                hull,
+                val,
+                energy_name=energy_name,
+                isolated_atoms_energies=isolated_atoms_energies,
             )
 
             if de > max_energy:
@@ -243,7 +246,8 @@ def get_convex_hull(atoms, energy_name="energy", **kwargs):
         except Exception:
             ct += 1
     if ct > 0:
-        print(f"Convex hull failed to include {ct}/{len(atoms)} structures")
+        raise ValueError(f"Convex hull failed to include {ct}/{len(atoms)} structures")
+
     p = np.array(p)
     p = p.T[:, np.argsort(p.T[0])].T  # sort in volume axis
 
@@ -272,7 +276,7 @@ def get_convex_hull(atoms, energy_name="energy", **kwargs):
     return lower_half_hull_points, p
 
 
-def get_e_distance_to_hull(hull, at, energy_name="energy", **kwargs):
+def get_e_distance_to_hull(hull: np.array, at, energy_name="energy", **kwargs):
     """
     Calculate the distance of a structure to the linear convex hull in energy.
 
@@ -373,7 +377,9 @@ def get_x(at, element_order=None):
     return x
 
 
-def label_stoichiometry_volume(ats, isol_es, e_name, element_order=None):
+def label_stoichiometry_volume(
+    ats, isolated_atoms_energies, e_name, element_order=None
+):
     """
     Calculate the stoichiometry, energy, and volume coordinates for forming the convex hull.
 
@@ -381,7 +387,7 @@ def label_stoichiometry_volume(ats, isol_es, e_name, element_order=None):
     ----------
     ats: (list)
         list of atoms objects
-    isol_es: (dict)
+    isolated_atoms_energies: (dict)
         dictionary of isolated atom energies {atomic_number: energy}
     e_name: (str)
         name of energy key in atoms.info (typically a DFT energy)
@@ -395,7 +401,8 @@ def label_stoichiometry_volume(ats, isol_es, e_name, element_order=None):
             v = at.get_volume() / len(at)
             # make energy relative to isolated atoms
             e = (
-                at.info[e_name] - sum([isol_es[j] for j in at.get_atomic_numbers()])
+                at.info[e_name]
+                - sum([isolated_atoms_energies[j] for j in at.get_atomic_numbers()])
             ) / len(at)
             x = get_x(at, element_order=element_order)
             p.append(np.hstack((x, v, e)))
@@ -523,7 +530,7 @@ def calculate_hull_ND(p):
 
 
 def get_e_distance_to_hull_3D(
-    hull, at, isol_es=None, energy_name="energy", element_order=None
+    hull, at, isolated_atoms_energies=None, energy_name="energy", element_order=None
 ):
     """
     Calculate the energy distance to the convex hull in 3D.
@@ -534,7 +541,7 @@ def get_e_distance_to_hull_3D(
         convex hull.
     at: (ase.Atoms)
         structure to calculate mole-fraction of
-    isol_es: (dict)
+    isolated_atoms_energies: (dict)
         dictionary of isolated atom energies
     energy_name: (str)
         name of energy key in atoms.info (typically a DFT energy)
@@ -544,7 +551,8 @@ def get_e_distance_to_hull_3D(
     """
     x = get_x(at, element_order=element_order)
     e = (
-        at.info[energy_name] - sum([isol_es[j] for j in at.get_atomic_numbers()])
+        at.info[energy_name]
+        - sum([isolated_atoms_energies[j] for j in at.get_atomic_numbers()])
     ) / len(at)
     v = at.get_volume() / len(at)
 
