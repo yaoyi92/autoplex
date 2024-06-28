@@ -22,6 +22,7 @@ def test_benchmark(test_dir, clean_dir):
     os.chdir(test_dir / "benchmark")
 
     benchmark_flow = PhononBenchmarkMaker().make(
+        ml_model="GAP",
         structure=dft_doc.structure,
         ml_phonon_task_doc =ml_doc,
         dft_phonon_task_doc =dft_doc,

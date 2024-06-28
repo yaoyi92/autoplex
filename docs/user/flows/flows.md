@@ -195,7 +195,7 @@ Finally, the energy and force filtered data is plotted in the third section. Thi
 a problem with your data in case the MLIP fit quality does not turn out as expected.
 
 At the end of each workflow run, `autoplex` also provides you with the benchmark plots for the phonon bandstructure 
-comparison between the ML-based (self) and the DFT-based (other) result,  
+comparison between the ML-based (here GAP) and the DFT-based result.  
 ![autoplex default](../../_static/LiCl_band_comparison.png)
 
 
