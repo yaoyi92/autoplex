@@ -727,7 +727,9 @@ def plot_energy_forces(
     fig.set_size_inches(15, 20)
     ax_list = ax_list.flat[:]
 
-    pretty_species_list = str(species_list).replace("['", "").replace("']", "")
+    pretty_species_list = (
+        str(species_list).replace("['", "").replace("']", "").replace("'", "")
+    )
 
     energy_plot(train_name, "quip_" + train_name, ax_list[0], "Energy on training data")
     # rmse_train =
