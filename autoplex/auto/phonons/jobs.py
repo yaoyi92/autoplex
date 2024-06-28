@@ -84,8 +84,10 @@ def complete_benchmark(  # this function was put here to prevent circular import
     if min_length >= 18:
         phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
     for suffix in ["", "_wo_sigma", "_phonon", "_rand_struc"]:
-        if Path(Path(ml_path) / f"gap_file{suffix}.xml").exists():
-            # TODO: this needs to beextended for the other MLIPs
+        if Path(
+            Path(ml_path) / f"gap_file{suffix}.xml"
+        ).exists():  # MLIP integration starts here
+            # TODO: this needs to be extended for the other MLIPs
             add_data_ml_phonon = MLPhononMaker(
                 min_length=min_length,
             ).make_from_ml_model(
