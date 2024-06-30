@@ -33,7 +33,7 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
 
 The MLIP model specific settings and hyperparameters setup varies from model to model and is demonstrated in the next 
 sections. 
-Note that `autoplex` provides the most comprehensive features for **GAP** and more features for the other models will 
+> ℹ️ Note that `autoplex` provides the most comprehensive features for **GAP**, and more features for the other models will 
 follow in future versions.  
 
 ## GAP
