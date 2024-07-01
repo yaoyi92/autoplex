@@ -486,8 +486,14 @@ class MLPhononMaker(FFPhononMaker):
         else:  # MACE
             if calculator_kwargs is None:
                 calculator_kwargs = {"model": str(potential_file), "device": "cuda"}
+            elif "model" in calculator_kwargs and calculator_kwargs["model"]:
+                calculator_kwargs.update(
+                    {"default_dtype": "float64"}
+                )  # Use float64 for geometry optimization.
             else:
-                calculator_kwargs.update({"model": str(potential_file)})
+                calculator_kwargs.update(
+                    {"model": str(potential_file), "default_dtype": "float64"}
+                )
 
             ml_prep = ml_phonon_maker_preparation(
                 bulk_relax_maker=MACERelaxMaker(

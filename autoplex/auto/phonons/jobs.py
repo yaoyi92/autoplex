@@ -104,7 +104,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
             # M3GNET requires directory: str
             # also need to find a different solution for separated fit then
         else:  # MACE
-            ml_potential = Path(ml_path) / f"MACE_model_saw{suffix}.model"
+            ml_potential = Path(ml_path) / f"MACE_model{suffix}.model"
 
         if Path(ml_potential).exists():
             add_data_ml_phonon = MLPhononMaker(
