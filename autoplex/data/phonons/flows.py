@@ -486,7 +486,7 @@ class MLPhononMaker(FFPhononMaker):
         else:  # MACE
             if calculator_kwargs is None:
                 calculator_kwargs = {"model": str(potential_file), "device": "cuda"}
-            elif "model" in calculator_kwargs and calculator_kwargs["model"]:
+            elif "model" in calculator_kwargs:
                 calculator_kwargs.update(
                     {"default_dtype": "float64"}
                 )  # Use float64 for geometry optimization.
