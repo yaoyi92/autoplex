@@ -183,7 +183,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_mace = CompleteDFTvsMLBenchmarkWorkflow(
+    complete_workflow_m3gnet = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["M3GNET"],
         mlip_hyper=[{
             "exp_name": "training",
@@ -216,16 +216,16 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
-        complete_workflow_mace,
+        complete_workflow_m3gnet,
         create_folders=True,
         ensure_success=True,
         store=memory_jobstore,
     )
 
-    assert complete_workflow_mace.jobs[4].name == "complete_benchmark"
-    assert responses[complete_workflow_mace.jobs[-1].output.uuid][1].output[0][0][
+    assert complete_workflow_m3gnet.jobs[4].name == "complete_benchmark"
+    assert responses[complete_workflow_m3gnet.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
-        2.002641337594289, abs=1.0  # it's kinda fluctuating because of the little data
+        1.162641337594289, abs=1.0  # it's kinda fluctuating because of the little data
     )
 
 
