@@ -21,7 +21,7 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     structure = Structure.from_file(path_to_struct)
 
     gap_phonon_jobs = MLPhononMaker(min_length=20).make_from_ml_model(
-        structure=structure, ml_model=str(potential_file_dir),
+        structure=structure, potential_file=str(potential_file_dir),
     )
 
     responses = run_locally(
