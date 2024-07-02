@@ -230,7 +230,7 @@ def test_mlip_fit_maker_jace(
 
 
 def test_mlip_fit_maker_nequip(
-        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, #clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     import os
     import shutil
@@ -277,14 +277,14 @@ def test_mlip_fit_maker_nequip(
     # check if NEQUIP potential file is generated
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    #for job_dir in path_to_job_files:
-    #    shutil.rmtree(job_dir)
+    for job_dir in path_to_job_files:
+        shutil.rmtree(job_dir)
 
     os.chdir(parent_dir)
 
 
 def test_mlip_fit_maker_m3gnet(
-        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, #clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     import os
     import shutil
@@ -332,8 +332,8 @@ def test_mlip_fit_maker_m3gnet(
     # check if M3GNET potential file is generated
     assert Path(m3gnetfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    #for job_dir in path_to_job_files:
-    #    shutil.rmtree(job_dir)
+    for job_dir in path_to_job_files:
+        shutil.rmtree(job_dir)
 
     os.chdir(parent_dir)
 

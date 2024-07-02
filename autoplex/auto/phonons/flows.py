@@ -264,7 +264,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 mlip_hyper=ml_hyper,
             ).make(
                 species_list=isoatoms.output["species"],
-                isolated_atoms_energy=isoatoms.output["energies"],
+                isolated_atoms_energies=isoatoms.output["energies"],
                 fit_input=fit_input,
                 split_ratio=split_ratio,
                 f_max=f_max,
@@ -345,7 +345,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 mlip_type=ml_model, mlip_hyper=ml_hyper
                             ).make(
                                 species_list=isoatoms.output["species"],
-                                isolated_atoms_energy=isoatoms.output["energies"],
+                                isolated_atoms_energies=isoatoms.output["energies"],
                                 fit_input=fit_input,
                                 split_ratio=split_ratio,
                                 f_max=f_max,

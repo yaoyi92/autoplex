@@ -28,6 +28,7 @@ from ase.io import read, write
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from dgl.data.utils import split_dataset
+from matgl.apps.pes import Potential
 from matgl.ext.pymatgen import Structure2Graph, get_element_list
 from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
@@ -850,7 +851,9 @@ def m3gnet_fitting(
 
         # save trained model
         model_export_path = os.path.join(results_dir, exp_name)
-        model.save(model_export_path)
+        # model.save(model_export_path)
+        potential = Potential(model=model)
+        potential.save(model_export_path)
 
         sys.stdout = original_stdout
         sys.stderr = original_stderr

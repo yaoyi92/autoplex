@@ -417,7 +417,7 @@ class MLPhononMaker(FFPhononMaker):
             have very strict settings!
         ml_model: str
             ML model to be used. Default is GAP.
-        potential_file : str
+        potential_file :
             Complete path to MLIP file(s)
             Train, test and MLIP files (+ suffixes "", "_wo_sigma", "_phonon", "_rand_struc").
         calculator_kwargs :
@@ -451,7 +451,12 @@ class MLPhononMaker(FFPhononMaker):
 
         elif ml_model == "NEQUIP":
             if calculator_kwargs is None:
-                calculator_kwargs = {"model_path": str(potential_file)}
+                calculator_kwargs = {
+                    "model_path": str(potential_file),
+                    "device": "cuda",
+                }
+            else:
+                calculator_kwargs.update({"model_path": str(potential_file)})
 
             ml_prep = ml_phonon_maker_preparation(
                 bulk_relax_maker=NequipRelaxMaker(

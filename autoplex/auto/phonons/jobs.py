@@ -98,11 +98,12 @@ def complete_benchmark(  # this function was put here to prevent circular import
             ml_potential = Path(ml_path) / f"gap_file{suffix}.xml"
         elif ml_model == "J-ACE":
             raise UserWarning("No atomate2 ACE.jl PhononMaker implemented.")
-        elif ml_model in ["NEQUIP", "M3GNET"]:
-            ml_potential = Path(ml_path.join(suffix))
-            # NEQUIP requires model_path: Any
-            # M3GNET requires directory: str
+        elif ml_model in ["M3GNET"]:
+            ml_potential = Path(ml_path.join(suffix)) / "training"
+            # M3GNet requires path
             # also need to find a different solution for separated fit then
+        elif ml_model in ["NEQUIP"]:
+            ml_potential = Path(ml_path) / f"deployed_nequip_model{suffix}.pth"
         else:  # MACE
             ml_potential = Path(ml_path) / f"MACE_model{suffix}.model"
 
@@ -348,6 +349,7 @@ def get_iso_atom(structure_list: list[Structure]):
         list of pymatgen Structure objects
     """
     jobs = []
+    iso_atoms_dict = {}
     all_species = list(
         {specie for s in structure_list for specie in s.types_of_species}
     )
@@ -355,11 +357,14 @@ def get_iso_atom(structure_list: list[Structure]):
     isoatoms = IsoAtomMaker().make(all_species=all_species)
     jobs.append(isoatoms)
 
+    for i, species in enumerate(all_species):
+        iso_atoms_dict.update({species.number: isoatoms.output["energies"][i]})
+
     flow = Flow(
         jobs,
         {
             "species": all_species,
-            "energies": isoatoms.output["energies"],
+            "energies": iso_atoms_dict,
             "dirs": isoatoms.output["dirs"],
         },
     )
