@@ -5,6 +5,11 @@ import os
 from atomate2.vasp.powerups import update_user_incar_settings
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from pymatgen.core.structure import Structure
+from atomate2.forcefields.jobs import (
+    GAPRelaxMaker,
+    GAPStaticMaker,
+
+)
 
 from autoplex.data.common.flows import GenerateTrainingDataForTesting
 from autoplex.data.phonons.flows import IsoAtomMaker, RandomStructuresDataGenerator, MLPhononMaker
@@ -16,12 +21,17 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     from jobflow import run_locally
 
-    potential_file_dir = test_dir / "fitting" / "ref_files"
+    potential_file = test_dir / "fitting" / "ref_files" / "gap_file.xml"
     path_to_struct = test_dir / "fitting" / "ref_files" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    gap_phonon_jobs = MLPhononMaker(min_length=20).make_from_ml_model(
-        structure=structure, potential_file=str(potential_file_dir),
+    gap_phonon_jobs = MLPhononMaker(
+        min_length=20,
+        bulk_relax_maker=GAPRelaxMaker(relax_cell=True, relax_kwargs={"interval": 500}),
+        phonon_displacement_maker=GAPStaticMaker(name="gap phonon static"),
+        static_energy_maker=GAPStaticMaker(),
+    ).make_from_ml_model(
+        structure=structure, potential_file=potential_file,
     )
 
     responses = run_locally(

@@ -38,25 +38,29 @@ def ml_phonon_maker_preparation(
         Keyword arguments that can be passed to the StaticMaker.
     """
     if bulk_relax_maker is not None:
-        br = bulk_relax_maker
-        bulk_relax_maker = br.update_kwargs(
+        bulk_relax_maker = bulk_relax_maker.update_kwargs(
             update={"calculator_kwargs": calculator_kwargs}
         )
         if relax_maker_kwargs is not None:
-            bulk_relax_maker = br.update_kwargs(update={**relax_maker_kwargs})
+            bulk_relax_maker = bulk_relax_maker.update_kwargs(
+                update={**relax_maker_kwargs}
+            )
+
     if phonon_displacement_maker is not None:
-        ph_disp = phonon_displacement_maker
-        phonon_displacement_maker = ph_disp.update_kwargs(
+        phonon_displacement_maker = phonon_displacement_maker.update_kwargs(
             update={"calculator_kwargs": calculator_kwargs}
         )
         if static_maker_kwargs is not None:
-            phonon_displacement_maker = ph_disp.update_kwargs({**static_maker_kwargs})
+            phonon_displacement_maker = phonon_displacement_maker.update_kwargs(
+                {**static_maker_kwargs}
+            )
     if static_energy_maker is not None:
-        stat_en = static_energy_maker
-        static_energy_maker = stat_en.update_kwargs(
+        static_energy_maker = static_energy_maker.update_kwargs(
             update={"calculator_kwargs": calculator_kwargs}
         )
         if static_maker_kwargs is not None:
-            static_energy_maker = stat_en.update_kwargs(update={**static_maker_kwargs})
+            static_energy_maker = static_energy_maker.update_kwargs(
+                update={**static_maker_kwargs}
+            )
 
     return bulk_relax_maker, phonon_displacement_maker, static_energy_maker

@@ -169,6 +169,8 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
         store=memory_jobstore,
     )
 
+    print("RMSE: ", responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0]["benchmark_phonon_rmse"])
+
     assert complete_workflow.jobs[4].name == "complete_benchmark"
     assert responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0]["benchmark_phonon_rmse"] == pytest.approx(
         2.002641337594289, abs=1.0  # it's kinda fluctuating because of the little data
