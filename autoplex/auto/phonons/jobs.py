@@ -99,9 +99,10 @@ def complete_benchmark(  # this function was put here to prevent circular import
         elif ml_model == "J-ACE":
             raise UserWarning("No atomate2 ACE.jl PhononMaker implemented.")
         elif ml_model in ["M3GNET"]:
-            ml_potential = Path(ml_path.join(suffix)) / "training"
-            # M3GNet requires path
-            # also need to find a different solution for separated fit then
+            ml_potential = (
+                Path(ml_path) / suffix
+            )  # M3GNet requires path and fit already returns the path
+            # also need to find a different solution for separated fit then (name to path could be modified)
         elif ml_model in ["NEQUIP"]:
             ml_potential = Path(ml_path) / f"deployed_nequip_model{suffix}.pth"
         else:  # MACE
