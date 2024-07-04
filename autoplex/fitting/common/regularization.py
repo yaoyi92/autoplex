@@ -5,9 +5,13 @@ from __future__ import annotations
 
 import traceback
 from contextlib import suppress
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from scipy.spatial import ConvexHull, Delaunay
+
+if TYPE_CHECKING:
+    from ase import Atoms
 
 
 def set_sigma(
@@ -21,7 +25,7 @@ def set_sigma(
     element_order=None,
     max_energy=20.0,
     config_type_override=None,
-):
+) -> list[Atoms]:
     """
     Handle automatic regularisation based on distance to convex hull, amongst other things.
 
@@ -216,6 +220,7 @@ def set_sigma(
 
 
 def get_convex_hull(atoms, energy_name="energy", **kwargs):
+    # CE I don't get what the function returns
     """
     Calculate simple linear (E,V) convex hull.
 
@@ -276,7 +281,7 @@ def get_convex_hull(atoms, energy_name="energy", **kwargs):
     return lower_half_hull_points, p
 
 
-def get_e_distance_to_hull(hull: np.array, at, energy_name="energy", **kwargs):
+def get_e_distance_to_hull(hull: np.array, at, energy_name="energy", **kwargs) -> float:
     """
     Calculate the distance of a structure to the linear convex hull in energy.
 
@@ -315,7 +320,7 @@ def get_e_distance_to_hull(hull: np.array, at, energy_name="energy", **kwargs):
     )
 
 
-def get_intersect(a1, a2, b1, b2):
+def get_intersect(a1, a2, b1, b2) -> tuple[float, float] | tuple:
     """
     Return the point of intersection of the lines passing through a2,a1 and b2,b1.
 
@@ -339,7 +344,7 @@ def get_intersect(a1, a2, b1, b2):
     return x / z, y / z
 
 
-def get_x(at, element_order=None):
+def get_x(at, element_order=None) -> float | int:
     """
     Calculate the mole-fraction of a structure.
 
@@ -379,7 +384,7 @@ def get_x(at, element_order=None):
 
 def label_stoichiometry_volume(
     ats, isolated_atoms_energies, e_name, element_order=None
-):
+):  # CE I don't get what the function returns
     """
     Calculate the stoichiometry, energy, and volume coordinates for forming the convex hull.
 
@@ -412,7 +417,7 @@ def label_stoichiometry_volume(
     return p.T[:, np.argsort(p.T[0])].T
 
 
-def point_in_triangle_2D(p1, p2, p3, pn):
+def point_in_triangle_2D(p1, p2, p3, pn) -> bool:
     """
     Check if a point is inside a triangle in 2D.
 
@@ -449,7 +454,7 @@ def point_in_triangle_2D(p1, p2, p3, pn):
     )
 
 
-def point_in_triangle_ND(pn, *preg):
+def point_in_triangle_ND(pn, *preg) -> bool:
     """
     Check if a point is inside a region of hyperplanes in N dimensions.
 
@@ -467,7 +472,7 @@ def point_in_triangle_ND(pn, *preg):
     return hull.find_simplex(pn) >= 0
 
 
-def calculate_hull_3D(p):
+def calculate_hull_3D(p) -> ConvexHull:
     """
     Calculate the convex hull in 3D.
 
@@ -492,7 +497,7 @@ def calculate_hull_3D(p):
     return hull
 
 
-def calculate_hull_ND(p):
+def calculate_hull_ND(p) -> ConvexHull:
     """
     Calculate the convex hull in ND (N>=3).
 
@@ -531,7 +536,7 @@ def calculate_hull_ND(p):
 
 def get_e_distance_to_hull_3D(
     hull, at, isolated_atoms_energies=None, energy_name="energy", element_order=None
-):
+) -> float:
     """
     Calculate the energy distance to the convex hull in 3D.
 
@@ -579,7 +584,7 @@ def get_e_distance_to_hull_3D(
     return 1e6
 
 
-def piecewise_linear(x, vals):
+def piecewise_linear(x, vals) -> Any:
     """
     Piecewise linear.
 

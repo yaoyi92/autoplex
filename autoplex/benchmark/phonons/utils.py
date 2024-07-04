@@ -1,8 +1,15 @@
 """Utility functions for benchmarking jobs."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as np
-from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+    from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 from pymatgen.phonon.plotter import PhononBSPlotter
 
 
@@ -10,7 +17,7 @@ def get_rmse(
     ml_bs: PhononBandStructureSymmLine,
     dft_bs: PhononBandStructureSymmLine,
     q_dependent_rmse: bool = False,
-):
+) -> float | list[float]:
     """
     Compute root mean squared error (rmse) between DFT and ML phonon band-structure.
 
@@ -44,7 +51,7 @@ def rmse_qdep_plot(
     which_q_path=1,
     file_name="rms.pdf",
     img_format="pdf",
-):
+) -> plt:
     """
     Save q dependent root mean squared error plot between DFT and ML phonon band-structure.
 
@@ -94,7 +101,7 @@ def compare_plot(
     ml_bs: PhononBandStructureSymmLine,
     dft_bs: PhononBandStructureSymmLine,
     file_name: str = "band_comparison.pdf",
-):
+) -> Figure:
     """
     Save DFT and ML phonon band-structure overlay plot for visual comparison.
 
