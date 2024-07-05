@@ -1,4 +1,4 @@
-"""fitting using GAP."""
+"""General fitting jobs using several MLIPs available."""
 from __future__ import annotations
 
 from pathlib import Path
