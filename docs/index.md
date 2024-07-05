@@ -13,9 +13,10 @@ reference/index
 ```
 
 ```{toctree}
-:caption: Developer Guide
+:caption: Contirbuting Guide
 :hidden:
 dev/dev_install
+dev/contributing
 ```
 
 ```{toctree}
