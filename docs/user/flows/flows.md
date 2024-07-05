@@ -53,6 +53,8 @@ The `autoplex` workflow will then perform automated VASP and `phonopy` calculati
 Of course, you can change and adjust the settings to your own needs, e.g. by setting a smaller supercell for the 
 `phonopy` calculations using `CompleteDFTvsMLBenchmarkWorkflow(min_length=15).make(...)`. 
 You can find more details on the subsequent tutorial pages.
+With additional flows or jobs in the `[complete_flow]` list, 
+you can combine the `autoplex` flow with other flows and jobs.
 
 The following workflow diagram will give you an overview of the flows and jobs in the default autoplex workflow:
 ```{mermaid}
