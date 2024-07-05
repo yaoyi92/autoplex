@@ -53,6 +53,8 @@ The `autoplex` workflow will then perform automated VASP and `phonopy` calculati
 Of course, you can change and adjust the settings to your own needs, e.g. by setting a smaller supercell for the 
 `phonopy` calculations using `CompleteDFTvsMLBenchmarkWorkflow(min_length=15).make(...)`. 
 You can find more details on the subsequent tutorial pages.
+With additional flows or jobs in the `[complete_flow]` list, 
+you can combine the `autoplex` flow with other flows and jobs.
 
 The following workflow diagram will give you an overview of the flows and jobs in the default autoplex workflow:
 ```{mermaid}
@@ -124,6 +126,9 @@ in the control of the user as demonstrated in the subsequent tutorial pages.
 You can manage your `autoplex` workflow using [`FireWorks`](https://materialsproject.github.io/fireworks/) or [`jobflow-remote`](https://matgenix.github.io/jobflow-remote/). 
 Please follow the installation and setup instructions on the respective guide website.
 Both packages rely on the [MongoDB](https://www.mongodb.com/) database manager for data storage.
+
+We recommend using `jobflow-remote` as it is more flexible to use, especially on clusters where users cannot store their
+own MongoDB. You can find a more comprehensive `jobflow-remote` tutorial [here](../jobflowremote.md).
 
 Submission using `FireWorks`:
 ```python

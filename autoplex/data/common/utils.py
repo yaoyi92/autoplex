@@ -85,7 +85,7 @@ def scale_cell(
     volume_scale_factor_range: list[float] | None = None,
     n_structures: int = 10,
     volume_custom_scale_factors: list[float] | None = None,
-):
+) -> list[Structure]:
     """
     Take in a pymatgen Structure object and generates stretched or compressed structures.
 
@@ -154,9 +154,9 @@ def scale_cell(
     return distorted_cells
 
 
-def check_distances(structure: Structure, min_distance: float = 1.5):
+def check_distances(structure: Structure, min_distance: float = 1.5) -> bool:
     """
-    Take in a pymatgen Structure object and checks distances between atoms using minimum image convention.
+    Take in a pymatgen Structure object and check minimum distances between atoms using minimum image convention.
 
     Useful after distorting cell angles and rattling to check atoms aren't too close.
 
@@ -191,7 +191,7 @@ def random_vary_angle(
     w_angle: list[float] | None = None,
     n_structures: int = 8,
     angle_max_attempts: int = 1000,
-):
+) -> list[Structure]:
     """
     Take in a pymatgen Structure object and generates angle-distorted structures.
 
@@ -237,10 +237,10 @@ def random_vary_angle(
             volume_custom_scale_factors=[1.03],
         )
 
-        distorted_cells = AseAtomsAdaptor.get_atoms(distorted_cells[0])
+        distorted_supercells: Atoms = AseAtomsAdaptor.get_atoms(distorted_cells[0])
 
-        # getting stretched cell out of array
-        newcell = distorted_cells.cell.cellpar()
+        # getting stretched supercell out of array
+        newcell = distorted_supercells.cell.cellpar()
 
         # current angles
         alpha = atoms_copy.cell.cellpar()[3]
@@ -287,7 +287,7 @@ def std_rattle(
     n_structures: int = 5,
     rattle_std: float = 0.01,
     rattle_seed: int = 42,
-):
+) -> list[Structure]:
     """
     Take in a pymatgen Structure object and generates rattled structures.
 
@@ -331,7 +331,7 @@ def mc_rattle(
     min_distance: float = 1.5,
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
-):
+) -> list[Structure]:
     """
     Take in a pymatgen Structure object and generates rattled structures.
 
@@ -375,7 +375,7 @@ def mc_rattle(
     return [AseAtomsAdaptor.get_structure(xtal) for xtal in mc_rattle]
 
 
-def extract_base_name(filename, is_out=False):
+def extract_base_name(filename, is_out=False) -> str:
     """
     Extract the base of a file name to easier manipulate other file names.
 
@@ -401,7 +401,7 @@ def extract_base_name(filename, is_out=False):
     return "A problem with the files occurred."
 
 
-def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
+def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005) -> None:
     """
     Filter data outliers per energy criteria and write them into files.
 
@@ -457,7 +457,9 @@ def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
     )
 
 
-def filter_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
+def filter_outlier_forces(
+    in_file, out_file, symbol="Si", criteria: float = 0.1
+) -> None:
     """
     Filter data outliers per force criteria and write them into files.
 
@@ -526,12 +528,13 @@ def filter_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1)
     )
 
 
-# copied from libatoms GAP tutorial page and adjusted
 def energy_plot(
     in_file, out_file, ax, title: str = "Plot of energy", label: str = "energy"
-):
+) -> None:
     """
     Plot the distribution of energy per atom on the output vs the input.
+
+    Adapted and adjusted from libatoms GAP tutorial page https://libatoms.github.io/GAP/gap_fitting_tutorial.html.
 
     Parameters
     ----------
@@ -610,7 +613,7 @@ def force_plot(
     symbol: str = "Si",
     title: str = "Plot of force",
     label: str = "force for ",
-):
+) -> float:
     """
     Plot the distribution of force components per atom on the output vs the input.
 
@@ -700,7 +703,7 @@ def plot_energy_forces(
     species_list: list | None = None,
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
-):
+) -> None:
     """
     Plot energy and forces of the data.
 

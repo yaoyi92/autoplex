@@ -13,9 +13,10 @@ reference/index
 ```
 
 ```{toctree}
-:caption: Developer Guide
+:caption: Contributing Guide
 :hidden:
 dev/dev_install
+dev/contributing
 ```
 
 ```{toctree}
@@ -79,9 +80,9 @@ assumes that you have a broad understanding of the key concepts.
 :link: dev/dev_install
 :link-type: doc
 :class-header: bg-light
-**Developer guide**
+**Contributing Guide**
 ^^^
 Do you want to develop your own workflows or improve existing functionalities?
-Check out the developer guide.
+Check out the contributing Guide.
 :::
 ::::

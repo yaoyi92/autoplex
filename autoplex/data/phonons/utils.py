@@ -18,7 +18,11 @@ def ml_phonon_maker_preparation(
     bulk_relax_maker: ForceFieldRelaxMaker,
     phonon_displacement_maker: ForceFieldStaticMaker,
     static_energy_maker: ForceFieldStaticMaker,
-):
+) -> tuple[
+    ForceFieldRelaxMaker | None,
+    ForceFieldStaticMaker | None,
+    ForceFieldStaticMaker | None,
+]:
     """
     Prepare the MLPhononMaker for the respective MLIP model.
 
