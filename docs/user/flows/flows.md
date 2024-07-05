@@ -127,6 +127,9 @@ You can manage your `autoplex` workflow using [`FireWorks`](https://materialspro
 Please follow the installation and setup instructions on the respective guide website.
 Both packages rely on the [MongoDB](https://www.mongodb.com/) database manager for data storage.
 
+We recommend using `jobflow-remote` as it is more flexible to use, especially on clusters where users cannot store their
+own MongoDB. You can find a more comprehensive `jobflow-remote` tutorial [here](../jobflowremote.md).
+
 Submission using `FireWorks`:
 ```python
 from fireworks import LaunchPad
