@@ -75,9 +75,9 @@ The selected project is test_pproject from config file /home/user/.jfremote/test
 ╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ --transfer             -t        INTEGER                  The number of processes dedicated to completing jobs [default: 1]                                                     │
 │ --complete             -com      INTEGER                  The number of processes dedicated to completing jobs [default: 1]                                                     │
-│ --single               -s                                 Use a single process for the runner <---                                                                              │
+│ --single               -s  <---                           Use a single process for the runner                                                                                   │
 │ --log-level            -log      [error|warn|info|debug]  Set the log level of the runner [default: info]                                                                       │
-│ --connect-interactive  -i                                 Wait for the daemon to start and manually log in the connection for interactive remote host. Requires --single. <---  │
+│ --connect-interactive  -i  <---                           Wait for the daemon to start and manually log in the connection for interactive remote host. Requires --single.       │
 │ --help                 -h                                 Show this message and exit.                                                                                           │
 ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
