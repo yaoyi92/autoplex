@@ -150,6 +150,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     atomwise_regularization_list: list | None = None
     soap_delta_list: list | None = None
     n_sparse_list: list | None = None
+    benchmark_kwargs: dict = field(default_factory=dict)
 
     def make(
         self,
@@ -263,7 +264,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 mlip_hyper=ml_hyper,
             ).make(
                 species_list=isoatoms.output["species"],
-                isolated_atoms_energy=isoatoms.output["energies"],
+                isolated_atoms_energies=isoatoms.output["energies"],
                 fit_input=fit_input,
                 split_ratio=split_ratio,
                 f_max=f_max,
@@ -311,6 +312,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                         symprec=self.symprec,
                         phonon_displacement_maker=self.phonon_displacement_maker,
                         dft_references=dft_references,
+                        **self.benchmark_kwargs,
                     )
                     flows.append(complete_bm)
                     bm_outputs.append(complete_bm.output)
@@ -343,7 +345,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 mlip_type=ml_model, mlip_hyper=ml_hyper
                             ).make(
                                 species_list=isoatoms.output["species"],
-                                isolated_atoms_energy=isoatoms.output["energies"],
+                                isolated_atoms_energies=isoatoms.output["energies"],
                                 fit_input=fit_input,
                                 split_ratio=split_ratio,
                                 f_max=f_max,
@@ -379,6 +381,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                         symprec=self.symprec,
                                         phonon_displacement_maker=self.phonon_displacement_maker,
                                         dft_references=dft_references,
+                                        **self.benchmark_kwargs,
                                     )
                                     flows.append(complete_bm)
                                     bm_outputs.append(complete_bm.output)

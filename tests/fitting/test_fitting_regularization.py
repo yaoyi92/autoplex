@@ -7,7 +7,7 @@ from autoplex.fitting.common.regularization import (
     get_convex_hull,
     get_e_distance_to_hull,
     get_intersect,
-    get_x,
+    get_mole_frac,
     label_stoichiometry_volume,
     point_in_triangle_ND,
     point_in_triangle_2D,
@@ -63,79 +63,123 @@ def test_set_sigma(test_dir):
 
 
 def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
-    from jobflow import run_locally
     from ase.io import read
+    from ase import Atoms
     import numpy as np
-    import scipy
 
     file = test_dir / "fitting" / "ref_files" / "quip_train.extxyz"
+    atoms: Atoms = read(file, ":")
 
-    atoms = read(file, ":")
+    # Define the arrays
+    array1 = np.array([
+        [15.2266087, -3.80983557],
+        [15.2266087, -3.81106994],
+        [16.2004607, -3.81927384],
+        [8000.0, -0.28663766]
+    ])
 
-    try:
-        get_convex = get_convex_hull(atoms)
+    array2 = np.array([
+        [15.2266087, -3.80983557],
+        [15.2266087, -3.81106994],
+        [16.2004607, -3.81927384],
+        [16.2004607, -3.81927264],
+        [16.4281758, -3.81869979],
+        [17.6913485, -3.80636951],
+        [17.6913485, -3.80665250],
+        [19.0176670, -3.77969777],
+        [8000.0, -0.27567309],
+        [8000.0, -0.28663766]
+    ])
 
-        responses = run_locally(
-            get_convex, ensure_success=True, create_folders=True, store=memory_jobstore
-        )
+    array3 = np.array([
+        [0.5, 17.6913485, -3.53493109],
+        [0.5, 15.2266087, -3.53839715],
+        [0.5, 16.2004607, -3.54783542],
+        [0.5, 16.2004607, -3.54783422],
+        [0.5, 17.6913485, -3.53521408],
+        [0.5, 16.4281758, -3.54726137],
+        [0.5, 19.017667, -3.50825935],
+        [0.5, 15.2266087, -3.53963152],
+        [1.0, 8000.0, -0.01928852],
+        [1.0, 8000.0, -0.00014539]
+    ])
 
-    except ValueError:
-        print("\nDOES NOT run as intended, error 'Convex hull failed to include 10/10 structures'")
-        assert True
+    lower_half_hull_points, points = get_convex_hull(atoms, energy_name="REF_energy")
+    assert np.allclose(lower_half_hull_points, array1)
+    assert np.allclose(points, array2)
 
-    generic_array = np.array([1, 2, 3, 4, 5])
+    label = label_stoichiometry_volume(atoms, {3: -0.28649227, 17: -0.25638457}, "REF_energy")
+    assert np.allclose(label, array3)
 
-    try:
-        get_e_dist_hull = get_e_distance_to_hull(generic_array, atoms)
-    except AttributeError:
-        print("\nTODO: implement proper unit test")
-        assert True
+    calc_hull = calculate_hull_ND(points)
+    calc_hull_3D = calculate_hull_3D(label)
+    fraction_list = [[1.0]] + [[0.0]] + [[0.5]] * 8
 
-    point1, point2, point3, point4 = [1, 5], [2, 9], [8, 7], [9, 3]
-    point = np.array([[1, 2, 3], [4, 5, 6]])
+    for atom, fraction in zip(atoms, fraction_list):
+        get_e_dist_hull = get_e_distance_to_hull(calc_hull, atom, energy_name="REF_energy")
+        assert get_e_dist_hull == 0
+        get_e_dist_hull_3D = get_e_distance_to_hull_3D(calc_hull_3D, atom, {3: -0.28649227, 17: -0.25638457},
+                                                       "REF_energy")
+        assert round(get_e_dist_hull_3D) == 0
+        getmole_frac = get_mole_frac(atom, element_order=[3, 17])
+        assert getmole_frac == fraction
 
+    point1, point2, point3, point4 = (1, 5), (2, 9), (8, 7), (9, 3)
     get_inter = get_intersect(point1, point2, point3, point4)
-
-    try:
-        getx = get_x(atoms)
-    except AttributeError:
-        print("\nTODO: implement proper unit test")
-        assert True
-
-    try:
-        label = label_stoichiometry_volume(atoms, {3: -0.28649227, 17: -0.25638457}, "energy")
-    except IndexError:
-        print("\nTODO: implement proper unit test")
-        assert True
-
-    try:
-        point_ND = point_in_triangle_ND(point)
-    except ValueError:
-        print("\nTODO: implement proper unit test")
-        assert True
-
+    assert get_inter == (4.75, 20.0)
     point_2d = point_in_triangle_2D(point1, point2, point3, point4)
+    assert point_2d is False
 
-    try:
-        calc_hull = calculate_hull_ND(point)
-    except scipy.spatial._qhull.QhullError:
-        print("\nTODO: implement proper unit test")
-        assert True
+    # Define test values
+    vals = [
+        (1.0, [1.0, 2.0, 3.0]),
+        (2.0, [2.0, 3.0, 4.0]),
+        (3.0, [3.0, 4.0, 5.0]),
+        (4.0, [4.0, 5.0, 6.0])
+    ]
 
-    try:
-        calc_hull_3D = calculate_hull_3D(point)
-    except scipy.spatial._qhull.QhullError:
-        print("\nTODO: implement proper unit test")
-        assert True
+    # Define test values
+    x = 2.5
+    expected_result = np.array([2.5, 3.5, 4.5])
 
-    try:
-        get_e_dist_hull_3D = get_e_distance_to_hull_3D(generic_array, atoms, {3: -0.28649227, 17: -0.25638457}, "energy")
-    except AttributeError:
-        print("\nTODO: implement proper unit test")
-        assert True
+    piece_lin = piecewise_linear(x, vals)
+    assert np.allclose(piece_lin, expected_result)
 
-    try:
-        piece_lin = piecewise_linear(point1, point)
-    except IndexError:
-        print("\nTODO: implement proper unit test")
-        assert True
+    # Define a test case for 2D (Triangle)
+    point_2D_inside = np.array([0.5, 0.5])
+    region_2D = [
+        np.array([0.0, 0.0]),
+        np.array([1.0, 0.0]),
+        np.array([0.0, 1.0])
+    ]
+
+    point_2D_outside = np.array([1.5, 1.5])
+
+    # Test 2D case
+    inside_result_2D = point_in_triangle_ND(point_2D_inside, *region_2D)
+    outside_result_2D = point_in_triangle_ND(point_2D_outside, *region_2D)
+
+    # Point point_2D_inside inside region:
+    assert inside_result_2D
+    # Point point_2D_outside outside region:
+    assert not outside_result_2D
+
+    # Define a test case for 3D (Tetrahedron)
+    point_3D_inside = np.array([0.25, 0.25, 0.25])
+    region_3D = [
+        np.array([0.0, 0.0, 0.0]),
+        np.array([1.0, 0.0, 0.0]),
+        np.array([0.0, 1.0, 0.0]),
+        np.array([0.0, 0.0, 1.0])
+    ]
+
+    point_3D_outside = np.array([1.0, 1.0, 1.0])
+
+    # Test 3D case
+    inside_result_3D = point_in_triangle_ND(point_3D_inside, *region_3D)
+    outside_result_3D = point_in_triangle_ND(point_3D_outside, *region_3D)
+
+    # Point point_3D_inside inside region:
+    assert inside_result_3D
+    # Point point_3D_outside outside region:
+    assert not outside_result_3D

@@ -1,4 +1,4 @@
-"""fitting using GAP."""
+"""General fitting jobs using several MLIPs available."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -33,7 +33,7 @@ def machine_learning_fit(
     **kwargs,
 ):
     """
-    Maker for fitting potential(s).
+    Job for fitting potential(s).
 
     Parameters
     ----------

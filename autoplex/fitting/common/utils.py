@@ -14,6 +14,11 @@ from collections.abc import Iterable
 from functools import partial
 from itertools import combinations
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ase.atoms import Atom
+    from pymatgen.core import Structure
 
 import ase
 import lightning as pl
@@ -28,6 +33,7 @@ from ase.io import read, write
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from dgl.data.utils import split_dataset
+from matgl.apps.pes import Potential
 from matgl.ext.pymatgen import Structure2Graph, get_element_list
 from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
@@ -60,7 +66,7 @@ def gap_fitting(
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
-):
+) -> dict:
     """
     GAP fit and validation job.
 
@@ -228,7 +234,7 @@ def ace_fitting(
     solver: str = "BLR",
     isolated_atoms_energies: dict | None = None,
     num_processes: int = 32,
-):
+) -> dict:
     """
     Perform the ACE (Atomic Cluster Expansion) potential fitting.
 
@@ -388,7 +394,7 @@ def nequip_fitting(
     default_dtype: str = "float32",
     isolated_atoms_energies: dict | None = None,
     device: str = "cuda",
-):
+) -> dict:
     """
     Perform the NequIP potential fitting.
 
@@ -628,7 +634,7 @@ def m3gnet_fitting(
     max_n: int = 4,
     device: str = "cuda",
     test_equal_to_val: bool = True,
-):
+) -> dict:
     """
     Perform the M3GNet potential fitting.
 
@@ -850,7 +856,9 @@ def m3gnet_fitting(
 
         # save trained model
         model_export_path = os.path.join(results_dir, exp_name)
-        model.save(model_export_path)
+        # model.save(model_export_path)
+        potential = Potential(model=model)
+        potential.save(model_export_path)
 
         sys.stdout = original_stdout
         sys.stderr = original_stderr
@@ -941,7 +949,7 @@ def mace_fitting(
     loss: str = None,
     default_dtype: str = None,
     device: str = "cuda",
-):
+) -> dict:
     """
     Perform the MACE potential fitting.
 
@@ -1023,7 +1031,7 @@ def mace_fitting(
     }
 
 
-def check_convergence(test_error):
+def check_convergence(test_error) -> bool:
     """
     Check the convergence of the fit.
 
@@ -1043,7 +1051,7 @@ def check_convergence(test_error):
     return convergence
 
 
-def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path):
+def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path) -> dict:
     """
     Load gap fit default parameters from the json file.
 
@@ -1066,7 +1074,7 @@ def gap_hyperparameter_constructor(
     include_two_body: bool = False,
     include_three_body: bool = False,
     include_soap: bool = False,
-):
+) -> list:
     """
     Construct a list of arguments needed to execute gap potential from the parameters' dict.
 
@@ -1126,7 +1134,7 @@ def gap_hyperparameter_constructor(
     return [*general, gap_hyperparameters]
 
 
-def get_list_of_vasp_calc_dirs(flow_output):
+def get_list_of_vasp_calc_dirs(flow_output) -> list[str]:
     """
     Return a list of vasp_calc_dirs from PhononDFTMLDataGenerationFlow output.
 
@@ -1140,7 +1148,7 @@ def get_list_of_vasp_calc_dirs(flow_output):
     list.
         A list of vasp_calc_dirs
     """
-    list_of_vasp_calc_dirs = []
+    list_of_vasp_calc_dirs: list[str] = []
     for output in flow_output.values():
         for output_type, dirs in output.items():
             if output_type != "phonon_data" and isinstance(dirs, list):
@@ -1160,7 +1168,7 @@ def vaspoutput_2_extended_xyz(
     regularization: float = 0.1,
     f_min: float = 0.01,  # unit: eV Å-1
     atom_wise_regularization: bool = True,
-):
+) -> None:
     """
     Parse all VASP output files (vasprun.xml/OUTCAR) and generates a vasp_ref.extxyz.
 
@@ -1224,7 +1232,7 @@ class Species:
     def __init__(self, atoms):
         self.atoms = atoms
 
-    def get_species(self):
+    def get_species(self) -> list[str]:
         """
         Get species.
 
@@ -1233,7 +1241,7 @@ class Species:
         species_list:
             a list of species.
         """
-        species_list = []
+        species_list: list[str] = []
 
         for atom in self.atoms:
             symbol_all = atom.get_chemical_symbols()
@@ -1242,7 +1250,7 @@ class Species:
 
         return species_list
 
-    def find_element_pairs(self, symbol_list=None):
+    def find_element_pairs(self, symbol_list=None) -> list:
         """
         Find element pairs.
 
@@ -1261,7 +1269,7 @@ class Species:
 
         return list(combinations(species_list, 2))
 
-    def get_number_of_species(self):
+    def get_number_of_species(self) -> int:
         """
         Get number of species.
 
@@ -1272,7 +1280,7 @@ class Species:
         """
         return int(len(self.get_species()))
 
-    def get_species_Z(self):
+    def get_species_Z(self) -> str:
         """
         Get species Z.
 
@@ -1294,7 +1302,7 @@ class Species:
         return species_Z
 
 
-def flatten(atoms_object, recursive=False):
+def flatten(atoms_object, recursive=False) -> list[str | bytes | Atoms] | list:
     """
     Flatten an iterable fully, but excluding Atoms objects.
 
@@ -1309,7 +1317,7 @@ def flatten(atoms_object, recursive=False):
     a flattened object, excluding the Atoms objects.
 
     """
-    iteration_list = []
+    iteration_list: list[str | bytes | Atoms] | list = []
 
     if recursive:
         for element in atoms_object:
@@ -1324,7 +1332,7 @@ def flatten(atoms_object, recursive=False):
     return [item for sublist in atoms_object for item in sublist]
 
 
-def gcm3_to_Vm(gcm3, mr, n_atoms=1):
+def gcm3_to_Vm(gcm3, mr, n_atoms=1) -> float:
     """
     Convert gcm3 to Vm.
 
@@ -1344,7 +1352,7 @@ def gcm3_to_Vm(gcm3, mr, n_atoms=1):
     return 1 / (n_atoms * (gcm3 / mr) * 6.022e23 / (1e8) ** 3)
 
 
-def get_atomic_numbers(species):
+def get_atomic_numbers(species) -> list[int]:
     """
     Get atomic numbers.
 
@@ -1367,7 +1375,13 @@ def get_atomic_numbers(species):
     return atom_numbers
 
 
-def stratified_dataset_split(atoms, split_ratio):
+def stratified_dataset_split(
+    atoms, split_ratio
+) -> tuple[
+    list[Atom | Atoms]
+    | list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
+    list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
+]:
     """
     Split the dataset.
 
@@ -1417,7 +1431,7 @@ def stratified_dataset_split(atoms, split_ratio):
     return train_structures, test_structures
 
 
-def data_distillation(vasp_ref_dir, f_max):
+def data_distillation(vasp_ref_dir, f_max) -> list[Atom | Atoms]:
     """
     For data distillation.
 
@@ -1451,7 +1465,7 @@ def data_distillation(vasp_ref_dir, f_max):
     return atoms_distilled
 
 
-def energy_remain(in_file):
+def energy_remain(in_file) -> float:
     """
     Plot the distribution of energy per atom on the output vs. the input.
 
@@ -1491,7 +1505,7 @@ def energy_remain(in_file):
     return rms["rmse"]
 
 
-def extract_gap_label(xml_file_path):
+def extract_gap_label(xml_file_path) -> str:
     """
     Extract GAP label.
 
@@ -1511,7 +1525,7 @@ def extract_gap_label(xml_file_path):
     return root.tag
 
 
-def plot_convex_hull(all_points, hull_points):
+def plot_convex_hull(all_points, hull_points) -> None:
     """
     Plot convex hull.
 
@@ -1585,7 +1599,7 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]
     return es_var / avg_neigh, num_triplet
 
 
-def compute_pairs_triplets(atoms):
+def compute_pairs_triplets(atoms) -> list[float]:
     """
     Calculate the number of pairwise and triplet within a cutoff distance for a given list of atoms.
 
@@ -1615,7 +1629,7 @@ def compute_pairs_triplets(atoms):
     return [num_pair, num_triplet]
 
 
-def run_ace(num_processes: int, script_name: str):
+def run_ace(num_processes: int, script_name: str) -> None:
     """
     Julia-ACE script runner.
 
@@ -1635,7 +1649,7 @@ def run_ace(num_processes: int, script_name: str):
         subprocess.call(["julia", script_name], stdout=file_out, stderr=file_err)
 
 
-def run_gap(num_processes: int, parameters):
+def run_gap(num_processes: int, parameters) -> None:
     """
     GAP runner.
 
@@ -1657,7 +1671,7 @@ def run_gap(num_processes: int, parameters):
 
 def run_quip(
     num_processes: int, data_path, xml_file: str, filename: str, glue_xml: bool = False
-):
+) -> None:
     """
     QUIP runner.
 
@@ -1682,7 +1696,7 @@ def run_quip(
         subprocess.call(command, stdout=file_std, stderr=file_err, shell=True)
 
 
-def run_nequip(command: str, log_prefix: str):
+def run_nequip(command: str, log_prefix: str) -> None:
     """
     Nequip runner.
 
@@ -1700,7 +1714,7 @@ def run_nequip(command: str, log_prefix: str):
         subprocess.call(command.split(), stdout=file_out, stderr=file_err)
 
 
-def run_mace(hypers: list):
+def run_mace(hypers: list) -> None:
     """
     MACE runner.
 
@@ -1718,11 +1732,11 @@ def run_mace(hypers: list):
 
 def prepare_fit_environment(
     database_dir,
-    mlip_path,
+    mlip_path: Path,
     glue_xml: bool,
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
-):
+) -> Path:
     """
     Prepare the environment for the fit.
 
@@ -1760,7 +1774,9 @@ def prepare_fit_environment(
     return mlip_path
 
 
-def convert_xyz_to_structure(atoms_list, include_forces=True, include_stresses=True):
+def convert_xyz_to_structure(
+    atoms_list, include_forces=True, include_stresses=True
+) -> tuple[list[Structure], list, list[object], list[object]]:
     """
     Convert extxyz to pymatgen Structure format.
 
@@ -1809,7 +1825,7 @@ def write_after_distillation_data_split(
     vasp_ref_name: str = "vasp_ref.extxyz",
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
-):
+) -> None:
     """
     Write train.extxyz and test.extxyz after data distillation and split.
 
