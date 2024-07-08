@@ -28,7 +28,7 @@ you can simply copy this file to the  `~/.jfremote` directory. You will need to 
 8. Now setup atomate2 config as usual.
 Just `atomate2/config/atomate2.yaml`. (We do not need to set up jobflow.yaml in atomate2/config)
 
-Below is an example `atomat2.yaml` config file
+Below is an example `atomate2.yaml` config file
 ```yaml
 VASP_CMD:  your hpc vasp_std cmd
 VASP_GAMMA_CMD:  your hpc vasp_gam cmd
