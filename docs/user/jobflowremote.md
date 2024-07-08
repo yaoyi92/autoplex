@@ -1,5 +1,5 @@
 *Tutorial written by [Aakash Naik](mailto:aakash.naik@bam.de) and 
-[Christina Ertural](mailto:christina.ertural@bam.de) with help for the jobflow-remote setup by 
+[Christina Ertural](mailto:christina.ertural@bam.de) with feedback from 
 [Jonas Grandel](mailto:jonas.grandel@bam.de).*
 
 # Jobflow-remote setup
