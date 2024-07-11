@@ -182,7 +182,12 @@ def complete_benchmark(  # this function was put here to prevent circular import
 
 @job(data=["data"])
 def dft_phonopy_gen_data(
-    structure: Structure, displacements, symprec, phonon_displacement_maker, min_length
+    structure: Structure,
+    displacements,
+    symprec,
+    phonon_displacement_maker,
+    min_length,
+    not_too_tight_phonopy_supercell_settings: bool = True,
 ):
     """
     Job to generate DFT reference database using phonopy to be used for fitting ML potentials.
@@ -190,18 +195,20 @@ def dft_phonopy_gen_data(
     Parameters
     ----------
     structure: Structure
-        pymatgen Structure object
+        pymatgen Structure object.
     phonon_displacement_maker : .BaseVaspMaker or None
         Maker used to compute the forces for a supercell.
     displacements: list[float]
-        list of phonon displacement
+        list of phonon displacement.
     min_length: float
-        min length of the supercell that will be built
+        min length of the supercell that will be built.
     symprec : float
         Symmetry precision to use in the
         reduction of symmetry to find the primitive/conventional cell
         (use_primitive_standard_structure, use_conventional_standard_structure)
-        and to handle all symmetry-related tasks in phonopy
+        and to handle all symmetry-related tasks in phonopy.
+    not_too_tight_phonopy_supercell_settings: bool
+        prevent too tight phonopy supercell settings.
     """
     jobs = []
     dft_phonons_output = {}
@@ -209,8 +216,18 @@ def dft_phonopy_gen_data(
 
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
-    if min_length >= 18:
+    if min_length >= 15:
         phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
+    if not_too_tight_phonopy_supercell_settings:
+        lattice_avg = sum(structure.lattice.abc) / 3
+        if lattice_avg > 10:
+            phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
+            density = 350 - 15 * int(round(lattice_avg, 0))
+            if lattice_avg > 20:
+                density = 50
+            phonon_displacement_maker.input_set_generator.user_kpoints_settings = {
+                "reciprocal_density": density
+            }
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(

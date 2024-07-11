@@ -120,8 +120,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         List of SOAP delta values that are checked.
     n_sparse_list: list
         List of GAP n_sparse values that are checked.
-    not_too_big_rattled_supercells: bool
-        prevent too big rattled supercells
+    not_too_big_supercells: bool
+        prevent too big rattled supercells or too tight phonopy supercell settings.
     benchmark_kwargs: dict
         kwargs for the benchmark flows
     """
@@ -154,7 +154,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     atomwise_regularization_list: list | None = None
     soap_delta_list: list | None = None
     n_sparse_list: list | None = None
-    not_too_big_rattled_supercells: bool = True
+    not_too_big_supercells: bool = True
     benchmark_kwargs: dict = field(default_factory=dict)
 
     def make(
@@ -237,7 +237,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     angle_max_attempts=self.angle_max_attempts,
                     angle_percentage_scale=self.angle_percentage_scale,
                     w_angle=self.w_angle,
-                    not_too_big_rattled_supercells=self.not_too_big_rattled_supercells,
+                    not_too_big_rattled_supercells=self.not_too_big_supercells,
                 )
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
@@ -248,6 +248,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     self.symprec,
                     self.phonon_displacement_maker,
                     self.min_length,
+                    self.not_too_big_supercells,
                 )
                 flows.append(addDFTphon)
                 fit_input.update({mp_id: addDFTphon.output})
@@ -410,6 +411,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         symprec: float,
         phonon_displacement_maker: BaseVaspMaker,
         min_length: float,
+        not_too_tight_phonopy_supercell_settings: bool = True,
     ):
         """Add DFT phonon runs for reference structures.
 
@@ -428,9 +430,16 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             Maker used to compute the forces for a supercell.
         min_length: float
              min length of the supercell that will be built
+        not_too_tight_phonopy_supercell_settings: bool
+            prevent too tight phonopy supercell settings
         """
         additonal_dft_phonon = dft_phonopy_gen_data(
-            structure, displacements, symprec, phonon_displacement_maker, min_length
+            structure,
+            displacements,
+            symprec,
+            phonon_displacement_maker,
+            min_length,
+            not_too_tight_phonopy_supercell_settings,
         )
 
         return Flow(
