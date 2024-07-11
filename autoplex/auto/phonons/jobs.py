@@ -20,6 +20,7 @@ from autoplex.data.phonons.flows import (
     TightDFTStaticMaker,
     TightDFTStaticMakerBigSupercells,
 )
+from autoplex.data.phonons.utils import update_phonon_displacement_maker
 
 
 @job
@@ -221,13 +222,9 @@ def dft_phonopy_gen_data(
     if not_too_tight_phonopy_supercell_settings:
         lattice_avg = sum(structure.lattice.abc) / 3
         if lattice_avg > 10:
-            phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
-            density = 350 - 15 * int(round(lattice_avg, 0))
-            if lattice_avg > 20:
-                density = 50
-            phonon_displacement_maker.input_set_generator.user_kpoints_settings = {
-                "reciprocal_density": density
-            }
+            phonon_displacement_maker = update_phonon_displacement_maker(
+                lattice_avg, TightDFTStaticMakerBigSupercells()
+            )
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(

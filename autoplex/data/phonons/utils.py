@@ -68,3 +68,29 @@ def ml_phonon_maker_preparation(
             )
 
     return bulk_relax_maker, phonon_displacement_maker, static_energy_maker
+
+
+def update_phonon_displacement_maker(lattice, phonon_displacement_maker):
+    """
+    Update the phonon_displacement_maker.
+
+    Parameters
+    ----------
+    lattice:
+        (Average) lattice of the structure.
+    phonon_displacement_maker:
+        Maker used to compute the forces for a supercell.
+
+    Returns
+    -------
+    Updated phonon_displacement_maker
+
+    """
+    if lattice > 10:
+        density = 350 - 15 * int(round(lattice, 0))
+        if lattice > 20:
+            density = 50
+        phonon_displacement_maker.input_set_generator.user_kpoints_settings = {
+            "reciprocal_density": density
+        }
+    return phonon_displacement_maker
