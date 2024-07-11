@@ -618,6 +618,8 @@ class RandomStructuresDataGenerator(Maker):
         Number of Monte Carlo iterations.
         Larger number of iterations will generate larger displacements.
         Default=10.
+    not_too_big_rattled_supercells: bool
+        prevent too big rattled supercells
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
@@ -643,6 +645,7 @@ class RandomStructuresDataGenerator(Maker):
     rattle_seed: int = 42
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
+    not_too_big_rattled_supercells: bool = True
 
     def make(
         self,
@@ -692,6 +695,7 @@ class RandomStructuresDataGenerator(Maker):
             rattle_seed=self.rattle_seed,
             rattle_mc_n_iter=self.rattle_mc_n_iter,
             w_angle=self.w_angle,
+            not_too_big_rattled_supercells=self.not_too_big_rattled_supercells,
         )
         jobs.append(random_rattle_sc)
         # perform the phonon displaced calculations for randomized displaced structures.
@@ -709,7 +713,7 @@ class RandomStructuresDataGenerator(Maker):
         if self.uc is True:
             random_rattle = generate_randomized_structures(
                 structure=structure,
-                supercell_matrix=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                supercell_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)),
                 distort_type=self.distort_type,
                 n_structures=self.n_structures,
                 volume_custom_scale_factors=volume_custom_scale_factors,
@@ -722,6 +726,7 @@ class RandomStructuresDataGenerator(Maker):
                 rattle_seed=self.rattle_seed,
                 rattle_mc_n_iter=self.rattle_mc_n_iter,
                 w_angle=self.w_angle,
+                not_too_big_rattled_supercells=False,
             )
             jobs.append(random_rattle)
             vasp_random_displacement_calcs = run_phonon_displacements(

@@ -249,6 +249,7 @@ def dft_random_gen_data(
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
     w_angle: list[float] | None = None,
+    not_too_big_rattled_supercells: bool = True,
 ):
     """
     Job to generate random structured DFT reference database to be used for fitting ML potentials.
@@ -306,6 +307,8 @@ def dft_random_gen_data(
         Number of Monte Carlo iterations.
         Larger number of iterations will generate larger displacements.
         Default=10.
+    not_too_big_rattled_supercells: bool
+        prevent too big rattled supercells
     """
     jobs = []
 
@@ -326,6 +329,7 @@ def dft_random_gen_data(
         angle_percentage_scale=angle_percentage_scale,
         rattle_mc_n_iter=rattle_mc_n_iter,
         w_angle=w_angle,
+        not_too_big_rattled_supercells=not_too_big_rattled_supercells,
     ).make(
         structure=structure,
         mp_id=mp_id,

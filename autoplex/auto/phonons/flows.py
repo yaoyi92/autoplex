@@ -120,6 +120,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         List of SOAP delta values that are checked.
     n_sparse_list: list
         List of GAP n_sparse values that are checked.
+    not_too_big_rattled_supercells: bool
+        prevent too big rattled supercells
+    benchmark_kwargs: dict
+        kwargs for the benchmark flows
     """
 
     name: str = "add_data"
@@ -150,6 +154,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     atomwise_regularization_list: list | None = None
     soap_delta_list: list | None = None
     n_sparse_list: list | None = None
+    not_too_big_rattled_supercells: bool = True
     benchmark_kwargs: dict = field(default_factory=dict)
 
     def make(
@@ -232,6 +237,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     angle_max_attempts=self.angle_max_attempts,
                     angle_percentage_scale=self.angle_percentage_scale,
                     w_angle=self.w_angle,
+                    not_too_big_rattled_supercells=self.not_too_big_rattled_supercells,
                 )
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
@@ -455,6 +461,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         rattle_seed: int = 42,
         rattle_mc_n_iter: int = 10,
         w_angle: list[float] | None = None,
+        not_too_big_rattled_supercells: bool = True,
     ):
         """Add DFT phonon runs for randomly displaced structures.
 
@@ -509,6 +516,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             Number of Monte Carlo iterations.
             Larger number of iterations will generate larger displacements.
             Default=10.
+        not_too_big_rattled_supercells: bool
+            prevent too big rattled supercells
         """
         additonal_dft_random = dft_random_gen_data(
             structure=structure,
@@ -528,6 +537,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             angle_percentage_scale=angle_percentage_scale,
             w_angle=w_angle,
             min_distance=min_distance,
+            not_too_big_rattled_supercells=not_too_big_rattled_supercells,
         )
         return Flow(
             jobs=additonal_dft_random,

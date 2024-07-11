@@ -799,3 +799,63 @@ def plot_energy_forces(
         format="pdf",
     )
     plt.savefig(train_name.replace("train", "energy_forces").replace(".extxyz", ".png"))
+
+
+def generate_supercell_matrix(structure, supercell_matrix, max_sites=400):
+    """
+    Generate the updated supercell matrix.
+
+    Parameters
+    ----------
+    structure: Structure.
+        Pymatgen structures object.
+    supercell_matrix: Matrix3D.
+        Matrix for obtaining the supercell.
+    max_sites: int
+        maximum number of sites.
+
+    Returns
+    -------
+    Updated supercell matrix
+
+    """
+    supercell_check = structure * supercell_matrix
+
+    if supercell_check.num_sites > max_sites:
+        # estimate a factor based on the original structure and max_sites
+        initial_factor = int(round(pow(max_sites / structure.num_sites, 1 / 3), 0))
+
+        # First, try the matrices with the same factor in all dimensions
+        for factor in range(initial_factor, 1, -1):
+            matrix = [[factor, 0, 0], [0, factor, 0], [0, 0, factor]]
+            supercell_check = structure * matrix
+            if supercell_check.num_sites <= max_sites:
+                return matrix
+
+        # Then, try the matrices with the same factor in two dimensions and 1 in the third
+        for factor in range(initial_factor, 1, -1):
+            matrices = [
+                [[factor, 0, 0], [0, factor, 0], [0, 0, 1]],
+                [[factor, 0, 0], [0, 1, 0], [0, 0, factor]],
+                [[1, 0, 0], [0, factor, 0], [0, 0, factor]],
+            ]
+            for matrix in matrices:
+                supercell_check = structure * matrix
+                if supercell_check.num_sites <= max_sites:
+                    return matrix
+
+        # Finally, try the matrices with the factor in one dimension and 1 in the other two
+        for factor in range(initial_factor, 1, -1):
+            matrices = [
+                [[factor, 0, 0], [0, 1, 0], [0, 0, 1]],
+                [[1, 0, 0], [0, factor, 0], [0, 0, 1]],
+                [[1, 0, 0], [0, 1, 0], [0, 0, factor]],
+            ]
+            for matrix in matrices:
+                supercell_check = structure * matrix
+                if supercell_check.num_sites <= max_sites:
+                    return matrix
+
+        return [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+
+    return supercell_matrix
