@@ -117,6 +117,8 @@ resources = {"nodes": N, "partition": "name", "time": "01:00:00", "ntasks": ntas
 print(submit_flow(flow, worker="example_worker", resources=resources, project="test_project")) 
 # Do not forget to change worker and project name to what you se tup in the jobflow remote config file.
 ```
+> NOTE: We are using [Simple Linux Utility for Resource Management (SLURM)](https://matgenix.github.io/qtoolkit/api/qtoolkit.io.slurm.html) specific keywords in our examples.
+> For [Portable Batch System (PBS)](https://matgenix.github.io/qtoolkit/api/qtoolkit.io.pbs.html) specific commands, see [here](https://matgenix.github.io/qtoolkit/api/qtoolkit.io.pbs.html).
 
 ## VASP relax job using atomate2 workflow
 
