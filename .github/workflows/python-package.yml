@@ -35,14 +35,15 @@ jobs:
         python -m pip install .[strict]
         python -m pip cache purge
         python -m pip install ase==3.23.0
+    - name: Install Buildcell
+      run: |
+        curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz; tar -xf airss-0.9.3.tgz; rm airss-0.9.3.tgz; cd airss; make ; make install ; make neat; cd ..
     - name: Install Julia
       run: curl -fsSL https://install.julialang.org | sh -s -- -y
     - name: Set up Julia environment (Needed for ACEpotentials.jl interface)
       run: |
         julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add("ACEpotentials"); Pkg.add("DataFrames"); Pkg.add("CSV")'
-    - name: Install Buildcell
-        curl -O https://www.mtg.msm.cam.ac.uk/system/files/documents/airss-0.9.1.tgz; tar -xf airss-0.9.1.tgz; rm airss-0.9.1.tgz; cd airss-0.9.1; make ; make install ; make neat; cd ..
-    - name: Lint with flake8
+    - name: Linting with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
