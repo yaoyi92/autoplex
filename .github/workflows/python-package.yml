@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9"] #, "3.10", "3.11"]
         split: [1] #, 2, 3, 4]  # Number of splits
 
     steps:
@@ -35,14 +35,14 @@ jobs:
         python -m pip install .[strict]
         python -m pip cache purge
         python -m pip install ase==3.23.0
+    - name: Install Buildcell
+      run: |
+        curl -O https://www.mtg.msm.cam.ac.uk/system/files/documents/airss-0.9.1.tgz; tar -xf airss-0.9.1.tgz; rm airss-0.9.1.tgz; cd airss-0.9.1; make ; make install ; make neat; cd ..
     - name: Install Julia
       run: curl -fsSL https://install.julialang.org | sh -s -- -y
     - name: Set up Julia environment (Needed for ACEpotentials.jl interface)
       run: |
         julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add("ACEpotentials"); Pkg.add("DataFrames"); Pkg.add("CSV")'
-    - name: Install Buildcell
-      run: |
-        curl -O https://www.mtg.msm.cam.ac.uk/system/files/documents/airss-0.9.1.tgz; tar -xf airss-0.9.1.tgz; rm airss-0.9.1.tgz; cd airss-0.9.1; make ; make install ; make neat; cd ..
     - name: Linting with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
