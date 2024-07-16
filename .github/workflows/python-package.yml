@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.11"] #"]#["3.9", "3.10", "3.11"]
         split: [1] #, 2, 3, 4]  # Number of splits
 
     steps:
@@ -37,7 +37,7 @@ jobs:
         python -m pip install ase==3.23.0
     - name: Install Buildcell
       run: |
-        curl -O https://www.mtg.msm.cam.ac.uk/system/files/documents/airss-0.9.1.tgz; tar -xf airss-0.9.1.tgz; rm airss-0.9.1.tgz; cd airss-0.9.1; make ; make install ; make neat; cd ..
+        curl -O https://www.mtg.msm.cam.ac.uk/system/files/documents/airss-0.9.3.tgz; tar -xf airss-0.9.1.tgz; rm airss-0.9.1.tgz; cd airss-0.9.1; make ; make install ; make neat; cd ..
     - name: Install Julia
       run: curl -fsSL https://install.julialang.org | sh -s -- -y
     - name: Set up Julia environment (Needed for ACEpotentials.jl interface)
