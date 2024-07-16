@@ -41,6 +41,7 @@ jobs:
       run: |
         julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add("ACEpotentials"); Pkg.add("DataFrames"); Pkg.add("CSV")'
     - name: Install Buildcell
+      run: |
         curl -O https://www.mtg.msm.cam.ac.uk/system/files/documents/airss-0.9.1.tgz; tar -xf airss-0.9.1.tgz; rm airss-0.9.1.tgz; cd airss-0.9.1; make ; make install ; make neat; cd ..
     - name: Linting with flake8
       run: |
