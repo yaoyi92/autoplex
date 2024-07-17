@@ -1,3 +1,5 @@
+*Tutorial written by Aakash Naik (aakash.naik@bam.de).*
+
 # Jobflow-remote setup
 
 This will result in a setup for automation where 
