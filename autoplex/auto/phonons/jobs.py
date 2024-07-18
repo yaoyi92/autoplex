@@ -188,7 +188,7 @@ def dft_phonopy_gen_data(
     symprec,
     phonon_displacement_maker,
     min_length,
-    not_too_tight_phonopy_supercell_settings: bool = True,
+    adaptive_phonopy_supercell_settings: bool = True,
 ):
     """
     Job to generate DFT reference database using phonopy to be used for fitting ML potentials.
@@ -208,7 +208,7 @@ def dft_phonopy_gen_data(
         reduction of symmetry to find the primitive/conventional cell
         (use_primitive_standard_structure, use_conventional_standard_structure)
         and to handle all symmetry-related tasks in phonopy.
-    not_too_tight_phonopy_supercell_settings: bool
+    adaptive_phonopy_supercell_settings: bool
         prevent too tight phonopy supercell settings.
     """
     jobs = []
@@ -219,7 +219,7 @@ def dft_phonopy_gen_data(
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
     if min_length >= 15:
         phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
-    if not_too_tight_phonopy_supercell_settings:
+    if adaptive_phonopy_supercell_settings:
         lattice_avg = sum(structure.lattice.abc) / 3
         if lattice_avg > 10:
             phonon_displacement_maker = update_phonon_displacement_maker(
@@ -263,7 +263,7 @@ def dft_random_gen_data(
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
     w_angle: list[float] | None = None,
-    not_too_big_rattled_supercells: bool = True,
+    adaptive_rattled_supercell_settings: bool = True,
 ):
     """
     Job to generate random structured DFT reference database to be used for fitting ML potentials.
@@ -321,7 +321,7 @@ def dft_random_gen_data(
         Number of Monte Carlo iterations.
         Larger number of iterations will generate larger displacements.
         Default=10.
-    not_too_big_rattled_supercells: bool
+    adaptive_rattled_supercell_settings: bool
         prevent too big rattled supercells
     """
     jobs = []
@@ -343,7 +343,7 @@ def dft_random_gen_data(
         angle_percentage_scale=angle_percentage_scale,
         rattle_mc_n_iter=rattle_mc_n_iter,
         w_angle=w_angle,
-        not_too_big_rattled_supercells=not_too_big_rattled_supercells,
+        adaptive_rattled_supercell_settings=adaptive_rattled_supercell_settings,
     ).make(
         structure=structure,
         mp_id=mp_id,
