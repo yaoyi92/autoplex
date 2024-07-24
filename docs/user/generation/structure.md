@@ -1,3 +1,0 @@
-(structuregeneration)=
-
-# Generating structures

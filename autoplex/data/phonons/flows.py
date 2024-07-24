@@ -17,6 +17,12 @@ from atomate2.forcefields.jobs import (
     ForceFieldStaticMaker,
     GAPRelaxMaker,
     GAPStaticMaker,
+    M3GNetRelaxMaker,
+    M3GNetStaticMaker,
+    MACERelaxMaker,
+    MACEStaticMaker,
+    NequipRelaxMaker,
+    NequipStaticMaker,
 )
 from atomate2.vasp.flows.core import DoubleRelaxMaker
 from atomate2.vasp.flows.phonons import PhononMaker
@@ -27,6 +33,7 @@ from jobflow import Flow, Maker, Response, job
 from pymatgen.core import Molecule, Site
 
 from autoplex.data.common.jobs import generate_randomized_structures
+from autoplex.data.phonons.utils import ml_phonon_maker_preparation
 
 __all__ = [
     "DFTPhononMaker",
@@ -70,12 +77,13 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
         ``{"my_file:txt": "contents of the file"}``.
     """
 
+    name: str = "dft static"
     run_vasp_kwargs: dict = field(default_factory=lambda: {"handlers": ()})
 
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
             user_incar_settings={
-                "IBRION": 2,
+                "IBRION": -1,
                 "ISPIN": 1,
                 "ISMEAR": 0,
                 "ISIF": 3,
@@ -127,13 +135,14 @@ class TightDFTStaticMakerBigSupercells(PhononDisplacementMaker):
         ``{"my_file:txt": "contents of the file"}``.
     """
 
+    name: str = "dft phonon static big supercell"
     run_vasp_kwargs: dict = field(default_factory=lambda: {"handlers": ()})
 
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
-            user_kpoints_settings={"reciprocal_density": 1000},
+            user_kpoints_settings={"reciprocal_density": 500},
             user_incar_settings={
-                "IBRION": 2,
+                "IBRION": -1,
                 "ISPIN": 1,
                 "ISMEAR": 0,
                 "ISIF": 3,
@@ -234,7 +243,7 @@ class DFTPhononMaker(PhononMaker):
         if True, force constants will be stored
     """
 
-    name: str = "phonon"
+    name: str = "dft phonon"
     sym_reduce: bool = True
     symprec: float = 1e-4
     displacement: float = 0.01
@@ -242,6 +251,8 @@ class DFTPhononMaker(PhononMaker):
     prefer_90_degrees: bool = True
     get_supercell_size_kwargs: dict = field(default_factory=lambda: {"max_atoms": 1500})
     use_symmetrized_structure: str | None = None
+    create_thermal_displacements: bool = False
+    store_force_constants: bool = False
     generate_frequencies_eigenvectors_kwargs: dict = field(
         default_factory=lambda: {"tol_imaginary_modes": 1e-1}
     )
@@ -263,7 +274,7 @@ class DFTPhononMaker(PhononMaker):
         )
     )
 
-    phonon_displacement_maker: BaseVaspMaker = field(
+    phonon_displacement_maker: BaseVaspMaker | None = field(
         default_factory=TightDFTStaticMaker
     )
 
@@ -328,17 +339,17 @@ class MLPhononMaker(FFPhononMaker):
           High-throughput electronic band structure calculations:
           Challenges and tools. Computational Materials Science,
           49(2), 299-312. doi:10.1016/j.commatsci.2010.05.010.
-          We will however use seekpath and primitive structures
+          We will, however, use seekpath and primitive structures
           as determined by from phonopy to compute the phonon band structure
-    bulk_relax_maker : .ForceFieldRelaxMaker or None
+    bulk_relax_maker: .ForceFieldRelaxMaker or None
         A maker to perform a tight relaxation on the bulk.
         Set to ``None`` to skip the
         bulk relaxation
-    static_energy_maker : .ForceFieldStaticMaker or None
+    static_energy_maker: .ForceFieldStaticMaker or None
         A maker to perform the computation of the DFT energy on the bulk.
         Set to ``None`` to skip the
         static energy computation
-    phonon_displacement_maker : .ForceFieldStaticMaker or None
+    phonon_displacement_maker: .ForceFieldStaticMaker or None
         Maker used to compute the forces for a supercell.
     generate_frequencies_eigenvectors_kwargs : dict
         Keyword arguments passed to :obj:`generate_frequencies_eigenvectors`.
@@ -360,8 +371,13 @@ class MLPhononMaker(FFPhononMaker):
         in the future
     store_force_constants: bool
         if True, force constants will be stored
+    relax_maker_kwargs: dict
+        Keyword arguments that can be passed to the RelaxMaker.
+    static_maker_kwargs: dict
+        Keyword arguments that can be passed to the StaticMaker.
     """
 
+    name: str = "ml phonon"
     min_length: float | None = 20.0
     bulk_relax_maker: ForceFieldRelaxMaker | None = field(
         default_factory=lambda: GAPRelaxMaker(
@@ -369,7 +385,7 @@ class MLPhononMaker(FFPhononMaker):
         )
     )
     phonon_displacement_maker: ForceFieldStaticMaker | None = field(
-        default_factory=lambda: GAPStaticMaker()
+        default_factory=lambda: GAPStaticMaker(name="gap phonon static")
     )
     static_energy_maker: ForceFieldStaticMaker | None = field(
         default_factory=lambda: GAPStaticMaker()
@@ -378,11 +394,18 @@ class MLPhononMaker(FFPhononMaker):
     generate_frequencies_eigenvectors_kwargs: dict = field(
         default_factory=lambda: {"units": "THz", "tol_imaginary_modes": 1e-1}
     )
-    relax_maker_kwargs: dict = field(default_factory=dict)
-    static_maker_kwargs: dict = field(default_factory=dict)
+    relax_maker_kwargs: dict | None = field(default_factory=dict)
+    static_maker_kwargs: dict | None = field(default_factory=dict)
 
     @job
-    def make_from_ml_model(self, structure, ml_model, suffix: str = "", **make_kwargs):
+    def make_from_ml_model(
+        self,
+        structure,
+        potential_file,
+        ml_model: str = "GAP",
+        calculator_kwargs: dict | None = None,
+        **make_kwargs,
+    ):
         """
         Maker for GAP phonon jobs.
 
@@ -392,10 +415,13 @@ class MLPhononMaker(FFPhononMaker):
             A pymatgen structure. Please start with a structure
             that is nearly fully optimized as the internal optimizers
             have very strict settings!
-        ml_model : str
-            Complete path to MLIP file(s).
-        suffix:
-            Train, test and MLIP suffix ("", "_wo_sigma", "_phonon", "_rand_struc").
+        ml_model: str
+            ML model to be used. Default is GAP.
+        potential_file :
+            Complete path to MLIP file(s)
+            Train, test and MLIP files (+ suffixes "", "_wo_sigma", "_phonon", "_rand_struc").
+        calculator_kwargs :
+            Keyword arguments for the ASE Calculator.
         make_kwargs :
             Keyword arguments for the PhononMaker.
 
@@ -404,40 +430,92 @@ class MLPhononMaker(FFPhononMaker):
         PhononMaker jobs.
 
         """
-        ml_model = ml_model + f"/gap_file{suffix}.xml"
-        if self.bulk_relax_maker is not None:
-            br = self.bulk_relax_maker
-            self.bulk_relax_maker = br.update_kwargs(
-                update={
-                    "calculator_kwargs": {
-                        "args_str": "IP GAP",
-                        "param_filename": str(ml_model),
-                    },
-                    **self.relax_maker_kwargs,
+        if ml_model == "GAP":
+            if calculator_kwargs is None:
+                calculator_kwargs = {
+                    "args_str": "IP GAP",
+                    "param_filename": str(potential_file),
                 }
+
+            ml_prep = ml_phonon_maker_preparation(
+                bulk_relax_maker=self.bulk_relax_maker,
+                phonon_displacement_maker=self.phonon_displacement_maker,
+                static_energy_maker=self.static_energy_maker,
+                calculator_kwargs=calculator_kwargs,
+                relax_maker_kwargs=self.relax_maker_kwargs,
+                static_maker_kwargs=self.static_maker_kwargs,
             )
-        if self.phonon_displacement_maker is not None:
-            ph_disp = self.phonon_displacement_maker
-            self.phonon_displacement_maker = ph_disp.update_kwargs(
-                update={
-                    "calculator_kwargs": {
-                        "args_str": "IP GAP",
-                        "param_filename": str(ml_model),
-                    },
-                    **self.static_maker_kwargs,
+
+        elif ml_model == "J-ACE":
+            raise UserWarning("No atomate2 ACE.jl PhononMaker implemented.")
+
+        elif ml_model == "NEQUIP":
+            if calculator_kwargs is None:
+                calculator_kwargs = {
+                    "model_path": str(potential_file),
+                    "device": "cuda",
                 }
+            else:
+                calculator_kwargs.update({"model_path": str(potential_file)})
+
+            ml_prep = ml_phonon_maker_preparation(
+                bulk_relax_maker=NequipRelaxMaker(
+                    relax_cell=True, relax_kwargs={"interval": 500}
+                ),
+                phonon_displacement_maker=NequipStaticMaker(
+                    name="nequip phonon static"
+                ),
+                static_energy_maker=NequipStaticMaker(),
+                calculator_kwargs=calculator_kwargs,
+                relax_maker_kwargs=self.relax_maker_kwargs,
+                static_maker_kwargs=self.static_maker_kwargs,
             )
-        if self.static_energy_maker is not None:
-            stat_en = self.static_energy_maker
-            self.static_energy_maker = stat_en.update_kwargs(
-                update={
-                    "calculator_kwargs": {
-                        "args_str": "IP GAP",
-                        "param_filename": str(ml_model),
-                    },
-                    **self.static_maker_kwargs,
-                }
+
+        elif ml_model == "M3GNET":
+            if calculator_kwargs is None:
+                calculator_kwargs = {"path": str(potential_file)}
+
+            ml_prep = ml_phonon_maker_preparation(
+                bulk_relax_maker=M3GNetRelaxMaker(
+                    relax_cell=True, relax_kwargs={"interval": 500}
+                ),
+                phonon_displacement_maker=M3GNetStaticMaker(
+                    name="m3gnet phonon static"
+                ),
+                static_energy_maker=M3GNetStaticMaker(),
+                calculator_kwargs=calculator_kwargs,
+                relax_maker_kwargs=self.relax_maker_kwargs,
+                static_maker_kwargs=self.static_maker_kwargs,
             )
+
+        else:  # MACE
+            if calculator_kwargs is None:
+                calculator_kwargs = {"model": str(potential_file), "device": "cuda"}
+            elif "model" in calculator_kwargs:
+                calculator_kwargs.update(
+                    {"default_dtype": "float64"}
+                )  # Use float64 for geometry optimization.
+            else:
+                calculator_kwargs.update(
+                    {"model": str(potential_file), "default_dtype": "float64"}
+                )
+
+            ml_prep = ml_phonon_maker_preparation(
+                bulk_relax_maker=MACERelaxMaker(
+                    relax_cell=True, relax_kwargs={"interval": 500}
+                ),
+                phonon_displacement_maker=MACEStaticMaker(name="mace phonon static"),
+                static_energy_maker=MACEStaticMaker(),
+                calculator_kwargs=calculator_kwargs,
+                relax_maker_kwargs=self.relax_maker_kwargs,
+                static_maker_kwargs=self.static_maker_kwargs,
+            )
+
+        (
+            self.bulk_relax_maker,
+            self.phonon_displacement_maker,
+            self.static_energy_maker,
+        ) = ml_prep
 
         flow = self.make(structure=structure, **make_kwargs)
         return Response(replace=flow, output=flow.output)
@@ -543,7 +621,7 @@ class RandomStructuresDataGenerator(Maker):
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
-    phonon_displacement_maker: BaseVaspMaker = field(
+    phonon_displacement_maker: BaseVaspMaker | None = field(
         default_factory=TightDFTStaticMaker
     )
     bulk_relax_maker: BaseVaspMaker = field(
@@ -693,6 +771,11 @@ class IsoAtomMaker(Maker):
                 name=str(species) + "-statisoatom",
                 input_set_generator=StaticSetGenerator(
                     user_kpoints_settings={"grid_density": 1},
+                    user_incar_settings={
+                        "ISPIN": 1,
+                        "LAECHG": False,
+                        "ISMEAR": 0,
+                    },
                 ),
             ).make(iso_atom)
 

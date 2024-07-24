@@ -75,7 +75,7 @@ def rms_dict(x_ref, x_pred) -> dict:
     Returns
     -------
     dict
-        Dict with rmse and std deviation of predictions.
+        Dict with RMSE and std deviation of predictions.
     """
     x_ref = np.array(x_ref)
     x_pred = np.array(x_pred)
@@ -125,7 +125,7 @@ def scale_cell(
     volume_scale_factor_range: list[float] | None = None,
     n_structures: int = 10,
     volume_custom_scale_factors: list[float] | None = None,
-):
+) -> list[Structure]:
     """
     Take in a pymatgen Structure object and generates stretched or compressed structures.
 
@@ -194,9 +194,9 @@ def scale_cell(
     return distorted_cells
 
 
-def check_distances(structure: Structure, min_distance: float = 1.5):
+def check_distances(structure: Structure, min_distance: float = 1.5) -> bool:
     """
-    Take in a pymatgen Structure object and checks distances between atoms using minimum image convention.
+    Take in a pymatgen Structure object and check minimum distances between atoms using minimum image convention.
 
     Useful after distorting cell angles and rattling to check atoms aren't too close.
 
@@ -231,7 +231,7 @@ def random_vary_angle(
     w_angle: list[float] | None = None,
     n_structures: int = 8,
     angle_max_attempts: int = 1000,
-):
+) -> list[Structure]:
     """
     Take in a pymatgen Structure object and generates angle-distorted structures.
 
@@ -277,10 +277,10 @@ def random_vary_angle(
             volume_custom_scale_factors=[1.03],
         )
 
-        distorted_cells = AseAtomsAdaptor.get_atoms(distorted_cells[0])
+        distorted_supercells: Atoms = AseAtomsAdaptor.get_atoms(distorted_cells[0])
 
-        # getting stretched cell out of array
-        newcell = distorted_cells.cell.cellpar()
+        # getting stretched supercell out of array
+        newcell = distorted_supercells.cell.cellpar()
 
         # current angles
         alpha = atoms_copy.cell.cellpar()[3]
@@ -327,7 +327,7 @@ def std_rattle(
     n_structures: int = 5,
     rattle_std: float = 0.01,
     rattle_seed: int = 42,
-):
+) -> list[Structure]:
     """
     Take in a pymatgen Structure object and generates rattled structures.
 
@@ -371,7 +371,7 @@ def mc_rattle(
     min_distance: float = 1.5,
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
-):
+) -> list[Structure]:
     """
     Take in a pymatgen Structure object and generates rattled structures.
 
@@ -415,7 +415,7 @@ def mc_rattle(
     return [AseAtomsAdaptor.get_structure(xtal) for xtal in mc_rattle]
 
 
-def extract_base_name(filename, is_out=False):
+def extract_base_name(filename, is_out=False) -> str:
     """
     Extract the base of a file name to easier manipulate other file names.
 
@@ -423,7 +423,7 @@ def extract_base_name(filename, is_out=False):
     ----------
     filename:
         The name of the file.
-    is_out:
+    is_out: bool
         If it is an out_file (i.e. prefix is "quip_")
 
     """
@@ -441,7 +441,7 @@ def extract_base_name(filename, is_out=False):
     return "A problem with the files occurred."
 
 
-def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
+def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005) -> None:
     """
     Filter data outliers per energy criteria and write them into files.
 
@@ -451,6 +451,8 @@ def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
         Reference file (e.g. DFT).
     out_file:
         MLIP generated data file.
+    criteria:
+        Energy filter threshold.
 
     """
     # read files
@@ -495,7 +497,9 @@ def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005):
     )
 
 
-def filter_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1):
+def filter_outlier_forces(
+    in_file, out_file, symbol="Si", criteria: float = 0.1
+) -> None:
     """
     Filter data outliers per force criteria and write them into files.
 
@@ -505,6 +509,10 @@ def filter_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1)
         Reference file (e.g. DFT).
     out_file:
         MLIP generated data file.
+    symbol:
+        Atomi symbol.
+    criteria:
+        Force filter threshold.
 
     """
     # read files
@@ -560,12 +568,13 @@ def filter_outlier_forces(in_file, out_file, symbol="Si", criteria: float = 0.1)
     )
 
 
-# copied from libatoms GAP tutorial page and adjusted
 def energy_plot(
     in_file, out_file, ax, title: str = "Plot of energy", label: str = "energy"
-):
+) -> None:
     """
     Plot the distribution of energy per atom on the output vs the input.
+
+    Adapted and adjusted from libatoms GAP tutorial page https://libatoms.github.io/GAP/gap_fitting_tutorial.html.
 
     Parameters
     ----------
@@ -644,7 +653,7 @@ def force_plot(
     symbol: str = "Si",
     title: str = "Plot of force",
     label: str = "force for ",
-):
+) -> float:
     """
     Plot the distribution of force components per atom on the output vs the input.
 
@@ -734,7 +743,7 @@ def plot_energy_forces(
     species_list: list | None = None,
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
-):
+) -> None:
     """
     Plot energy and forces of the data.
 
@@ -747,7 +756,11 @@ def plot_energy_forces(
     force_limit:
         Force limit for data filtering.
     species_list:
-        List of species
+        List of species.
+    train_name:
+        name of the training data file.
+    test_name:
+        name of the test data file.
 
 
     """
@@ -757,6 +770,10 @@ def plot_energy_forces(
     fig.set_size_inches(15, 20)
     ax_list = ax_list.flat[:]
 
+    pretty_species_list = (
+        str(species_list).replace("['", "").replace("']", "").replace("'", "")
+    )
+
     energy_plot(train_name, "quip_" + train_name, ax_list[0], "Energy on training data")
     # rmse_train =
     for species in species_list:
@@ -765,7 +782,7 @@ def plot_energy_forces(
             "quip_" + train_name,
             ax_list[1],
             species,
-            f"Force on training data - {species}",
+            f"Force on training data - {pretty_species_list}",
         )
     energy_plot(test_name, "quip_" + test_name, ax_list[2], "Energy on test data")
     filter_outlier_energy(train_name, "quip_" + train_name, energy_limit)
@@ -777,7 +794,7 @@ def plot_energy_forces(
             "quip_" + test_name,
             ax_list[3],
             species,
-            f"Force on test data - {species}",
+            f"Force on test data - {pretty_species_list}",
         )
         filter_outlier_forces(train_name, "quip_" + train_name, species, force_limit)
         filter_outlier_forces(test_name, "quip_" + test_name, species, force_limit)
@@ -795,7 +812,7 @@ def plot_energy_forces(
             train_name.replace("train", "filtered_out_force"),
             ax_list[5],
             species,
-            f"Force on filtered data - {species}",
+            f"Force on filtered data - {pretty_species_list}",
             "energy-filtered data, force for ",
         )
     energy_plot(
@@ -811,7 +828,7 @@ def plot_energy_forces(
             train_name.replace("train", "filtered_out_force"),
             ax_list[5],
             species,
-            f"Force on filtered data - {species}",
+            f"Force on filtered data - {pretty_species_list}",
             "force-filtered data, force for ",
         )
 
@@ -822,7 +839,6 @@ def plot_energy_forces(
         format="pdf",
     )
     plt.savefig(train_name.replace("train", "energy_forces").replace(".extxyz", ".png"))
-    plt.show()
 
 
 class Species:

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from jobflow import Flow, Response, job
 
 if TYPE_CHECKING:
+    from atomate2.vasp.jobs.base import BaseVaspMaker
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
@@ -16,54 +17,111 @@ from autoplex.data.phonons.flows import (
     IsoAtomMaker,
     MLPhononMaker,
     RandomStructuresDataGenerator,
+    TightDFTStaticMaker,
+    TightDFTStaticMakerBigSupercells,
 )
 
 
 @job
 def complete_benchmark(  # this function was put here to prevent circular import
+    ml_path: str,
+    ml_model: str,
     ibenchmark_structure: int,
     benchmark_structure: Structure,
-    min_length: float,
-    ml_model: str,
     mp_ids,
-    benchmark_mp_ids,
+    benchmark_mp_ids,  # list[str] mypy: Value of type "list[Any] | None" is not indexable
     add_dft_phonon_struct: bool,
+    min_length: float,
     fit_input,
     symprec,
-    phonon_displacement_maker,
+    phonon_displacement_maker: BaseVaspMaker,
     dft_references=None,
+    relax_maker_kwargs: dict | None = None,
+    static_maker_kwargs: dict | None = None,
+    **ml_phonon_maker_kwargs,
 ):
     """
-    Need to add proper docstrings.
+    Construct a complete flow for benchmarking the MLIP fit quality using a DFT based phonon structure.
+
+    The complete benchmark flow starts by calculating the MLIP based phonon structure for each structure that has to be
+    benchmarked. Then depending on if the user provided a DFT reference dataset or the DFT reference structure is
+    already given from a previous loop, the existing or to-be-calculated DFT reference is used to generate the phonon
+    bandstructure comparison plots, the q-point wise RMSE plots and to calculate the overall RMSE.
+    This process is repeated with the default ML potential as well as the potentials from the different active user
+    settings like sigma regularization, separated datasets or looping through several sets of hyperparameters.
 
     Parameters
     ----------
-    ibenchmark_structure
-    benchmark_structure
-    min_length
-    ml_model
-    mp_ids
-    benchmark_mp_ids
-    add_dft_phonon_struct
-    fit_input
-    symprec
-    phonon_displacement_maker
-    displacements
-    dft_references
-
+    ml_path: str
+        Path to MLIP file. Default is path to gap_file.xml
+    ml_model: str
+        ML model to be used. Default is GAP.
+    ibenchmark_structure: int
+        ith benchmark structure.
+    benchmark_structure: Structure
+        pymatgen structure for benchmarking.
+    benchmark_mp_ids: list[str]
+        Materials Project ID of the benchmarking structure.
+    mp_ids:
+        materials project IDs.
+    add_dft_phonon_struct: bool.
+        If True, will add displaced supercells via phonopy for DFT calculation.
+    min_length: float
+        min length of the supercell that will be built
+    fit_input : dict.
+        CompletePhononDFTMLDataGenerationFlow output.
+    symprec: float
+        Symmetry precision to use in the
+        reduction of symmetry to find the primitive/conventional cell
+        (use_primitive_standard_structure, use_conventional_standard_structure)
+        and to handle all symmetry-related tasks in phonopy.
+    phonon_displacement_maker: BaseVaspMaker
+        Maker used to compute the forces for a supercell.
+    dft_references:
+        a list of DFT reference files containing the PhononBSDOCDoc object. Default None.
+    relax_maker_kwargs: dict
+        Keyword arguments that can be passed to the RelaxMaker.
+    static_maker_kwargs: dict
+        Keyword arguments that can be passed to the StaticMaker.
+    ml_phonon_maker_kwargs: dict
+        Keyword arguments that can be passed to the MLPhononMaker.
     """
     jobs = []
     collect_output = []
+    if phonon_displacement_maker is None:
+        phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
+    if min_length >= 18:
+        phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
     for suffix in ["", "_wo_sigma", "_phonon", "_rand_struc"]:
-        if Path(Path(ml_model) / f"gap_file{suffix}.xml").exists():
+        # _wo_sigma", "_phonon", "_rand_struc" only available for GAP at the moment
+        if ml_model == "GAP":
+            ml_potential = Path(ml_path) / f"gap_file{suffix}.xml"
+        elif ml_model == "J-ACE":
+            raise UserWarning("No atomate2 ACE.jl PhononMaker implemented.")
+        elif ml_model in ["M3GNET"]:
+            ml_potential = (
+                Path(ml_path) / suffix
+            )  # M3GNet requires path and fit already returns the path
+            # also need to find a different solution for separated fit then (name to path could be modified)
+        elif ml_model in ["NEQUIP"]:
+            ml_potential = Path(ml_path) / f"deployed_nequip_model{suffix}.pth"
+        else:  # MACE
+            ml_potential = Path(ml_path) / f"MACE_model{suffix}.model"
+
+        if Path(ml_potential).exists():
             add_data_ml_phonon = MLPhononMaker(
                 min_length=min_length,
+                relax_maker_kwargs=relax_maker_kwargs,
+                static_maker_kwargs=static_maker_kwargs,
             ).make_from_ml_model(
                 structure=benchmark_structure,
                 ml_model=ml_model,
-                suffix=suffix,
+                potential_file=ml_potential,
+                **ml_phonon_maker_kwargs,
             )
             jobs.append(add_data_ml_phonon)
+
+            # DFT benchmark reference preparations
             if dft_references is None and benchmark_mp_ids is not None:
                 if (
                     benchmark_mp_ids[ibenchmark_structure] in mp_ids
@@ -86,6 +144,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                     dft_references = dft_phonons.output
 
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                    ml_model=ml_model,
                     structure=benchmark_structure,
                     benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                     ml_phonon_task_doc=add_data_ml_phonon.output,
@@ -100,6 +159,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                     add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
                         # this is important for re-using the same internally calculated DFT reference
                         # for looping through several settings
+                        ml_model=ml_model,
                         structure=benchmark_structure,
                         benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                         ml_phonon_task_doc=add_data_ml_phonon.output,
@@ -108,6 +168,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
             else:
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
                     # this is important for using a provided DFT reference
+                    ml_model=ml_model,
                     structure=benchmark_structure,
                     benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                     ml_phonon_task_doc=add_data_ml_phonon.output,
@@ -119,7 +180,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
     return Response(replace=jobs, output=collect_output)
 
 
-@job
+@job(data=["data"])
 def dft_phonopy_gen_data(
     structure: Structure, displacements, symprec, phonon_displacement_maker, min_length
 ):
@@ -145,6 +206,11 @@ def dft_phonopy_gen_data(
     jobs = []
     dft_phonons_output = {}
     dft_phonons_dir_output = []
+
+    if phonon_displacement_maker is None:
+        phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
+    if min_length >= 18:
+        phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(
@@ -243,6 +309,9 @@ def dft_random_gen_data(
     """
     jobs = []
 
+    if phonon_displacement_maker is None:
+        phonon_displacement_maker = TightDFTStaticMaker(name="dft rattle static")
+
     random_datagen = RandomStructuresDataGenerator(
         name="RandomDataGen",
         phonon_displacement_maker=phonon_displacement_maker,
@@ -281,6 +350,7 @@ def get_iso_atom(structure_list: list[Structure]):
         list of pymatgen Structure objects
     """
     jobs = []
+    iso_atoms_dict = {}
     all_species = list(
         {specie for s in structure_list for specie in s.types_of_species}
     )
@@ -288,11 +358,14 @@ def get_iso_atom(structure_list: list[Structure]):
     isoatoms = IsoAtomMaker().make(all_species=all_species)
     jobs.append(isoatoms)
 
+    for i, species in enumerate(all_species):
+        iso_atoms_dict.update({species.number: isoatoms.output["energies"][i]})
+
     flow = Flow(
         jobs,
         {
             "species": all_species,
-            "energies": isoatoms.output["energies"],
+            "energies": iso_atoms_dict,
             "dirs": isoatoms.output["dirs"],
         },
     )

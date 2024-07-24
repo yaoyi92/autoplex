@@ -1,8 +1,19 @@
 from __future__ import annotations
+
+import os.path
+
 from autoplex.fitting.common.jobs import GAP_DEFAULTS_FILE_PATH  # this will not be needed anymore
 from autoplex.fitting.common.utils import (
     load_gap_hyperparameter_defaults,
     gap_hyperparameter_constructor,
+    gap_fitting,
+    ace_fitting,
+    nequip_fitting,
+    m3gnet_fitting,
+    mace_fitting,
+    check_convergence,
+    data_distillation,
+    prepare_fit_environment,
 )
 
 
@@ -19,7 +30,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
     # test if string for all possible args true
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -52,7 +63,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
     # test if string for include_soap==False
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -83,7 +94,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
 
     ref_list_exp = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -120,7 +131,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
 
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -149,7 +160,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
 
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -182,7 +193,7 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     )
 
     ref_list = [
-        "at_file=trainGAP.xyz",
+        "at_file=train.extxyz",
         "default_sigma={0.0001 0.05 0.05 0}",
         "energy_parameter_name=REF_energy",
         "force_parameter_name=REF_forces",
@@ -198,3 +209,125 @@ def test_gap_hyperparameter_constructor(test_dir, clean_dir):
     ]
 
     assert ref_list == gap_input_list
+
+
+def test_gap_fitting(test_dir, clean_dir):
+    import os
+
+    gap_fitting(
+        db_dir=(test_dir / "fitting" / "ref_files"),
+        species_list=["Li", "Cl"],
+        include_soap=False,
+        auto_delta=False,
+        num_processes=4,
+    )
+
+    assert os.path.isfile("gap_file.xml")
+
+
+def test_ace_fitting(test_dir, clean_dir):
+    import os
+
+    ace_fitting(
+        db_dir=(test_dir / "fitting" / "ref_files"),
+        order=3,
+        totaldegree=6,
+        cutoff=2.0,
+        solver="BLR",
+        isolated_atoms_energies={3: -0.28649227, 17: -0.25638457},
+        num_processes=4,
+    )
+
+    assert os.path.isfile("ace.jl")
+
+
+def test_nequip_fitting(test_dir, clean_dir):
+    import os
+
+    nequip_fitting(
+        db_dir=(test_dir / "fitting" / "ref_files"),
+        isolated_atoms_energies={3: -0.28649227, 17: -0.25638457},
+        r_max=4.0,
+        num_layers=4,
+        l_max=2,
+        num_features=32,
+        num_basis=8,
+        invariant_layers=2,
+        invariant_neurons=64,
+        batch_size=1,  # reduced to 1 to minimize the test execution time
+        learning_rate=0.005,
+        max_epochs=1,
+        default_dtype="float32",
+        device="cpu"
+    )
+
+    assert os.path.isfile("nequip.yaml")
+
+
+def test_m3gnet_fitting(test_dir, clean_dir):
+    import os
+
+    m3gnet_fitting(
+        db_dir=(test_dir / "fitting" / "ref_files"),
+        exp_name="training",
+        results_dir="m3gnet_results",
+        cutoff=3.0,
+        threebody_cutoff=2.0,
+        include_stresses=True,
+        hidden_dim=8,
+        num_units=8,
+        max_l=4,
+        max_n=4,
+        test_equal_to_val=True,
+        batch_size=1,  # reduced to 1 to minimize the test execution time
+        max_epochs=3,
+        device="cpu"
+    )
+
+    assert os.path.isfile("m3gnet.log")
+
+
+def test_mace_fitting(test_dir, clean_dir):
+    import os
+
+    mace_fitting(
+        db_dir=(test_dir / "fitting" / "ref_files"),
+        batch_size=5,
+        device="cpu",
+        r_max=3.0,
+        max_num_epochs=10,
+        default_dtype="float32",
+        model="MACE",
+        config_type_weights='{"Default":1.0}',
+        hidden_irreps="32x0e + 32x1o",
+        start_swa=5,
+        ema_decay=0.99,
+        correlation=3,
+        loss="huber",
+    )
+
+    assert os.path.isfile("MACE_model.model")
+
+
+def test_check_convergence():
+    check_convergence(0.002)
+
+    assert True
+
+
+def test_data_distillation(test_dir):
+    atoms = data_distillation((test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz"), 35.0)
+
+    for atom in atoms:
+        if (atom.symbols == "Li32Cl32").any() or (atom.symbols == "Li").any() or (atom.symbols == "Cl").any():
+            assert True
+
+
+def test_prepare_fit_environment(test_dir, clean_dir):
+    prepare = prepare_fit_environment(
+        database_dir=(test_dir / "fitting" / "ref_files"),
+        mlip_path=(test_dir / "fitting" / "test_mlip_path"),
+        glue_xml=False,
+    )
+
+    assert os.path.isdir(prepare)

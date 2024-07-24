@@ -13,12 +13,17 @@ import xml.etree.ElementTree as ET
 from functools import partial
 from itertools import combinations
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ase.atoms import Atom
+    from pymatgen.core import Structure
 
 import ase
+import lightning as pl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pytorch_lightning as pl
 import torch
 from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
@@ -27,6 +32,7 @@ from ase.io import read, write
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from dgl.data.utils import split_dataset
+from matgl.apps.pes import Potential
 from matgl.ext.pymatgen import Structure2Graph, get_element_list
 from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
@@ -59,7 +65,7 @@ def gap_fitting(
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
-):
+) -> dict:
     """
     GAP fit and validation job.
 
@@ -97,7 +103,7 @@ def gap_fitting(
     """
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     mlip_path: Path = prepare_fit_environment(
-        db_dir, Path.cwd(), glue_xml, regularization, train_name, test_name
+        db_dir, Path.cwd(), glue_xml, train_name, test_name
     )
 
     db_atoms = ase.io.read(os.path.join(db_dir, train_name), index=":")
@@ -225,9 +231,9 @@ def ace_fitting(
     totaldegree: int = 16,
     cutoff: float = 5.0,
     solver: str = "BLR",
-    isol_es: dict | None = None,
+    isolated_atoms_energies: dict | None = None,
     num_processes: int = 32,
-):
+) -> dict:
     """
     Perform the ACE (Atomic Cluster Expansion) potential fitting.
 
@@ -248,7 +254,7 @@ def ace_fitting(
     solver: str
         solver to be used for fitting the ACE model. Default is "BLR" (Bayesian Linear Regression).
         For very large-scale parameter estimation problems, using "LSQR" solver.
-    isol_es: dict:
+    isolated_atoms_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
     num_processes: int
         number of processes to use for parallel computation.
@@ -260,7 +266,7 @@ def ace_fitting(
 
     Raises
     ------
-    - ValueError: If the `isol_es` dictionary is empty or not provided when required.
+    - ValueError: If the `isolated_atoms_energies` dictionary is empty or not provided when required.
 
     Example:
     >>> result = ace_fitting('/path/to/data', order=2, totaldegree=12, cutoff=6.0, solver='BLR', num_processes=4)
@@ -269,21 +275,30 @@ def ace_fitting(
     train_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     source_file_path = os.path.join(db_dir, "test.extxyz")
     shutil.copy(source_file_path, ".")
-    isol_es_update = {}
+    isolated_atoms_energies_update = {}
 
-    if isol_es:
-        for e_num, e_energy in isol_es.items():
-            isol_es_update[chemical_symbols[int(e_num)]] = e_energy
+    if isolated_atoms_energies:
+        for e_num, e_energy in isolated_atoms_energies.items():
+            isolated_atoms_energies_update[chemical_symbols[int(e_num)]] = e_energy
     else:
-        raise ValueError("isol_es is empty or not defined!")
+        raise ValueError("isolated_atoms_energies parameter is empty or not defined!")
 
-    formatted_isol_es = (
+    formatted_isolated_atoms_energies = (
         "["
-        + ", ".join([f":{key} => {value}" for key, value in isol_es_update.items()])
+        + ", ".join(
+            [
+                f":{key} => {value}"
+                for key, value in isolated_atoms_energies_update.items()
+            ]
+        )
         + "]"
     )
     formatted_species = (
-        "[" + ", ".join([f":{key}" for key, value in isol_es_update.items()]) + "]"
+        "["
+        + ", ".join(
+            [f":{key}" for key, value in isolated_atoms_energies_update.items()]
+        )
+        + "]"
     )
 
     train_ace = [
@@ -308,7 +323,7 @@ model = acemodel(elements={formatted_species},
                 order={order},
                 totaldegree={totaldegree},
                 rcut={cutoff},
-                Eref={formatted_isol_es})
+                Eref={formatted_isolated_atoms_energies})
 
 weights = Dict(
             "crystal" => Dict("E" => 30.0, "F" => 1.0 , "V" => 1.0 ),
@@ -376,9 +391,9 @@ def nequip_fitting(
     learning_rate: float = 0.005,
     max_epochs: int = 10000,
     default_dtype: str = "float32",
-    isol_es: dict | None = None,
+    isolated_atoms_energies: dict | None = None,
     device: str = "cuda",
-):
+) -> dict:
     """
     Perform the NequIP potential fitting.
 
@@ -410,7 +425,7 @@ def nequip_fitting(
         learning rate
     default_dtype: str
         type of float to use, e.g. float32 and float64
-    isol_es: dict
+    isolated_atoms_energies: dict
         mandatory dictionary mapping element numbers to isolated energies.
     device: str
         specify device to use cuda or cpu
@@ -422,7 +437,7 @@ def nequip_fitting(
 
     Raises
     ------
-    - ValueError: If the `isol_es` dictionary is empty or not provided when required.
+    - ValueError: If the `isolated_atoms_energies` dictionary is empty or not provided when required.
     """
     train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     train_nequip = [
@@ -434,15 +449,15 @@ def nequip_fitting(
     num_of_train = len(train_nequip)
     num_of_val = len(test_data)
 
-    isol_es_update = ""
+    isolated_atoms_energies_update = ""
     ele_syms = []
-    if isol_es:
-        for e_num in isol_es:
-            ele_sym = "  - " + chemical_symbols[int(e_num)] + "\n"
-            isol_es_update += ele_sym
+    if isolated_atoms_energies:
+        for e_num in isolated_atoms_energies:
+            element_symbol = "  - " + chemical_symbols[int(e_num)] + "\n"
+            isolated_atoms_energies_update += element_symbol
             ele_syms.append(chemical_symbols[int(e_num)])
     else:
-        raise ValueError("isol_es is empty or not defined!")
+        raise ValueError("isolated_atoms_energies is empty or not defined!")
 
     nequip_text = f"""root: results
 run_name: autoplex
@@ -491,7 +506,7 @@ validation_dataset_key_mapping:
   REF_forces: forces
 
 chemical_symbols:
-{isol_es_update}
+{isolated_atoms_energies_update}
 wandb: False
 
 verbose: info
@@ -618,7 +633,7 @@ def m3gnet_fitting(
     max_n: int = 4,
     device: str = "cuda",
     test_equal_to_val: bool = True,
-):
+) -> dict:
     """
     Perform the M3GNet potential fitting.
 
@@ -840,7 +855,9 @@ def m3gnet_fitting(
 
         # save trained model
         model_export_path = os.path.join(results_dir, exp_name)
-        model.save(model_export_path)
+        # model.save(model_export_path)
+        potential = Potential(model=model)
+        potential.save(model_export_path)
 
         sys.stdout = original_stdout
         sys.stderr = original_stderr
@@ -931,7 +948,7 @@ def mace_fitting(
     loss: str = None,
     default_dtype: str = None,
     device: str = "cuda",
-):
+) -> dict:
     """
     Perform the MACE potential fitting.
 
@@ -1013,7 +1030,7 @@ def mace_fitting(
     }
 
 
-def check_convergence(test_error):
+def check_convergence(test_error) -> bool:
     """
     Check the convergence of the fit.
 
@@ -1033,7 +1050,7 @@ def check_convergence(test_error):
     return convergence
 
 
-def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path):
+def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path) -> dict:
     """
     Load gap fit default parameters from the json file.
 
@@ -1053,12 +1070,10 @@ def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path):
 
 def gap_hyperparameter_constructor(
     gap_parameter_dict: dict,
-    atoms_symbols: list | None = None,
-    atoms_energies: list | None = None,
     include_two_body: bool = False,
     include_three_body: bool = False,
     include_soap: bool = False,
-):
+) -> list:
     """
     Construct a list of arguments needed to execute gap potential from the parameters' dict.
 
@@ -1066,10 +1081,6 @@ def gap_hyperparameter_constructor(
     ----------
     gap_parameter_dict : dict.
         dictionary with gap hyperparameters.
-    atoms_symbols: list or None.
-        List of atom symbols
-    atoms_energies: list or None.
-        List of isolated atoms energies
     include_two_body : bool.
         bool indicating whether to include two-body hyperparameters
     include_three_body : bool.
@@ -1082,19 +1093,6 @@ def gap_hyperparameter_constructor(
         list
            gap fit input parameter string.
     """
-    # convert gap_parameter_dict to representation compatible with gap
-
-    # if atoms_energies and atoms_symbols is not None:
-    #     e0 = ":".join(
-    #         [
-    #             f"{iso_atom}:{iso_energy}"
-    #             for iso_atom, iso_energy in zip(atoms_symbols, atoms_energies)
-    #         ]
-    #     )
-
-    # Update the isolated atom energy argument
-    # gap_parameter_dict["general"].update({"e0": e0})
-
     general = [f"{key}={value}" for key, value in gap_parameter_dict["general"].items()]
 
     two_body_params = " ".join(
@@ -1135,7 +1133,7 @@ def gap_hyperparameter_constructor(
     return [*general, gap_hyperparameters]
 
 
-def get_list_of_vasp_calc_dirs(flow_output):
+def get_list_of_vasp_calc_dirs(flow_output) -> list[str]:
     """
     Return a list of vasp_calc_dirs from PhononDFTMLDataGenerationFlow output.
 
@@ -1149,7 +1147,7 @@ def get_list_of_vasp_calc_dirs(flow_output):
     list.
         A list of vasp_calc_dirs
     """
-    list_of_vasp_calc_dirs = []
+    list_of_vasp_calc_dirs: list[str] = []
     for output in flow_output.values():
         for output_type, dirs in output.items():
             if output_type != "phonon_data" and isinstance(dirs, list):
@@ -1169,7 +1167,7 @@ def vaspoutput_2_extended_xyz(
     regularization: float = 0.1,
     f_min: float = 0.01,  # unit: eV Å-1
     atom_wise_regularization: bool = True,
-):
+) -> None:
     """
     Parse all VASP output files (vasprun.xml/OUTCAR) and generates a vasp_ref.extxyz.
 
@@ -1233,7 +1231,7 @@ class Species:
     def __init__(self, atoms):
         self.atoms = atoms
 
-    def get_species(self):
+    def get_species(self) -> list[str]:
         """
         Get species.
 
@@ -1242,7 +1240,7 @@ class Species:
         species_list:
             a list of species.
         """
-        species_list = []
+        species_list: list[str] = []
 
         for atom in self.atoms:
             symbol_all = atom.get_chemical_symbols()
@@ -1251,7 +1249,7 @@ class Species:
 
         return species_list
 
-    def find_element_pairs(self, symbol_list=None):
+    def find_element_pairs(self, symbol_list=None) -> list:
         """
         Find element pairs.
 
@@ -1270,7 +1268,7 @@ class Species:
 
         return list(combinations(species_list, 2))
 
-    def get_number_of_species(self):
+    def get_number_of_species(self) -> int:
         """
         Get number of species.
 
@@ -1281,7 +1279,7 @@ class Species:
         """
         return int(len(self.get_species()))
 
-    def get_species_Z(self):
+    def get_species_Z(self) -> str:
         """
         Get species Z.
 
@@ -1303,7 +1301,37 @@ class Species:
         return species_Z
 
 
-def gcm3_to_Vm(gcm3, mr, n_atoms=1):
+def flatten(atoms_object, recursive=False) -> list[str | bytes | Atoms] | list:
+    """
+    Flatten an iterable fully, but excluding Atoms objects.
+
+    Parameters
+    ----------
+    atoms_object: Atoms object
+    recursive: bool
+        set the recursive boolean.
+
+    Returns
+    -------
+    a flattened object, excluding the Atoms objects.
+
+    """
+    iteration_list: list[str | bytes | Atoms] | list = []
+
+    if recursive:
+        for element in atoms_object:
+            if isinstance(element, Iterable) and not isinstance(
+                element, (str, bytes, ase.atoms.Atoms, ase.Atoms)
+            ):
+                iteration_list.extend(flatten(element, recursive=True))
+            else:
+                iteration_list.append(element)
+        return iteration_list
+
+    return [item for sublist in atoms_object for item in sublist]
+
+
+def gcm3_to_Vm(gcm3, mr, n_atoms=1) -> float:
     """
     Convert gcm3 to Vm.
 
@@ -1323,7 +1351,7 @@ def gcm3_to_Vm(gcm3, mr, n_atoms=1):
     return 1 / (n_atoms * (gcm3 / mr) * 6.022e23 / (1e8) ** 3)
 
 
-def get_atomic_numbers(species):
+def get_atomic_numbers(species) -> list[int]:
     """
     Get atomic numbers.
 
@@ -1346,14 +1374,20 @@ def get_atomic_numbers(species):
     return atom_numbers
 
 
-def stratified_dataset_split(atoms, split_ratio):
+def stratified_dataset_split(
+    atoms, split_ratio
+) -> tuple[
+    list[Atom | Atoms]
+    | list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
+    list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
+]:
     """
     Split the dataset.
 
     Parameters
     ----------
     atoms: Atoms
-        Ase atoms object
+        ase Atoms object
     split_ratio: float
         Parameter to divide the training set and the test set.
 
@@ -1396,7 +1430,7 @@ def stratified_dataset_split(atoms, split_ratio):
     return train_structures, test_structures
 
 
-def data_distillation(vasp_ref_dir, f_max):
+def data_distillation(vasp_ref_dir, f_max) -> list[Atom | Atoms]:
     """
     For data distillation.
 
@@ -1430,7 +1464,7 @@ def data_distillation(vasp_ref_dir, f_max):
     return atoms_distilled
 
 
-def energy_remain(in_file):
+def energy_remain(in_file) -> float:
     """
     Plot the distribution of energy per atom on the output vs. the input.
 
@@ -1470,7 +1504,7 @@ def energy_remain(in_file):
     return rms["rmse"]
 
 
-def extract_gap_label(xml_file_path):
+def extract_gap_label(xml_file_path) -> str:
     """
     Extract GAP label.
 
@@ -1490,7 +1524,7 @@ def extract_gap_label(xml_file_path):
     return root.tag
 
 
-def plot_convex_hull(all_points, hull_points):
+def plot_convex_hull(all_points, hull_points) -> None:
     """
     Plot convex hull.
 
@@ -1521,7 +1555,7 @@ def plot_convex_hull(all_points, hull_points):
     plt.ylabel("Energy")
     plt.title("Convex Hull with All Points")
     plt.legend()
-    plt.show()
+    plt.savefig("ConvexHull.png")
 
 
 def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]:
@@ -1544,7 +1578,7 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]
 
     """
     at_ids = [atom.get_atomic_numbers() for atom in atoms_db]
-    isol_es = {
+    isolated_atoms_energies = {
         atom.get_atomic_numbers()[0]: atom.info[e_name]
         for atom in atoms_db
         if "config_type" in atom.info and "IsolatedAtom" in atom.info["config_type"]
@@ -1552,7 +1586,8 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]
 
     es_visol = np.array(
         [
-            (atom.info[e_name] - sum([isol_es[j] for j in at_ids[ct]])) / len(atom)
+            (atom.info[e_name] - sum([isolated_atoms_energies[j] for j in at_ids[ct]]))
+            / len(atom)
             for ct, atom in enumerate(atoms_db)
         ]
     )
@@ -1563,7 +1598,7 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]
     return es_var / avg_neigh, num_triplet
 
 
-def compute_pairs_triplets(atoms):
+def compute_pairs_triplets(atoms) -> list[float]:
     """
     Calculate the number of pairwise and triplet within a cutoff distance for a given list of atoms.
 
@@ -1593,7 +1628,7 @@ def compute_pairs_triplets(atoms):
     return [num_pair, num_triplet]
 
 
-def run_ace(num_processes: int, script_name: str):
+def run_ace(num_processes: int, script_name: str) -> None:
     """
     Julia-ACE script runner.
 
@@ -1613,7 +1648,7 @@ def run_ace(num_processes: int, script_name: str):
         subprocess.call(["julia", script_name], stdout=file_out, stderr=file_err)
 
 
-def run_gap(num_processes: int, parameters):
+def run_gap(num_processes: int, parameters) -> None:
     """
     GAP runner.
 
@@ -1635,7 +1670,7 @@ def run_gap(num_processes: int, parameters):
 
 def run_quip(
     num_processes: int, data_path, xml_file: str, filename: str, glue_xml: bool = False
-):
+) -> None:
     """
     QUIP runner.
 
@@ -1660,7 +1695,7 @@ def run_quip(
         subprocess.call(command, stdout=file_std, stderr=file_err, shell=True)
 
 
-def run_nequip(command: str, log_prefix: str):
+def run_nequip(command: str, log_prefix: str) -> None:
     """
     Nequip runner.
 
@@ -1678,7 +1713,7 @@ def run_nequip(command: str, log_prefix: str):
         subprocess.call(command.split(), stdout=file_out, stderr=file_err)
 
 
-def run_mace(hypers: list):
+def run_mace(hypers: list) -> None:
     """
     MACE runner.
 
@@ -1696,12 +1731,11 @@ def run_mace(hypers: list):
 
 def prepare_fit_environment(
     database_dir,
-    mlip_path,
+    mlip_path: Path,
     glue_xml: bool,
-    regularization: bool,
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
-):
+) -> Path:
     """
     Prepare the environment for the fit.
 
@@ -1713,12 +1747,14 @@ def prepare_fit_environment(
         Path to the MLIP fit run (cwd).
     glue_xml: bool
             use the glue.xml core potential instead of fitting 2b terms.
-    regularization: bool
-        For using sigma regularization.
+    train_name:
+        name of the training data file.
+    test_name:
+        name of the test data file.
 
     Returns
     -------
-    the MLIP path.
+    the MLIP file path.
     """
     shutil.copy(
         os.path.join(database_dir, test_name),
@@ -1737,8 +1773,26 @@ def prepare_fit_environment(
     return mlip_path
 
 
-def convert_xyz_to_structure(atoms_list, include_forces=True, include_stresses=True):
-    """Convert extxyz to structure format used in pymatgen."""
+def convert_xyz_to_structure(
+    atoms_list, include_forces=True, include_stresses=True
+) -> tuple[list[Structure], list, list[object], list[object]]:
+    """
+    Convert extxyz to pymatgen Structure format.
+
+    Parameters
+    ----------
+    atoms_list:
+        list of atoms to be converted.
+    include_forces: bool
+        will include forces with the Structure object.
+    include_stresses: bool
+        will include stresses with the Structure object.
+
+    Returns
+    -------
+    tuple(pymatgen Structure object, energies, forces, stresses)
+
+    """
     structures = []
     energies = []
     forces = []
@@ -1770,15 +1824,27 @@ def write_after_distillation_data_split(
     vasp_ref_name: str = "vasp_ref.extxyz",
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
-):
+) -> None:
     """
     Write train.extxyz and test.extxyz after data distillation and split.
 
+    Reject structures with large force components and split dataset into training and test datasets.
+
     Parameters
     ----------
-    distillation
-    f_max
-    split_ratio
+    distillation: bool
+        For using data distillation.
+    f_max: float
+        Maximally allowed force in the data set.
+    split_ratio: float
+        Parameter to divide the training set and the test set.
+        A value of 0.1 means that the ratio of the training set to the test set is 9:1
+    vasp_ref_name:
+        name of the VASP reference data file.
+    train_name:
+        name of the training data file.
+    test_name:
+        name of the test data file.
     """
     # reject structures with large force components
     atoms = (
@@ -1787,7 +1853,7 @@ def write_after_distillation_data_split(
         else ase.io.read(vasp_ref_name, index=":")
     )
 
-    # split dataset into training and testing datasets
+    # split dataset into training and test datasets
     (train_structures, test_structures) = stratified_dataset_split(atoms, split_ratio)
 
     ase.io.write(train_name, train_structures, format="extxyz", append=True)
