@@ -33,6 +33,7 @@ from jobflow import Flow, Maker, Response, job
 from pymatgen.core import Molecule, Site
 
 from autoplex.data.common.jobs import generate_randomized_structures
+from autoplex.data.common.utils import generate_supercell_matrix
 from autoplex.data.phonons.utils import ml_phonon_maker_preparation
 
 __all__ = [
@@ -681,14 +682,32 @@ class RandomStructuresDataGenerator(Maker):
         structure = relaxed.output.structure
 
         if self.adaptive_rattled_supercell_settings:
-            supercell_job = get_supercell_size(
-                structure=structure,
-                min_length=10,
-                prefer_90_degrees=False,
-                max_atoms=400,
-            )
-            jobs.append(supercell_job)
-            supercell_matrix = supercell_job.output
+            try:
+                supercell_job = get_supercell_size(
+                    structure=structure,
+                    min_length=10,
+                    max_length=25,
+                    prefer_90_degrees=True,
+                    max_atoms=600,
+                )
+                jobs.append(supercell_job)
+                supercell_matrix = supercell_job.output
+            except AttributeError:
+                try:
+                    supercell_job = get_supercell_size(
+                        structure=structure,
+                        min_length=10,
+                        max_length=25,
+                        prefer_90_degrees=False,
+                        allow_orthorhombic=True,
+                        max_atoms=500,
+                    )
+                    jobs.append(supercell_job)
+                    supercell_matrix = supercell_job.output
+                except AttributeError:
+                    supercell_matrix = generate_supercell_matrix(
+                        structure, supercell_matrix
+                    )
 
         random_rattle_sc = generate_randomized_structures(
             structure=structure,

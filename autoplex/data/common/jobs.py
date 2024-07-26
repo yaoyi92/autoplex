@@ -21,7 +21,6 @@ from pymatgen.core import Structure
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 
 from autoplex.data.common.utils import (
-    generate_supercell_matrix,
     mc_rattle,
     random_vary_angle,
     scale_cell,
@@ -224,22 +223,11 @@ def generate_randomized_structures(
     if supercell_matrix is None:
         supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
 
-    if adaptive_rattled_supercell_settings:
-        supercell_matrix = generate_supercell_matrix(structure, supercell_matrix)
-
-        print("SUPERCELL_MATRIX", supercell_matrix)
-
-        supercell = get_supercell(
-            unitcell=get_phonopy_structure(structure),
-            supercell_matrix=supercell_matrix,
-        )
-        structure = get_pmg_structure(supercell)
-    else:
-        supercell = get_supercell(
-            unitcell=get_phonopy_structure(structure),
-            supercell_matrix=supercell_matrix,
-        )
-        structure = get_pmg_structure(supercell)
+    supercell = get_supercell(
+        unitcell=get_phonopy_structure(structure),
+        supercell_matrix=supercell_matrix,
+    )
+    structure = get_pmg_structure(supercell)
 
     # distort cells by volume or angle
     if distort_type == 0:

@@ -819,6 +819,9 @@ def generate_supercell_matrix(structure, supercell_matrix, max_sites=400):
     Updated supercell matrix
 
     """
+    if supercell_matrix is None:
+        supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
+
     supercell_check = structure * supercell_matrix
 
     if supercell_check.num_sites > max_sites:
