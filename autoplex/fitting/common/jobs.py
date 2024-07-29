@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from jobflow import job
-from ase.io import read, write
 from autoplex.fitting.common.utils import (
     ace_fitting,
     check_convergence,
@@ -11,12 +10,7 @@ from autoplex.fitting.common.utils import (
     m3gnet_fitting,
     mace_fitting,
     nequip_fitting,
-    stratified_dataset_split,
-    data_distillation,
 )
-from autoplex.fitting.common.regularization import set_sigma
-import shutil
-import os
 
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
@@ -25,13 +19,16 @@ GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 @job
 def machine_learning_fit(
     database_dir: str,
-    species_list: list,
+    # species_list: list,
     isolated_atoms_energies: dict | None = None,
-    num_processes: int = 32,
+    num_processes_fit: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
     mlip_type: str | None = None,
-    regularization: bool = True,
+    ref_energy_name: str = "REF_energy",
+    ref_force_name: str = "REF_forces",
+    ref_virial_name: str = "REF_virial",
+    # regularization: bool = True,
     HPO: bool = False,
     mlip_hyper: dict | None = None,
     **kwargs,
@@ -45,7 +42,7 @@ def machine_learning_fit(
         the database directory.
     isolated_atoms_energies: dict | None
         Dict of isolated atoms energies.
-    num_processes: int
+    num_processes_fit: int
         number of processes for fitting.
     auto_delta: bool
         automatically determine delta for 2b, 3b and SOAP terms.
@@ -81,10 +78,15 @@ def machine_learning_fit(
     ]
 
     if mlip_type == "GAP":
-        defult_mlip_hyper = {"two_body": True, "three_body": False, "soap": True}
+        defult_mlip_hyper = {"two_body": True, 
+                             "three_body": False, 
+                             "soap": True}
 
     elif mlip_type == "J-ACE":
-        defult_mlip_hyper = {"order": 3, "totaldegree": 6, "cutoff": 2.0, "solver": "BLR"}
+        defult_mlip_hyper = {"order": 3, 
+                             "totaldegree": 6,
+                             "cutoff": 2.0, 
+                             "solver": "BLR"}
 
     elif mlip_type == "NEQUIP":
         defult_mlip_hyper = {
@@ -149,14 +151,17 @@ def machine_learning_fit(
             ):
                 train_test_error = gap_fitting(
                     db_dir=database_dir,
-                    species_list=species_list,
+                    # species_list=species_list,
                     include_two_body=mlip_hyper["two_body"],
                     include_three_body=mlip_hyper["three_body"],
                     include_soap=mlip_hyper["soap"],
-                    num_processes=num_processes,
+                    num_processes_fit=num_processes_fit,
                     auto_delta=auto_delta,
                     glue_xml=glue_xml,
-                    regularization=regularization,
+                    ref_energy_name=ref_energy_name,
+                    ref_force_name=ref_force_name,
+                    ref_virial_name=ref_virial_name,
+                    # regularization=regularization,
                     train_name=train_name,
                     test_name=test_name,
                     fit_kwargs=kwargs,
@@ -170,8 +175,10 @@ def machine_learning_fit(
             cutoff=mlip_hyper["cutoff"],
             solver=mlip_hyper["solver"],
             isolated_atoms_energies=isolated_atoms_energies,
-            num_processes=num_processes,
-            fit_kwargs=kwargs,
+            ref_energy_name=ref_energy_name,
+            ref_force_name=ref_force_name,
+            ref_virial_name=ref_virial_name,
+            num_processes_fit=num_processes_fit,
         )
 
     elif mlip_type == "NEQUIP":
@@ -190,6 +197,9 @@ def machine_learning_fit(
             isolated_atoms_energies=isolated_atoms_energies,
             default_dtype=mlip_hyper["default_dtype"],
             device=mlip_hyper["device"],
+            ref_energy_name=ref_energy_name,
+            ref_force_name=ref_force_name,
+            ref_virial_name=ref_virial_name,
         )
 
     elif mlip_type == "M3GNET":
@@ -208,6 +218,9 @@ def machine_learning_fit(
             max_n=mlip_hyper["max_n"],
             device=mlip_hyper["device"],
             test_equal_to_val=mlip_hyper["test_equal_to_val"],
+            ref_energy_name=ref_energy_name,
+            ref_force_name=ref_force_name,
+            ref_virial_name=ref_virial_name,
         )
 
     elif mlip_type == "MACE":
@@ -225,6 +238,9 @@ def machine_learning_fit(
             loss=mlip_hyper["loss"],
             default_dtype=mlip_hyper["default_dtype"],
             device=mlip_hyper["device"],
+            ref_energy_name=ref_energy_name,
+            ref_force_name=ref_force_name,
+            ref_virial_name=ref_virial_name,
         )
 
     check_conv = check_convergence(train_test_error["test_error"])
@@ -235,44 +251,3 @@ def machine_learning_fit(
         "test_error": train_test_error["test_error"],
         "convergence": check_conv,
     }
-
-
-@job
-def data_preprocessing(split_ratio: float = 0.5,
-                       regularization: bool = False,
-                       distillation: bool = False,
-                       f_max: float = 40.0,
-                       vasp_ref_dir: str = None,
-                       pre_database_dir: str = None):
-
-    # reject strucutres with large force components
-    if distillation:
-        atoms = data_distillation(vasp_ref_dir, f_max)
-    else:
-        atoms = read(vasp_ref_dir, index=':')
-
-    # split dataset into training and testing datasets with a ratio of 9:1
-    train_structures, test_structures = stratified_dataset_split(atoms, split_ratio)
-
-    # Merging database
-    if pre_database_dir and os.path.exists(pre_database_dir):
-        files_to_copy = ['train.extxyz', 'test.extxyz']
-        current_working_directory = os.getcwd()
-
-        for file_name in files_to_copy:
-            source_file_path = os.path.join(pre_database_dir, file_name)
-            destination_file_path = os.path.join(current_working_directory, file_name)
-            shutil.copy(source_file_path, destination_file_path)
-            print(f"File {file_name} has been copied to {destination_file_path}")
-
-    write('train.extxyz', train_structures, format='extxyz', append=True)
-    write('test.extxyz', test_structures, format='extxyz', append=True)
-
-    if regularization:
-        atoms = read('train.extxyz', index=':')
-        atom_with_sigma = set_sigma(atoms, etup = [(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)])
-        write('train_with_sigma.extxyz',atom_with_sigma,format='extxyz')
-
-    database_path = Path.cwd()
-
-    return database_path

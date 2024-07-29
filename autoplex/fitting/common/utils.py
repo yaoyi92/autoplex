@@ -16,8 +16,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ase.atoms import Atom
     from pymatgen.core import Structure
+
+from collections.abc import Iterable
 
 import ase
 import lightning as pl
@@ -43,9 +44,12 @@ from pymatgen.io.ase import AseAtomsAdaptor
 from pytorch_lightning.loggers import CSVLogger
 from scipy.spatial import ConvexHull
 from scipy.special import comb
-from sklearn.model_selection import StratifiedShuffleSplit
 
-from autoplex.data.common.utils import plot_energy_forces, rms_dict
+from autoplex.data.common.utils import (
+    data_distillation,
+    rms_dict,
+    stratified_dataset_split,
+)
 
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
@@ -53,15 +57,18 @@ GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 
 def gap_fitting(
     db_dir: str | Path,
-    species_list: list,
+    # species_list: list,   #  species_list is not very necessary for GAP fitting, can we take it out for now?
     include_two_body: bool = True,
     include_three_body: bool = False,
     include_soap: bool = True,
     path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
-    num_processes: int = 32,
+    num_processes_fit: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
-    regularization: bool = True,
+    # regularization: bool = True,    #  not used, can be taked out as well?
+    ref_energy_name: str = "REF_energy",
+    ref_force_name: str = "REF_forces",
+    ref_virial_name: str = "REF_virial",
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
@@ -83,7 +90,7 @@ def gap_fitting(
         bool indicating whether to include three-body hyperparameters
     include_soap : bool.
         bool indicating whether to include soap hyperparameters
-    num_processes: int.
+    num_processes_fit: int.
         Number of processes used for gap_fit
     auto_delta: bool
         automatically determine delta for 2b, 3b and soap terms.
@@ -115,6 +122,9 @@ def gap_fitting(
     )
 
     gap_default_hyperparameters["general"].update({"gp_file": gap_file_xml})
+    gap_default_hyperparameters["general"]["energy_parameter_name"] = ref_energy_name
+    gap_default_hyperparameters["general"]["force_parameter_name"] = ref_force_name
+    gap_default_hyperparameters["general"]["virial_parameter_name"] = ref_virial_name
 
     for parameter in gap_default_hyperparameters:
         if fit_kwargs:
@@ -125,7 +135,7 @@ def gap_fitting(
     if include_two_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
         if auto_delta:
-            delta_2b, num_triplet = calculate_delta(db_atoms, "REF_energy")
+            delta_2b, num_triplet = calculate_delta(db_atoms, ref_energy_name)
             gap_default_hyperparameters["twob"].update({"delta": delta_2b})
 
         fit_parameters_list = gap_hyperparameter_constructor(
@@ -133,8 +143,8 @@ def gap_fitting(
             include_two_body=include_two_body,
         )
 
-        run_gap(num_processes, fit_parameters_list)
-        run_quip(num_processes, train_data_path, gap_file_xml, "quip_" + train_name)
+        run_gap(num_processes_fit, fit_parameters_list)
+        run_quip(num_processes_fit, train_data_path, gap_file_xml, "quip_" + train_name)
 
     if include_three_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -149,8 +159,8 @@ def gap_fitting(
             include_three_body=include_three_body,
         )
 
-        run_gap(num_processes, fit_parameters_list)
-        run_quip(num_processes, train_data_path, gap_file_xml, "quip_" + train_name)
+        run_gap(num_processes_fit, fit_parameters_list)
+        run_quip(num_processes_fit, train_data_path, gap_file_xml, "quip_" + train_name)
 
     if glue_xml:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -163,9 +173,9 @@ def gap_fitting(
             include_three_body=False,
         )
 
-        run_gap(num_processes, fit_parameters_list)
+        run_gap(num_processes_fit, fit_parameters_list)
         run_quip(
-            num_processes,
+            num_processes_fit,
             train_data_path,
             gap_file_xml,
             "quip_" + train_name,
@@ -189,9 +199,9 @@ def gap_fitting(
             include_soap=include_soap,
         )
 
-        run_gap(num_processes, fit_parameters_list)
+        run_gap(num_processes_fit, fit_parameters_list)
         run_quip(
-            num_processes,
+            num_processes_fit,
             train_data_path,
             gap_file_xml,
             "quip_" + train_name,
@@ -203,19 +213,21 @@ def gap_fitting(
     print("Training error of MLIP (eV/at.):", round(train_error, 7))
 
     # Calculate testing error
-    run_quip(num_processes, test_data_path, gap_file_xml, "quip_" + test_name, glue_xml)
+    run_quip(
+        num_processes_fit, test_data_path, gap_file_xml, "quip_" + test_name, glue_xml
+    )
     test_error = energy_remain("quip_" + test_name)
     print("Testing error of MLIP (eV/at.):", round(test_error, 7))
 
-    if not glue_xml:
-        plot_energy_forces(
-            title="Data error metrics",
-            energy_limit=0.005,
-            force_limit=0.1,
-            species_list=species_list,
-            train_name=train_name,
-            test_name=test_name,
-        )
+    # if not glue_xml:
+    #     plot_energy_forces(
+    #         title="Data error metrics",
+    #         energy_limit=0.005,
+    #         force_limit=0.1,
+    #         species_list=species_list,
+    #         train_name=train_name,
+    #         test_name=test_name,
+    #     )
 
     return {
         "train_error": train_error,
@@ -232,7 +244,10 @@ def ace_fitting(
     cutoff: float = 5.0,
     solver: str = "BLR",
     isolated_atoms_energies: dict | None = None,
-    num_processes: int = 32,
+    ref_energy_name: str = "REF_energy",
+    ref_force_name: str = "REF_forces",
+    ref_virial_name: str = "REF_virial",
+    num_processes_fit: int = 32,
 ) -> dict:
     """
     Perform the ACE (Atomic Cluster Expansion) potential fitting.
@@ -256,7 +271,7 @@ def ace_fitting(
         For very large-scale parameter estimation problems, using "LSQR" solver.
     isolated_atoms_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
-    num_processes: int
+    num_processes_fit: int
         number of processes to use for parallel computation.
 
     Returns
@@ -267,10 +282,6 @@ def ace_fitting(
     Raises
     ------
     - ValueError: If the `isolated_atoms_energies` dictionary is empty or not provided when required.
-
-    Example:
-    >>> result = ace_fitting('/path/to/data', order=2, totaldegree=12, cutoff=6.0, solver='BLR', num_processes=4)
-    >>> print(result['train_error'], result['test_error'])
     """
     train_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     source_file_path = os.path.join(db_dir, "test.extxyz")
@@ -310,14 +321,14 @@ def ace_fitting(
 using LinearAlgebra: norm, Diagonal
 using CSV, DataFrames
 using Distributed
-addprocs({num_processes-1}, exeflags="--project=$(Base.active_project())")
+addprocs({num_processes_fit-1}, exeflags="--project=$(Base.active_project())")
 @everywhere using ACEpotentials
 
 data_file = "train_ace.extxyz"
 data = read_extxyz(data_file)
 test_data_file = "test.extxyz"
 test_data = read_extxyz(test_data_file)
-data_keys = (energy_key = "REF_energy", force_key = "REF_force", virial_key = "REF_virial")
+data_keys = (energy_key = "{ref_energy_name}", force_key = "{ref_force_name}", virial_key = "{ref_virial_name}")
 
 model = acemodel(elements={formatted_species},
                 order={order},
@@ -348,10 +359,10 @@ ACEpotentials.linear_errors(test_data, model; data_keys...)
 
 @info("Manual RMSE Test")
 potential = model.potential
-train_energies = [ JuLIP.get_data(at, "REF_energy") / length(at) for at in data]
+train_energies = [ JuLIP.get_data(at, "{ref_energy_name}") / length(at) for at in data]
 model_energies_train = [energy(potential, at) / length(at) for at in data]
 rmse_energy_train = norm(train_energies - model_energies_train) / sqrt(length(data))
-test_energies = [ JuLIP.get_data(at, "REF_energy") / length(at) for at in test_data]
+test_energies = [ JuLIP.get_data(at, "{ref_energy_name}") / length(at) for at in test_data]
 model_energies_pred = [energy(potential, at) / length(at) for at in test_data]
 rmse_energy_test = norm(test_energies - model_energies_pred) / sqrt(length(test_data))
 
@@ -365,7 +376,7 @@ export2lammps("acemodel.yace", model)
     with open("ace.jl", "w") as file:
         file.write(ace_text)
 
-    os.system(f"export OMP_NUM_THREADS={num_processes} && julia ace.jl")
+    os.system(f"export OMP_NUM_THREADS={num_processes_fit} && julia ace.jl")
 
     energy_err = pd.read_csv("rmse_energies.csv")
     train_error = energy_err["rmse_energy_train"][0]
@@ -392,6 +403,9 @@ def nequip_fitting(
     max_epochs: int = 10000,
     default_dtype: str = "float32",
     isolated_atoms_energies: dict | None = None,
+    ref_energy_name: str = "REF_energy",
+    ref_force_name: str = "REF_forces",
+    ref_virial_name: str = "REF_virial",
     device: str = "cuda",
 ) -> dict:
     """
@@ -438,6 +452,9 @@ def nequip_fitting(
     Raises
     ------
     - ValueError: If the `isolated_atoms_energies` dictionary is empty or not provided when required.
+    """
+    """
+    [TODO] train Nequip on virials
     """
     train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     train_nequip = [
@@ -499,11 +516,11 @@ validation_dataset_file_name: {db_dir}/test.extxyz
 ase_args:
   format: extxyz
 dataset_key_mapping:
-  REF_energy: total_energy
-  REF_forces: forces
+  {ref_energy_name}: total_energy
+  {ref_force_name}: forces
 validation_dataset_key_mapping:
-  REF_energy: total_energy
-  REF_forces: forces
+  {ref_energy_name}: total_energy
+  {ref_force_name}: forces
 
 chemical_symbols:
 {isolated_atoms_energies_update}
@@ -633,6 +650,9 @@ def m3gnet_fitting(
     max_n: int = 4,
     device: str = "cuda",
     test_equal_to_val: bool = True,
+    ref_energy_name: str = "REF_energy",
+    ref_force_name: str = "REF_forces",
+    ref_virial_name: str = "REF_virial",
 ) -> dict:
     """
     Perform the M3GNet potential fitting.
@@ -711,7 +731,12 @@ def m3gnet_fitting(
             train_forces,
             train_stresses,
         ) = convert_xyz_to_structure(
-            train_m3gnet, include_forces=True, include_stresses=include_stresses
+            train_m3gnet,
+            include_forces=True,
+            include_stresses=include_stresses,
+            ref_energy_name=ref_energy_name,
+            ref_force_name=ref_force_name,
+            ref_virial_name=ref_virial_name,
         )
 
         train_labels = {
@@ -748,7 +773,12 @@ def m3gnet_fitting(
                 test_forces,
                 test_stresses,
             ) = convert_xyz_to_structure(
-                test_data, include_forces=True, include_stresses=include_stresses
+                test_data,
+                include_forces=True,
+                include_stresses=include_stresses,
+                ref_energy_name=ref_energy_name,
+                ref_force_name=ref_force_name,
+                ref_virial_name=ref_virial_name,
             )
 
             test_labels = {
@@ -948,6 +978,9 @@ def mace_fitting(
     loss: str = None,
     default_dtype: str = None,
     device: str = "cuda",
+    ref_energy_name: str = "REF_energy",
+    ref_force_name: str = "REF_forces",
+    ref_virial_name: str = "REF_virial",
 ) -> dict:
     """
     Perform the MACE potential fitting.
@@ -988,6 +1021,12 @@ def mace_fitting(
         A dictionary containing train_error, test_error, and the path to the fitted MLIP.
 
     """
+    if ref_virial_name is not None:
+        atoms = read(f"{db_dir}/train.extxyz", index=":")
+        mace_virial_format_conversion(
+            atoms=atoms, ref_virial_name=ref_virial_name, out_file_name="train.extxyz"
+        )
+
     hypers = [
         "--name=MACE_model",
         f"--train_file={db_dir}/train.extxyz",
@@ -995,8 +1034,8 @@ def mace_fitting(
         f"--config_type_weights={config_type_weights}",
         f"--model={model}",
         f"--hidden_irreps={hidden_irreps}",
-        "--energy_key=REF_energy",
-        "--forces_key=REF_forces",
+        f"--energy_key={ref_energy_name}",
+        f"--forces_key={ref_force_name}",
         f"--r_max={r_max}",
         f"--correlation={correlation}",
         f"--batch_size={batch_size}",
@@ -1008,14 +1047,14 @@ def mace_fitting(
         "--amsgrad",
         f"--loss={loss}",
         "--restart_latest",
-        "--seed=12345",
+        "--seed=123",
         f"--default_dtype={default_dtype}",
         f"--device={device}",
     ]
 
     run_mace(hypers)
 
-    with open("./logs/MACE_model_run-12345.log") as file:
+    with open("./logs/MACE_model_run-123.log") as file:
         log_data = file.read()
 
     tables = re.split(r"\+-+\+\n", log_data)
@@ -1374,96 +1413,6 @@ def get_atomic_numbers(species) -> list[int]:
     return atom_numbers
 
 
-def stratified_dataset_split(
-    atoms, split_ratio
-) -> tuple[
-    list[Atom | Atoms]
-    | list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
-    list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
-]:
-    """
-    Split the dataset.
-
-    Parameters
-    ----------
-    atoms: Atoms
-        ase Atoms object
-    split_ratio: float
-        Parameter to divide the training set and the test set.
-
-    Returns
-    -------
-    train_structures, test_structures:
-        split-up datasets of train structures and test structures.
-
-    """
-    atom_bulk = []
-    atom_isolated_and_dimer = []
-    for at in atoms:
-        if (
-            at.info["config_type"] != "dimer"
-            and at.info["config_type"] != "IsolatedAtom"
-        ):
-            atom_bulk.append(at)
-        else:
-            atom_isolated_and_dimer.append(at)
-
-    if len(atoms) != len(atom_bulk):
-        atoms = atom_bulk
-
-    average_energies = np.array([atom.info["REF_energy"] / len(atom) for atom in atoms])
-    # sort by energy
-    sorted_indices = np.argsort(average_energies)
-    atoms = [atoms[i] for i in sorted_indices]
-    average_energies = average_energies[sorted_indices]
-
-    stratified_average_energies = pd.qcut(average_energies, q=2, labels=False)
-    split = StratifiedShuffleSplit(n_splits=1, test_size=split_ratio, random_state=42)
-
-    for train_index, test_index in split.split(atoms, stratified_average_energies):
-        train_structures = [atoms[i] for i in train_index]
-        test_structures = [atoms[i] for i in test_index]
-
-    if atom_isolated_and_dimer:
-        train_structures = atom_isolated_and_dimer + train_structures
-
-    return train_structures, test_structures
-
-
-def data_distillation(vasp_ref_dir, f_max) -> list[Atom | Atoms]:
-    """
-    For data distillation.
-
-    Parameters
-    ----------
-    vasp_ref_dir:
-        VASP reference data directory.
-    f_max:
-        maximally allowed force.
-
-    Returns
-    -------
-    atoms_distilled:
-        list of distilled atoms.
-
-    """
-    atoms = ase.io.read(vasp_ref_dir, index=":")
-
-    atoms_distilled = []
-    for at in atoms:
-        forces = np.abs(at.arrays["REF_forces"])
-        f_component_max = np.max(forces)
-
-        if f_component_max < f_max:
-            atoms_distilled.append(at)
-
-    print(
-        f"After distillation, there are still {len(atoms_distilled)} data points remaining."
-    )
-
-    return atoms_distilled
-
-
 def energy_remain(in_file) -> float:
     """
     Plot the distribution of energy per atom on the output vs. the input.
@@ -1628,19 +1577,19 @@ def compute_pairs_triplets(atoms) -> list[float]:
     return [num_pair, num_triplet]
 
 
-def run_ace(num_processes: int, script_name: str) -> None:
+def run_ace(num_processes_fit: int, script_name: str) -> None:
     """
     Julia-ACE script runner.
 
     Parameters
     ----------
-    num_processes: int
+    num_processes_fit: int
         Number of threads to be used for the run.
     script_name: str
         Name of the Julia script to run.
 
     """
-    os.environ["JULIA_NUM_THREADS"] = str(num_processes)
+    os.environ["JULIA_NUM_THREADS"] = str(num_processes_fit)
 
     with open("julia-ace_out.log", "w", encoding="utf-8") as file_out, open(
         "julia-ace_err.log", "w", encoding="utf-8"
@@ -1648,11 +1597,11 @@ def run_ace(num_processes: int, script_name: str) -> None:
         subprocess.call(["julia", script_name], stdout=file_out, stderr=file_err)
 
 
-def run_gap(num_processes: int, parameters) -> None:
+def run_gap(num_processes_fit: int, parameters) -> None:
     """
     GAP runner.
 
-    num_processes: int
+    num_processes_fit: int
         number of threads to be used for the run.
 
     Parameters
@@ -1660,7 +1609,7 @@ def run_gap(num_processes: int, parameters) -> None:
         GAP fit parameters.
 
     """
-    os.environ["OMP_NUM_THREADS"] = str(num_processes)
+    os.environ["OMP_NUM_THREADS"] = str(num_processes_fit)
 
     with open("std_gap_out.log", "w", encoding="utf-8") as file_std, open(
         "std_gap_err.log", "w", encoding="utf-8"
@@ -1669,12 +1618,16 @@ def run_gap(num_processes: int, parameters) -> None:
 
 
 def run_quip(
-    num_processes: int, data_path, xml_file: str, filename: str, glue_xml: bool = False
+    num_processes_fit: int,
+    data_path,
+    xml_file: str,
+    filename: str,
+    glue_xml: bool = False,
 ) -> None:
     """
     QUIP runner.
 
-    num_processes: int
+    num_processes_fit: int
         number of threads to be used for the run.
     data_path:
         Path to the data file.
@@ -1682,7 +1635,7 @@ def run_quip(
         Name of the output file.
 
     """
-    os.environ["OMP_NUM_THREADS"] = str(num_processes)
+    os.environ["OMP_NUM_THREADS"] = str(num_processes_fit)
 
     init_args = "init_args='IP Glue'" if glue_xml else ""
     quip = (
@@ -1774,7 +1727,12 @@ def prepare_fit_environment(
 
 
 def convert_xyz_to_structure(
-    atoms_list, include_forces=True, include_stresses=True
+    atoms_list,
+    include_forces=True,
+    include_stresses=True,
+    ref_energy_name="REF_energy",
+    ref_force_name="REF_forces",
+    ref_virial_name="REF_virial",
 ) -> tuple[list[Structure], list, list[object], list[object]]:
     """
     Convert extxyz to pymatgen Structure format.
@@ -1800,14 +1758,14 @@ def convert_xyz_to_structure(
     for atoms in atoms_list:
         structure = AseAtomsAdaptor.get_structure(atoms)
         structures.append(structure)
-        energies.append(atoms.info["REF_energy"])
+        energies.append(atoms.info[ref_energy_name])
         if include_forces:
-            forces.append(np.array(atoms.arrays["REF_forces"]).tolist())
+            forces.append(np.array(atoms.arrays[ref_force_name]).tolist())
         else:
             forces.append(np.zeros((len(structure), 3)).tolist())
         if include_stresses:
             # convert from eV to GPa
-            virial = atoms.info["REF_virial"] / atoms.get_volume()  # eV/Å^3
+            virial = atoms.info[ref_virial_name] / atoms.get_volume()  # eV/Å^3
             stresses.append(np.array(virial * 160.2176565).tolist())  # eV/Å^3 -> GPa
         else:
             stresses.append(np.zeros((3, 3)).tolist())
@@ -1824,6 +1782,7 @@ def write_after_distillation_data_split(
     vasp_ref_name: str = "vasp_ref.extxyz",
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
+    force_label: str = "REF_forces",
 ) -> None:
     """
     Write train.extxyz and test.extxyz after data distillation and split.
@@ -1848,7 +1807,7 @@ def write_after_distillation_data_split(
     """
     # reject structures with large force components
     atoms = (
-        data_distillation(vasp_ref_name, f_max)
+        data_distillation(vasp_ref_name, f_max, force_label)
         if distillation
         else ase.io.read(vasp_ref_name, index=":")
     )
@@ -1860,3 +1819,23 @@ def write_after_distillation_data_split(
     ase.io.write(test_name, test_structures, format="extxyz", append=True)
 
 
+def mace_virial_format_conversion(atoms, ref_virial_name, out_file_name):
+    """
+    Convert the format of virial vector (9,) into a format (3x3) recognizable by MACE.
+
+    Parameters
+    ----------
+    atoms: ase.atoms.Atoms
+        input structures
+    ref_virial_name: str
+        virial label
+    out_file_name: str
+        name of output file
+    """
+    formatted_atoms = []
+    for at in atoms:
+        if ref_virial_name in at.info:
+            at.info[ref_virial_name] = at.info[ref_virial_name].reshape(3, 3)
+            formatted_atoms.append(at)
+
+    write(out_file_name, formatted_atoms, format="extxyz")

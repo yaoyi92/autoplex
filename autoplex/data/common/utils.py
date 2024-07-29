@@ -3,18 +3,23 @@ from __future__ import annotations
 
 import random
 import warnings
+from multiprocessing import Pool
 from typing import TYPE_CHECKING
 
 import numpy as np
-from scipy.sparse.linalg import LinearOperator, svds
 from quippy import descriptors
-from multiprocessing import Pool
+from scipy.sparse.linalg import LinearOperator, svds
 
 if TYPE_CHECKING:
+    from ase.atoms import Atom
     from pymatgen.core import Structure
+
+import os
+from collections.abc import Iterable
 
 import ase.io
 import matplotlib.pyplot as plt
+import pandas as pd
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase.io import Trajectory as AseTrajectory
@@ -22,12 +27,15 @@ from ase.io import write
 from ase.units import GPa
 from hiphive.structure_generation import generate_mc_rattled_structures
 from pymatgen.io.ase import AseAtomsAdaptor
+from sklearn.model_selection import StratifiedShuffleSplit
+
 from autoplex.fitting.common.regularization import (
-    label_stoichiometry_volume, calculate_hull_3D, 
-    get_e_distance_to_hull_3D, get_e_distance_to_hull, 
+    calculate_hull_3D,
     get_convex_hull,
-    )
-from collections.abc import Iterable
+    get_e_distance_to_hull,
+    get_e_distance_to_hull_3D,
+    label_stoichiometry_volume,
+)
 
 
 def flatten(atoms_object, recursive=False):
@@ -847,79 +855,60 @@ class Species:
 
     The Species class provides methods to extract unique chemical elements (species),
     determine all possible pairs of these species, and retrieve their atomic numbers
-    in a formatted string. 
-    
-    Methods:
-        get_species():
-            Extracts a list of unique species (chemical elements) from the atoms.
-
-        find_element_pairs(symb_list=None):
-            Generates a list of all possible unique pairs of species. It can operate
-            on an optional list of symbols or default to using the species extracted
-            from the atoms.
-
-        get_number_of_species():
-            Returns the number of unique species present among the atoms.
-
-        get_species_Z():
-            Returns a formatted string of atomic numbers of the unique species, enclosed in curly braces.
+    in a formatted string.
     """
 
     def __init__(self, atoms):
-        
         self.atoms = atoms
 
     def get_species(self):
-
+        """Extract a list of unique species (chemical elements) from the atoms."""
         sepcies_list = []
 
         for at in self.atoms:
             sym_all = at.get_chemical_symbols()
             syms = list(set(sym_all))
             for sym in syms:
-                if sym in sepcies_list: 
+                if sym in sepcies_list:
                     continue
-                else: 
-                    sepcies_list.append(sym)
+                sepcies_list.append(sym)
 
         return sepcies_list
 
+    def find_element_pairs(self, symb_list=None):
+        """
+        Generate a list of all possible unique pairs of species.
 
-    def find_element_pairs(self, symb_list = None):
+        It can operate on an optional list of symbols or default to
+        using the species extracted from the atoms.
+        """
+        species_list = self.get_species() if symb_list is None else symb_list
 
-        if symb_list is None:
-            species_list = self.get_species()
-
-        else:
-            species_list = symb_list
-
-        pairs = []  
+        pairs = []
 
         for i in range(len(species_list)):
             for j in range(i, len(species_list)):
-                pair = (species_list[i], species_list[j])  
-                pairs.append(pair)  
+                pair = (species_list[i], species_list[j])
+                pairs.append(pair)
 
         return pairs
-    
 
     def get_number_of_species(self):
-
+        """Return the number of unique species present among the atoms."""
         return int(len(self.get_species()))
-    
 
     def get_species_Z(self):
-    
+        """Return a formatted string of atomic numbers of the unique species."""
         atom_numbers = []
         for atom_type in self.get_species():
-            atom = Atoms(atom_type, [(0, 0, 0)]) 
+            atom = Atoms(atom_type, [(0, 0, 0)])
             atom_numbers.append(int(atom.get_atomic_numbers()[0]))
-        
-        species_Z = '{'
-        for i in range(len(atom_numbers)-1):
-            species_Z += (str(atom_numbers[i]) + ' ')
-        species_Z += str(atom_numbers[-1]) + '}'
-        
+
+        species_Z = "{"
+        for i in range(len(atom_numbers) - 1):
+            species_Z += str(atom_numbers[i]) + " "
+        species_Z += str(atom_numbers[-1]) + "}"
+
         return species_Z
 
 
@@ -944,12 +933,19 @@ def parallel_calc_descriptor_vec(atom, selected_descriptor):
     The descriptor vector is added to the atom's info dictionary with the key 'descriptor_vec'.
     """
     desc_object = descriptors.Descriptor(selected_descriptor)
-    atom.info["descriptor_vec"] = desc_object.calc(atom)['data']
+    atom.info["descriptor_vec"] = desc_object.calc(atom)["data"]
 
     return atom
 
 
-def cur_select(atoms, selected_descriptor, kernel_exp, select_nums, stochastic=True):
+def cur_select(
+    atoms,
+    selected_descriptor,
+    kernel_exp,
+    select_nums,
+    stochastic=True,
+    random_seed=None,
+):
     """
     Perform CUR selection on a set of atoms to get representative SOAP descriptors.
 
@@ -975,51 +971,64 @@ def cur_select(atoms, selected_descriptor, kernel_exp, select_nums, stochastic=T
     -----
     This function calculates the descriptor vector for each atom, then performs CUR selection on the resulting vectors.
     """
+    if random_seed is not None:
+        np.random.seed(random_seed)
+
     if isinstance(atoms[0], list):
-        print('flattening')
+        print("flattening")
         fatoms = flatten(atoms, recursive=True)
     else:
         fatoms = atoms
-    
-    with Pool() as pool: # TODO: implement argument for number of cores throughout
-        ats = pool.starmap(parallel_calc_descriptor_vec, 
-                           [(atom, selected_descriptor) for atom in fatoms])
 
-    if isinstance(ats, list) & (len(ats) != 0):  # wait until all soap vectors are calculated
+    num_workers = min(len(fatoms), os.cpu_count())
 
+    with Pool(
+        processes=num_workers
+    ) as pool:  # TODO: implement argument for number of cores throughout
+        ats = pool.starmap(
+            parallel_calc_descriptor_vec,
+            [(atom, selected_descriptor) for atom in fatoms],
+        )
+
+    if isinstance(ats, list) & (len(ats) != 0):
         at_descs = np.array([at.info["descriptor_vec"] for at in ats]).T
-        if kernel_exp > 0.0:
-            m = np.matmul((np.squeeze(at_descs)).T,
-                        np.squeeze(at_descs)) ** kernel_exp
-        else:
-            m = at_descs
+        m = (
+            np.matmul((np.squeeze(at_descs)).T, np.squeeze(at_descs)) ** kernel_exp
+            if kernel_exp > 0.0
+            else at_descs
+        )
 
-        def descriptor_svd(at_descs, num, do_vectors='vh'):
+        def descriptor_svd(at_descs, num, do_vectors="vh"):
             def mv(v):
                 return np.dot(at_descs, v)
 
             def rmv(v):
                 return np.dot(at_descs.T, v)
 
-            A = LinearOperator(at_descs.shape, matvec=mv,
-                            rmatvec=rmv, matmat=mv)
+            A = LinearOperator(at_descs.shape, matvec=mv, rmatvec=rmv, matmat=mv)
             return svds(A, k=num, return_singular_vectors=do_vectors)
 
         (_, _, vt) = descriptor_svd(
-            m, min(max(1, int(select_nums / 2)), min(m.shape) - 1))
-        c_scores = np.sum(vt ** 2, axis=0) / vt.shape[0]
+            m, min(max(1, int(select_nums / 2)), min(m.shape) - 1)
+        )
+        c_scores = np.sum(vt**2, axis=0) / vt.shape[0]
         if stochastic:
-            selected = sorted(np.random.choice(
-                range(len(ats)), size=select_nums, replace=False, p=c_scores))
+            selected = sorted(
+                np.random.choice(
+                    range(len(ats)), size=select_nums, replace=False, p=c_scores
+                )
+            )
         else:
             selected = sorted(np.argsort(c_scores)[-select_nums:])
 
         selected_atoms = [ats[i] for i in selected]
-        
+
         for at in selected_atoms:
             del at.info["descriptor_vec"]
-    
+
         return selected_atoms
+
+    return None
 
 
 def boltz(e, emin, kT):
@@ -1044,21 +1053,22 @@ def boltz(e, emin, kT):
     -----
     The Boltzmann factor is calculated as exp(-(e - emin) / kT).
     """
-    return np.exp(-(e-emin)/(kT))
+    return np.exp(-(e - emin) / (kT))
 
 
-def boltzhist_CUR(atoms,
-                  isol_es=None,
-                  bolt_frac=0.1, 
-                  bolt_max_num=3000,
-                  cur_num=100, 
-                  kernel_exp=4, 
-                  kT=0.3, 
-                  energy_label='energy',
-                  P=None,
-                  descriptor=None
-                  ):
-
+def boltzhist_CUR(
+    atoms,
+    isol_es=None,
+    bolt_frac=0.1,
+    bolt_max_num=3000,
+    cur_num=100,
+    kernel_exp=4,
+    kT=0.3,
+    energy_label="energy",
+    P=None,
+    descriptor=None,
+    random_seed=None,
+):
     """
     Sample atoms from a list according to boltzmann energy weighting and CUR diversity.
 
@@ -1086,60 +1096,70 @@ def boltzhist_CUR(atoms,
 
     Notes
     -----
-    This function selects the most diverse atoms based on the chosen algorithm. 
+    This function selects the most diverse atoms based on the chosen algorithm.
     The algorithm uses a combination of CUR selection and Boltzmann weighting to select the atoms.
     """
+    if random_seed is not None:
+        np.random.seed(random_seed)
 
     if isinstance(atoms[0], list):
-        print('flattening')
+        print("flattening")
         fatoms = flatten(atoms, recursive=True)
     else:
         fatoms = atoms
 
     if P is None:
-        
-        print('[log] pressures not supplied, attempting to use pressure in atoms dict')
+        print("[log] pressures not supplied, attempting to use pressure in atoms dict")
 
         try:
-            ps = np.array([at.info['pressure'] for at in fatoms])
-        except:
-            raise RuntimeError('No pressures, so can\'t Boltzmann weight')
-    
+            ps = np.array([at.info["pressure"] for at in fatoms])
+        except RuntimeError:
+            print("No pressures, so can't Boltzmann weight")
+
     else:
         ps = P
 
     enthalpies = []
 
-    at_ids = [atom.get_atomic_numbers() for atom in fatoms]
-    ener_relative = np.array([(atom.info['energy'] - 
-                               sum([isol_es[j] for j in at_ids[ct]])) 
-                              / len(atom) for ct, atom in enumerate(fatoms)])
+    at_ids = [atom.get_atomic_numbers() for atom in atoms]
+
+    if energy_label == "energy":
+        ener_relative = np.array(
+            [
+                (atom.get_potential_energy() - sum([isol_es[j] for j in at_ids[ct]]))
+                / len(atom)
+                for ct, atom in enumerate(fatoms)
+            ]
+        )
+    else:
+        ener_relative = np.array(
+            [
+                (atom.info[energy_label] - sum([isol_es[j] for j in at_ids[ct]]))
+                / len(atom)
+                for ct, atom in enumerate(fatoms)
+            ]
+        )
+
     for i, at in enumerate(fatoms):
         enthalpy = (ener_relative[i] + at.get_volume() * ps[i] * GPa) / len(at)
         enthalpies.append(enthalpy)
-   
+
     enthalpies = np.array(enthalpies)
     min_H = np.min(enthalpies)
     config_prob = []
     histo = np.histogram(enthalpies)
     for H in enthalpies:
-        bin_i = np.searchsorted(histo[1][1:], H, side='right')
+        bin_i = np.searchsorted(histo[1][1:], H, side="right")
         if bin_i == len(histo[1][1:]):
             bin_i = bin_i - 1
-        if histo[0][bin_i] > 0.0:
-            p = 1.0 / histo[0][bin_i]
-        else:
-            p = 0.0
+        p = 1.0 / histo[0][bin_i] if histo[0][bin_i] > 0.0 else 0.0
         if kT > 0.0:
             p *= np.exp(-(H - min_H) / kT)
         config_prob.append(p)
 
     select_num = round(bolt_frac * len(fatoms))
 
-    if select_num < bolt_max_num:
-        select_num = select_num
-    else:
-        select_num = bolt_max_num
+    select_num = select_num if select_num < bolt_max_num else bolt_max_num
 
     config_prob = np.array(config_prob)
     selected_bolt_ats = []
@@ -1155,32 +1175,35 @@ def boltzhist_CUR(atoms,
         del fatoms[config_i]
         enthalpies = np.delete(enthalpies, config_i)
 
-    ## implement CUR
+    # implement CUR
     if cur_num < select_num:
-        selected_atoms = cur_select(atoms=selected_bolt_ats, 
-                                    selected_descriptor=descriptor,
-                                    kernel_exp=kernel_exp, 
-                                    select_nums=cur_num, 
-                                    stochastic=True)
-    else: 
+        selected_atoms = cur_select(
+            atoms=selected_bolt_ats,
+            selected_descriptor=descriptor,
+            kernel_exp=kernel_exp,
+            select_nums=cur_num,
+            stochastic=True,
+            random_seed=random_seed,
+        )
+    else:
         selected_atoms = selected_bolt_ats
 
     return selected_atoms
 
 
-def convexhull_CUR(atoms,
-                   bolt_frac=0.1,
-                   bolt_max_num=3000,
-                   cur_num=100,
-                   kernel_exp=4,
-                   kT=0.5,
-                   energy_label='REF_energy',
-                   descriptor=None,
-                   isol_es=None,
-                   element_order=None,
-                   scheme='linear-hull',
-                   ):
-    
+def convexhull_CUR(
+    atoms,
+    bolt_frac=0.1,
+    bolt_max_num=3000,
+    cur_num=100,
+    kernel_exp=4,
+    kT=0.5,
+    energy_label="REF_energy",
+    descriptor=None,
+    isol_es=None,
+    element_order=None,
+    scheme="linear-hull",
+):
     """
     Sample atoms from a list according to Boltzmann energy weighting relative to convex hull and CUR diversity.
 
@@ -1207,7 +1230,7 @@ def convexhull_CUR(atoms,
     element_order : list of str, optional
         The order of elements for the isolated atom energies.
     scheme : str, optional
-        The scheme to use for the convex hull calculation. Default is 'linear-hull' (2D E,V hull). 
+        The scheme to use for the convex hull calculation. Default is 'linear-hull' (2D E,V hull).
         For 2-component systems with varying stoichiometry, use 'volume-stoichiometry' (3D E,V,mole-fraction hull).
         TODO: need to generalise this to ND hulls for mcp systems. GST good test case.
 
@@ -1218,65 +1241,68 @@ def convexhull_CUR(atoms,
 
     Notes
     -----
-    This function calculates the descriptor vector for each atom, then performs CUR selection on the resulting vectors. The selection is based on the convex hull of the vectors.
+    This function calculates the descriptor vector for each atom,
+    then performs CUR selection on the resulting vectors.
+    The selection is based on the convex hull of the vectors.
     """
-
     if isinstance(atoms[0], list):
-        print('flattening')
+        print("flattening")
         fatoms = flatten(atoms, recursive=True)
     else:
         fatoms = atoms
 
-    if isol_es == None:
-        raise KeyError('isol_es (isolated_atom_energies) must be supplied for convexhull_CUR')
+    if isol_es is None:
+        raise KeyError(
+            "isol_es (isolated_atom_energies) must be supplied for convexhull_CUR"
+        )
 
-    if scheme == 'linear-hull':
+    if scheme == "linear-hull":
         hull, p = get_convex_hull(atoms, energy_name=energy_label)
-        des = np.array([get_e_distance_to_hull(hull, 
-                                               at, 
-                                               energy_name=energy_label)
-                                               for at in atoms])
+        des = np.array(
+            [get_e_distance_to_hull(hull, at, energy_name=energy_label) for at in atoms]
+        )
 
-    elif scheme == 'volume-stoichiometry':
-        points = label_stoichiometry_volume(atoms, 
-                                            isol_es=isol_es, 
-                                            e_name=energy_label, 
-                                            element_order=element_order)
+    elif scheme == "volume-stoichiometry":
+        points = label_stoichiometry_volume(
+            atoms, isol_es=isol_es, e_name=energy_label, element_order=element_order
+        )
         hull = calculate_hull_3D(points)
 
-        des = np.array([get_e_distance_to_hull_3D(hull,
-                                    at,
-                                    isol_es=isol_es,
-                                    energy_name=energy_label,
-                                    element_order=element_order) 
-                                    for at in atoms])
-        print('it will be coming soon!')
+        des = np.array(
+            [
+                get_e_distance_to_hull_3D(
+                    hull,
+                    at,
+                    isol_es=isol_es,
+                    energy_name=energy_label,
+                    element_order=element_order,
+                )
+                for at in atoms
+            ]
+        )
+        print("it will be coming soon!")
 
     else:
-        raise ValueError('scheme must be either "linear-hull" or "volume-stoichiometry"')
-    
+        raise ValueError(
+            'scheme must be either "linear-hull" or "volume-stoichiometry"'
+        )
+
     histo = np.histogram(des)
     config_prob = []
     min_ec = np.min(des)
 
     for ec in des:
-        bin_i = np.searchsorted(histo[1][1:], ec, side='right')
+        bin_i = np.searchsorted(histo[1][1:], ec, side="right")
         if bin_i == len(histo[1][1:]):
             bin_i = bin_i - 1
-        if histo[0][bin_i] > 0.0:
-            p = 1.0 / histo[0][bin_i]
-        else:
-            p = 0.0
+        p = 1.0 / histo[0][bin_i] if histo[0][bin_i] > 0.0 else 0.0
         if kT > 0.0:
             p *= np.exp(-(ec - min_ec) / kT)
         config_prob.append(p)
 
     select_num = round(bolt_frac * len(fatoms))
 
-    if select_num < bolt_max_num:
-        select_num = select_num
-    else:
-        select_num = bolt_max_num
+    select_num = select_num if select_num < bolt_max_num else bolt_max_num
 
     config_prob = np.array(config_prob)
     selected_bolt_ats = []
@@ -1292,14 +1318,106 @@ def convexhull_CUR(atoms,
         del fatoms[config_i]
         des = np.delete(des, config_i)
 
-    ## implement CUR
+    # implement CUR
     if cur_num < select_num:
-        selected_atoms = cur_select(atoms=selected_bolt_ats, 
-                                    selected_descriptor=descriptor,
-                                    kernel_exp=kernel_exp, 
-                                    select_nums=cur_num, 
-                                    stochastic=True)
-    else: 
+        selected_atoms = cur_select(
+            atoms=selected_bolt_ats,
+            selected_descriptor=descriptor,
+            kernel_exp=kernel_exp,
+            select_nums=cur_num,
+            stochastic=True,
+        )
+    else:
         selected_atoms = selected_bolt_ats
 
     return selected_atoms
+
+
+def data_distillation(vasp_ref_dir, f_max, force_label) -> list[Atom | Atoms]:
+    """
+    For data distillation.
+
+    Parameters
+    ----------
+    vasp_ref_dir:
+        VASP reference data directory.
+    f_max:
+        maximally allowed force.
+
+    Returns
+    -------
+    atoms_distilled:
+        list of distilled atoms.
+
+    """
+    atoms = ase.io.read(vasp_ref_dir, index=":")
+
+    atoms_distilled = []
+    for at in atoms:
+        forces = np.abs(at.arrays[force_label])
+        f_component_max = np.max(forces)
+
+        if f_component_max < f_max:
+            atoms_distilled.append(at)
+
+    print(
+        f"After distillation, there are still {len(atoms_distilled)} data points remaining."
+    )
+
+    return atoms_distilled
+
+
+def stratified_dataset_split(
+    atoms, split_ratio
+) -> tuple[
+    list[Atom | Atoms]
+    | list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
+    list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
+]:
+    """
+    Split the dataset.
+
+    Parameters
+    ----------
+    atoms: Atoms
+        ase Atoms object
+    split_ratio: float
+        Parameter to divide the training set and the test set.
+
+    Returns
+    -------
+    train_structures, test_structures:
+        split-up datasets of train structures and test structures.
+
+    """
+    atom_bulk = []
+    atom_isolated_and_dimer = []
+    for at in atoms:
+        if (
+            at.info["config_type"] != "dimer"
+            and at.info["config_type"] != "IsolatedAtom"
+        ):
+            atom_bulk.append(at)
+        else:
+            atom_isolated_and_dimer.append(at)
+
+    if len(atoms) != len(atom_bulk):
+        atoms = atom_bulk
+
+    average_energies = np.array([atom.info["REF_energy"] / len(atom) for atom in atoms])
+    # sort by energy
+    sorted_indices = np.argsort(average_energies)
+    atoms = [atoms[i] for i in sorted_indices]
+    average_energies = average_energies[sorted_indices]
+
+    stratified_average_energies = pd.qcut(average_energies, q=2, labels=False)
+    split = StratifiedShuffleSplit(n_splits=1, test_size=split_ratio, random_state=42)
+
+    for train_index, test_index in split.split(atoms, stratified_average_energies):
+        train_structures = [atoms[i] for i in train_index]
+        test_structures = [atoms[i] for i in test_index]
+
+    if atom_isolated_and_dimer:
+        train_structures = atom_isolated_and_dimer + train_structures
+
+    return train_structures, test_structures
