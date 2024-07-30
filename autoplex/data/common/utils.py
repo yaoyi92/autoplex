@@ -36,6 +36,9 @@ from autoplex.fitting.common.regularization import (
     get_e_distance_to_hull_3D,
     label_stoichiometry_volume,
 )
+import logging 
+
+logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
 
 
 def flatten(atoms_object, recursive=False):
@@ -1109,7 +1112,7 @@ def boltzhist_CUR(
         fatoms = atoms
 
     if P is None:
-        print("[log] pressures not supplied, attempting to use pressure in atoms dict")
+        logging.info("Pressures not supplied, attempting to use pressure in atoms dict")
 
         try:
             ps = np.array([at.info["pressure"] for at in fatoms])

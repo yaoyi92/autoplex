@@ -55,6 +55,10 @@ from autoplex.data.common.utils import (
 )
 from autoplex.fitting.common.regularization import set_sigma
 
+import logging 
+
+logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
+
 
 @job
 def convert_to_extxyz(job_output, pkl_file, config_type, factor):
@@ -502,9 +506,7 @@ def Sampling(
             selected_atoms = [at for i, at in enumerate(structure) if i in selection]
 
         except ValueError:
-            print(
-                "[log] The number of selected structures must be less than the total!"
-            )
+            logging.error("The number of selected structures must be less than the total!")
             traceback.print_exc()
 
     elif selection_method == "uniform":
@@ -514,9 +516,7 @@ def Sampling(
             selected_atoms = [structure[idx] for idx in indices]
 
         except ValueError:
-            print(
-                "[log] The number of selected structures must be less than the total!"
-            )
+            logging.error("The number of selected structures must be less than the total!")
             traceback.print_exc()
 
     if selected_atoms is None:
@@ -677,7 +677,7 @@ def VASP_static(
                 job_list.append(static_job)
 
         except ValueError:
-            print("[log] Unknown species of isolated atoms!")
+            logging.error("Unknown species of isolated atoms!")
             traceback.print_exc()
 
     if dimer:
@@ -720,7 +720,7 @@ def VASP_static(
                     job_list.append(static_job)
 
         except ValueError:
-            print("[log] Unknown atom types in dimers!")
+            logging.error("Unknown atom types in dimers!")
             traceback.print_exc()
 
     return Response(replace=Flow(job_list), output=dirs)
@@ -768,10 +768,10 @@ def VASP_collect_data(
     dirs = [safe_strip_hostname(value) for value in vasp_dirs["dirs_of_vasp"]]
     config_types = vasp_dirs["config_type"]
 
-    print("[log] Attempting collecting VASP...", flush=True)
+    logging.info("Attempting collecting VASP...")
 
     if dirs is None:
-        raise ValueError("[log] dft_dir must be specified if collect_vasp is True")
+        raise ValueError("dft_dir must be specified if collect_vasp is True")
 
     failed_count = 0
     atoms = []
@@ -815,11 +815,11 @@ def VASP_collect_data(
                             isol_es[int(at_ids[0])] = at_i.info["REF_energy"]
 
             except ValueError:
-                print("[log] Failed to collect number", i)
+                logging.error("Failed to collect number", i)
                 failed_count += 1
                 traceback.print_exc()
 
-    print("[log] Total %d structures from VASP are exactly collected." % len(atoms))
+    logging.info(f"Total {len(atoms)} structures from VASP are exactly collected.")
 
     write(vasp_ref_file, atoms, format="extxyz", parallel=False)
 
