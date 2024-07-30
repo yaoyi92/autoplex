@@ -53,14 +53,12 @@ from autoplex.data.common.utils import (
 
 current_dir = Path(__file__).absolute().parent
 GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
+MLIP_DEFAULTS_FILE_PATH = current_dir / "mlip-defaults.json"
 
 
 def gap_fitting(
     db_dir: str | Path,
     # species_list: list,   #  species_list is not very necessary for GAP fitting, can we take it out for now?
-    include_two_body: bool = True,
-    include_three_body: bool = False,
-    include_soap: bool = True,
     path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
@@ -84,12 +82,6 @@ def gap_fitting(
         List of element names (str)
     path_to_default_hyperparameters : str or Path.
         Path to gap-defaults.json.
-    include_two_body : bool.
-        bool indicating whether to include two-body hyperparameters
-    include_three_body : bool.
-        bool indicating whether to include three-body hyperparameters
-    include_soap : bool.
-        bool indicating whether to include soap hyperparameters
     num_processes_fit: int.
         Number of processes used for gap_fit
     auto_delta: bool
@@ -117,8 +109,8 @@ def gap_fitting(
     train_data_path = os.path.join(db_dir, train_name)
     test_data_path = os.path.join(db_dir, test_name)
 
-    gap_default_hyperparameters = load_gap_hyperparameter_defaults(
-        gap_fit_parameter_file_path=path_to_default_hyperparameters
+    gap_default_hyperparameters = load_mlip_hyperparameter_defaults(
+        mlip_fit_parameter_file_path=path_to_default_hyperparameters
     )
 
     gap_default_hyperparameters["general"].update({"gp_file": gap_file_xml})
@@ -131,6 +123,10 @@ def gap_fitting(
             for arg in fit_kwargs:
                 if parameter == arg:
                     gap_default_hyperparameters[parameter].update(fit_kwargs[arg])
+
+    include_two_body = gap_default_hyperparameters["general"]["two_body"]
+    include_three_body = gap_default_hyperparameters["general"]["three_body"]
+    include_soap = gap_default_hyperparameters["general"]["soap"]
 
     if include_two_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -237,17 +233,15 @@ def gap_fitting(
     }
 
 
-def ace_fitting(
+def jace_fitting(
     db_dir: str | Path,
-    order: int = 4,
-    totaldegree: int = 16,
-    cutoff: float = 5.0,
-    solver: str = "BLR",
+    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
     isolated_atoms_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
     num_processes_fit: int = 32,
+    fit_kwargs: dict | None = None,
 ) -> dict:
     """
     Perform the ACE (Atomic Cluster Expansion) potential fitting.
@@ -260,6 +254,18 @@ def ace_fitting(
     ----------
     db_dir: str or Path
         directory containing the training and testing data files.
+    path_to_default_hyperparameters : str or Path.
+        Path to mlip-defaults.json.
+    isolated_atoms_energies: dict:
+        mandatory dictionary mapping element numbers to isolated energies.
+    num_processes_fit: int
+        number of processes to use for parallel computation.
+    fit_kwargs: dict.
+        optional dictionary with parameters for ace fitting with keys same as
+        mlip-defaults.json.
+
+    Tunable hyperparameters:
+    ----------
     order: int
         order of ACE.
     totaldegree: int
@@ -269,10 +275,6 @@ def ace_fitting(
     solver: str
         solver to be used for fitting the ACE model. Default is "BLR" (Bayesian Linear Regression).
         For very large-scale parameter estimation problems, using "LSQR" solver.
-    isolated_atoms_energies: dict:
-        mandatory dictionary mapping element numbers to isolated energies.
-    num_processes_fit: int
-        number of processes to use for parallel computation.
 
     Returns
     -------
@@ -316,6 +318,26 @@ def ace_fitting(
         at for at in train_atoms if "IsolatedAtom" not in at.info["config_type"]
     ]
     ase.io.write("train_ace.extxyz", train_ace, format="extxyz")
+
+    default_hyperparameters = load_mlip_hyperparameter_defaults(
+        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+    )
+    jace_hypers = default_hyperparameters["J-ACE"]
+
+    if fit_kwargs:
+        for parameter in jace_hypers:
+            if parameter in fit_kwargs:
+                if isinstance(fit_kwargs[parameter], type(jace_hypers[parameter])):
+                    jace_hypers[parameter] = fit_kwargs[parameter]
+                else:
+                    raise TypeError(
+                        f"The type of {parameter} should be {type(jace_hypers[parameter])}!"
+                    )
+
+    order = jace_hypers["order"]
+    totaldegree = jace_hypers["totaldegree"]
+    cutoff = jace_hypers["cutoff"]
+    solver = jace_hypers["solver"]
 
     ace_text = f"""using ACEpotentials
 using LinearAlgebra: norm, Diagonal
@@ -391,21 +413,12 @@ export2lammps("acemodel.yace", model)
 
 def nequip_fitting(
     db_dir: str,
-    r_max: float = 4.0,
-    num_layers: int = 4,
-    l_max: int = 2,
-    num_features: int = 32,
-    num_basis: int = 8,
-    invariant_layers: int = 2,
-    invariant_neurons: int = 64,
-    batch_size: int = 5,
-    learning_rate: float = 0.005,
-    max_epochs: int = 10000,
-    default_dtype: str = "float32",
+    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
     isolated_atoms_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
+    fit_kwargs: dict | None = None,
     device: str = "cuda",
 ) -> dict:
     """
@@ -419,6 +432,18 @@ def nequip_fitting(
     ----------
     db_dir: str or Path
         directory containing the training and testing data files.
+    path_to_default_hyperparameters : str or Path.
+        Path to mlip-defaults.json.
+    isolated_atoms_energies: dict
+        mandatory dictionary mapping element numbers to isolated energies.
+    device: str
+        specify device to use cuda or cpu
+    fit_kwargs: dict.
+        optional dictionary with parameters for nequip fitting with keys same as
+        mlip-defaults.json.
+
+    Tunable hyperparameters:
+    ----------
     r_max: float
         cutoff radius in length units
     num_layers: int
@@ -439,10 +464,6 @@ def nequip_fitting(
         learning rate
     default_dtype: str
         type of float to use, e.g. float32 and float64
-    isolated_atoms_energies: dict
-        mandatory dictionary mapping element numbers to isolated energies.
-    device: str
-        specify device to use cuda or cpu
 
     Returns
     -------
@@ -475,6 +496,34 @@ def nequip_fitting(
             ele_syms.append(chemical_symbols[int(e_num)])
     else:
         raise ValueError("isolated_atoms_energies is empty or not defined!")
+
+    default_hyperparameters = load_mlip_hyperparameter_defaults(
+        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+    )
+
+    nequip_hypers = default_hyperparameters["NEQUIP"]
+
+    if fit_kwargs:
+        for parameter in nequip_hypers:
+            if parameter in fit_kwargs:
+                if isinstance(fit_kwargs[parameter], type(nequip_hypers[parameter])):
+                    nequip_hypers[parameter] = fit_kwargs[parameter]
+                else:
+                    raise TypeError(
+                        f"The type of {parameter} should be {type(nequip_hypers[parameter])}!"
+                    )
+
+    r_max = nequip_hypers["r_max"]
+    num_layers = nequip_hypers["num_layers"]
+    l_max = nequip_hypers["l_max"]
+    num_features = nequip_hypers["num_features"]
+    num_basis = nequip_hypers["num_basis"]
+    invariant_layers = nequip_hypers["invariant_layers"]
+    invariant_neurons = nequip_hypers["invariant_neurons"]
+    batch_size = nequip_hypers["batch_size"]
+    learning_rate = nequip_hypers["learning_rate"]
+    max_epochs = nequip_hypers["max_epochs"]
+    default_dtype = nequip_hypers["default_dtype"]
 
     nequip_text = f"""root: results
 run_name: autoplex
@@ -637,22 +686,12 @@ per_species_rescale_scales: dataset_forces_rms
 
 def m3gnet_fitting(
     db_dir: str,
-    exp_name: str = "training",
-    results_dir: str = "m3gnet_results",
-    cutoff: float = 5.0,
-    threebody_cutoff: float = 4.0,
-    batch_size: int = 10,
-    max_epochs: int = 1000,
-    include_stresses: bool = True,
-    hidden_dim: int = 128,
-    num_units: int = 128,
-    max_l: int = 4,
-    max_n: int = 4,
+    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
     device: str = "cuda",
-    test_equal_to_val: bool = True,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
+    fit_kwargs: dict | None = None,
 ) -> dict:
     """
     Perform the M3GNet potential fitting.
@@ -661,6 +700,16 @@ def m3gnet_fitting(
     ----------
     db_dir: str or Path
         Directory containing the training and testing data files.
+    path_to_default_hyperparameters : str or Path.
+        Path to mlip-defaults.json.
+    device: str
+        Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
+    fit_kwargs: dict.
+        optional dictionary with parameters for m3gnet fitting with keys same as
+        mlip-defaults.json.
+
+    Tunable hyperparameters:
+    ----------
     exp_name: str
         Name of the experiment, used for saving model checkpoints and logs.
     results_dir: str
@@ -683,8 +732,6 @@ def m3gnet_fitting(
         Maximum degree of spherical harmonics.
     max_n: int
         Maximum radial function degree.
-    device: str
-        Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
     test_equal_to_val: bool
         If True, the testing dataset will be the same as the validation dataset.
 
@@ -695,6 +742,35 @@ def m3gnet_fitting(
         representing the training error, test error, and the location of the saved model, respectively.
 
     """
+    default_hyperparameters = load_mlip_hyperparameter_defaults(
+        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+    )
+
+    m3gnet_hypers = default_hyperparameters["M3GNET"]
+
+    if fit_kwargs:
+        for parameter in m3gnet_hypers:
+            if parameter in fit_kwargs:
+                if isinstance(fit_kwargs[parameter], type(m3gnet_hypers[parameter])):
+                    m3gnet_hypers[parameter] = fit_kwargs[parameter]
+                else:
+                    raise TypeError(
+                        f"The type of {parameter} should be {type(m3gnet_hypers[parameter])}!"
+                    )
+
+    exp_name = m3gnet_hypers["exp_name"]
+    results_dir = m3gnet_hypers["results_dir"]
+    cutoff = m3gnet_hypers["cutoff"]
+    threebody_cutoff = m3gnet_hypers["threebody_cutoff"]
+    batch_size = m3gnet_hypers["batch_size"]
+    max_epochs = m3gnet_hypers["max_epochs"]
+    include_stresses = m3gnet_hypers["include_stresses"]
+    hidden_dim = m3gnet_hypers["hidden_dim"]
+    num_units = m3gnet_hypers["num_units"]
+    max_l = m3gnet_hypers["max_l"]
+    max_n = m3gnet_hypers["max_n"]
+    test_equal_to_val = m3gnet_hypers["test_equal_to_val"]
+
     os.makedirs(os.path.join(results_dir, exp_name), exist_ok=True)
 
     with open("output.txt", "w") as f:
@@ -966,21 +1042,12 @@ def m3gnet_fitting(
 
 def mace_fitting(
     db_dir: str,
-    model: str = "MACE",
-    config_type_weights: str = None,
-    hidden_irreps: str = None,
-    r_max: float = 4.0,
-    batch_size: int = 10,
-    max_num_epochs: int = 1000,
-    start_swa: str = None,
-    ema_decay: str = None,
-    correlation: int = 3,
-    loss: str = None,
-    default_dtype: str = None,
+    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
+    fit_kwargs: dict | None = None,
 ) -> dict:
     """
     Perform the MACE potential fitting.
@@ -993,6 +1060,16 @@ def mace_fitting(
     ----------
     db_dir: str or Path
         directory containing the training and testing data files.
+    path_to_default_hyperparameters : str or Path.
+        Path to mlip-defaults.json.
+    device: str
+        specify device to use cuda or cpu
+    fit_kwargs: dict.
+        optional dictionary with parameters for mace fitting with keys same as
+        mlip-defaults.json.
+
+    Tunable hyperparameters:
+    ----------
     model: str
         type of model to be trained
     config_type_weights: str
@@ -1012,8 +1089,6 @@ def mace_fitting(
         loss functions
     default_dtype: str
         type of float to use, e.g. float32 and float64
-    device: str
-        specify device to use cuda or cpu
 
     Returns
     -------
@@ -1026,6 +1101,34 @@ def mace_fitting(
         mace_virial_format_conversion(
             atoms=atoms, ref_virial_name=ref_virial_name, out_file_name="train.extxyz"
         )
+
+    default_hyperparameters = load_mlip_hyperparameter_defaults(
+        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+    )
+
+    mace_hypers = default_hyperparameters["MACE"]
+
+    if fit_kwargs:
+        for parameter in mace_hypers:
+            if parameter in fit_kwargs:
+                if isinstance(fit_kwargs[parameter], type(mace_hypers[parameter])):
+                    mace_hypers[parameter] = fit_kwargs[parameter]
+                else:
+                    raise TypeError(
+                        f"The type of {parameter} should be {type(mace_hypers[parameter])}!"
+                    )
+
+    model = mace_hypers["model"]
+    config_type_weights = mace_hypers["config_type_weights"]
+    hidden_irreps = mace_hypers["hidden_irreps"]
+    r_max = mace_hypers["r_max"]
+    batch_size = mace_hypers["batch_size"]
+    max_num_epochs = mace_hypers["max_num_epochs"]
+    start_swa = mace_hypers["start_swa"]
+    ema_decay = mace_hypers["ema_decay"]
+    correlation = mace_hypers["correlation"]
+    loss = mace_hypers["loss"]
+    default_dtype = mace_hypers["default_dtype"]
 
     hypers = [
         "--name=MACE_model",
@@ -1089,7 +1192,7 @@ def check_convergence(test_error) -> bool:
     return convergence
 
 
-def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path) -> dict:
+def load_mlip_hyperparameter_defaults(mlip_fit_parameter_file_path: str | Path) -> dict:
     """
     Load gap fit default parameters from the json file.
 
@@ -1103,7 +1206,7 @@ def load_gap_hyperparameter_defaults(gap_fit_parameter_file_path: str | Path) ->
     dict
        gap fit default parameters.
     """
-    with open(gap_fit_parameter_file_path, encoding="utf-8") as f:
+    with open(mlip_fit_parameter_file_path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -1132,12 +1235,20 @@ def gap_hyperparameter_constructor(
         list
            gap fit input parameter string.
     """
-    general = [f"{key}={value}" for key, value in gap_parameter_dict["general"].items()]
+    dict_wo_term_name = gap_parameter_dict.copy()
+    if "two_body" in dict_wo_term_name["general"]:
+        del dict_wo_term_name["general"]["two_body"]
+    if "three_body" in dict_wo_term_name["general"]:
+        del dict_wo_term_name["general"]["three_body"]
+    if "soap" in dict_wo_term_name["general"]:
+        del dict_wo_term_name["general"]["soap"]
+
+    general = [f"{key}={value}" for key, value in dict_wo_term_name["general"].items()]
 
     two_body_params = " ".join(
         [
             f"{key}={value}"
-            for key, value in gap_parameter_dict["twob"].items()
+            for key, value in dict_wo_term_name["twob"].items()
             if include_two_body is True
         ]
     )
@@ -1145,14 +1256,14 @@ def gap_hyperparameter_constructor(
     three_body_params = " ".join(
         [
             f"{key}={value}"
-            for key, value in gap_parameter_dict["threeb"].items()
+            for key, value in dict_wo_term_name["threeb"].items()
             if include_three_body is True
         ]
     )
     soap_params = " ".join(
         [
             f"{key}={value}"
-            for key, value in gap_parameter_dict["soap"].items()
+            for key, value in dict_wo_term_name["soap"].items()
             if include_soap is True
         ]
     )

@@ -136,9 +136,11 @@ class HookeanRepulsion(FixConstraint):
         self.used = False
 
     def get_removed_dof(self, atoms):
+        """Get number of removed degrees of freedom due to constraint."""
         return 0
 
     def todict(self):
+        """Convert constraint to dictionary."""
         dct = {"name": "Hookean"}
         dct["kwargs"] = {"rt": self.threshold, "k": self.spring}
         if self._type == "two atoms":
@@ -155,12 +157,13 @@ class HookeanRepulsion(FixConstraint):
         return dct
 
     def adjust_positions(self, atoms, newpositions):
-        pass
+        """Adjust positions of the atoms to match the constraints."""
 
     def adjust_momenta(self, atoms, momenta):
-        pass
+        """Adjust momenta of the atoms to match the constraints."""
 
     def adjust_forces(self, atoms, forces):
+        """Adjust forces of the atoms to match the constraints."""
         positions = atoms.positions
         if self._type == "plane":
             A, B, C, D = self.plane
@@ -222,6 +225,7 @@ class HookeanRepulsion(FixConstraint):
         return 0.0
 
     def get_indices(self):
+        """Get the indices."""
         if self._type == "two atoms":
             return self.indices
         if self._type == "point":
@@ -231,7 +235,7 @@ class HookeanRepulsion(FixConstraint):
         return None
 
     def index_shuffle(self, atoms, ind):
-        # See docstring of superclass
+        """Change the indices."""
         if self._type == "two atoms":
             newa = [-1, -1]  # Signal error
             for new, old in slice2enlist(ind, len(atoms)):
@@ -252,6 +256,7 @@ class HookeanRepulsion(FixConstraint):
             self.index = newa
 
     def __repr__(self):
+        """Return a representation of the constraint."""
         if self._type == "two atoms":
             return "Hookean(%d, %d)" % tuple(self.indices)
         if self._type == "point":
@@ -278,6 +283,7 @@ def process_rss(
     device,
     isol_es,
 ):
+    """Run RSS on a single thread using MLIPs."""
     if mlip_type == "GAP":
         gap_label = os.path.join(mlip_path, "gap_file.xml")
         gap_control = "Potential xml_label=" + extract_gap_label(gap_label)
@@ -433,6 +439,7 @@ def minimize_structures(
     device,
     isol_es,
 ):
+    """Run RSS in parallel."""
     atoms = [AseAtomsAdaptor().get_atoms(structure) for structure in input_structure]
 
     if Hookean_repul:

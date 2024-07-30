@@ -8,7 +8,10 @@
     "sparse_jitter": 1.0e-8,
     "do_copy_at_file": "F",
     "openmp_chunk_size": 10000,
-    "gp_file": "gap_file.xml"
+    "gp_file": "gap_file.xml",
+    "two_body": true,
+    "three_body": false,
+    "soap": true
   },
   "twob": {
     "distance_Nb order": 2,

@@ -38,9 +38,7 @@ class MLIPFitMaker(Maker):
         Name of the flows produced by this maker.
     mlip_type: str
         Choose one specific MLIP type:
-        'GAP' | 'J-ACE' | 'P-ACE' | 'Nequip' | 'M3GNet' | 'MACE'
-    mlip_hyper: dict
-        basic MLIP hyperparameters
+        'GAP' | 'J-ACE' | 'P-ACE' | 'NEQUIP' | 'M3GNET' | 'MACE'
     HPO: bool
         Perform hyperparameter optimization using XPOT
         (XPOT: https://pubs.aip.org/aip/jcp/article/159/2/024803/2901815)
@@ -48,7 +46,6 @@ class MLIPFitMaker(Maker):
 
     name: str = "MLpotentialFit"
     mlip_type: str = "GAP"
-    mlip_hyper: dict | None = None
     HPO: bool = False
     ref_energy_name: str = "REF_energy"
     ref_force_name: str = "REF_forces"
@@ -76,6 +73,7 @@ class MLIPFitMaker(Maker):
         num_processes_fit: int | None = None,
         preprocessing_data: bool = True,
         database_dir: str = None,
+        device: str = "cpu",
         **fit_kwargs,
     ):
         """
@@ -152,7 +150,6 @@ class MLIPFitMaker(Maker):
                 auto_delta=auto_delta,
                 glue_xml=glue_xml,
                 mlip_type=self.mlip_type,
-                mlip_hyper=self.mlip_hyper,
                 num_processes_fit=num_processes_fit,
                 # regularization=regularization,  # not used
                 # species_list=species_list,   # species_list is not very necessary
@@ -170,11 +167,11 @@ class MLIPFitMaker(Maker):
             auto_delta=auto_delta,
             glue_xml=glue_xml,
             mlip_type=self.mlip_type,
-            mlip_hyper=self.mlip_hyper,
             HPO=self.HPO,
             ref_energy_name=self.ref_energy_name,
             ref_force_name=self.ref_force_name,
             ref_virial_name=self.ref_virial_name,
+            device=device,
             # regularization=regularization,
             # species_list=species_list,
             **fit_kwargs,

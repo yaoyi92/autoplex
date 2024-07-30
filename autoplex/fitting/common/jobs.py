@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+
 from jobflow import job
+
 from autoplex.fitting.common.utils import (
-    ace_fitting,
     check_convergence,
     gap_fitting,
+    jace_fitting,
     m3gnet_fitting,
     mace_fitting,
     nequip_fitting,
@@ -28,10 +30,10 @@ def machine_learning_fit(
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
+    device: str = "cuda",
     # regularization: bool = True,
     HPO: bool = False,
-    mlip_hyper: dict | None = None,
-    **kwargs,
+    **fit_kwargs,
 ):
     """
     Job for fitting potential(s).
@@ -48,20 +50,16 @@ def machine_learning_fit(
         automatically determine delta for 2b, 3b and SOAP terms.
     glue_xml: bool
         use the glue.xml core potential instead of fitting 2b terms.
-    kwargs: dict.
-        optional dictionary with parameters for gap fitting.
     mlip_type: str
         Choose one specific MLIP type:
-        'GAP' | 'J-ACE' | 'P-ACE' | 'Nequip' | 'M3GNet' | 'MACE'
-    mlip_hyper: dict
-        basic MLIP hyperparameters
+        'GAP' | 'J-ACE' | 'P-ACE' | 'NEQUIP' | 'M3GNET' | 'MACE'
     regularization: bool
         For using sigma regularization.
     species_list : list.
             List of element names (str)
     HPO: bool
         call hyperparameter optimization (HPO) or not
-    kwargs : dict.
+    fit_kwargs : dict.
             dict including more fit keyword args.
     """
     train_files = [
@@ -78,72 +76,6 @@ def machine_learning_fit(
     ]
 
     if mlip_type == "GAP":
-        defult_mlip_hyper = {"two_body": True, 
-                             "three_body": False, 
-                             "soap": True}
-
-    elif mlip_type == "J-ACE":
-        defult_mlip_hyper = {"order": 3, 
-                             "totaldegree": 6,
-                             "cutoff": 2.0, 
-                             "solver": "BLR"}
-
-    elif mlip_type == "NEQUIP":
-        defult_mlip_hyper = {
-            "r_max": 4.0,
-            "num_layers": 4,
-            "l_max": 2,
-            "num_features": 32,
-            "num_basis": 8,
-            "invariant_layers": 2,
-            "invariant_neurons": 64,
-            "batch_size": 5,
-            "learning_rate": 0.005,
-            "max_epochs": 10000,
-            "default_dtype": "float32",
-            "device": "cuda",
-        }
-
-    elif mlip_type == "M3GNET":
-        defult_mlip_hyper = {
-            "exp_name": "training",
-            "results_dir": "m3gnet_results",
-            "cutoff": 5.0,
-            "threebody_cutoff": 4.0,
-            "batch_size": 10,
-            "max_epochs": 1000,
-            "include_stresses": True,
-            "hidden_dim": 128,
-            "num_units": 128,
-            "max_l": 4,
-            "max_n": 4,
-            "device": "cuda",
-            "test_equal_to_val": True,
-        }
-
-    else:
-        defult_mlip_hyper = {
-            "model": "MACE",
-            "config_type_weights": '{"Default":1.0}',
-            "hidden_irreps": "128x0e + 128x1o",
-            "r_max": 5.0,
-            "batch_size": 10,
-            "max_num_epochs": 1500,
-            "start_swa": 1200,
-            "ema_decay": 0.99,
-            "correlation": 3,
-            "loss": "huber",
-            "default_dtype": "float32",
-            "device": "cuda",
-        }
-
-    if mlip_hyper is not None:
-
-        defult_mlip_hyper.update(mlip_hyper)
-
-    mlip_hyper = defult_mlip_hyper
-
-    if mlip_type == "GAP":
         for train_name, test_name in zip(train_files, test_files):
             if (
                 Path(Path(database_dir) / train_name).exists()
@@ -152,9 +84,6 @@ def machine_learning_fit(
                 train_test_error = gap_fitting(
                     db_dir=database_dir,
                     # species_list=species_list,
-                    include_two_body=mlip_hyper["two_body"],
-                    include_three_body=mlip_hyper["three_body"],
-                    include_soap=mlip_hyper["soap"],
                     num_processes_fit=num_processes_fit,
                     auto_delta=auto_delta,
                     glue_xml=glue_xml,
@@ -164,83 +93,49 @@ def machine_learning_fit(
                     # regularization=regularization,
                     train_name=train_name,
                     test_name=test_name,
-                    fit_kwargs=kwargs,
+                    fit_kwargs=fit_kwargs,
                 )
 
     elif mlip_type == "J-ACE":
-        train_test_error = ace_fitting(
+        train_test_error = jace_fitting(
             db_dir=database_dir,
-            order=mlip_hyper["order"],
-            totaldegree=mlip_hyper["totaldegree"],
-            cutoff=mlip_hyper["cutoff"],
-            solver=mlip_hyper["solver"],
             isolated_atoms_energies=isolated_atoms_energies,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
             num_processes_fit=num_processes_fit,
+            fit_kwargs=fit_kwargs,
         )
 
     elif mlip_type == "NEQUIP":
         train_test_error = nequip_fitting(
             db_dir=database_dir,
-            r_max=mlip_hyper["r_max"],
-            num_layers=mlip_hyper["num_layers"],
-            l_max=mlip_hyper["l_max"],
-            num_features=mlip_hyper["num_features"],
-            num_basis=mlip_hyper["num_basis"],
-            invariant_layers=mlip_hyper["invariant_layers"],
-            invariant_neurons=mlip_hyper["invariant_neurons"],
-            batch_size=mlip_hyper["batch_size"],
-            learning_rate=mlip_hyper["learning_rate"],
-            max_epochs=mlip_hyper["max_epochs"],
             isolated_atoms_energies=isolated_atoms_energies,
-            default_dtype=mlip_hyper["default_dtype"],
-            device=mlip_hyper["device"],
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
+            fit_kwargs=fit_kwargs,
+            device=device,
         )
 
     elif mlip_type == "M3GNET":
         train_test_error = m3gnet_fitting(
             db_dir=database_dir,
-            exp_name=mlip_hyper["exp_name"],
-            results_dir=mlip_hyper["results_dir"],
-            cutoff=mlip_hyper["cutoff"],
-            threebody_cutoff=mlip_hyper["threebody_cutoff"],
-            batch_size=mlip_hyper["batch_size"],
-            max_epochs=mlip_hyper["max_epochs"],
-            include_stresses=mlip_hyper["include_stresses"],
-            hidden_dim=mlip_hyper["hidden_dim"],
-            num_units=mlip_hyper["num_units"],
-            max_l=mlip_hyper["max_l"],
-            max_n=mlip_hyper["max_n"],
-            device=mlip_hyper["device"],
-            test_equal_to_val=mlip_hyper["test_equal_to_val"],
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
+            fit_kwargs=fit_kwargs,
+            device=device,
         )
 
     elif mlip_type == "MACE":
         train_test_error = mace_fitting(
             db_dir=database_dir,
-            model=mlip_hyper["model"],
-            config_type_weights=mlip_hyper["config_type_weights"],
-            hidden_irreps=mlip_hyper["hidden_irreps"],
-            r_max=mlip_hyper["r_max"],
-            batch_size=mlip_hyper["batch_size"],
-            max_num_epochs=mlip_hyper["max_num_epochs"],
-            start_swa=mlip_hyper["start_swa"],
-            ema_decay=mlip_hyper["ema_decay"],
-            correlation=mlip_hyper["correlation"],
-            loss=mlip_hyper["loss"],
-            default_dtype=mlip_hyper["default_dtype"],
-            device=mlip_hyper["device"],
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
+            fit_kwargs=fit_kwargs,
+            device=device,
         )
 
     check_conv = check_convergence(train_test_error["test_error"])
