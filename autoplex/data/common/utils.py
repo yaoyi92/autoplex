@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from ase.atoms import Atom
     from pymatgen.core import Structure
 
+import logging
 import os
 from collections.abc import Iterable
 
@@ -36,9 +37,8 @@ from autoplex.fitting.common.regularization import (
     get_e_distance_to_hull_3D,
     label_stoichiometry_volume,
 )
-import logging 
 
-logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
+logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(message)s")
 
 
 def flatten(atoms_object, recursive=False):

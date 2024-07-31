@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
 
+import logging
 import os
 import pickle
 import shutil
@@ -55,9 +56,7 @@ from autoplex.data.common.utils import (
 )
 from autoplex.fitting.common.regularization import set_sigma
 
-import logging 
-
-logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
+logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(message)s")
 
 
 @job
@@ -506,7 +505,9 @@ def Sampling(
             selected_atoms = [at for i, at in enumerate(structure) if i in selection]
 
         except ValueError:
-            logging.error("The number of selected structures must be less than the total!")
+            logging.error(
+                "The number of selected structures must be less than the total!"
+            )
             traceback.print_exc()
 
     elif selection_method == "uniform":
@@ -516,7 +517,9 @@ def Sampling(
             selected_atoms = [structure[idx] for idx in indices]
 
         except ValueError:
-            logging.error("The number of selected structures must be less than the total!")
+            logging.error(
+                "The number of selected structures must be less than the total!"
+            )
             traceback.print_exc()
 
     if selected_atoms is None:
@@ -815,7 +818,7 @@ def VASP_collect_data(
                             isol_es[int(at_ids[0])] = at_i.info["REF_energy"]
 
             except ValueError:
-                logging.error("Failed to collect number", i)
+                logging.error(f"Failed to collect number: {i}")
                 failed_count += 1
                 traceback.print_exc()
 

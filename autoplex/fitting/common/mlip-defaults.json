@@ -5,9 +5,9 @@
     "soap": "True"
   },
   "J-ACE": {
-    "order": 3, 
+    "order": 3,
     "totaldegree": 6,
-    "cutoff": 2.0, 
+    "cutoff": 2.0,
     "solver": "BLR"
   },
   "NEQUIP": {
