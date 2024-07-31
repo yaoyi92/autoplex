@@ -706,13 +706,13 @@ class RandomStructuresDataGenerator(Maker):
                     jobs.append(supercell_job)
                     supercell_matrix = supercell_job.output
                 except AttributeError:
-                    supercell_matrix = generate_supercell_matrix(
-                        structure, supercell_matrix
-                    )
                     warnings.warn(
                         message="Falling back to a simple supercell size schema."
                         "Check if this is ok for your use case.",
                         stacklevel=2,
+                    )
+                    supercell_matrix = generate_supercell_matrix(
+                        structure, supercell_matrix
                     )
 
         random_rattle_sc = generate_randomized_structures(
