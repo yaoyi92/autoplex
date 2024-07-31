@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -707,6 +708,11 @@ class RandomStructuresDataGenerator(Maker):
                 except AttributeError:
                     supercell_matrix = generate_supercell_matrix(
                         structure, supercell_matrix
+                    )
+                    warnings.warn(
+                        message="Falling back to a simple supercell size schema."
+                        "Check if this is ok for your use case.",
+                        stacklevel=2,
                     )
 
         random_rattle_sc = generate_randomized_structures(
