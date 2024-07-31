@@ -1,6 +1,7 @@
 """General AutoPLEX automation jobs."""
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -21,7 +22,7 @@ from autoplex.data.phonons.flows import (
     TightDFTStaticMakerBigSupercells,
 )
 from autoplex.data.phonons.utils import (
-    reduce_phonopy_supercell_settings,
+    reduce_supercell_size,
     update_phonon_displacement_maker,
 )
 
@@ -194,8 +195,6 @@ def dft_phonopy_gen_data(
     symprec,
     phonon_displacement_maker,
     min_length,
-    max_length,
-    max_atoms,
     adaptive_phonopy_supercell_settings: bool = True,
 ):
     """
@@ -222,6 +221,7 @@ def dft_phonopy_gen_data(
     jobs = []
     dft_phonons_output = {}
     dft_phonons_dir_output = []
+    supercell_matrix = None
 
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
@@ -229,23 +229,25 @@ def dft_phonopy_gen_data(
         phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
     if adaptive_phonopy_supercell_settings:
         lattice_avg = sum(structure.lattice.abc) / 3
-        if lattice_avg > 10:
+        if lattice_avg > 10.5:
             try:
-                (
-                    supercell_matrix,
-                    prefer_90_degrees,
-                    allow_orthorhombic,
-                ) = reduce_phonopy_supercell_settings(
-                    min_length, max_length, max_atoms, structure
+                supercell_matrix = reduce_supercell_size(
+                    min_length=min_length,
+                    max_length=25,
+                    max_atoms=500,
+                    limit=15,
+                    structure=structure,
                 )
             except AttributeError:
+                warnings.warn(
+                    message="Falling back to a reduced reciprocal k-point density "
+                    "depending on the average lattice parameter length. "
+                    "Check if this is ok for your use case.",
+                    stacklevel=2,
+                )
                 phonon_displacement_maker = update_phonon_displacement_maker(
                     lattice_avg, TightDFTStaticMakerBigSupercells()
                 )
-    else:
-        prefer_90_degrees = True
-        allow_orthorhombic = False
-        supercell_matrix = None
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(
@@ -253,11 +255,8 @@ def dft_phonopy_gen_data(
             phonon_displacement_maker=phonon_displacement_maker,
             born_maker=None,
             displacement=displacement,
-            prefer_90_degrees=prefer_90_degrees,
-            allow_orthorhombic=allow_orthorhombic,
             min_length=min_length,
-            max_length=max_length,
-            get_supercell_size_kwargs={"max_atoms": max_atoms},
+            max_length=35,
         ).make(structure=structure, supercell_matrix=supercell_matrix)
         jobs.append(dft_phonons)
         dft_phonons_output[

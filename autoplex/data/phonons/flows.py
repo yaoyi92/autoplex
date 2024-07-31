@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from atomate2.vasp.sets.base import VaspInputGenerator
     from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Species, Structure
-from atomate2.common.jobs.phonons import get_supercell_size, run_phonon_displacements
+from atomate2.common.jobs.phonons import run_phonon_displacements
 from atomate2.forcefields.flows.phonons import PhononMaker as FFPhononMaker
 from atomate2.forcefields.jobs import (
     ForceFieldRelaxMaker,
@@ -35,7 +35,10 @@ from pymatgen.core import Molecule, Site
 
 from autoplex.data.common.jobs import generate_randomized_structures
 from autoplex.data.common.utils import generate_supercell_matrix
-from autoplex.data.phonons.utils import ml_phonon_maker_preparation
+from autoplex.data.phonons.utils import (
+    ml_phonon_maker_preparation,
+    reduce_supercell_size,
+)
 
 __all__ = [
     "DFTPhononMaker",
@@ -252,6 +255,7 @@ class DFTPhononMaker(PhononMaker):
     min_length: float | None = 20.0
     max_length: float | None = 30.0
     prefer_90_degrees: bool = True
+    allow_orthorhombic: bool = False
     get_supercell_size_kwargs: dict = field(default_factory=lambda: {"max_atoms": 800})
     use_symmetrized_structure: str | None = None
     create_thermal_displacements: bool = False
@@ -685,36 +689,22 @@ class RandomStructuresDataGenerator(Maker):
 
         if self.adaptive_rattled_supercell_settings:
             try:
-                supercell_job = get_supercell_size(
-                    structure=structure,
-                    min_length=10,
+                supercell_matrix = reduce_supercell_size(
+                    min_length=12,
                     max_length=25,
-                    prefer_90_degrees=True,
-                    max_atoms=600,
+                    max_atoms=500,
+                    limit=10,
+                    structure=structure,
                 )
-                jobs.append(supercell_job)
-                supercell_matrix = supercell_job.output
             except AttributeError:
-                try:
-                    supercell_job = get_supercell_size(
-                        structure=structure,
-                        min_length=10,
-                        max_length=25,
-                        prefer_90_degrees=False,
-                        allow_orthorhombic=True,
-                        max_atoms=500,
-                    )
-                    jobs.append(supercell_job)
-                    supercell_matrix = supercell_job.output
-                except AttributeError:
-                    warnings.warn(
-                        message="Falling back to a simple supercell size schema."
-                        "Check if this is ok for your use case.",
-                        stacklevel=2,
-                    )
-                    supercell_matrix = generate_supercell_matrix(
-                        structure, supercell_matrix
-                    )
+                warnings.warn(
+                    message="Falling back to a simple supercell size schema."
+                    "Check if this is ok for your use case.",
+                    stacklevel=2,
+                )
+                supercell_matrix = generate_supercell_matrix(
+                    structure, supercell_matrix, 500
+                )
 
         random_rattle_sc = generate_randomized_structures(
             structure=structure,

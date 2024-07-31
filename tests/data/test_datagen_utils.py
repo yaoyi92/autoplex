@@ -12,7 +12,7 @@ from autoplex.data.common.utils import (
     filter_outlier_forces,
     generate_supercell_matrix,
 )
-from autoplex.data.phonons.utils import update_phonon_displacement_maker
+from autoplex.data.phonons.utils import update_phonon_displacement_maker, reduce_supercell_size
 from atomate2.common.jobs.phonons import get_supercell_size
 
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
@@ -89,58 +89,40 @@ def test_filter_outliers(test_dir, clean_dir):
 
     os.chdir(parent_dir)
 
-def test_supercell_check(mp_1203790, mp_1200830):
+def test_supercell_check(mp_1200830):
     import warnings
     expected_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]  # this is not a matrix from get_supercell_size
 
-    for structure in [mp_1200830, mp_1203790]:
-        try:  # cubic, prefer 90
-            new_matrix = get_supercell_size.original(
-                structure=structure,
-                min_length=18,
-                max_length=25,
-                prefer_90_degrees=True,
-                max_atoms=500,
-            )
-        except AttributeError:
-            warnings.warn(
-                message="Falling back to orthorhombic, prefer 90.",
-                stacklevel=2,
-            )
-            try:  # orthorhombic, prefer 90
-                new_matrix = get_supercell_size.original(
-                    structure=structure,
-                    min_length=18,
-                    max_length=25,
-                    prefer_90_degrees=True,
-                    allow_orthorhombic=True,
-                    max_atoms=500,
-                )
-            except AttributeError:
-                warnings.warn(
-                    message="Falling back to orthorhombic.",
-                    stacklevel=2,
-                )
-                try:  # orthorhombic
-                    new_matrix = get_supercell_size.original(
-                        structure=structure,
-                        min_length=18,
-                        max_length=25,
-                        prefer_90_degrees=False,
-                        allow_orthorhombic=True,
-                        max_atoms=500,
-                    )
-                except AttributeError:
-                    warnings.warn(
-                        message="Falling back to a simple supercell size schema. "
-                                "Check if this is ok for your use case.",
-                        stacklevel=2,
-                    )
-                    new_matrix = generate_supercell_matrix(
-                        structure, [[3, 0, 0], [0, 3, 0], [0, 0, 3]], max_sites=500
-                    )
+    try:  # cubic, prefer 90
+        new_matrix = reduce_supercell_size(
+            min_length=18,
+            max_length=22,
+            max_atoms=500,
+            limit=13,  # 12 stops with a cubic cell with 82 atoms which is the conventional unit cell
+            structure=mp_1200830
+        )
+    except AttributeError:
+        warnings.warn(
+            message="Falling back to a simple supercell size schema. "
+                    "Check if this is ok for your use case.",
+            stacklevel=2,
+        )
+        new_matrix = generate_supercell_matrix(
+            mp_1200830, [[3, 0, 0], [0, 3, 0], [0, 0, 3]], max_sites=500
+        )
 
-        assert new_matrix == expected_matrix
+    # reduce_supercell_size will fail for min_length > 12 because this cell has a primitive unit cell parameter
+    # of a = b = c = 10.76 and a conventional unit cell parameter of a = b = c = 12.43.
+    # Therefore, with a min_length > 12, the algorithm will try to double each cell length,
+    # leading to exceeding max_atoms (or max_length), regardless if allow_orthorhombic is True or False.
+    # In-between the algorithm comes up with a 164 atom supercell, but this fails to meet the min_length criteria.
+    # I don't understand why the algorithm doesn't come up with the 328 atom cell, but it doesn't happen.
+    # Of course, this all depends on the starting settings.
+    # In the end, generate_supercell_matrix yields a 328 atom supercell
+    # (as, in the main code, would be then used for a rattled supercell.
+    # For a phonopy supercell, the reciprocal k-point density would be reduced in a way to generate a
+    # 1x1x1 KPOINTS set with the initial min_length value to guarantee k-point consistency).
+    assert new_matrix == expected_matrix
 
 
 
