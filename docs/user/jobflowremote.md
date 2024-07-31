@@ -13,11 +13,11 @@ This will result in a setup for automation where
 ## on your local machine
 1. Create a new env > `conda create -n autoplex python=3.10`. (You can choose any other env name.)
 2. Activate your env > `conda activate autoplex` 
-3. Clone the jobflow remote repository using `git clone https://github.com/Matgenix/jobflow-remote.git` 
-and navigate to the jobflow-remote folder that was just created.
-4. Switch to interactive branch (use `git checkout remotes/origin/interactive`) and install it via `pip install .` in your env.
+3. Install jobflow-remote by `pip install git+https://github.com/Matgenix/jobflow-remote@v0.1.2`.
+4. You can check for the latest release of [jobflow-remote](https://github.com/Matgenix/jobflow-remote/releases).
 5. Install autoplex > In your local autoplex directory: `pip install -e .[strict]`. 
 6. Run `jf project generate --full YOUR_PROJECT_NAME`. 
+Choose a sensible project name.
 This will generate an empty project config file in your home directory. 
 You can find this file inside `~/.jfremote` 
 (This is optional, a config file is provided here: [test_project.yaml](test_project.yaml), 
