@@ -20,7 +20,10 @@ from autoplex.data.phonons.flows import (
     TightDFTStaticMaker,
     TightDFTStaticMakerBigSupercells,
 )
-from autoplex.data.phonons.utils import update_phonon_displacement_maker
+from autoplex.data.phonons.utils import (
+    reduce_phonopy_supercell_settings,
+    update_phonon_displacement_maker,
+)
 
 
 @job
@@ -191,6 +194,8 @@ def dft_phonopy_gen_data(
     symprec,
     phonon_displacement_maker,
     min_length,
+    max_length,
+    max_atoms,
     adaptive_phonopy_supercell_settings: bool = True,
 ):
     """
@@ -225,9 +230,22 @@ def dft_phonopy_gen_data(
     if adaptive_phonopy_supercell_settings:
         lattice_avg = sum(structure.lattice.abc) / 3
         if lattice_avg > 10:
-            phonon_displacement_maker = update_phonon_displacement_maker(
-                lattice_avg, TightDFTStaticMakerBigSupercells()
-            )
+            try:
+                (
+                    supercell_matrix,
+                    prefer_90_degrees,
+                    allow_orthorhombic,
+                ) = reduce_phonopy_supercell_settings(
+                    min_length, max_length, max_atoms, structure
+                )
+            except AttributeError:
+                phonon_displacement_maker = update_phonon_displacement_maker(
+                    lattice_avg, TightDFTStaticMakerBigSupercells()
+                )
+    else:
+        prefer_90_degrees = True
+        allow_orthorhombic = False
+        supercell_matrix = None
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(
@@ -235,8 +253,12 @@ def dft_phonopy_gen_data(
             phonon_displacement_maker=phonon_displacement_maker,
             born_maker=None,
             displacement=displacement,
+            prefer_90_degrees=prefer_90_degrees,
+            allow_orthorhombic=allow_orthorhombic,
             min_length=min_length,
-        ).make(structure=structure)
+            max_length=max_length,
+            get_supercell_size_kwargs={"max_atoms": max_atoms},
+        ).make(structure=structure, supercell_matrix=supercell_matrix)
         jobs.append(dft_phonons)
         dft_phonons_output[
             f"{displacement}".replace(".", "")  # key must not contain '.'

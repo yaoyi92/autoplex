@@ -250,6 +250,7 @@ class DFTPhononMaker(PhononMaker):
     symprec: float = 1e-4
     displacement: float = 0.01
     min_length: float | None = 20.0
+    max_length: float | None = 30.0
     prefer_90_degrees: bool = True
     get_supercell_size_kwargs: dict = field(default_factory=lambda: {"max_atoms": 800})
     use_symmetrized_structure: str | None = None

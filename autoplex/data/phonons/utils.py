@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
+
+from atomate2.common.jobs.phonons import get_supercell_size
 
 if TYPE_CHECKING:
     from atomate2.forcefields.jobs import (
@@ -94,3 +97,85 @@ def update_phonon_displacement_maker(lattice, phonon_displacement_maker):
             "reciprocal_density": density
         }
     return phonon_displacement_maker
+
+
+def reduce_phonopy_supercell_settings(min_length, max_length, max_atoms, structure):
+    """
+    Reduce phonopy supercell settings.
+
+    Parameters
+    ----------
+    min_length:
+        The old min_length value
+
+
+
+    """
+    while min_length > 10:
+        try:  # cubic, prefer 90
+            warnings.warn(
+                message="Staring with cubic supercell.",
+                stacklevel=2,
+            )
+            prefer_90_degrees = True
+            allow_orthorhombic = False
+            supercell_matrix = get_supercell_size.original(
+                structure=structure,
+                min_length=min_length,
+                max_length=max_length,
+                prefer_90_degrees=prefer_90_degrees,
+                allow_orthorhombic=allow_orthorhombic,
+                max_atoms=max_atoms,
+            )
+            return (
+                supercell_matrix,
+                max_atoms,
+                prefer_90_degrees,
+                allow_orthorhombic,
+            )
+        except AttributeError:
+            warnings.warn(
+                message="Falling back to orthorhombic supercell with preferred 90°.",
+                stacklevel=2,
+            )
+            prefer_90_degrees = True
+            allow_orthorhombic = True
+            try:  # orthorhombic, prefer 90
+                supercell_matrix = get_supercell_size.original(
+                    structure=structure,
+                    min_length=min_length,
+                    max_length=max_length,
+                    prefer_90_degrees=prefer_90_degrees,
+                    allow_orthorhombic=allow_orthorhombic,
+                    max_atoms=max_atoms,
+                )
+                return (
+                    supercell_matrix,
+                    max_atoms,
+                    prefer_90_degrees,
+                    allow_orthorhombic,
+                )
+            except AttributeError:
+                warnings.warn(
+                    message="Falling back to orthorhombic supercell.",
+                    stacklevel=2,
+                )
+                prefer_90_degrees = False
+                allow_orthorhombic = True
+                supercell_matrix = get_supercell_size.original(
+                    structure=structure,
+                    min_length=min_length,
+                    max_length=max_length,
+                    prefer_90_degrees=prefer_90_degrees,
+                    allow_orthorhombic=allow_orthorhombic,
+                    max_atoms=max_atoms,
+                )
+                return (
+                    supercell_matrix,
+                    max_atoms,
+                    prefer_90_degrees,
+                    allow_orthorhombic,
+                )
+        min_length -= 1
+
+    return None
