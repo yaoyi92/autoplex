@@ -39,6 +39,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
     dft_references=None,
     relax_maker_kwargs: dict | None = None,
     static_maker_kwargs: dict | None = None,
+    benchmark_kwargs: dict | None = None,
     **ml_phonon_maker_kwargs,
 ):
     """
@@ -135,14 +136,16 @@ def complete_benchmark(  # this function was put here to prevent circular import
                 ) or (  # else?
                     add_dft_phonon_struct is False
                 ):
-                    dft_phonons = DFTPhononMaker(
+                    dft_phonons = dft_phonopy_gen_data(
+                        structure=benchmark_structure,
+                        displacements=[0.01],
                         symprec=symprec,
                         phonon_displacement_maker=phonon_displacement_maker,
-                        born_maker=None,
                         min_length=min_length,
-                    ).make(structure=benchmark_structure)
+                        **benchmark_kwargs,
+                    )
                     jobs.append(dft_phonons)
-                    dft_references = dft_phonons.output
+                    dft_references = dft_phonons["data"]["001"].output
 
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
                     ml_model=ml_model,
