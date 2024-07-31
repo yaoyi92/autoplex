@@ -6,7 +6,7 @@ from autoplex.data.common.jobs import Sampling
 from jobflow import run_locally
 from pathlib import Path
 from ase.io import read
-from autoplex.data.common.utils import cur_select, boltzhist_CUR, Species
+from autoplex.data.common.utils import cur_select, boltzhist_CUR, ElementCollection
 import shutil
 
 
@@ -23,8 +23,8 @@ def test_sampling_cur(test_dir):
                   'average': True,
                   'species': True,
                  }
-    n_species = Species(atoms).get_number_of_species()
-    species_Z = Species(atoms).get_species_Z()
+    n_species = ElementCollection(atoms).get_number_of_species()
+    species_Z = ElementCollection(atoms).get_species_Z()
     descriptor = 'soap l_max=' + str(soap_paras['l_max']) + \
                 ' n_max=' + str(soap_paras['n_max']) + \
                 ' atom_sigma=' + str(soap_paras['atom_sigma']) + \
@@ -106,8 +106,8 @@ def test_sampling_bcur(test_dir):
                   'average': True,
                   'species': True,
                  }
-    n_species = Species(atoms).get_number_of_species()
-    species_Z = Species(atoms).get_species_Z()
+    n_species = ElementCollection(atoms).get_number_of_species()
+    species_Z = ElementCollection(atoms).get_species_Z()
     descriptor = 'soap l_max=' + str(soap_paras['l_max']) + \
                 ' n_max=' + str(soap_paras['n_max']) + \
                 ' atom_sigma=' + str(soap_paras['atom_sigma']) + \

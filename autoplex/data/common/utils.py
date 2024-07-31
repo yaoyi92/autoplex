@@ -852,7 +852,7 @@ def plot_energy_forces(
     plt.savefig(train_name.replace("train", "energy_forces").replace(".extxyz", ".png"))
 
 
-class Species:
+class ElementCollection:
     """
     A class to handle different species operations for a collection of atoms.
 

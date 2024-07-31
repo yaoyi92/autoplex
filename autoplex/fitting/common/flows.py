@@ -147,13 +147,17 @@ class MLIPFitMaker(Maker):
             mlip_fit_job = machine_learning_fit(
                 database_dir=data_prep_job.output,
                 isolated_atoms_energies=isolated_atoms_energies,
+                num_processes_fit=num_processes_fit,
                 auto_delta=auto_delta,
                 glue_xml=glue_xml,
                 mlip_type=self.mlip_type,
-                num_processes_fit=num_processes_fit,
-                # regularization=regularization,  # not used
-                # species_list=species_list,   # species_list is not very necessary
-                # for GAP and other models fitting, can we take it out for now?
+                HPO=self.HPO,
+                ref_energy_name=self.ref_energy_name,
+                ref_force_name=self.ref_force_name,
+                ref_virial_name=self.ref_virial_name,
+                device=device,
+                # regularization=regularization,
+                # species_list=species_list,
                 **fit_kwargs,
             )
             jobs.append(mlip_fit_job)

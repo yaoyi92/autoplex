@@ -43,7 +43,7 @@ from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
 from pymatgen.io.vasp.outputs import Vasprun
 
 from autoplex.data.common.utils import (
-    Species,
+    ElementCollection,
     boltzhist_CUR,
     cur_select,
     data_distillation,
@@ -434,8 +434,8 @@ def Sampling(
                 pressures.extend(pressure)
 
     if selection_method == "cur" or selection_method == "bcur":
-        n_species = Species(atoms).get_number_of_species()
-        species_Z = Species(atoms).get_species_Z()
+        n_species = ElementCollection(atoms).get_number_of_species()
+        species_Z = ElementCollection(atoms).get_species_Z()
 
         if not isinstance(bcur_params["soap_paras"], dict):
             raise TypeError("soap_paras must be a dictionary")
@@ -663,7 +663,7 @@ def VASP_static(
             elif (isolated_species is None) and (structures is not None):
                 # Get the species from the database
                 atoms = [AseAtomsAdaptor().get_atoms(at) for at in structures]
-                syms = Species(atoms).get_species()
+                syms = ElementCollection(atoms).get_species()
 
             for idx, sym in enumerate(syms):
                 lattice = Lattice.orthorhombic(20.0, 20.5, 21.0)
@@ -690,8 +690,8 @@ def VASP_static(
             elif (dimer_species is None) and (structures is not None):
                 # Get the species from the database
                 atoms = [AseAtomsAdaptor().get_atoms(at) for at in structures]
-                dimer_syms = Species(atoms).get_species()
-            pairs_list = Species(atoms).find_element_pairs(dimer_syms)
+                dimer_syms = ElementCollection(atoms).get_species()
+            pairs_list = ElementCollection(atoms).find_element_pairs(dimer_syms)
             for pair in pairs_list:
                 for dimer_i in range(dimer_num):
                     if dimer_range is not None:

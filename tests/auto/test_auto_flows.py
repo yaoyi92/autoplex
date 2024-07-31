@@ -150,12 +150,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
     structure = Structure.from_file(path_to_struct)
 
     complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                         ).make(
+    volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
+        preprocessing_data=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -189,21 +189,6 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
 
     complete_workflow_m3gnet = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["M3GNET"],
-        mlip_hyper=[{
-            "exp_name": "training",
-            "results_dir": "m3gnet_results",
-            "cutoff": 3.0,
-            "threebody_cutoff": 2.0,
-            "batch_size": 1,
-            "max_epochs": 3,
-            "include_stresses": True,
-            "hidden_dim": 8,
-            "num_units": 8,
-            "max_l": 4,
-            "max_n": 4,
-            "device": "cpu",
-            "test_equal_to_val": True,
-        }],
         symprec=1e-2, min_length=8, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
     ).make(
@@ -213,6 +198,18 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
         benchmark_structures=[structure],
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
+        preprocessing_data=True,
+        cutoff=3.0,
+        threebody_cutoff=2.0,
+        batch_size=1,
+        max_epochs=3,
+        include_stresses=True,
+        hidden_dim=8,
+        num_units=8,
+        max_l=4,
+        max_n=4,
+        device="cpu",
+        test_equal_to_val=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -242,20 +239,6 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
 
     complete_workflow_mace = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["MACE"],
-        mlip_hyper=[{
-            "model": "MACE",
-            "config_type_weights": '{"Default":1.0}',
-            "hidden_irreps": "32x0e + 32x1o",
-            "r_max": 3.0,
-            "batch_size": 5,
-            "max_num_epochs": 10,
-            "start_swa": 5,
-            "ema_decay": 0.99,
-            "correlation": 3,
-            "loss": "huber",
-            "default_dtype": "float32",
-            "device": "cpu",
-        }],
         symprec=1e-2, min_length=8, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
         benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}}
@@ -266,6 +249,18 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
         benchmark_structures=[structure],
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
+        preprocessing_data=True,
+        model="MACE",
+        config_type_weights='{"Default":1.0}',
+        hidden_irreps="32x0e + 32x1o",
+        r_max=3.0,
+        batch_size=5,
+        max_num_epochs=10,
+        start_swa=5,
+        ema_decay=0.99,
+        correlation=3,
+        loss="huber",
+        default_dtype="float32",
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -298,20 +293,6 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
 
     complete_workflow_nequip = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["NEQUIP"],
-        mlip_hyper=[{
-            "r_max": 4.0,
-            "num_layers": 4,
-            "l_max": 2,
-            "num_features": 32,
-            "num_basis": 8,
-            "invariant_layers": 2,
-            "invariant_neurons": 64,
-            "batch_size": 1,
-            "learning_rate": 0.005,
-            "max_epochs": 1,  # reduced to 1 to minimize the test execution time
-            "default_dtype": "float32",
-            "device": "cpu",
-        }],
         symprec=1e-2, min_length=8, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
         benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}}
@@ -322,6 +303,19 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
         benchmark_structures=[structure],
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
+        preprocessing_data=True,
+        r_max=4.0,
+        num_layers=4,
+        l_max=2,
+        num_features=32,
+        num_basis=8,
+        invariant_layers=2,
+        invariant_neurons=64,
+        batch_size=1,
+        learning_rate=0.005,
+        max_epochs=1,  
+        default_dtype="float32",
+        device="cpu",
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -352,13 +346,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_two_mpid = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                                  volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                                  ).make(
+    complete_workflow_two_mpid = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],).make(
         structure_list=[structure, structure],
         mp_ids=["test", "test2"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
+        preprocessing_data=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -427,13 +420,13 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids_big_supercell(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_big_sc = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=20, displacements=[0.01],
-                                                                volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                                ).make(
+    complete_workflow_big_sc = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=20, displacements=[0.01],volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+    ).make(
         structure_list=[structure, structure],
         mp_ids=["test", "test2"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
+        preprocessing_data=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -465,17 +458,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                                volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                                hyper_para_loop=True,
-                                                                atomwise_regularization_list=[0.01],
-                                                                n_sparse_list=[3000, 5000],
-                                                                soap_delta_list=[1.0],
-                                                                ).make(
+    complete_workflow_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],hyper_para_loop=True,atomwise_regularization_list=[0.01],n_sparse_list=[3000, 5000],soap_delta_list=[1.0],).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
+        preprocessing_data=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -504,18 +492,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sigma_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                                      volume_custom_scale_factors=[0.975, 1.0, 1.025,
-                                                                                                   1.05],
-                                                                      hyper_para_loop=True,
-                                                                      atomwise_regularization_list=[0.01],
-                                                                      n_sparse_list=[3000, 5000],
-                                                                      soap_delta_list=[1.0],
-                                                                      ).make(
+    complete_workflow_sigma_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],hyper_para_loop=True,atomwise_regularization_list=[0.01],n_sparse_list=[3000, 5000],soap_delta_list=[1.0],).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
+        preprocessing_data=True,
         **{"regularization": True},
     )
 
@@ -545,13 +527,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sigma = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                               volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                               ).make(
+    complete_workflow_sigma = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
+        preprocessing_data=True,
         **{"regularization": True},
     )
 
@@ -581,15 +562,14 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                             volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                             ).make(
+    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
+        preprocessing_data=True,
         **{"separated": True},
     )
 
@@ -619,19 +599,14 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sep_3 = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                               volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                               hyper_para_loop=True,
-                                                               atomwise_regularization_list=[0.01],
-                                                               n_sparse_list=[3000, 5000],
-                                                               soap_delta_list=[1.0],
-                                                               ).make(
+    complete_workflow_sep_3 = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],hyper_para_loop=True,atomwise_regularization_list=[0.01],n_sparse_list=[3000, 5000],soap_delta_list=[1.0],).make(
         structure_list=[structure, structure, structure],
         mp_ids=["test", "test2", "test3"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
+        preprocessing_data=True,
         **{"regularization": True, "separated": True},
     )
 
@@ -660,19 +635,14 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                             volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                             hyper_para_loop=True,
-                                                             atomwise_regularization_list=[0.01],
-                                                             n_sparse_list=[3000, 5000],
-                                                             soap_delta_list=[1.0],
-                                                             ).make(
+    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],hyper_para_loop=True,atomwise_regularization_list=[0.01],n_sparse_list=[3000, 5000],soap_delta_list=[1.0],).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
+        preprocessing_data=True,
         **{"regularization": True, "separated": True},
     )
 
@@ -717,7 +687,6 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             min_length=8,
             displacements=[0.01],
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -725,6 +694,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_structures=[structure],
             pre_xyz_files=["vasp_ref.extxyz"],
             pre_database_dir=test_dir / "fitting" / "ref_files",
+            preprocessing_data=True,
             dft_references=None,
         )
 
@@ -768,7 +738,6 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_phonon_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -776,6 +745,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_structures=[structure],
             pre_xyz_files=["vasp_ref.extxyz"],
             pre_database_dir=test_dir / "fitting" / "ref_files",
+            preprocessing_data=True,
             dft_references=[dft_reference],
         )
 
@@ -816,7 +786,6 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_phonon_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -824,6 +793,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_structures=[structure],
             pre_xyz_files=["vasp_ref.extxyz"],
             pre_database_dir=test_dir / "fitting" / "ref_files",
+            preprocessing_data=True,
             dft_references=None,
         )
 
@@ -851,7 +821,6 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_random_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -859,6 +828,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_structures=[structure],
             pre_xyz_files=["vasp_ref.extxyz"],
             pre_database_dir=test_dir / "fitting" / "ref_files",
+            preprocessing_data=True,
             dft_references=None,
         )
 
@@ -885,7 +855,6 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             min_length=8,
             displacements=[0.01],
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
         ).make(
             structure_list=[structure],
             mp_ids=["mp-22905"],
@@ -893,6 +862,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_structures=[structure],
             pre_xyz_files=["vasp_ref.extxyz"],
             pre_database_dir=test_dir / "fitting" / "ref_files",
+            preprocessing_data=True,
             dft_references=None,
         )
 
@@ -912,25 +882,25 @@ def test_phonon_dft_ml_data_generation_flow(
 
     flow_data_generation = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, min_length=10, symprec=1e-2, volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
     ).make(structure_list=structure_list,
            mp_ids=mp_ids,
            benchmark_structures=structure_list,
            benchmark_mp_ids=mp_ids,
            pre_xyz_files=["vasp_ref.extxyz"],
            pre_database_dir=test_dir / "fitting" / "ref_files",
+           preprocessing_data=True,
            )
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, min_length=10, symprec=1e-2, add_dft_random_struct=False,
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        mlip_hyper=[{"two_body": True, "three_body": False, "soap": False}],
     ).make(structure_list=structure_list,
            mp_ids=mp_ids,
            benchmark_structures=structure_list,
            benchmark_mp_ids=mp_ids,
            pre_xyz_files=["vasp_ref.extxyz"],
            pre_database_dir=test_dir / "fitting" / "ref_files",
+           preprocessing_data=True,
            )
     # automatically use fake VASP and write POTCAR.spec during the test
     mock_vasp(ref_paths4, fake_run_vasp_kwargs4)

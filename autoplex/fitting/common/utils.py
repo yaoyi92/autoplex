@@ -11,7 +11,6 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from functools import partial
-from itertools import combinations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -1373,82 +1372,6 @@ def vaspoutput_2_extended_xyz(
             i.info["data_type"] = data_type.rstrip("_dir")
             i.pbc = True
         write("vasp_ref.extxyz", file, append=True)
-
-
-class Species:
-    """Species class."""
-
-    def __init__(self, atoms):
-        self.atoms = atoms
-
-    def get_species(self) -> list[str]:
-        """
-        Get species.
-
-        Returns
-        -------
-        species_list:
-            a list of species.
-        """
-        species_list: list[str] = []
-
-        for atom in self.atoms:
-            symbol_all = atom.get_chemical_symbols()
-            syms = list(set(symbol_all))
-            species_list.extend(sym for sym in syms if sym not in species_list)
-
-        return species_list
-
-    def find_element_pairs(self, symbol_list=None) -> list:
-        """
-        Find element pairs.
-
-        Parameters
-        ----------
-        symbol_list:
-            list of symbols.
-
-        Returns
-        -------
-        pairs:
-            pairs of elements.
-
-        """
-        species_list = self.get_species() if symbol_list is None else symbol_list
-
-        return list(combinations(species_list, 2))
-
-    def get_number_of_species(self) -> int:
-        """
-        Get number of species.
-
-        Returns
-        -------
-        number of species.
-
-        """
-        return int(len(self.get_species()))
-
-    def get_species_Z(self) -> str:
-        """
-        Get species Z.
-
-        Returns
-        -------
-        species_Z:
-            species Z.
-        """
-        atom_numbers = []
-        for atom_type in self.get_species():
-            atom = Atoms(atom_type, [(0, 0, 0)])
-            atom_numbers.append(int(atom.get_atomic_numbers()[0]))
-
-        species_Z = "{"
-        for i in range(len(atom_numbers) - 1):
-            species_Z += str(atom_numbers[i]) + " "
-        species_Z += str(atom_numbers[-1]) + "}"
-
-        return species_Z
 
 
 def flatten(atoms_object, recursive=False) -> list[str | bytes | Atoms] | list:
