@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
 
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
+from autoplex.data.common.utils import generate_supercell_matrix
 from autoplex.data.phonons.flows import (
     DFTPhononMaker,
     IsoAtomMaker,
@@ -248,6 +249,14 @@ def dft_phonopy_gen_data(
                 phonon_displacement_maker = update_phonon_displacement_maker(
                     lattice_avg, TightDFTStaticMakerBigSupercells()
                 )
+
+                supercell_matrix = generate_supercell_matrix(
+                    structure=structure,
+                    supercell_matrix=supercell_matrix,
+                    max_sites=500,
+                )
+                # Maybe an alternative to reducing the reciprocal k-points-density could be
+                # to determine a supercell_matrix this way?
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(
