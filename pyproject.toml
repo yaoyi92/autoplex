@@ -36,6 +36,7 @@ dependencies = [
      "typing",
      "nequip",
      "hiphive",
+     "dgl==2.1.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -76,6 +77,7 @@ strict = [
      #"jobflow==0.1.13",
      #"pydantic==1.10.9",
      #"pymatgen-analysis-defects==2023.8.22",
+     "dgl==2.1.0",
 ]
 dev = ["pre-commit>=2.12.1"]
 
