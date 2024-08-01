@@ -37,7 +37,7 @@ jobs:
         python -m pip install ase==3.23.0
         pip uninstall torch torchvision torchaudio torchdata
         pip cache purge
-        pip install torch==2.2.1 torchvision torchaudio torchdata
+        pip install -y torch==2.2.1
     - name: Print installed package versions
       run: |
         pip show torch matgl dgl
