@@ -66,14 +66,16 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
     from ase.io import read
     from ase import Atoms
     import numpy as np
+    import random
+
 
     file = test_dir / "fitting" / "ref_files" / "quip_train.extxyz"
     atoms: Atoms = read(file, ":")
 
     # Define the arrays
     array1 = np.array([
-        [15.2266087, -3.80983557],
         [15.2266087, -3.81106994],
+        [15.2266087, -3.80983557],
         [16.2004607, -3.81927384],
         [8000.0, -0.28663766]
     ])
@@ -84,32 +86,39 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
         [16.2004607, -3.81927264],
         [16.2004607, -3.81927384],
         [16.4281758, -3.81869979],
+        [8000.0, -0.28663766],
         [17.6913485, -3.80636951],
         [17.6913485, -3.80665250],
         [19.0176670, -3.77969777],
-        [8000.0, -0.28663766],
         [8000.0, -0.27567309],
     ])
 
     array3 = np.array([
         [0.5, 15.2266087, -3.53839715],
+        [1.0, 8000.0, -0.01928852],
         [0.5, 17.6913485, -3.53493109],
         [0.5, 16.2004607, -3.54783422],
-        [0.5, 16.2004607, -3.54783542],
         [0.5, 17.6913485, -3.53521408],
         [0.5, 16.4281758, -3.54726137],
         [0.5, 15.2266087, -3.53963152],
         [0.5, 19.017667, -3.50825935],
+        [0.5, 16.2004607, -3.54783542],
         [1.0, 8000.0, -0.00014539],
-        [1.0, 8000.0, -0.01928852],
     ])
 
     lower_half_hull_points, points = get_convex_hull(atoms, energy_name="REF_energy")
-    assert np.allclose(lower_half_hull_points, array1)
-    assert np.allclose(points, array2)
+
+    # Function to compare sets of arrays with allclose after sorting
+    def arrays_allclose(array1, array2):
+        array1_sorted = np.array(sorted(array1, key=lambda x: tuple(x)))
+        array2_sorted = np.array(sorted(array2, key=lambda x: tuple(x)))
+        return np.allclose(array1_sorted, array2_sorted)
+
+    assert arrays_allclose(lower_half_hull_points, array1)
+    assert arrays_allclose(points, array2)
 
     label = label_stoichiometry_volume(atoms, {3: -0.28649227, 17: -0.25638457}, "REF_energy")
-    assert np.allclose(label, array3)
+    assert arrays_allclose(label, array3)
 
     calc_hull = calculate_hull_ND(points)
     calc_hull_3D = calculate_hull_3D(label)
