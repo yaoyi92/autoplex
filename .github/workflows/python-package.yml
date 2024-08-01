@@ -35,7 +35,6 @@ jobs:
         python -m pip install .[strict]
         python -m pip cache purge
         python -m pip install ase==3.23.0
-        python -m pip install torchdata==0.7.1
     - name: Print installed package versions
       run: |
         pip show torch torchdata
