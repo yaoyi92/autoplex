@@ -253,8 +253,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 {"IsolatedAtom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
             )
 
-        print("??????:preprocessing_data", preprocessing_data)
-        print("??????pre_xyz_files:", pre_xyz_files)
         print("pre_database_dir:", pre_database_dir)
         for ml_model in self.ml_models:
             add_data_fit = MLIPFitMaker(
