@@ -35,12 +35,10 @@ jobs:
         python -m pip install .[strict]
         python -m pip cache purge
         python -m pip install ase==3.23.0
-        pip uninstall -y torch torchvision torchaudio torchdata
-        pip cache purge
-        pip install torch==2.2.1
+        python -m pip install torchdata==0.7.1
     - name: Print installed package versions
       run: |
-        pip show torch matgl dgl
+        pip show torch torchdata
     - name: Install Buildcell
       run: |
         curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz; tar -xf airss-0.9.3.tgz; rm airss-0.9.3.tgz; cd airss; make ; make install ; make neat; cd ..
