@@ -91,12 +91,14 @@ def test_filter_outliers(test_dir, clean_dir):
 
 def test_supercell_check(mp_1200830):
     import warnings
-    expected_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]  # this is not a matrix from get_supercell_size
+    expected_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]  # this is not a matrix from reduce_supercell_size
 
     try:  # cubic, prefer 90
         new_matrix = reduce_supercell_size(
             min_length=18,
-            max_length=22,
+            max_length=24,
+            # when I set this to 25 (which should lead to the correct suprcell matrix), the unit tests isn't finished
+            # even after an hour
             max_atoms=500,
             limit=13,  # 12 stops with a cubic cell with 82 atoms which is the conventional unit cell
             structure=mp_1200830
@@ -111,17 +113,6 @@ def test_supercell_check(mp_1200830):
             mp_1200830, [[3, 0, 0], [0, 3, 0], [0, 0, 3]], max_sites=500
         )
 
-    # reduce_supercell_size will fail for min_length > 12 because this cell has a primitive unit cell parameter
-    # of a = b = c = 10.76 and a conventional unit cell parameter of a = b = c = 12.43.
-    # Therefore, with a min_length > 12, the algorithm will try to double each cell length,
-    # leading to exceeding max_atoms (or max_length), regardless if allow_orthorhombic is True or False.
-    # In-between the algorithm comes up with a 164 atom supercell, but this fails to meet the min_length criteria.
-    # I don't understand why the algorithm doesn't come up with the 328 atom cell, but it doesn't happen.
-    # Of course, this all depends on the starting settings.
-    # In the end, generate_supercell_matrix yields a 328 atom supercell
-    # (as, in the main code, would be then used for a rattled supercell.
-    # For a phonopy supercell, the reciprocal k-point density would be reduced in a way to generate a
-    # 1x1x1 KPOINTS set with the initial min_length value to guarantee k-point consistency).
     assert new_matrix == expected_matrix
 
 

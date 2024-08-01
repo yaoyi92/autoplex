@@ -125,7 +125,7 @@ def reduce_supercell_size(
     while min_length >= limit:
         try:  # Try cubic supercell, prefer 90 degrees
             warnings.warn(
-                message=f"Starting with a cubic supercell. "
+                message=f"Starting with a cubic supercell with preferred 90°. "
                 f"The current min_length is {min_length}.",
                 stacklevel=2,
             )
@@ -139,37 +139,53 @@ def reduce_supercell_size(
             )
         except AttributeError:
             warnings.warn(
-                message=f"Cubic supercell failed. "
-                f"Trying orthorhombic supercell with preferred 90°. "
+                message=f"Cubic supercell with preferred 90° failed. "
+                f"Trying cubic supercell. "
                 f"The current min_length is {min_length}.",
                 stacklevel=2,
             )
-            try:  # Try orthorhombic, prefer 90 degrees
+            try:  # Try orthorhombic without preferring 90 degrees
                 return get_supercell_size.original(
                     structure=structure,
                     min_length=min_length,
                     max_length=max_length,
-                    prefer_90_degrees=True,
-                    allow_orthorhombic=True,
+                    prefer_90_degrees=False,
+                    allow_orthorhombic=False,
                     max_atoms=max_atoms,
                 )
             except AttributeError:
                 warnings.warn(
-                    message=f"Orthorhombic supercell with preferred 90° failed. "
-                    f"Trying orthorhombic supercell. "
+                    message=f"Cubic supercell failed. "
+                    f"Trying orthorhombic supercell with preferred 90°. "
                     f"The current min_length is {min_length}.",
                     stacklevel=2,
                 )
-                try:  # Try orthorhombic without preferring 90 degrees
+                try:  # Try orthorhombic, prefer 90 degrees
                     return get_supercell_size.original(
                         structure=structure,
                         min_length=min_length,
                         max_length=max_length,
-                        prefer_90_degrees=False,
+                        prefer_90_degrees=True,
                         allow_orthorhombic=True,
                         max_atoms=max_atoms,
                     )
                 except AttributeError:
-                    min_length -= 1
+                    warnings.warn(
+                        message=f"Orthorhombic supercell with preferred 90° failed. "
+                        f"Trying orthorhombic supercell. "
+                        f"The current min_length is {min_length}.",
+                        stacklevel=2,
+                    )
+                    try:  # Try orthorhombic without preferring 90 degrees
+                        return get_supercell_size.original(
+                            structure=structure,
+                            min_length=min_length,
+                            max_length=max_length,
+                            prefer_90_degrees=False,
+                            allow_orthorhombic=True,
+                            max_atoms=max_atoms,
+                        )
+                    except AttributeError:
+                        min_length -= 1
 
     raise AttributeError(f"No supercell found with min_length {min_length}.")
