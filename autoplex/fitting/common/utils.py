@@ -46,9 +46,9 @@ from scipy.special import comb
 
 from autoplex.data.common.utils import (
     data_distillation,
+    plot_energy_forces,
     rms_dict,
     stratified_dataset_split,
-    plot_energy_forces
 )
 
 current_dir = Path(__file__).absolute().parent
