@@ -258,7 +258,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             add_data_fit = MLIPFitMaker(
                 mlip_type=ml_model,
             ).make(
-                # species_list=isoatoms.output["species"],
+                species_list=isoatoms.output["species"],
                 isolated_atoms_energies=isoatoms.output["energies"],
                 fit_input=fit_input,
                 split_ratio=split_ratio,

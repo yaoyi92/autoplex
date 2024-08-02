@@ -56,7 +56,7 @@ class MLIPFitMaker(Maker):
     def make(
         self,
         fit_input: dict | None = None,  # This is specific to phonon workflow
-        # species_list: list | None = None,  # This is only used and necessary for GAP.
+        species_list: list | None = None,
         isolated_atoms_energies: dict | None = None,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
@@ -156,8 +156,7 @@ class MLIPFitMaker(Maker):
                 ref_force_name=self.ref_force_name,
                 ref_virial_name=self.ref_virial_name,
                 device=device,
-                # regularization=regularization,
-                # species_list=species_list,
+                species_list=species_list,
                 **fit_kwargs,
             )
             jobs.append(mlip_fit_job)
@@ -176,8 +175,7 @@ class MLIPFitMaker(Maker):
             ref_force_name=self.ref_force_name,
             ref_virial_name=self.ref_virial_name,
             device=device,
-            # regularization=regularization,
-            # species_list=species_list,
+            species_list=species_list,
             **fit_kwargs,
         )
 

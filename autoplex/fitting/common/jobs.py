@@ -21,7 +21,7 @@ GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 @job
 def machine_learning_fit(
     database_dir: str,
-    # species_list: list,
+    species_list: list,
     isolated_atoms_energies: dict | None = None,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
@@ -31,7 +31,6 @@ def machine_learning_fit(
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
     device: str = "cuda",
-    # regularization: bool = True,
     HPO: bool = False,
     **fit_kwargs,
 ):
@@ -83,14 +82,13 @@ def machine_learning_fit(
             ):
                 train_test_error = gap_fitting(
                     db_dir=database_dir,
-                    # species_list=species_list,
+                    species_list=species_list,
                     num_processes_fit=num_processes_fit,
                     auto_delta=auto_delta,
                     glue_xml=glue_xml,
                     ref_energy_name=ref_energy_name,
                     ref_force_name=ref_force_name,
                     ref_virial_name=ref_virial_name,
-                    # regularization=regularization,
                     train_name=train_name,
                     test_name=test_name,
                     fit_kwargs=fit_kwargs,
