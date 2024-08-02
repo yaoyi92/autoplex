@@ -437,9 +437,9 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids_big_supercell(
         complete_workflow_big_sc,
         create_folders=True,
         ensure_success=False,
-        # We just want to check the correct order and anme of jobs
+        # We just want to check the correct order and name of jobs
         # and that the phonon_displacement_maker is not overwritten.
-        # Therefore, we set `ensure_success=False`
+        # Therefore, we set `ensure_success=False`.
         store=memory_jobstore,
     )
 
@@ -487,6 +487,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
 def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
 ):
+    import glob
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
@@ -518,10 +519,15 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
         1.511743561686686, abs=1.0  # it's kinda fluctuating because of the little data
     )
 
+    # regularization specific test
+    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    assert reg_specific_file_exists
+
 
 def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
 ):
+    import glob
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
@@ -552,6 +558,10 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
                "benchmark_phonon_rmse"] == pytest.approx(
         1.511743561686686, abs=0.5
     )
+
+    # regularization specific test
+    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    assert reg_specific_file_exists
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated(
@@ -594,6 +604,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
 def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_mpids(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
 ):
+    import glob
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
@@ -626,10 +637,15 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
         0.8709764794814768, abs=0.5
     )
 
+    # regularization specific test
+    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    assert reg_specific_file_exists
+
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
 ):
+    import glob
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
@@ -662,6 +678,10 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
                "benchmark_phonon_rmse"] == pytest.approx(
         0.8709764794814768, abs=0.5
     )
+
+    # regularization specific test
+    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    assert reg_specific_file_exists
 
 
 class TestCompleteDFTvsMLBenchmarkWorkflow:
