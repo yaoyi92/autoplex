@@ -87,6 +87,16 @@ def gap_fitting(
         automatically determine delta for 2b, 3b and soap terms.
     glue_xml: bool
         use the glue.xml core potential instead of fitting 2b terms.
+    ref_energy_name: str
+        name of reference energies. Default is REF_energy.
+    ref_force_name: str
+        name of reference forces. Default is REF_forces.
+    ref_virial_name: str
+        name of reference virials. Default is REF_virial.
+    train_name: str
+        name of the training data file. Default is train.extxyz.
+    test_name: str
+        name of the test data file. Default is test.extxyz.
     fit_kwargs: dict.
         optional dictionary with parameters for gap fitting with keys same as
         gap-defaults.json.
