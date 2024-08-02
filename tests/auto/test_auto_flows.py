@@ -716,6 +716,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
+            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -767,6 +768,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=[dft_reference],
+            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -815,6 +817,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
+            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_phonon_false.iterflow():
@@ -850,6 +853,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
+            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_random_false.iterflow():
@@ -884,6 +888,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
+            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
@@ -909,6 +914,7 @@ def test_phonon_dft_ml_data_generation_flow(
            pre_xyz_files=["vasp_ref.extxyz"],
            pre_database_dir=test_dir / "fitting" / "ref_files",
            preprocessing_data=True,
+           **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
            )
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
@@ -921,6 +927,7 @@ def test_phonon_dft_ml_data_generation_flow(
            pre_xyz_files=["vasp_ref.extxyz"],
            pre_database_dir=test_dir / "fitting" / "ref_files",
            preprocessing_data=True,
+           **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
            )
     # automatically use fake VASP and write POTCAR.spec during the test
     mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
