@@ -217,7 +217,7 @@ def gap_fitting(
             title="Data error metrics",
             energy_limit=0.005,
             force_limit=0.1,
-            species_list=species_list,
+            species_list=species_list,  # species list is required here
             train_name=train_name,
             test_name=test_name,
         )
