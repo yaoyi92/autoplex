@@ -246,17 +246,19 @@ def dft_phonopy_gen_data(
                     "Check if this is ok for your use case.",
                     stacklevel=2,
                 )
-                phonon_displacement_maker = update_phonon_displacement_maker(
-                    lattice_avg, TightDFTStaticMakerBigSupercells()
-                )
-
                 supercell_matrix = generate_supercell_matrix(
                     structure=structure,
                     supercell_matrix=supercell_matrix,
                     max_sites=500,
                 )
-                # Maybe an alternative to reducing the reciprocal k-points-density could be
-                # to determine a supercell_matrix this way?
+
+                # in case everything fails and a fitting supercell matrix cannot be found,
+                # reduce the reciprocal k-point density:
+                if supercell_matrix == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]:
+                    supercell_matrix = None
+                    phonon_displacement_maker = update_phonon_displacement_maker(
+                        lattice_avg, TightDFTStaticMakerBigSupercells()
+                    )
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(
