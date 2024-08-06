@@ -696,7 +696,7 @@ class RandomStructuresDataGenerator(Maker):
                     limit=10,
                     structure=structure,
                 )
-            except AttributeError:
+            except ValueError:
                 warnings.warn(
                     message="Falling back to a simple supercell size schema."
                     "Check if this is ok for your use case.",

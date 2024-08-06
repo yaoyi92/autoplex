@@ -239,7 +239,7 @@ def dft_phonopy_gen_data(
                     limit=15,
                     structure=structure,
                 )
-            except AttributeError:
+            except ValueError:
                 warnings.warn(
                     message="Falling back to a reduced reciprocal k-point density "
                     "depending on the average lattice parameter length. "
