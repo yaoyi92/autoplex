@@ -8,7 +8,8 @@ import shutil
 from pathlib import Path
 
 def test_vasp_static(test_dir, mock_vasp, memory_jobstore):
-    from autoplex.data.common.jobs import VASP_static, VASP_collect_data
+    from autoplex.data.common.jobs import VASP_collect_data
+    from autoplex.data.common.flows import DFTStaticMaker
     
     poscar_paths = {
         f"static_bulk_{i}": test_dir / f"vasp/rss/Si_bulk_{i+1}/inputs/POSCAR"
@@ -37,37 +38,38 @@ def test_vasp_static(test_dir, mock_vasp, memory_jobstore):
 
     mock_vasp(ref_paths, fake_run_vasp_kwargs)
 
-    job1 = VASP_static(structures=test_structures,
-                      isolated_atom=True, e0_spin=True, dimer=True, 
-                      dimer_range=[1.5, 2.0],
-                      dimer_num=3,
-                      custom_set={
-                        "ADDGRID": None, 
-                        "ENCUT": 200,
-                        "EDIFF": 1E-04,
-                        "ISMEAR": 0,
-                        "SIGMA": 0.05,
-                        "PREC": "Normal",
-                        "ISYM": None,
-                        "KSPACING": 0.3,
-                        "NPAR": 8,
-                        "LWAVE": "False",
-                        "LCHARG": "False",
-                        "ENAUG": None,
-                        "GGA": None,
-                        "ISPIN": None,
-                        "LAECHG": None,
-                        "LELF": None,
-                        "LORBIT": None,
-                        "LVTOT": None,
-                        "NSW": None,
-                        "SYMPREC": None,
-                        "NELM": 50,
-                        "LMAXMIX": None,
-                        "LASPH": None,
-                        "AMIN": None,
+    job1 = DFTStaticMaker(isolated_atom=True, 
+                          e0_spin=True, 
+                          dimer=True, 
+                          dimer_range=[1.5, 2.0],
+                          dimer_num=3,
+                          custom_set={
+                            "ADDGRID": None, 
+                            "ENCUT": 200,
+                            "EDIFF": 1E-04,
+                            "ISMEAR": 0,
+                            "SIGMA": 0.05,
+                            "PREC": "Normal",
+                            "ISYM": None,
+                            "KSPACING": 0.3,
+                            "NPAR": 8,
+                            "LWAVE": "False",
+                            "LCHARG": "False",
+                            "ENAUG": None,
+                            "GGA": None,
+                            "ISPIN": None,
+                            "LAECHG": None,
+                            "LELF": None,
+                            "LORBIT": None,
+                            "LVTOT": None,
+                            "NSW": None,
+                            "SYMPREC": None,
+                            "NELM": 50,
+                            "LMAXMIX": None,
+                            "LASPH": None,
+                            "AMIN": None,
                     },
-                    )
+                    ).make(structures=test_structures)
     
     job2 = VASP_collect_data(vasp_dirs=job1.output)
     

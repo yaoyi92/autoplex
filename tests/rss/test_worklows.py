@@ -4,7 +4,8 @@ os.environ["OMP_NUM_THREADS"] = "1"
 from jobflow import run_locally, Flow
 from jobflow import Response, job
 from autoplex.data.rss.jobs import RandomizedStructure, do_rss
-from autoplex.data.common.jobs import Sampling, VASP_static, VASP_collect_data, Data_preprocessing
+from autoplex.data.common.jobs import Sampling, VASP_collect_data, Data_preprocessing
+from autoplex.data.common.flows import DFTStaticMaker
 from autoplex.fitting.common.flows import MLIPFitMaker
 from typing import List, Optional, Dict, Any
 from ase.io import read
@@ -45,14 +46,13 @@ def mock_RSS(input_dir: str = None,
                     bcur_params=bcur_params,
                     dir=input_dir,
                     random_seed=random_seed)
-    job3 = VASP_static(structures=job2.output, 
-                       e0_spin=e0_spin, 
+    job3 = DFTStaticMaker(e0_spin=e0_spin, 
                        isolated_atom=isolated_atom, 
                        dimer=dimer,
                        dimer_range=dimer_range,
                        dimer_num=dimer_num,
                        custom_set=custom_set, 
-                       )
+                       ).make(structures=job2.output)
     job4 = VASP_collect_data(vasp_ref_file=vasp_ref_file, 
                              rss_group=rss_group, 
                              vasp_dirs=job3.output)

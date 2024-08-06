@@ -91,6 +91,8 @@ def set_sigma(
 
             continue
 
+    isolated_atoms_energies = isolated_atoms_energies or {}
+
     if scheme == "linear-hull":
         print("Regularising with linear hull")
         hull, p = get_convex_hull(atoms, energy_name=energy_name)
@@ -394,7 +396,10 @@ def get_mole_frac(atoms, element_order=None) -> float | int:
 
 
 def label_stoichiometry_volume(
-    atoms_list, isolated_atoms_energies, energy_name, element_order=None
+    atoms_list: list[Atoms],
+    isolated_atoms_energies: dict,
+    energy_name: str,
+    element_order: list | None,
 ) -> np.ndarray:
     """
     Calculate the stoichiometry, energy, and volume coordinates for forming the convex hull.
@@ -407,10 +412,13 @@ def label_stoichiometry_volume(
         dictionary of isolated atom energies {atomic_number: energy}
     energy_name: (str)
         name of energy key in atoms.info (typically a DFT energy)
-    element_order: (list)
+    element_order: (list | None)
         list of atomic numbers in order of choice (e.g. [42, 16] for MoS2)
 
     """
+    if element_order is None:
+        raise ValueError("element_order cannot be None")
+
     points_list = []
     for atom in atoms_list:
         try:

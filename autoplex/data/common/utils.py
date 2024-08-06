@@ -41,28 +41,27 @@ from autoplex.fitting.common.regularization import (
 logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(message)s")
 
 
-def flatten(atoms_object, recursive=False):
+def flatten(atoms_object: Atoms | Iterable, recursive: bool = False) -> list[Atoms]:
     """
     Flatten an iterable fully, but excluding Atoms objects.
 
     Parameters
     ----------
-    atoms_object: Atoms object
+    atoms_object: Atoms or Iterable
+        An Atoms object or an iterable containing Atoms objects.
     recursive: bool
-        set the recursive boolean.
+        If set to True, the function will recursively flatten the iterable.
 
     Returns
     -------
-    a flattened object, excluding the Atoms objects.
+    A flattened list containing only Atoms objects.
 
     """
     iteration_list = []
 
     if recursive:
         for element in atoms_object:
-            if isinstance(element, Iterable) and not isinstance(
-                element, (str, bytes, ase.atoms.Atoms, ase.Atoms)
-            ):
+            if isinstance(element, Iterable) and not isinstance(element, Atoms):
                 iteration_list.extend(flatten(element, recursive=True))
             else:
                 iteration_list.append(element)
@@ -71,13 +70,14 @@ def flatten(atoms_object, recursive=False):
     return [item for sublist in atoms_object for item in sublist]
 
 
-def rms_dict(x_ref, x_pred) -> dict:
+def rms_dict(x_ref: np.ndarray | list, x_pred: np.ndarray | list) -> dict:
     """Compute RMSE and standard deviation of predictions with reference data.
 
     x_ref and x_pred should be of same shape.
 
     Parameters
     ----------
+    ----------1·
     x_ref : np.ndarray.
         list of reference data.
     x_pred: np.ndarray.
@@ -426,7 +426,7 @@ def mc_rattle(
     return [AseAtomsAdaptor.get_structure(xtal) for xtal in mc_rattle]
 
 
-def extract_base_name(filename, is_out=False) -> str:
+def extract_base_name(filename: str, is_out=False) -> str:
     """
     Extract the base of a file name to easier manipulate other file names.
 
@@ -452,7 +452,9 @@ def extract_base_name(filename, is_out=False) -> str:
     return "A problem with the files occurred."
 
 
-def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005) -> None:
+def filter_outlier_energy(
+    in_file: str, out_file: str, criteria: float = 0.0005
+) -> None:
     """
     Filter data outliers per energy criteria and write them into files.
 
@@ -509,7 +511,7 @@ def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005) -> None:
 
 
 def filter_outlier_forces(
-    in_file, out_file, symbol="Si", criteria: float = 0.1
+    in_file: str, out_file: str, symbol="Si", criteria: float = 0.1
 ) -> None:
     """
     Filter data outliers per force criteria and write them into files.
@@ -580,7 +582,11 @@ def filter_outlier_forces(
 
 
 def energy_plot(
-    in_file, out_file, ax, title: str = "Plot of energy", label: str = "energy"
+    in_file: str,
+    out_file: str,
+    ax: plt.Axes,
+    title: str = "Plot of energy",
+    label: str = "energy",
 ) -> None:
     """
     Plot the distribution of energy per atom on the output vs the input.
@@ -658,9 +664,9 @@ def energy_plot(
 
 
 def force_plot(
-    in_file,
-    out_file,
-    ax,
+    in_file: str,
+    out_file: str,
+    ax: plt.Axes,
     symbol: str = "Si",
     title: str = "Plot of force",
     label: str = "force for ",
@@ -864,7 +870,7 @@ class ElementCollection:
     def __init__(self, atoms):
         self.atoms = atoms
 
-    def get_species(self):
+    def get_species(self) -> list:
         """Extract a list of unique species (chemical elements) from the atoms."""
         sepcies_list = []
 
@@ -878,7 +884,7 @@ class ElementCollection:
 
         return sepcies_list
 
-    def find_element_pairs(self, symb_list=None):
+    def find_element_pairs(self, symb_list=None) -> list:
         """
         Generate a list of all possible unique pairs of species.
 
@@ -896,11 +902,11 @@ class ElementCollection:
 
         return pairs
 
-    def get_number_of_species(self):
+    def get_number_of_species(self) -> int:
         """Return the number of unique species present among the atoms."""
         return int(len(self.get_species()))
 
-    def get_species_Z(self):
+    def get_species_Z(self) -> str:
         """Return a formatted string of atomic numbers of the unique species."""
         atom_numbers = []
         for atom_type in self.get_species():
@@ -915,7 +921,7 @@ class ElementCollection:
         return species_Z
 
 
-def parallel_calc_descriptor_vec(atom, selected_descriptor):
+def parallel_calc_descriptor_vec(atom: Atoms, selected_descriptor: str) -> Atoms:
     """
     Calculate the SOAP descriptor vector for a given atom and hypers in parallel.
 
@@ -948,7 +954,7 @@ def cur_select(
     select_nums,
     stochastic=True,
     random_seed=None,
-):
+) -> list[Atoms] | None:
     """
     Perform CUR selection on a set of atoms to get representative SOAP descriptors.
 
@@ -962,8 +968,10 @@ def cur_select(
         The kernel exponent to use in the calculation.
     select_nums : int
         The number of atoms to select.
-    stochastic : bool, optional
-        Whether to perform stochastic CUR selection. Default is True.
+    stochastic : bool
+        Whether to perform stochastic CUR selection.
+    random_seed : int
+        The seed for the random number generator.
 
     Returns
     -------
@@ -983,7 +991,7 @@ def cur_select(
     else:
         fatoms = atoms
 
-    num_workers = min(len(fatoms), os.cpu_count())
+    num_workers = min(len(fatoms), os.cpu_count() or 1)
 
     with Pool(
         processes=num_workers
@@ -1034,7 +1042,7 @@ def cur_select(
     return None
 
 
-def boltz(e, emin, kT):
+def boltz(e: float, emin: float, kT: float) -> float:
     """
     Calculate the Boltzmann factor for a given energy.
 
@@ -1061,7 +1069,8 @@ def boltz(e, emin, kT):
 
 def boltzhist_CUR(
     atoms,
-    isol_es=None,
+    descriptor,
+    isol_es,
     bolt_frac=0.1,
     bolt_max_num=3000,
     cur_num=100,
@@ -1069,9 +1078,8 @@ def boltzhist_CUR(
     kT=0.3,
     energy_label="energy",
     P=None,
-    descriptor=None,
     random_seed=None,
-):
+) -> list | None:
     """
     Sample atoms from a list according to boltzmann energy weighting and CUR diversity.
 
@@ -1079,18 +1087,26 @@ def boltzhist_CUR(
     ----------
     atoms : list of ase.Atoms
         The atoms from which to select. If this is a list of lists, it is flattened.
+    descriptor : str
+        The quippy SOAP descriptor string for CUR.
+    isol_es : dict
+        Dictionary of isolated energy values for species.
     bolt_frac : float
         The fraction to control the flat Boltzmann selection number.
     bolt_max_num : int
         The maximum number of atoms to select by Boltzmann-weighted flat histogram.
-    descriptor : str
-        The quippy SOAP descriptor string for CUR.
+    cur_num : int
+        The number of atoms to select by CUR.
     kernel_exp : float
         The exponent for the dot-product SOAP kernel.
     kT : float
         The product of the Boltzmann constant and the temperature, in eV.
+    energy_label : str
+        The label for the energy property in the atoms.
     P : list of float
         The pressures at which the atoms have been optimized, in GPa.
+    random_seed : int
+        The seed for the random number generator.
 
     Returns
     -------
@@ -1125,6 +1141,9 @@ def boltzhist_CUR(
     enthalpies = []
 
     at_ids = [atom.get_atomic_numbers() for atom in atoms]
+
+    if isol_es is None:
+        raise ValueError("isol_es cannot be None!")
 
     if energy_label == "energy":
         ener_relative = np.array(
@@ -1195,18 +1214,18 @@ def boltzhist_CUR(
 
 
 def convexhull_CUR(
-    atoms,
-    bolt_frac=0.1,
-    bolt_max_num=3000,
-    cur_num=100,
-    kernel_exp=4,
-    kT=0.5,
-    energy_label="REF_energy",
-    descriptor=None,
-    isol_es=None,
-    element_order=None,
-    scheme="linear-hull",
-):
+    atoms: Atoms,
+    descriptor: str,
+    bolt_frac: float = 0.1,
+    bolt_max_num: int = 3000,
+    cur_num: int = 100,
+    kernel_exp: float = 4,
+    kT: float = 0.5,
+    energy_label: str = "REF_energy",
+    isol_es: dict = None,
+    element_order: list | None = None,
+    scheme: str = "linear-hull",
+) -> list | None:
     """
     Sample atoms from a list according to Boltzmann energy weighting relative to convex hull and CUR diversity.
 
@@ -1228,7 +1247,7 @@ def convexhull_CUR(
         The label for the energy property in the atoms.
     descriptor : str, optional
         The quip descriptor string to use for the calculation.
-    isol_es : list of float, optional
+    isol_es : dict, optional
         The isolated atom energies for each element in the system.
     element_order : list of str, optional
         The order of elements for the isolated atom energies.
@@ -1267,7 +1286,10 @@ def convexhull_CUR(
 
     elif scheme == "volume-stoichiometry":
         points = label_stoichiometry_volume(
-            atoms, isol_es=isol_es, e_name=energy_label, element_order=element_order
+            atoms,
+            isolated_atoms_energies=isol_es,
+            energy_name=energy_label,
+            element_order=element_order,
         )
         hull = calculate_hull_3D(points)
 
@@ -1276,7 +1298,7 @@ def convexhull_CUR(
                 get_e_distance_to_hull_3D(
                     hull,
                     at,
-                    isol_es=isol_es,
+                    isolated_atoms_energies=isol_es,
                     energy_name=energy_label,
                     element_order=element_order,
                 )
@@ -1336,7 +1358,9 @@ def convexhull_CUR(
     return selected_atoms
 
 
-def data_distillation(vasp_ref_dir, f_max, force_label) -> list[Atom | Atoms]:
+def data_distillation(
+    vasp_ref_dir: str, f_max: float, force_label: str
+) -> list[Atom | Atoms]:
     """
     For data distillation.
 
@@ -1346,6 +1370,8 @@ def data_distillation(vasp_ref_dir, f_max, force_label) -> list[Atom | Atoms]:
         VASP reference data directory.
     f_max:
         maximally allowed force.
+    force_label : str
+        The label for the force property in the atoms.
 
     Returns
     -------
@@ -1371,7 +1397,7 @@ def data_distillation(vasp_ref_dir, f_max, force_label) -> list[Atom | Atoms]:
 
 
 def stratified_dataset_split(
-    atoms, split_ratio
+    atoms: Atoms, split_ratio: float
 ) -> tuple[
     list[Atom | Atoms]
     | list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
@@ -1424,3 +1450,38 @@ def stratified_dataset_split(
         train_structures = atom_isolated_and_dimer + train_structures
 
     return train_structures, test_structures
+
+
+def create_soap_descriptor(
+    soap_paras: dict[str, int | float | str], n_species: int, species_Z: str
+) -> str:
+    """
+    Generate a SOAP descriptor string based on the given parameters.
+
+    Parameters
+    ----------
+    soap_paras:
+        A dictionary containing SOAP parameters.
+    n_species:
+        The number of species.
+    species_Z:
+        A string representing species Z.
+    """
+    return (
+        "soap l_max="
+        + str(soap_paras["l_max"])
+        + " n_max="
+        + str(soap_paras["n_max"])
+        + " atom_sigma="
+        + str(soap_paras["atom_sigma"])
+        + " cutoff="
+        + str(soap_paras["cutoff"])
+        + " n_species="
+        + str(n_species)
+        + " species_Z="
+        + species_Z
+        + " cutoff_transition_width="
+        + str(soap_paras["cutoff_transition_width"])
+        + " average="
+        + str(soap_paras["average"])
+    )

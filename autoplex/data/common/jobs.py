@@ -1,7 +1,7 @@
 """Jobs to create training data for ML potentials."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
     from emmet.core.math import Matrix3D
@@ -19,24 +19,8 @@ import numpy as np
 from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read, write
 from atomate2.utils.path import strip_hostname
-from atomate2.vasp.jobs.core import StaticMaker
-from atomate2.vasp.powerups import update_user_incar_settings
-from atomate2.vasp.sets.core import StaticSetGenerator
-from custodian.vasp.handlers import (
-    FrozenJobErrorHandler,
-    IncorrectSmearingHandler,
-    LargeSigmaHandler,
-    MeshSymmetryErrorHandler,
-    NonConvergingErrorHandler,
-    PotimErrorHandler,
-    StdErrHandler,
-    UnconvergedErrorHandler,
-    VaspErrorHandler,
-)
-from jobflow import Flow, Response
 from jobflow.core.job import job
 from phonopy.structure.cells import get_supercell
-from pymatgen.core import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.io.ase import AseAtomsAdaptor
 from pymatgen.io.phonopy import get_phonopy_structure, get_pmg_structure
@@ -45,6 +29,7 @@ from pymatgen.io.vasp.outputs import Vasprun
 from autoplex.data.common.utils import (
     ElementCollection,
     boltzhist_CUR,
+    create_soap_descriptor,
     cur_select,
     data_distillation,
     mc_rattle,
@@ -330,26 +315,26 @@ def generate_randomized_structures(
 
 @job
 def Sampling(
-    selection_method: str = None,
+    selection_method: Literal["cur", "bcur", "random", "uniform"] = "random",
     num_of_selection: int = 5,
     bcur_params: dict | None = None,
     dir: str = None,
     structure: list[Structure] = None,
-    traj_info: list = None,
+    traj_info: list[dict[str, str | float]] = None,
     isol_es: dict | None = None,
     random_seed: int = None,
 ):
     """
-    Job to sample training configurations from trajs of MD/RSS.
+    Job to sample training configurations from trajectories of MD/RSS.
 
     Parameters
     ----------
-    selection_method : str, optional
-        Method for selecting samples. Options include:
+    selection_method : Literal['cur', 'bcur', 'random', 'uniform']
+       Method for selecting samples. Options include:
         - 'cur': Pure CUR selection.
         - 'bcur': Boltzmann flat histogram in enthalpy, then CUR.
         - 'random': Random selection.
-        - 'uniform': Uniform selection. Default is None. If None, then default to random.
+        - 'uniform': Uniform selection.
 
     num_of_selection : int, optional
         Number of selections to be made. Default is 5.
@@ -377,7 +362,7 @@ def Sampling(
     structure : list[Structure], optional
         List of structures for sampling. Default is None.
 
-    traj_info : list, optional
+    traj_info : list[dict[str, Union[str, float]]], optional
         List of dictionaries containing trajectory information. Each dictionary should
         have keys 'traj_path' and 'pressure'. Default is None.
 
@@ -441,24 +426,7 @@ def Sampling(
             raise TypeError("soap_paras must be a dictionary")
 
         soap_paras = bcur_params["soap_paras"]
-        descriptor = (
-            "soap l_max="
-            + str(soap_paras["l_max"])
-            + " n_max="
-            + str(soap_paras["n_max"])
-            + " atom_sigma="
-            + str(soap_paras["atom_sigma"])
-            + " cutoff="
-            + str(soap_paras["cutoff"])
-            + " n_species="
-            + str(n_species)
-            + " species_Z="
-            + species_Z
-            + " cutoff_transition_width="
-            + str(soap_paras["cutoff_transition_width"])
-            + " average="
-            + str(soap_paras["average"])
-        )
+        descriptor = create_soap_descriptor(soap_paras, n_species, species_Z)
 
         if selection_method == "cur":
             selected_atoms = cur_select(
@@ -490,9 +458,14 @@ def Sampling(
                 random_seed=random_seed,
             )
 
+        if selected_atoms is None:
+            raise ValueError(
+                "Unable to sample correctly. Please recheck the parameters!"
+            )
+
         selected_atoms = [AseAtomsAdaptor().get_structure(at) for at in selected_atoms]
 
-    elif selection_method is None or selection_method == "random":
+    elif selection_method == "random":
         if random_seed is not None:
             np.random.seed(random_seed)
 
@@ -526,207 +499,6 @@ def Sampling(
         raise ValueError("Unable to sample correctly. Please recheck the parameters!")
 
     return selected_atoms
-
-
-@job
-def VASP_static(
-    structures: list[Structure] | None = None,
-    config_types: list[str] | None = None,
-    isolated_atom: bool = False,
-    isolated_species: list[str] | None = None,
-    e0_spin: bool = False,
-    dimer: bool = False,
-    dimer_species: list[str] | None = None,
-    dimer_range: list[float] | None = None,
-    dimer_num: int = 21,
-    custom_set: dict | None = None,
-):
-    """
-    Jobflow to set up and run VASP static calculations for input structures, including bulk, isolated atoms, and dimers.
-
-    It supports custom VASP input parameters and error handlers.
-
-    Parameters
-    ----------
-    structures : list[Structure], optional
-        List of structures for which to run the VASP static calculations. If None,
-        no bulk calculations will be performed. Default is None.
-
-    config_types : list[str], optional
-        List of configuration types corresponding to the structures. If provided,
-        should have the same length as the 'structures' list. If None, defaults
-        to 'bulk'. Default is None.
-
-    isolated_atom : bool, optional
-        Whether to perform calculations for isolated atoms. Default is False.
-
-    isolated_species : list[str], optional
-        List of species for which to perform isolated atom calculations. If None,
-        species will be automatically derived from the 'structures' list. Default is None.
-
-    e0_spin : bool, optional
-        Whether to include spin polarization in isolated atom and dimer calculations.
-        Default is False.
-
-    dimer : bool, optional
-        Whether to perform calculations for dimers. Default is False.
-
-    dimer_species : list[str], optional
-        List of species for which to perform dimer calculations. If None, species
-        will be derived from the 'structures' list. Default is None.
-
-    dimer_range : list[float], optional
-        Range of distances for dimer calculations. Default is [0.8, 4.8].
-
-    dimer_num : int, optional
-        Number of different distances to consider for dimer calculations. Default is 22.
-
-    custom_set : dict, optional
-        Dictionary of custom VASP input parameters. If provided, will update the
-        default parameters. Default is None.
-
-    Returns
-    -------
-    Response
-        A Response object containing the VASP jobs and the directories where
-        the calculations were set up.
-    """
-    job_list = []
-
-    dirs: dict[str, list[str]] = {"dirs_of_vasp": [], "config_type": []}
-
-    default_custom_set = {
-        "ADDGRID": "True",
-        "ENCUT": 520,
-        "EDIFF": 1e-06,
-        "ISMEAR": 0,
-        "SIGMA": 0.01,
-        "PREC": "Accurate",
-        "ISYM": None,
-        "KSPACING": 0.2,
-        "NPAR": 8,
-        "LWAVE": "False",
-        "LCHARG": "False",
-        "ENAUG": None,
-        "GGA": None,
-        "ISPIN": None,
-        "LAECHG": None,
-        "LELF": None,
-        "LORBIT": None,
-        "LVTOT": None,
-        "NSW": None,
-        "SYMPREC": None,
-        "NELM": 100,
-        "LMAXMIX": None,
-        "LASPH": None,
-        "AMIN": None,
-    }
-
-    if custom_set is not None:
-        default_custom_set.update(custom_set)
-
-    custom_set = default_custom_set
-
-    custom_handlers = (
-        VaspErrorHandler(),
-        MeshSymmetryErrorHandler(),
-        UnconvergedErrorHandler(),
-        NonConvergingErrorHandler(),
-        PotimErrorHandler(),
-        FrozenJobErrorHandler(),
-        StdErrHandler(),
-        LargeSigmaHandler(),
-        IncorrectSmearingHandler(),
-    )
-
-    st_m = StaticMaker(
-        input_set_generator=StaticSetGenerator(user_incar_settings=custom_set),
-        run_vasp_kwargs={"handlers": custom_handlers},
-    )
-
-    if structures:
-        for idx, struct in enumerate(structures):
-            static_job = st_m.make(structure=struct)
-            static_job.name = f"static_bulk_{idx}"
-            dirs["dirs_of_vasp"].append(static_job.output.dir_name)
-            if config_types:
-                dirs["config_type"].append(config_types[idx])
-            else:
-                dirs["config_type"].append("bulk")
-            job_list.append(static_job)
-
-    if isolated_atom:
-        try:
-            if isolated_species is not None:
-                syms = isolated_species
-
-            elif (isolated_species is None) and (structures is not None):
-                # Get the species from the database
-                atoms = [AseAtomsAdaptor().get_atoms(at) for at in structures]
-                syms = ElementCollection(atoms).get_species()
-
-            for idx, sym in enumerate(syms):
-                lattice = Lattice.orthorhombic(20.0, 20.5, 21.0)
-                isolated_atom_struct = Structure(lattice, [sym], [[0.0, 0.0, 0.0]])
-                static_job = st_m.make(structure=isolated_atom_struct)
-                static_job.name = f"static_isolated_{idx}"
-                static_job = update_user_incar_settings(static_job, {"KSPACING": 2.0})
-
-                if e0_spin:
-                    static_job = update_user_incar_settings(static_job, {"ISPIN": 2})
-
-                dirs["dirs_of_vasp"].append(static_job.output.dir_name)
-                dirs["config_type"].append("IsolatedAtom")
-                job_list.append(static_job)
-
-        except ValueError:
-            logging.error("Unknown species of isolated atoms!")
-            traceback.print_exc()
-
-    if dimer:
-        try:
-            if dimer_species is not None:
-                dimer_syms = dimer_species
-            elif (dimer_species is None) and (structures is not None):
-                # Get the species from the database
-                atoms = [AseAtomsAdaptor().get_atoms(at) for at in structures]
-                dimer_syms = ElementCollection(atoms).get_species()
-            pairs_list = ElementCollection(atoms).find_element_pairs(dimer_syms)
-            for pair in pairs_list:
-                for dimer_i in range(dimer_num):
-                    if dimer_range is not None:
-                        dimer_distance = dimer_range[0] + (
-                            dimer_range[1] - dimer_range[0]
-                        ) * float(dimer_i) / float(dimer_num - 1 + 0.000000000001)
-
-                    lattice = Lattice.orthorhombic(15.0, 15.5, 16.0)
-                    dimer_struct = Structure(
-                        lattice,
-                        [pair[0], pair[1]],
-                        [[0.0, 0.0, 0.0], [dimer_distance, 0.0, 0.0]],
-                        coords_are_cartesian=True,
-                    )
-
-                    static_job = st_m.make(structure=dimer_struct)
-                    static_job.name = f"static_dimer_{dimer_i}"
-                    static_job = update_user_incar_settings(
-                        static_job, {"KSPACING": 2.0}
-                    )
-
-                    if e0_spin:
-                        static_job = update_user_incar_settings(
-                            static_job, {"ISPIN": 2}
-                        )
-
-                    dirs["dirs_of_vasp"].append(static_job.output.dir_name)
-                    dirs["config_type"].append("dimer")
-                    job_list.append(static_job)
-
-        except ValueError:
-            logging.error("Unknown atom types in dimers!")
-            traceback.print_exc()
-
-    return Response(replace=Flow(job_list), output=dirs)
 
 
 @job
@@ -871,12 +643,12 @@ def safe_strip_hostname(value):
 
 @job
 def Data_preprocessing(
+    vasp_ref_dir: str,
     test_ratio: float = 0.5,
     regularization: bool = False,
     distillation: bool = False,
     f_max: float = 40.0,
     force_label: str = "REF_forces",
-    vasp_ref_dir: str = None,
     pre_database_dir: str = None,
     etup: list[tuple] = None,
 ):

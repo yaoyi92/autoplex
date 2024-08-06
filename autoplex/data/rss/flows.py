@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from jobflow import Flow, Response, job
 
+from autoplex.data.common.flows import DFTStaticMaker
 from autoplex.data.common.jobs import (
     Data_preprocessing,
     Sampling,
     VASP_collect_data,
-    VASP_static,
 )
 from autoplex.data.rss.jobs import RandomizedStructure, do_rss
 from autoplex.fitting.common.flows import MLIPFitMaker
@@ -26,8 +26,9 @@ def initial_RSS(
     isolated_atom: bool = True,
     dimer: bool = True,
     dimer_range: list = None,
-    dimer_num: int = None,
+    dimer_num: int = 10,
     custom_set: dict | None = None,
+    config_types: list[str] | None = None,
     vasp_ref_file: str = "vasp_ref.extxyz",
     rss_group: str = "initial",
     test_ratio: float = 0.1,
@@ -50,7 +51,7 @@ def initial_RSS(
     The workflow consists of the following jobs:
     job1 - RandomizedStructure: Generates randomized structures
     job2 - Sampling: Samples a subset of the generated structures using CUR
-    job3 - VASP_static: Runs single-point calculations on the sampled structures
+    job3 - DFTStaticMaker: Runs single-point calculations on the sampled structures
     job4 - VASP_collect_data: Collects VASP calculation data
     job5 - Data_preprocessing: Preprocesses the data for fitting ML models
     job6 - MLIPFitMaker: Fits a ML interatomic potential (MLIP)
@@ -81,6 +82,10 @@ def initial_RSS(
         Number of dimers generated for calculations. Default is None.
     custom_set : dict, optional
         Custom set of parameters for VASP. Default is None.
+    config_types : list[str], optional
+        List of configuration types corresponding to the structures. If provided,
+        should have the same length as the 'structures' list. If None, defaults
+        to 'bulk'. Default is None.
     vasp_ref_file : str, optional
         File name of collected VASP data. Default is 'vasp_ref.extxyz'.
     rss_group : str, optional
@@ -135,15 +140,14 @@ def initial_RSS(
         dir=job1.output,
         random_seed=random_seed,
     )
-    job3 = VASP_static(
-        structures=job2.output,
+    job3 = DFTStaticMaker(
         e0_spin=e0_spin,
         isolated_atom=isolated_atom,
         dimer=dimer,
         dimer_range=dimer_range,
         dimer_num=dimer_num,
         custom_set=custom_set,
-    )
+    ).make(structures=job2.output, config_types=config_types)
     job4 = VASP_collect_data(
         vasp_ref_file=vasp_ref_file, rss_group=rss_group, vasp_dirs=job3.output
     )
@@ -199,8 +203,9 @@ def do_RSS_iterations(
     isolated_atom: bool = True,
     dimer: bool = True,
     dimer_range: list = None,
-    dimer_num: int = None,
+    dimer_num: int = 10,
     custom_set: dict | None = None,
+    config_types: list[str] | None = None,
     vasp_ref_file: str = "vasp_ref.extxyz",
     rss_group: str = "initial",
     test_ratio: float = 0.1,
@@ -298,15 +303,14 @@ def do_RSS_iterations(
             random_seed=random_seed,
             isol_es=input["isol_es"],
         )
-        job5 = VASP_static(
-            structures=job4.output,
+        job5 = DFTStaticMaker(
             e0_spin=e0_spin,
             isolated_atom=isolated_atom,
             dimer=dimer,
             dimer_range=dimer_range,
             dimer_num=dimer_num,
             custom_set=custom_set,
-        )
+        ).make(structures=job4.output, config_types=config_types)
         job6 = VASP_collect_data(
             vasp_ref_file=vasp_ref_file, rss_group=rss_group, vasp_dirs=job5.output
         )

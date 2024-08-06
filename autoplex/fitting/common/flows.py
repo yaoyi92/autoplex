@@ -42,6 +42,12 @@ class MLIPFitMaker(Maker):
     HPO: bool
         Perform hyperparameter optimization using XPOT
         (XPOT: https://pubs.aip.org/aip/jcp/article/159/2/024803/2901815)
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
     """
 
     name: str = "MLpotentialFit"

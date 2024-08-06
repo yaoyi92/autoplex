@@ -57,8 +57,8 @@ MLIP_DEFAULTS_FILE_PATH = current_dir / "mlip-defaults.json"
 
 
 def gap_fitting(
-    db_dir: str | Path,
-    species_list: list,
+    db_dir: Path,
+    species_list: list | None = None,
     path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
@@ -87,16 +87,16 @@ def gap_fitting(
         automatically determine delta for 2b, 3b and soap terms.
     glue_xml: bool
         use the glue.xml core potential instead of fitting 2b terms.
-    ref_energy_name: str
-        name of reference energies. Default is REF_energy.
-    ref_force_name: str
-        name of reference forces. Default is REF_forces.
-    ref_virial_name: str
-        name of reference virials. Default is REF_virial.
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
     train_name: str
-        name of the training data file. Default is train.extxyz.
+        Name of the training dataset file.
     test_name: str
-        name of the test data file. Default is test.extxyz.
+        Name of the test dataset file.
     fit_kwargs: dict.
         optional dictionary with parameters for gap fitting with keys same as
         gap-defaults.json.
@@ -222,12 +222,12 @@ def gap_fitting(
     test_error = energy_remain("quip_" + test_name)
     print("Testing error of MLIP (eV/at.):", round(test_error, 7))
 
-    if not glue_xml:
+    if not glue_xml and species_list:
         plot_energy_forces(
             title="Data error metrics",
             energy_limit=0.005,
             force_limit=0.1,
-            species_list=species_list,  # species list is required here
+            species_list=species_list,
             train_name=train_name,
             test_name=test_name,
         )
@@ -265,6 +265,12 @@ def jace_fitting(
         Path to mlip-defaults.json.
     isolated_atoms_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
     num_processes_fit: int
         number of processes to use for parallel computation.
     fit_kwargs: dict.
@@ -419,7 +425,7 @@ export2lammps("acemodel.yace", model)
 
 
 def nequip_fitting(
-    db_dir: str,
+    db_dir: Path,
     path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
     isolated_atoms_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
@@ -437,12 +443,18 @@ def nequip_fitting(
 
     Parameters
     ----------
-    db_dir: str or Path
+    db_dir: Path
         directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
         Path to mlip-defaults.json.
     isolated_atoms_energies: dict
         mandatory dictionary mapping element numbers to isolated energies.
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
     device: str
         specify device to use cuda or cpu
     fit_kwargs: dict.
@@ -692,7 +704,7 @@ per_species_rescale_scales: dataset_forces_rms
 
 
 def m3gnet_fitting(
-    db_dir: str,
+    db_dir: Path,
     path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
@@ -705,12 +717,18 @@ def m3gnet_fitting(
 
     Parameters
     ----------
-    db_dir: str or Path
+    db_dir: Path
         Directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
         Path to mlip-defaults.json.
     device: str
         Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
     fit_kwargs: dict.
         optional dictionary with parameters for m3gnet fitting with keys same as
         mlip-defaults.json.
@@ -1048,7 +1066,7 @@ def m3gnet_fitting(
 
 
 def mace_fitting(
-    db_dir: str,
+    db_dir: Path,
     path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
@@ -1065,12 +1083,18 @@ def mace_fitting(
 
     Parameters
     ----------
-    db_dir: str or Path
+    db_dir: Path
         directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
         Path to mlip-defaults.json.
     device: str
         specify device to use cuda or cpu
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
     fit_kwargs: dict.
         optional dictionary with parameters for mace fitting with keys same as
         mlip-defaults.json.
@@ -1179,7 +1203,7 @@ def mace_fitting(
     }
 
 
-def check_convergence(test_error) -> bool:
+def check_convergence(test_error: float) -> bool:
     """
     Check the convergence of the fit.
 
@@ -1419,10 +1443,11 @@ def gcm3_to_Vm(gcm3, mr, n_atoms=1) -> float:
     Parameters
     ----------
     gcm3:
-        g/cm3
+        Density in grams per cubic centimeter (g/cm³).
     mr:
+        Molar mass in grams per mole (g/mol).
     n_atoms:
-        number of atoms.
+        Number of atoms in the formula unit. Default is 1.
 
     Returns
     -------
@@ -1432,7 +1457,7 @@ def gcm3_to_Vm(gcm3, mr, n_atoms=1) -> float:
     return 1 / (n_atoms * (gcm3 / mr) * 6.022e23 / (1e8) ** 3)
 
 
-def get_atomic_numbers(species) -> list[int]:
+def get_atomic_numbers(species: list) -> list[int]:
     """
     Get atomic numbers.
 
@@ -1455,7 +1480,7 @@ def get_atomic_numbers(species) -> list[int]:
     return atom_numbers
 
 
-def energy_remain(in_file) -> float:
+def energy_remain(in_file: str) -> float:
     """
     Plot the distribution of energy per atom on the output vs. the input.
 
@@ -1515,17 +1540,16 @@ def extract_gap_label(xml_file_path) -> str:
     return root.tag
 
 
-def plot_convex_hull(all_points, hull_points) -> None:
+def plot_convex_hull(all_points: np.ndarray, hull_points: np.ndarray) -> None:
     """
     Plot convex hull.
 
     Parameters
     ----------
-    all_points : ndarray.
-        list of all points.
-    hull_points: ndarray
-        a possibly already existing xyz file.
-
+    all_points : np.ndarray
+        Array of all points to be plotted.
+    hull_points : np.ndarray
+        Array of points used to calculate the convex hull.
     """
     hull = ConvexHull(hull_points)
 
@@ -1589,7 +1613,7 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]
     return es_var / avg_neigh, num_triplet
 
 
-def compute_pairs_triplets(atoms) -> list[float]:
+def compute_pairs_triplets(atoms: Atoms) -> list[float]:
     """
     Calculate the number of pairwise and triplet within a cutoff distance for a given list of atoms.
 
@@ -1661,7 +1685,7 @@ def run_gap(num_processes_fit: int, parameters) -> None:
 
 def run_quip(
     num_processes_fit: int,
-    data_path,
+    data_path: str,
     xml_file: str,
     filename: str,
     glue_xml: bool = False,
@@ -1725,7 +1749,7 @@ def run_mace(hypers: list) -> None:
 
 
 def prepare_fit_environment(
-    database_dir,
+    database_dir: Path,
     mlip_path: Path,
     glue_xml: bool,
     train_name: str = "train.extxyz",
@@ -1769,12 +1793,12 @@ def prepare_fit_environment(
 
 
 def convert_xyz_to_structure(
-    atoms_list,
-    include_forces=True,
-    include_stresses=True,
-    ref_energy_name="REF_energy",
-    ref_force_name="REF_forces",
-    ref_virial_name="REF_virial",
+    atoms_list: list,
+    include_forces: bool = True,
+    include_stresses: bool = True,
+    ref_energy_name: str = "REF_energy",
+    ref_force_name: str = "REF_forces",
+    ref_virial_name: str = "REF_virial",
 ) -> tuple[list[Structure], list, list[object], list[object]]:
     """
     Convert extxyz to pymatgen Structure format.
@@ -1787,6 +1811,12 @@ def convert_xyz_to_structure(
         will include forces with the Structure object.
     include_stresses: bool
         will include stresses with the Structure object.
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
 
     Returns
     -------
@@ -1818,9 +1848,9 @@ def convert_xyz_to_structure(
 
 
 def write_after_distillation_data_split(
-    distillation,
-    f_max,
-    split_ratio,
+    distillation: bool,
+    f_max: float,
+    split_ratio: float,
     vasp_ref_name: str = "vasp_ref.extxyz",
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
@@ -1861,7 +1891,9 @@ def write_after_distillation_data_split(
     ase.io.write(test_name, test_structures, format="extxyz", append=True)
 
 
-def mace_virial_format_conversion(atoms, ref_virial_name, out_file_name):
+def mace_virial_format_conversion(
+    atoms: list[Atoms], ref_virial_name: str, out_file_name: str
+) -> None:
     """
     Convert the format of virial vector (9,) into a format (3x3) recognizable by MACE.
 

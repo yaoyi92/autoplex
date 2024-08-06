@@ -20,7 +20,7 @@ GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
 
 @job
 def machine_learning_fit(
-    database_dir: str,
+    database_dir: Path,
     species_list: list,
     isolated_atoms_energies: dict | None = None,
     num_processes_fit: int = 32,
@@ -39,7 +39,7 @@ def machine_learning_fit(
 
     Parameters
     ----------
-    database_dir: str
+    database_dir: Path
         the database directory.
     isolated_atoms_energies: dict | None
         Dict of isolated atoms energies.
@@ -56,6 +56,12 @@ def machine_learning_fit(
         For using sigma regularization.
     species_list : list.
             List of element names (str)
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
     HPO: bool
         call hyperparameter optimization (HPO) or not
     fit_kwargs : dict.
