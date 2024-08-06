@@ -126,7 +126,7 @@ def reduce_supercell_size(
     -------
     supercell_matrix
     """
-    best_supercell = None
+    best_supercell_matrix = None
     best_num_atoms = max_atoms
 
     while min_length >= limit:
@@ -136,7 +136,7 @@ def reduce_supercell_size(
                 f"The current min_length is {min_length}.",
                 stacklevel=2,
             )
-            supercell = get_supercell_size.original(
+            supercell_matrix = get_supercell_size.original(
                 structure=structure,
                 min_length=min_length,
                 max_length=max_length,
@@ -144,9 +144,9 @@ def reduce_supercell_size(
                 allow_orthorhombic=False,
                 max_atoms=max_atoms,
             )
-            num_atoms = supercell.num_atoms
+            num_atoms = (structure * supercell_matrix).num_sites
             if max_atoms >= num_atoms > best_num_atoms:
-                best_supercell = supercell
+                best_supercell_matrix = supercell_matrix
                 best_num_atoms = num_atoms
         except AttributeError:
             warnings.warn(
@@ -155,7 +155,7 @@ def reduce_supercell_size(
                 stacklevel=2,
             )
         try:  # Try orthorhombic without preferring 90 degrees
-            supercell = get_supercell_size.original(
+            supercell_matrix = get_supercell_size.original(
                 structure=structure,
                 min_length=min_length,
                 max_length=max_length,
@@ -163,9 +163,9 @@ def reduce_supercell_size(
                 allow_orthorhombic=False,
                 max_atoms=max_atoms,
             )
-            num_atoms = supercell.num_atoms
+            num_atoms = (structure * supercell_matrix).num_sites
             if max_atoms >= num_atoms > best_num_atoms:
-                best_supercell = supercell
+                best_supercell_matrix = supercell_matrix
                 best_num_atoms = num_atoms
         except AttributeError:
             warnings.warn(
@@ -174,7 +174,7 @@ def reduce_supercell_size(
                 stacklevel=2,
             )
         try:  # Try orthorhombic, prefer 90 degrees
-            supercell = get_supercell_size.original(
+            supercell_matrix = get_supercell_size.original(
                 structure=structure,
                 min_length=min_length,
                 max_length=max_length,
@@ -182,9 +182,9 @@ def reduce_supercell_size(
                 allow_orthorhombic=True,
                 max_atoms=max_atoms,
             )
-            num_atoms = supercell.num_atoms
+            num_atoms = (structure * supercell_matrix).num_sites
             if max_atoms >= num_atoms > best_num_atoms:
-                best_supercell = supercell
+                best_supercell_matrix = supercell_matrix
                 best_num_atoms = num_atoms
         except AttributeError:
             warnings.warn(
@@ -193,7 +193,7 @@ def reduce_supercell_size(
                 stacklevel=2,
             )
         try:  # Try orthorhombic without preferring 90 degrees
-            supercell = get_supercell_size.original(
+            supercell_matrix = get_supercell_size.original(
                 structure=structure,
                 min_length=min_length,
                 max_length=max_length,
@@ -201,15 +201,15 @@ def reduce_supercell_size(
                 allow_orthorhombic=True,
                 max_atoms=max_atoms,
             )
-            num_atoms = supercell.num_atoms
+            num_atoms = (structure * supercell_matrix).num_sites
             if max_atoms >= num_atoms > best_num_atoms:
-                best_supercell = supercell
+                best_supercell_matrix = supercell_matrix
                 best_num_atoms = num_atoms
         except AttributeError:
             min_length -= 1
 
     # Return the best supercell found
-    if best_supercell is not None:
-        return best_supercell
+    if best_supercell_matrix is not None:
+        return best_supercell_matrix
 
     raise ValueError(f"No supercell found with min_length {min_length}.")
