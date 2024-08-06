@@ -12,6 +12,8 @@ if TYPE_CHECKING:
         ForceFieldRelaxMaker,
         ForceFieldStaticMaker,
     )
+    from atomate2.vasp.jobs.phonons import PhononDisplacementMaker
+    from emmet.core.math import Matrix3D
 
 
 def ml_phonon_maker_preparation(
@@ -73,7 +75,9 @@ def ml_phonon_maker_preparation(
     return bulk_relax_maker, phonon_displacement_maker, static_energy_maker
 
 
-def update_phonon_displacement_maker(lattice, phonon_displacement_maker):
+def update_phonon_displacement_maker(
+    lattice, phonon_displacement_maker
+) -> PhononDisplacementMaker:
     """
     Update the phonon_displacement_maker.
 
@@ -101,7 +105,7 @@ def update_phonon_displacement_maker(lattice, phonon_displacement_maker):
 
 def reduce_supercell_size(
     min_length, max_length, max_atoms, structure, limit: int = 10
-):
+) -> Matrix3D:
     """
     Reduce phonopy supercell size.
 
@@ -122,6 +126,9 @@ def reduce_supercell_size(
     -------
     supercell_matrix
     """
+    best_supercell = None
+    best_num_atoms = max_atoms
+
     while min_length >= limit:
         try:  # Try cubic supercell, prefer 90 degrees
             warnings.warn(
@@ -129,7 +136,7 @@ def reduce_supercell_size(
                 f"The current min_length is {min_length}.",
                 stacklevel=2,
             )
-            return get_supercell_size.original(
+            supercell = get_supercell_size.original(
                 structure=structure,
                 min_length=min_length,
                 max_length=max_length,
@@ -137,55 +144,72 @@ def reduce_supercell_size(
                 allow_orthorhombic=False,
                 max_atoms=max_atoms,
             )
+            num_atoms = supercell.num_atoms
+            if max_atoms >= num_atoms > best_num_atoms:
+                best_supercell = supercell
+                best_num_atoms = num_atoms
         except AttributeError:
             warnings.warn(
-                message=f"Cubic supercell with preferred 90° failed. "
-                f"Trying cubic supercell. "
+                message=f"Trying cubic supercell. "
                 f"The current min_length is {min_length}.",
                 stacklevel=2,
             )
-            try:  # Try orthorhombic without preferring 90 degrees
-                return get_supercell_size.original(
-                    structure=structure,
-                    min_length=min_length,
-                    max_length=max_length,
-                    prefer_90_degrees=False,
-                    allow_orthorhombic=False,
-                    max_atoms=max_atoms,
-                )
-            except AttributeError:
-                warnings.warn(
-                    message=f"Cubic supercell failed. "
-                    f"Trying orthorhombic supercell with preferred 90°. "
-                    f"The current min_length is {min_length}.",
-                    stacklevel=2,
-                )
-                try:  # Try orthorhombic, prefer 90 degrees
-                    return get_supercell_size.original(
-                        structure=structure,
-                        min_length=min_length,
-                        max_length=max_length,
-                        prefer_90_degrees=True,
-                        allow_orthorhombic=True,
-                        max_atoms=max_atoms,
-                    )
-                except AttributeError:
-                    warnings.warn(
-                        message=f"Orthorhombic supercell with preferred 90° failed. "
-                        f"Trying orthorhombic supercell. "
-                        f"The current min_length is {min_length}.",
-                        stacklevel=2,
-                    )
-                    try:  # Try orthorhombic without preferring 90 degrees
-                        return get_supercell_size.original(
-                            structure=structure,
-                            min_length=min_length,
-                            max_length=max_length,
-                            prefer_90_degrees=False,
-                            allow_orthorhombic=True,
-                            max_atoms=max_atoms,
-                        )
-                    except AttributeError:
-                        min_length -= 1
+        try:  # Try orthorhombic without preferring 90 degrees
+            supercell = get_supercell_size.original(
+                structure=structure,
+                min_length=min_length,
+                max_length=max_length,
+                prefer_90_degrees=False,
+                allow_orthorhombic=False,
+                max_atoms=max_atoms,
+            )
+            num_atoms = supercell.num_atoms
+            if max_atoms >= num_atoms > best_num_atoms:
+                best_supercell = supercell
+                best_num_atoms = num_atoms
+        except AttributeError:
+            warnings.warn(
+                message=f"Trying orthorhombic supercell with preferred 90°. "
+                f"The current min_length is {min_length}.",
+                stacklevel=2,
+            )
+        try:  # Try orthorhombic, prefer 90 degrees
+            supercell = get_supercell_size.original(
+                structure=structure,
+                min_length=min_length,
+                max_length=max_length,
+                prefer_90_degrees=True,
+                allow_orthorhombic=True,
+                max_atoms=max_atoms,
+            )
+            num_atoms = supercell.num_atoms
+            if max_atoms >= num_atoms > best_num_atoms:
+                best_supercell = supercell
+                best_num_atoms = num_atoms
+        except AttributeError:
+            warnings.warn(
+                message=f"Trying orthorhombic supercell. "
+                f"The current min_length is {min_length}.",
+                stacklevel=2,
+            )
+        try:  # Try orthorhombic without preferring 90 degrees
+            supercell = get_supercell_size.original(
+                structure=structure,
+                min_length=min_length,
+                max_length=max_length,
+                prefer_90_degrees=False,
+                allow_orthorhombic=True,
+                max_atoms=max_atoms,
+            )
+            num_atoms = supercell.num_atoms
+            if max_atoms >= num_atoms > best_num_atoms:
+                best_supercell = supercell
+                best_num_atoms = num_atoms
+        except AttributeError:
+            min_length -= 1
 
-    raise AttributeError(f"No supercell found with min_length {min_length}.")
+    # Return the best supercell found
+    if best_supercell is not None:
+        return best_supercell
+
+    raise ValueError(f"No supercell found with min_length {min_length}.")
