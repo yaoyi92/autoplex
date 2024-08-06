@@ -200,18 +200,17 @@ def test_mlip_fit_maker_jace(
     # Test julia-ACE fit runs with pre_database_dir
     jacefit = MLIPFitMaker(
         mlip_type="J-ACE",
-        mlip_hyper={
-            "order": 3,
-            "totaldegree": 6,
-            "cutoff": 2.0,
-            "solver": "BLR",
-        },
     ).make(
         isolated_atoms_energies={3: -0.28649227, 17: -0.25638457},
         fit_input=fit_input_dict,
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
-        num_processes=4,
+        preprocessing_data=True,
+        num_processes_fit=4,
+        order=3,
+        totaldegree=6,
+        cutoff=2.0,
+        solver="BLR",
     )
 
     run_locally(
@@ -246,26 +245,16 @@ def test_mlip_fit_maker_nequip(
     # Test NEQUIP fit runs with pre_database_dir
     nequipfit = MLIPFitMaker(
         mlip_type="NEQUIP",
-        mlip_hyper={
-            "r_max": 4.0,
-            "num_layers": 4,
-            "l_max": 2,
-            "num_features": 32,
-            "num_basis": 8,
-            "invariant_layers": 2,
-            "invariant_neurons": 64,
-            "batch_size": 1,
-            "learning_rate": 0.005,
-            "max_epochs": 1,  # reduced to 1 to minimize the test execution time
-            "default_dtype": "float32",
-            "device": "cpu",
-        },
     ).make(
         fit_input=fit_input_dict,
         isolated_atoms_energies={3: -0.28649227, 17: -0.25638457},
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
-        num_processes=1,
+        num_processes_fit=1,
+        preprocessing_data=True,
+        r_max=3.14,
+        max_epochs=10,
+        device="cpu",
     )
 
     run_locally(
@@ -300,27 +289,24 @@ def test_mlip_fit_maker_m3gnet(
     # Test if M3GNET fit runs with pre_database_dir
     m3gnetfit = MLIPFitMaker(
         mlip_type="M3GNET",
-        mlip_hyper={
-            "exp_name": "training",
-            "results_dir": "m3gnet_results",
-            "cutoff": 3.0,
-            "threebody_cutoff": 2.0,
-            "batch_size": 1,
-            "max_epochs": 3,
-            "include_stresses": True,
-            "hidden_dim": 8,
-            "num_units": 8,
-            "max_l": 4,
-            "max_n": 4,
-            "device": "cpu",
-            "test_equal_to_val": True,
-        },
     ).make(
         fit_input=fit_input_dict,
         isolated_atoms_energies={3: -0.28649227, 17: -0.25638457},
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
-        num_processes=1,
+        num_processes_fit=1,
+        preprocessing_data=True,
+        cutoff=3.0,
+        threebody_cutoff=2.0,
+        batch_size=1,
+        max_epochs=3,
+        include_stresses=True,
+        hidden_dim=8,
+        num_units=8,
+        max_l=4,
+        max_n=4,
+        device="cpu",
+        test_equal_to_val=True,
     )
 
     run_locally(
@@ -355,25 +341,24 @@ def test_mlip_fit_maker_mace(
     # Test if MACE fit runs with pre_database_dir
     macefit = MLIPFitMaker(
         mlip_type="MACE",
-        mlip_hyper={
-            "model": "MACE",
-            "config_type_weights": '{"Default":1.0}',
-            "hidden_irreps": "32x0e + 32x1o",
-            "r_max": 3.0,
-            "batch_size": 5,
-            "max_num_epochs": 10,
-            "start_swa": 5,
-            "ema_decay": 0.99,
-            "correlation": 3,
-            "loss": "huber",
-            "default_dtype": "float32",
-            "device": "cpu",
-        },
     ).make(
         fit_input=fit_input_dict,
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
-        num_processes=1,
+        num_processes_fit=1,
+        preprocessing_data=True,
+        model="MACE",
+        config_type_weights='{"Default":1.0}',
+        hidden_irreps="32x0e + 32x1o",
+        r_max=3.0,
+        batch_size=5,
+        max_num_epochs=10,
+        start_swa=5,
+        ema_decay=0.99,
+        correlation=3,
+        loss="huber",
+        default_dtype="float32",
+        device="cpu",
     )
 
     run_locally(
@@ -459,7 +444,6 @@ def test_mlip_fit_maker_glue_xml(
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
     gapfit = MLIPFitMaker(
         mlip_type="GAP",
-        mlip_hyper={"two_body": False, "three_body": False, "soap": True},
     ).make(
         species_list=["Si"],
         isolated_atoms_energy=[-0.82067307],
@@ -467,6 +451,7 @@ def test_mlip_fit_maker_glue_xml(
         auto_delta=False,
         glue_xml=True,
         general={"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"},
+        preprocessing_data=True,
     )
 
     responses = run_locally(
@@ -506,6 +491,7 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
         fit_input=fit_input_dict,
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train_more_data.extxyz", "pre_xyz_test_more_data.extxyz"],
+        preprocessing_data=True,
         **{"separated": True}
     )
 

@@ -3,30 +3,81 @@ from __future__ import annotations
 
 import random
 import warnings
+from multiprocessing import Pool
 from typing import TYPE_CHECKING
 
 import numpy as np
+from quippy import descriptors
+from scipy.sparse.linalg import LinearOperator, svds
 
 if TYPE_CHECKING:
+    from ase.atoms import Atom
     from pymatgen.core import Structure
+
+import logging
+import os
+from collections.abc import Iterable
 
 import ase.io
 import matplotlib.pyplot as plt
+import pandas as pd
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase.io import Trajectory as AseTrajectory
 from ase.io import write
+from ase.units import GPa
 from hiphive.structure_generation import generate_mc_rattled_structures
 from pymatgen.io.ase import AseAtomsAdaptor
+from sklearn.model_selection import StratifiedShuffleSplit
+
+from autoplex.fitting.common.regularization import (
+    calculate_hull_3D,
+    get_convex_hull,
+    get_e_distance_to_hull,
+    get_e_distance_to_hull_3D,
+    label_stoichiometry_volume,
+)
+
+logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(message)s")
 
 
-def rms_dict(x_ref, x_pred) -> dict:
+def flatten(atoms_object: Atoms | Iterable, recursive: bool = False) -> list[Atoms]:
+    """
+    Flatten an iterable fully, but excluding Atoms objects.
+
+    Parameters
+    ----------
+    atoms_object: Atoms or Iterable
+        An Atoms object or an iterable containing Atoms objects.
+    recursive: bool
+        If set to True, the function will recursively flatten the iterable.
+
+    Returns
+    -------
+    A flattened list containing only Atoms objects.
+
+    """
+    iteration_list = []
+
+    if recursive:
+        for element in atoms_object:
+            if isinstance(element, Iterable) and not isinstance(element, Atoms):
+                iteration_list.extend(flatten(element, recursive=True))
+            else:
+                iteration_list.append(element)
+        return iteration_list
+
+    return [item for sublist in atoms_object for item in sublist]
+
+
+def rms_dict(x_ref: np.ndarray | list, x_pred: np.ndarray | list) -> dict:
     """Compute RMSE and standard deviation of predictions with reference data.
 
     x_ref and x_pred should be of same shape.
 
     Parameters
     ----------
+    ----------1·
     x_ref : np.ndarray.
         list of reference data.
     x_pred: np.ndarray.
@@ -375,7 +426,7 @@ def mc_rattle(
     return [AseAtomsAdaptor.get_structure(xtal) for xtal in mc_rattle]
 
 
-def extract_base_name(filename, is_out=False) -> str:
+def extract_base_name(filename: str, is_out=False) -> str:
     """
     Extract the base of a file name to easier manipulate other file names.
 
@@ -401,7 +452,9 @@ def extract_base_name(filename, is_out=False) -> str:
     return "A problem with the files occurred."
 
 
-def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005) -> None:
+def filter_outlier_energy(
+    in_file: str, out_file: str, criteria: float = 0.0005
+) -> None:
     """
     Filter data outliers per energy criteria and write them into files.
 
@@ -458,7 +511,7 @@ def filter_outlier_energy(in_file, out_file, criteria: float = 0.0005) -> None:
 
 
 def filter_outlier_forces(
-    in_file, out_file, symbol="Si", criteria: float = 0.1
+    in_file: str, out_file: str, symbol="Si", criteria: float = 0.1
 ) -> None:
     """
     Filter data outliers per force criteria and write them into files.
@@ -529,7 +582,11 @@ def filter_outlier_forces(
 
 
 def energy_plot(
-    in_file, out_file, ax, title: str = "Plot of energy", label: str = "energy"
+    in_file: str,
+    out_file: str,
+    ax: plt.Axes,
+    title: str = "Plot of energy",
+    label: str = "energy",
 ) -> None:
     """
     Plot the distribution of energy per atom on the output vs the input.
@@ -607,9 +664,9 @@ def energy_plot(
 
 
 def force_plot(
-    in_file,
-    out_file,
-    ax,
+    in_file: str,
+    out_file: str,
+    ax: plt.Axes,
     symbol: str = "Si",
     title: str = "Plot of force",
     label: str = "force for ",
@@ -799,3 +856,632 @@ def plot_energy_forces(
         format="pdf",
     )
     plt.savefig(train_name.replace("train", "energy_forces").replace(".extxyz", ".png"))
+
+
+class ElementCollection:
+    """
+    A class to handle different species operations for a collection of atoms.
+
+    The Species class provides methods to extract unique chemical elements (species),
+    determine all possible pairs of these species, and retrieve their atomic numbers
+    in a formatted string.
+    """
+
+    def __init__(self, atoms):
+        self.atoms = atoms
+
+    def get_species(self) -> list:
+        """Extract a list of unique species (chemical elements) from the atoms."""
+        sepcies_list = []
+
+        for at in self.atoms:
+            sym_all = at.get_chemical_symbols()
+            syms = list(set(sym_all))
+            for sym in syms:
+                if sym in sepcies_list:
+                    continue
+                sepcies_list.append(sym)
+
+        return sepcies_list
+
+    def find_element_pairs(self, symb_list=None) -> list:
+        """
+        Generate a list of all possible unique pairs of species.
+
+        It can operate on an optional list of symbols or default to
+        using the species extracted from the atoms.
+        """
+        species_list = self.get_species() if symb_list is None else symb_list
+
+        pairs = []
+
+        for i in range(len(species_list)):
+            for j in range(i, len(species_list)):
+                pair = (species_list[i], species_list[j])
+                pairs.append(pair)
+
+        return pairs
+
+    def get_number_of_species(self) -> int:
+        """Return the number of unique species present among the atoms."""
+        return int(len(self.get_species()))
+
+    def get_species_Z(self) -> str:
+        """Return a formatted string of atomic numbers of the unique species."""
+        atom_numbers = []
+        for atom_type in self.get_species():
+            atom = Atoms(atom_type, [(0, 0, 0)])
+            atom_numbers.append(int(atom.get_atomic_numbers()[0]))
+
+        species_Z = "{"
+        for i in range(len(atom_numbers) - 1):
+            species_Z += str(atom_numbers[i]) + " "
+        species_Z += str(atom_numbers[-1]) + "}"
+
+        return species_Z
+
+
+def parallel_calc_descriptor_vec(atom: Atoms, selected_descriptor: str) -> Atoms:
+    """
+    Calculate the SOAP descriptor vector for a given atom and hypers in parallel.
+
+    Parameters
+    ----------
+    atom : ase.Atoms
+        The atom for which to calculate the descriptor vector.
+    selected_descriptor : str
+        The quip descriptor string to use for the calculation.
+
+    Returns
+    -------
+    ase.Atom
+        The input atoms, with the descriptor vector added to its info dictionary.
+
+    Notes
+    -----
+    The descriptor vector is added to the atom's info dictionary with the key 'descriptor_vec'.
+    """
+    desc_object = descriptors.Descriptor(selected_descriptor)
+    atom.info["descriptor_vec"] = desc_object.calc(atom)["data"]
+
+    return atom
+
+
+def cur_select(
+    atoms,
+    selected_descriptor,
+    kernel_exp,
+    select_nums,
+    stochastic=True,
+    random_seed=None,
+) -> list[Atoms] | None:
+    """
+    Perform CUR selection on a set of atoms to get representative SOAP descriptors.
+
+    Parameters
+    ----------
+    atoms : list of ase.Atoms
+        The atoms for which to perform CUR selection.
+    selected_descriptor : str
+        The quip descriptor string to use for the calculation.
+    kernel_exp : float
+        The kernel exponent to use in the calculation.
+    select_nums : int
+        The number of atoms to select.
+    stochastic : bool
+        Whether to perform stochastic CUR selection.
+    random_seed : int
+        The seed for the random number generator.
+
+    Returns
+    -------
+    list of ase.Atoms
+        The selected atoms.
+
+    Notes
+    -----
+    This function calculates the descriptor vector for each atom, then performs CUR selection on the resulting vectors.
+    """
+    if random_seed is not None:
+        np.random.seed(random_seed)
+
+    if isinstance(atoms[0], list):
+        print("flattening")
+        fatoms = flatten(atoms, recursive=True)
+    else:
+        fatoms = atoms
+
+    num_workers = min(len(fatoms), os.cpu_count() or 1)
+
+    with Pool(
+        processes=num_workers
+    ) as pool:  # TODO: implement argument for number of cores throughout
+        ats = pool.starmap(
+            parallel_calc_descriptor_vec,
+            [(atom, selected_descriptor) for atom in fatoms],
+        )
+
+    if isinstance(ats, list) & (len(ats) != 0):
+        at_descs = np.array([at.info["descriptor_vec"] for at in ats]).T
+        m = (
+            np.matmul((np.squeeze(at_descs)).T, np.squeeze(at_descs)) ** kernel_exp
+            if kernel_exp > 0.0
+            else at_descs
+        )
+
+        def descriptor_svd(at_descs, num, do_vectors="vh"):
+            def mv(v):
+                return np.dot(at_descs, v)
+
+            def rmv(v):
+                return np.dot(at_descs.T, v)
+
+            A = LinearOperator(at_descs.shape, matvec=mv, rmatvec=rmv, matmat=mv)
+            return svds(A, k=num, return_singular_vectors=do_vectors)
+
+        (_, _, vt) = descriptor_svd(
+            m, min(max(1, int(select_nums / 2)), min(m.shape) - 1)
+        )
+        c_scores = np.sum(vt**2, axis=0) / vt.shape[0]
+        if stochastic:
+            selected = sorted(
+                np.random.choice(
+                    range(len(ats)), size=select_nums, replace=False, p=c_scores
+                )
+            )
+        else:
+            selected = sorted(np.argsort(c_scores)[-select_nums:])
+
+        selected_atoms = [ats[i] for i in selected]
+
+        for at in selected_atoms:
+            del at.info["descriptor_vec"]
+
+        return selected_atoms
+
+    return None
+
+
+def boltz(e: float, emin: float, kT: float) -> float:
+    """
+    Calculate the Boltzmann factor for a given energy.
+
+    Parameters
+    ----------
+    e : float
+        The energy for which to calculate the Boltzmann factor.
+    emin : float
+        The minimum energy to consider in the calculation.
+    kT : float
+        The product of the Boltzmann constant and the temperature.
+
+    Returns
+    -------
+    float
+        The calculated Boltzmann factor.
+
+    Notes
+    -----
+    The Boltzmann factor is calculated as exp(-(e - emin) / kT).
+    """
+    return np.exp(-(e - emin) / (kT))
+
+
+def boltzhist_CUR(
+    atoms,
+    descriptor,
+    isol_es,
+    bolt_frac=0.1,
+    bolt_max_num=3000,
+    cur_num=100,
+    kernel_exp=4,
+    kT=0.3,
+    energy_label="energy",
+    P=None,
+    random_seed=None,
+) -> list | None:
+    """
+    Sample atoms from a list according to boltzmann energy weighting and CUR diversity.
+
+    Parameters
+    ----------
+    atoms : list of ase.Atoms
+        The atoms from which to select. If this is a list of lists, it is flattened.
+    descriptor : str
+        The quippy SOAP descriptor string for CUR.
+    isol_es : dict
+        Dictionary of isolated energy values for species.
+    bolt_frac : float
+        The fraction to control the flat Boltzmann selection number.
+    bolt_max_num : int
+        The maximum number of atoms to select by Boltzmann-weighted flat histogram.
+    cur_num : int
+        The number of atoms to select by CUR.
+    kernel_exp : float
+        The exponent for the dot-product SOAP kernel.
+    kT : float
+        The product of the Boltzmann constant and the temperature, in eV.
+    energy_label : str
+        The label for the energy property in the atoms.
+    P : list of float
+        The pressures at which the atoms have been optimized, in GPa.
+    random_seed : int
+        The seed for the random number generator.
+
+    Returns
+    -------
+    list of ase.Atoms
+        The selected atoms. These are copies of the atoms in the input list.
+
+    Notes
+    -----
+    This function selects the most diverse atoms based on the chosen algorithm.
+    The algorithm uses a combination of CUR selection and Boltzmann weighting to select the atoms.
+    """
+    if random_seed is not None:
+        np.random.seed(random_seed)
+
+    if isinstance(atoms[0], list):
+        print("flattening")
+        fatoms = flatten(atoms, recursive=True)
+    else:
+        fatoms = atoms
+
+    if P is None:
+        logging.info("Pressures not supplied, attempting to use pressure in atoms dict")
+
+        try:
+            ps = np.array([at.info["pressure"] for at in fatoms])
+        except RuntimeError:
+            print("No pressures, so can't Boltzmann weight")
+
+    else:
+        ps = P
+
+    enthalpies = []
+
+    at_ids = [atom.get_atomic_numbers() for atom in atoms]
+
+    if isol_es is None:
+        raise ValueError("isol_es cannot be None!")
+
+    if energy_label == "energy":
+        ener_relative = np.array(
+            [
+                (atom.get_potential_energy() - sum([isol_es[j] for j in at_ids[ct]]))
+                / len(atom)
+                for ct, atom in enumerate(fatoms)
+            ]
+        )
+    else:
+        ener_relative = np.array(
+            [
+                (atom.info[energy_label] - sum([isol_es[j] for j in at_ids[ct]]))
+                / len(atom)
+                for ct, atom in enumerate(fatoms)
+            ]
+        )
+
+    for i, at in enumerate(fatoms):
+        enthalpy = (ener_relative[i] + at.get_volume() * ps[i] * GPa) / len(at)
+        enthalpies.append(enthalpy)
+
+    enthalpies = np.array(enthalpies)
+    min_H = np.min(enthalpies)
+    config_prob = []
+    histo = np.histogram(enthalpies)
+    for H in enthalpies:
+        bin_i = np.searchsorted(histo[1][1:], H, side="right")
+        if bin_i == len(histo[1][1:]):
+            bin_i = bin_i - 1
+        p = 1.0 / histo[0][bin_i] if histo[0][bin_i] > 0.0 else 0.0
+        if kT > 0.0:
+            p *= np.exp(-(H - min_H) / kT)
+        config_prob.append(p)
+
+    select_num = round(bolt_frac * len(fatoms))
+
+    select_num = select_num if select_num < bolt_max_num else bolt_max_num
+
+    config_prob = np.array(config_prob)
+    selected_bolt_ats = []
+    for _ in range(select_num):
+        config_prob /= np.sum(config_prob)
+        cumul_prob = np.cumsum(config_prob)  # cumulate prob
+        rv = np.random.uniform()
+        config_i = np.searchsorted(cumul_prob, rv)
+        selected_bolt_ats.append(fatoms[config_i])
+        # remove from config_prob by converting to list
+        config_prob = np.delete(config_prob, config_i)
+        # remove from other lists
+        del fatoms[config_i]
+        enthalpies = np.delete(enthalpies, config_i)
+
+    # implement CUR
+    if cur_num < select_num:
+        selected_atoms = cur_select(
+            atoms=selected_bolt_ats,
+            selected_descriptor=descriptor,
+            kernel_exp=kernel_exp,
+            select_nums=cur_num,
+            stochastic=True,
+            random_seed=random_seed,
+        )
+    else:
+        selected_atoms = selected_bolt_ats
+
+    return selected_atoms
+
+
+def convexhull_CUR(
+    atoms: Atoms,
+    descriptor: str,
+    bolt_frac: float = 0.1,
+    bolt_max_num: int = 3000,
+    cur_num: int = 100,
+    kernel_exp: float = 4,
+    kT: float = 0.5,
+    energy_label: str = "REF_energy",
+    isol_es: dict = None,
+    element_order: list | None = None,
+    scheme: str = "linear-hull",
+) -> list | None:
+    """
+    Sample atoms from a list according to Boltzmann energy weighting relative to convex hull and CUR diversity.
+
+    Parameters
+    ----------
+    atoms : list of ase.Atoms
+        The atoms for which to perform CUR selection.
+    bolt_frac : float
+        The fraction to control the proportion of atoms kept during the Boltzmann selection step.
+    bolt_max_num : int
+        The maximum number of atoms to select by Boltzmann flat histogram.
+    cur_num : int
+        The number of atoms to select by CUR.
+    kernel_exp : float
+        The kernel exponent to use in the calculation.
+    kT : float
+        The product of the Boltzmann constant and the temperature, in eV.
+    energy_label : str
+        The label for the energy property in the atoms.
+    descriptor : str, optional
+        The quip descriptor string to use for the calculation.
+    isol_es : dict, optional
+        The isolated atom energies for each element in the system.
+    element_order : list of str, optional
+        The order of elements for the isolated atom energies.
+    scheme : str, optional
+        The scheme to use for the convex hull calculation. Default is 'linear-hull' (2D E,V hull).
+        For 2-component systems with varying stoichiometry, use 'volume-stoichiometry' (3D E,V,mole-fraction hull).
+        TODO: need to generalise this to ND hulls for mcp systems. GST good test case.
+
+    Returns
+    -------
+    list of ase.Atoms
+        The selected atoms.
+
+    Notes
+    -----
+    This function calculates the descriptor vector for each atom,
+    then performs CUR selection on the resulting vectors.
+    The selection is based on the convex hull of the vectors.
+    """
+    if isinstance(atoms[0], list):
+        print("flattening")
+        fatoms = flatten(atoms, recursive=True)
+    else:
+        fatoms = atoms
+
+    if isol_es is None:
+        raise KeyError(
+            "isol_es (isolated_atom_energies) must be supplied for convexhull_CUR"
+        )
+
+    if scheme == "linear-hull":
+        hull, p = get_convex_hull(atoms, energy_name=energy_label)
+        des = np.array(
+            [get_e_distance_to_hull(hull, at, energy_name=energy_label) for at in atoms]
+        )
+
+    elif scheme == "volume-stoichiometry":
+        points = label_stoichiometry_volume(
+            atoms,
+            isolated_atoms_energies=isol_es,
+            energy_name=energy_label,
+            element_order=element_order,
+        )
+        hull = calculate_hull_3D(points)
+
+        des = np.array(
+            [
+                get_e_distance_to_hull_3D(
+                    hull,
+                    at,
+                    isolated_atoms_energies=isol_es,
+                    energy_name=energy_label,
+                    element_order=element_order,
+                )
+                for at in atoms
+            ]
+        )
+        print("it will be coming soon!")
+
+    else:
+        raise ValueError(
+            'scheme must be either "linear-hull" or "volume-stoichiometry"'
+        )
+
+    histo = np.histogram(des)
+    config_prob = []
+    min_ec = np.min(des)
+
+    for ec in des:
+        bin_i = np.searchsorted(histo[1][1:], ec, side="right")
+        if bin_i == len(histo[1][1:]):
+            bin_i = bin_i - 1
+        p = 1.0 / histo[0][bin_i] if histo[0][bin_i] > 0.0 else 0.0
+        if kT > 0.0:
+            p *= np.exp(-(ec - min_ec) / kT)
+        config_prob.append(p)
+
+    select_num = round(bolt_frac * len(fatoms))
+
+    select_num = select_num if select_num < bolt_max_num else bolt_max_num
+
+    config_prob = np.array(config_prob)
+    selected_bolt_ats = []
+    for _ in range(select_num):
+        config_prob /= np.sum(config_prob)
+        cumul_prob = np.cumsum(config_prob)  # cumulate prob
+        rv = np.random.uniform()
+        config_i = np.searchsorted(cumul_prob, rv)
+        selected_bolt_ats.append(fatoms[config_i])
+        # remove from config_prob by converting to list
+        config_prob = np.delete(config_prob, config_i)
+        # remove from other lists
+        del fatoms[config_i]
+        des = np.delete(des, config_i)
+
+    # implement CUR
+    if cur_num < select_num:
+        selected_atoms = cur_select(
+            atoms=selected_bolt_ats,
+            selected_descriptor=descriptor,
+            kernel_exp=kernel_exp,
+            select_nums=cur_num,
+            stochastic=True,
+        )
+    else:
+        selected_atoms = selected_bolt_ats
+
+    return selected_atoms
+
+
+def data_distillation(
+    vasp_ref_dir: str, f_max: float, force_label: str
+) -> list[Atom | Atoms]:
+    """
+    For data distillation.
+
+    Parameters
+    ----------
+    vasp_ref_dir:
+        VASP reference data directory.
+    f_max:
+        maximally allowed force.
+    force_label : str
+        The label for the force property in the atoms.
+
+    Returns
+    -------
+    atoms_distilled:
+        list of distilled atoms.
+
+    """
+    atoms = ase.io.read(vasp_ref_dir, index=":")
+
+    atoms_distilled = []
+    for at in atoms:
+        forces = np.abs(at.arrays[force_label])
+        f_component_max = np.max(forces)
+
+        if f_component_max < f_max:
+            atoms_distilled.append(at)
+
+    print(
+        f"After distillation, there are still {len(atoms_distilled)} data points remaining."
+    )
+
+    return atoms_distilled
+
+
+def stratified_dataset_split(
+    atoms: Atoms, split_ratio: float
+) -> tuple[
+    list[Atom | Atoms]
+    | list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
+    list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
+]:
+    """
+    Split the dataset.
+
+    Parameters
+    ----------
+    atoms: Atoms
+        ase Atoms object
+    split_ratio: float
+        Parameter to divide the training set and the test set.
+
+    Returns
+    -------
+    train_structures, test_structures:
+        split-up datasets of train structures and test structures.
+
+    """
+    atom_bulk = []
+    atom_isolated_and_dimer = []
+    for at in atoms:
+        if (
+            at.info["config_type"] != "dimer"
+            and at.info["config_type"] != "IsolatedAtom"
+        ):
+            atom_bulk.append(at)
+        else:
+            atom_isolated_and_dimer.append(at)
+
+    if len(atoms) != len(atom_bulk):
+        atoms = atom_bulk
+
+    average_energies = np.array([atom.info["REF_energy"] / len(atom) for atom in atoms])
+    # sort by energy
+    sorted_indices = np.argsort(average_energies)
+    atoms = [atoms[i] for i in sorted_indices]
+    average_energies = average_energies[sorted_indices]
+
+    stratified_average_energies = pd.qcut(average_energies, q=2, labels=False)
+    split = StratifiedShuffleSplit(n_splits=1, test_size=split_ratio, random_state=42)
+
+    for train_index, test_index in split.split(atoms, stratified_average_energies):
+        train_structures = [atoms[i] for i in train_index]
+        test_structures = [atoms[i] for i in test_index]
+
+    if atom_isolated_and_dimer:
+        train_structures = atom_isolated_and_dimer + train_structures
+
+    return train_structures, test_structures
+
+
+def create_soap_descriptor(
+    soap_paras: dict[str, int | float | str], n_species: int, species_Z: str
+) -> str:
+    """
+    Generate a SOAP descriptor string based on the given parameters.
+
+    Parameters
+    ----------
+    soap_paras:
+        A dictionary containing SOAP parameters.
+    n_species:
+        The number of species.
+    species_Z:
+        A string representing species Z.
+    """
+    return (
+        "soap l_max="
+        + str(soap_paras["l_max"])
+        + " n_max="
+        + str(soap_paras["n_max"])
+        + " atom_sigma="
+        + str(soap_paras["atom_sigma"])
+        + " cutoff="
+        + str(soap_paras["cutoff"])
+        + " n_species="
+        + str(n_species)
+        + " species_Z="
+        + species_Z
+        + " cutoff_transition_width="
+        + str(soap_paras["cutoff_transition_width"])
+        + " average="
+        + str(soap_paras["average"])
+    )
