@@ -104,7 +104,12 @@ def update_phonon_displacement_maker(
 
 
 def reduce_supercell_size(
-    min_length, max_length, max_atoms, structure, limit: int = 10
+    min_length,
+    max_length,
+    structure,
+    max_atoms: int = 500,
+    min_atoms: int = 200,
+    limit: int = 10,
 ) -> Matrix3D:
     """
     Reduce phonopy supercell size.
@@ -117,6 +122,8 @@ def reduce_supercell_size(
         max length of the supercell that will be built.
     max_atoms: int
         maximally allowed number of atoms in the supercell.
+    min_atoms: int
+        minimum number of atoms in the supercell that shall be reached.
     limit:
         min_length limit.
     structure: Structure
@@ -145,6 +152,8 @@ def reduce_supercell_size(
                 max_atoms=max_atoms,
             )
             num_atoms = (structure * supercell_matrix).num_sites
+            if num_atoms >= min_atoms:
+                return supercell_matrix
             if max_atoms >= num_atoms > best_num_atoms:
                 best_supercell_matrix = supercell_matrix
                 best_num_atoms = num_atoms
@@ -164,6 +173,8 @@ def reduce_supercell_size(
                 max_atoms=max_atoms,
             )
             num_atoms = (structure * supercell_matrix).num_sites
+            if num_atoms >= min_atoms:
+                return supercell_matrix
             if max_atoms >= num_atoms > best_num_atoms:
                 best_supercell_matrix = supercell_matrix
                 best_num_atoms = num_atoms
@@ -183,6 +194,8 @@ def reduce_supercell_size(
                 max_atoms=max_atoms,
             )
             num_atoms = (structure * supercell_matrix).num_sites
+            if num_atoms >= min_atoms:
+                return supercell_matrix
             if max_atoms >= num_atoms > best_num_atoms:
                 best_supercell_matrix = supercell_matrix
                 best_num_atoms = num_atoms
@@ -202,11 +215,13 @@ def reduce_supercell_size(
                 max_atoms=max_atoms,
             )
             num_atoms = (structure * supercell_matrix).num_sites
+            if num_atoms >= min_atoms:
+                return supercell_matrix
             if max_atoms >= num_atoms > best_num_atoms:
                 best_supercell_matrix = supercell_matrix
                 best_num_atoms = num_atoms
         except AttributeError:
-            min_length -= 1
+            min_length -= 2  # Reduce the min_length by a larger step to reduce run time
 
     # Return the best supercell found
     if best_supercell_matrix is not None:
