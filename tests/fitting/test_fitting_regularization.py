@@ -135,7 +135,7 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
         energy_name="REF_energy",
         element_order=[3, 17],
     )
-    assert arrays_allclose(label, array3)
+    assert arrays_allclose(label, array3)  # why did the result of label change so much?
 
     calc_hull = calculate_hull_ND(points)
     calc_hull_3D = calculate_hull_3D(label)
