@@ -399,7 +399,7 @@ def label_stoichiometry_volume(
     atoms_list: list[Atoms],
     isolated_atoms_energies: dict,
     energy_name: str,
-    element_order: list | None,
+    element_order: list | None = None,
 ) -> np.ndarray:
     """
     Calculate the stoichiometry, energy, and volume coordinates for forming the convex hull.
@@ -416,9 +416,6 @@ def label_stoichiometry_volume(
         list of atomic numbers in order of choice (e.g. [42, 16] for MoS2)
 
     """
-    if element_order is None:
-        raise ValueError("element_order cannot be None")
-
     points_list = []
     for atom in atoms_list:
         try:
