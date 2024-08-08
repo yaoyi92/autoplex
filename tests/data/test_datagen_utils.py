@@ -382,13 +382,11 @@ def test_supercell_check(mp_1200830):
         new_matrix = reduce_supercell_size(
             min_length=18,
             max_length=25,
-            # when I set this to 25 (which should lead to the correct suprcell matrix), the unit tests isn't finished
-            # even after an hour
             max_atoms=500,
-            limit=12,  # 12 stops with a cubic cell with 82 atoms which is the conventional unit cell
+            limit=15,
             structure=mp_1200830
         )
-    except AttributeError:
+    except ValueError:
         warnings.warn(
             message="Falling back to a simple supercell size schema. "
                     "Check if this is ok for your use case.",
