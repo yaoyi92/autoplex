@@ -68,7 +68,6 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
     from ase.io import read
     from ase import Atoms
     import numpy as np
-    import random
 
     file = test_dir / "fitting" / "ref_files" / "quip_train.extxyz"
     atoms: Atoms = read(file, ":")
