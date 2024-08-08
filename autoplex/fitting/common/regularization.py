@@ -396,7 +396,7 @@ def get_mole_frac(atoms, element_order=None) -> float | int:
 
 
 def label_stoichiometry_volume(
-    atoms_list: list[Atoms],
+    atoms_list: Atoms,
     isolated_atoms_energies: dict,
     energy_name: str,
     element_order: list | None,
