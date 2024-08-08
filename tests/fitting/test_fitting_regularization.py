@@ -70,7 +70,7 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
     import numpy as np
 
     file = test_dir / "fitting" / "ref_files" / "quip_train.extxyz"
-    atoms: Atoms = read(file, ":")
+    atoms: list[Atoms] = read(file, ":")
 
     # Define the arrays
     array1 = np.array([
@@ -92,19 +92,6 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
         [19.0176670, -3.77969777],
         [8000.0, -0.27567309],
     ])
-
-    # array3 = np.array([
-    #     [0.5, 15.2266087, -3.53839715],
-    #     [1.0, 8000.0, -0.01928852],
-    #     [0.5, 17.6913485, -3.53493109],
-    #     [0.5, 16.2004607, -3.54783422],
-    #     [0.5, 17.6913485, -3.53521408],
-    #     [0.5, 16.4281758, -3.54726137],
-    #     [0.5, 15.2266087, -3.53963152],
-    #     [0.5, 19.017667, -3.50825935],
-    #     [0.5, 16.2004607, -3.54783542],
-    #     [1.0, 8000.0, -0.00014539],
-    # ])
 
     array3 = np.array([[0.00000000e+00, 8.00000000e+03, -1.45390000e-04],
                        [5.00000000e-01, 1.76913485e+01, -3.53493109e+00],
@@ -134,7 +121,7 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
         energy_name="REF_energy",
         element_order=[3, 17],
     )
-    assert arrays_allclose(label, array3)  # why did the result of label change so much?
+    assert arrays_allclose(label, array3)
 
     calc_hull = calculate_hull_ND(points)
     calc_hull_3D = calculate_hull_3D(label)
