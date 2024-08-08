@@ -11,11 +11,11 @@ import numpy as np
 from scipy.spatial import ConvexHull, Delaunay
 
 if TYPE_CHECKING:
-    from ase import Atom, Atoms
+    from ase import Atoms
 
 
 def set_sigma(
-    atoms: list[Atom | Atoms] | Atoms | list[Atoms],
+    atoms: list[Atoms],
     reg_minmax,
     isolated_atoms_energies: dict | None = None,
     scheme="linear-hull",
@@ -396,7 +396,7 @@ def get_mole_frac(atoms, element_order=None) -> float | int:
 
 
 def label_stoichiometry_volume(
-    atoms_list: list[Atom | Atoms] | Atoms | list[Atoms],
+    atoms_list: list[Atoms],
     isolated_atoms_energies: dict,
     energy_name: str,
     element_order: list | None = None,
@@ -406,7 +406,7 @@ def label_stoichiometry_volume(
 
     Parameters
     ----------
-    atoms_list: (Atoms)
+    atoms_list: (list[Atoms])
         list of atoms objects
     isolated_atoms_energies: (dict)
         dictionary of isolated atom energies {atomic_number: energy}
