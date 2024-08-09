@@ -5,6 +5,7 @@ import json
 import os
 from multiprocessing import Pool
 from pathlib import Path
+from typing import Literal
 
 import ase.io
 import matgl
@@ -81,18 +82,30 @@ def extract_pairstyle(ace_label, ace_json, ace_table):
 
 class HookeanRepulsion(FixConstraint):
     """Constrain atoms softly to a minimum separation.
+
     Intended to avoid early iterations of potentials
     causing crashes due to overlapping atoms.
-     
+
     It is recommended to calibrate the spring constant for your system
     dependent on the potential and the atomic species used. It is not guaranteed
-    that the constraint will be either soft enough (e.g. non-exploding in MD) or 
+    that the constraint will be either soft enough (e.g. non-exploding in MD) or
     strong enough (to avoid overlaps) for all spring constants and distances.
     """
 
-    def __init__(self, a1, a2, k, rt=None):
+    def __init__(
+        self,
+        a1: int,
+        a2: int
+        | tuple[float, float, float]
+        | tuple[float, float, float, float]
+        | Literal["cell"],
+        k: float,
+        rt: float | None = None,
+    ) -> None:
         """Apply a Hookean restorative force repel two atoms that are close.
 
+        Parameters
+        ----------
         a1 : int
            Atom 1 index
         a2 : can be one of three options
@@ -107,6 +120,8 @@ class HookeanRepulsion(FixConstraint):
            Threshold length above which no Hookean force is applied.
            This argument is not supplied in case 3. Units of Å.
 
+        Notes
+        -----
         If a plane is specified, the Hooke's law force is applied if the atom
         is on the normal side of the plane. For instance, the plane with
         (A, B, C, D) = (0, 0, 1, -7) defines a plane in the xy plane with a z
@@ -161,11 +176,16 @@ class HookeanRepulsion(FixConstraint):
 
     def adjust_positions(self, atoms, newpositions):
         """Adjust positions to match the constraints.
-        Do nothing for this constraint"""
+
+        Do nothing for this constraint.
+        """
         return
+
     def adjust_momenta(self, atoms, momenta):
         """Adjust momenta to match the constraints.
-        Do nothing for this constraint"""
+
+        Do nothing for this constraint.
+        """
         return
 
     def adjust_forces(self, atoms, forces):
@@ -208,7 +228,8 @@ class HookeanRepulsion(FixConstraint):
 
     def adjust_potential_energy(self, atoms):
         """Return the difference to the potential energy due to an active constraint.
-        (the quantity returned is to be added to the potential energy.)
+
+        (the quantity returned is to be added to the potential energy).
         """
         positions = atoms.positions
         if self._type == "plane":
@@ -217,8 +238,7 @@ class HookeanRepulsion(FixConstraint):
             d = (A * x + B * y + C * z + D) / np.sqrt(A**2 + B**2 + C**2)
             if d > 0:
                 return 0.5 * self.spring * d**2
-            else:
-                return 0.0
+            return 0.0
         if self._type == "two atoms":
             p1, p2 = positions[self.indices]
         elif self._type == "point":
@@ -228,8 +248,7 @@ class HookeanRepulsion(FixConstraint):
         bondlength = np.linalg.norm(displace)
         if bondlength < self.threshold:
             return 0.5 * self.spring * (bondlength - self.threshold) ** 2
-        else:
-            return 0.0
+        return 0.0
 
     def get_indices(self):
         """Get the indices."""

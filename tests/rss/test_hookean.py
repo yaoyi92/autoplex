@@ -4,11 +4,7 @@ os.environ["OMP_NUM_THREADS"] = "1"
 from autoplex.data.rss.utils import HookeanRepulsion
 from quippy.potential import Potential
 from autoplex.fitting.common.utils import extract_gap_label
-import shutil
-from pathlib import Path
-from jobflow import run_locally
 from ase.io import read
-from pymatgen.io.ase import AseAtomsAdaptor
 import numpy as np
 
 
