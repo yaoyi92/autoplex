@@ -690,11 +690,12 @@ class RandomStructuresDataGenerator(Maker):
         if self.adaptive_rattled_supercell_settings:
             try:
                 supercell_matrix = reduce_supercell_size(
+                    structure=structure,
                     min_length=12,
                     max_length=25,
+                    min_limit=10,
                     max_atoms=500,
-                    limit=10,
-                    structure=structure,
+                    min_atoms=50,
                 )
             except ValueError:
                 warnings.warn(

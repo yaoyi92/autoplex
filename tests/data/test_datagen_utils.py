@@ -378,12 +378,12 @@ def test_supercell_check(mp_1200830):
     import warnings
     expected_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]  # this is not a matrix from reduce_supercell_size
 
-    try:  # cubic, prefer 90
+    try:
         new_matrix = reduce_supercell_size(
             min_length=18,
             max_length=25,
             max_atoms=500,
-            limit=15,
+            min_limit=15,
             structure=mp_1200830
         )
     except ValueError:

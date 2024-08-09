@@ -233,11 +233,12 @@ def dft_phonopy_gen_data(
         if lattice_avg > 10.5:
             try:
                 supercell_matrix = reduce_supercell_size(
+                    structure=structure,
                     min_length=min_length,
                     max_length=25,
+                    min_limit=15,
                     max_atoms=500,
-                    limit=15,
-                    structure=structure,
+                    min_atoms=300,
                 )
             except ValueError:
                 warnings.warn(

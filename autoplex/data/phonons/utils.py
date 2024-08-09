@@ -104,12 +104,12 @@ def update_phonon_displacement_maker(
 
 
 def reduce_supercell_size(
-    min_length,
-    max_length,
     structure,
-    max_atoms: int = 500,
+    min_length: float = 18,
+    max_length: float = 25,
+    min_limit: float = 15,
     min_atoms: int = 200,
-    limit: int = 10,
+    max_atoms: int = 500,
 ) -> Matrix3D:
     """
     Reduce phonopy supercell size.
@@ -124,7 +124,7 @@ def reduce_supercell_size(
         maximally allowed number of atoms in the supercell.
     min_atoms: int
         minimum number of atoms in the supercell that shall be reached.
-    limit:
+    min_limit:
         min_length limit.
     structure: Structure
         pymatgen Structure object.
@@ -136,8 +136,8 @@ def reduce_supercell_size(
     best_supercell_matrix = None
     best_num_atoms = max_atoms
 
-    while min_length >= limit:
-        try:  # Try cubic supercell, prefer 90 degrees
+    while min_length >= min_limit:
+        try:
             warnings.warn(
                 message=f"Starting with a cubic supercell with preferred 90°. "
                 f"The current min_length is {min_length}.",
@@ -163,7 +163,7 @@ def reduce_supercell_size(
                 f"The current min_length is {min_length}.",
                 stacklevel=2,
             )
-        try:  # Try orthorhombic without preferring 90 degrees
+        try:
             supercell_matrix = get_supercell_size.original(
                 structure=structure,
                 min_length=min_length,
@@ -179,33 +179,33 @@ def reduce_supercell_size(
                 best_supercell_matrix = supercell_matrix
                 best_num_atoms = num_atoms
         except AttributeError:
-            warnings.warn(
-                message=f"Trying orthorhombic supercell with preferred 90°. "
-                f"The current min_length is {min_length}.",
-                stacklevel=2,
-            )
-        try:  # Try orthorhombic, prefer 90 degrees
-            supercell_matrix = get_supercell_size.original(
-                structure=structure,
-                min_length=min_length,
-                max_length=max_length,
-                prefer_90_degrees=True,
-                allow_orthorhombic=True,
-                max_atoms=max_atoms,
-            )
-            num_atoms = (structure * supercell_matrix).num_sites
-            if num_atoms >= min_atoms:
-                return supercell_matrix
-            if max_atoms >= num_atoms > best_num_atoms:
-                best_supercell_matrix = supercell_matrix
-                best_num_atoms = num_atoms
-        except AttributeError:
+            #     warnings.warn(
+            #         message=f"Trying orthorhombic supercell with preferred 90°. "
+            #         f"The current min_length is {min_length}.",
+            #         stacklevel=2,
+            #     )
+            # try:
+            #     supercell_matrix = get_supercell_size.original(
+            #         structure=structure,
+            #         min_length=min_length,
+            #         max_length=max_length,
+            #         prefer_90_degrees=True,
+            #         allow_orthorhombic=True,
+            #         max_atoms=max_atoms,
+            #     )
+            #     num_atoms = (structure * supercell_matrix).num_sites
+            #     if num_atoms >= min_atoms:
+            #         return supercell_matrix
+            #     if max_atoms >= num_atoms > best_num_atoms:
+            #         best_supercell_matrix = supercell_matrix
+            #         best_num_atoms = num_atoms
+            # except AttributeError:
             warnings.warn(
                 message=f"Trying orthorhombic supercell. "
                 f"The current min_length is {min_length}.",
                 stacklevel=2,
             )
-        try:  # Try orthorhombic without preferring 90 degrees
+        try:
             supercell_matrix = get_supercell_size.original(
                 structure=structure,
                 min_length=min_length,
