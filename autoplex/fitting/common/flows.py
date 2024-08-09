@@ -38,33 +38,48 @@ class MLIPFitMaker(Maker):
         Name of the flows produced by this maker.
     mlip_type: str
         Choose one specific MLIP type:
-        'GAP' | 'J-ACE' | 'P-ACE' | 'Nequip' | 'M3GNet' | 'MACE'
-    mlip_hyper: dict
-        basic MLIP hyperparameters
+        'GAP' | 'J-ACE' | 'P-ACE' | 'NEQUIP' | 'M3GNET' | 'MACE'
+    HPO: bool
+        Perform hyperparameter optimization using XPOT
+        (XPOT: https://pubs.aip.org/aip/jcp/article/159/2/024803/2901815)
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
     """
 
     name: str = "MLpotentialFit"
     mlip_type: str = "GAP"
-    mlip_hyper: dict | None = None
+    HPO: bool = False
+    ref_energy_name: str = "REF_energy"
+    ref_force_name: str = "REF_forces"
+    ref_virial_name: str = "REF_virial"
 
+    # TO DO: Combine parameters used only for gap into one category (as noted below),
+    # otherwise it will be too specific.
     def make(
         self,
-        fit_input: dict,
+        fit_input: dict | None = None,  # This is specific to phonon workflow
         species_list: list | None = None,
         isolated_atoms_energies: dict | None = None,
         split_ratio: float = 0.4,
         f_max: float = 40.0,
-        regularization: bool = False,
+        regularization: bool = False,  # This is only used for GAP.
         distillation: bool = True,
         separated: bool = False,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
-        atomwise_regularization_param: float = 0.1,
+        atomwise_regularization_param: float = 0.1,  # This is only used for GAP.
         f_min: float = 0.01,  # unit: eV Å-1
-        atom_wise_regularization: bool = True,
-        auto_delta: bool = False,
-        glue_xml: bool = False,
-        num_processes: int = 32,
+        atom_wise_regularization: bool = True,  # This is only used for GAP.
+        auto_delta: bool = False,  # This is only used for GAP.
+        glue_xml: bool = False,  # This is only used for GAP.
+        num_processes_fit: int | None = None,
+        preprocessing_data: bool = True,
+        database_dir: str = None,
+        device: str = "cpu",
         **fit_kwargs,
     ):
         """
@@ -103,50 +118,74 @@ class MLIPFitMaker(Maker):
             automatically determine delta for 2b, 3b and soap terms.
         glue_xml: bool
             use the glue.xml core potential instead of fitting 2b terms.
-        num_processes: int
+        num_processes_fit: int
             number of processes for fitting.
+        preprocessing_data: bool
+            Determine whether to preprocess the data.
+            If not, one needs to input the path to the training database.
         fit_kwargs : dict.
             dict including MLIP fit keyword args.
         """
-        jobs = []
-        data_prep_job = DataPreprocessing(
-            split_ratio=split_ratio,
-            regularization=regularization,
-            separated=separated,
-            distillation=distillation,
-            f_max=f_max,
-        ).make(
-            fit_input=fit_input,
-            pre_xyz_files=pre_xyz_files,
-            pre_database_dir=pre_database_dir,
-            f_min=f_min,
-            atomwise_regularization_parameter=atomwise_regularization_param,
-            atom_wise_regularization=atom_wise_regularization,
-        )
-        jobs.append(data_prep_job)
-
         if self.mlip_type not in ["GAP", "J-ACE", "P-ACE", "NEQUIP", "M3GNET", "MACE"]:
             raise ValueError(
                 "Please correct the MLIP name!"
                 "The current version ONLY supports the following models: GAP, J-ACE, P-ACE, NEQUIP, M3GNET, and MACE."
             )
 
+        if preprocessing_data:
+            jobs = []
+            data_prep_job = DataPreprocessing(
+                split_ratio=split_ratio,
+                regularization=regularization,
+                separated=separated,
+                distillation=distillation,
+                f_max=f_max,
+            ).make(
+                fit_input=fit_input,
+                pre_xyz_files=pre_xyz_files,
+                pre_database_dir=pre_database_dir,
+                f_min=f_min,
+                atomwise_regularization_parameter=atomwise_regularization_param,
+                atom_wise_regularization=atom_wise_regularization,
+            )
+            jobs.append(data_prep_job)
+
+            mlip_fit_job = machine_learning_fit(
+                database_dir=data_prep_job.output,
+                isolated_atoms_energies=isolated_atoms_energies,
+                num_processes_fit=num_processes_fit,
+                auto_delta=auto_delta,
+                glue_xml=glue_xml,
+                mlip_type=self.mlip_type,
+                HPO=self.HPO,
+                ref_energy_name=self.ref_energy_name,
+                ref_force_name=self.ref_force_name,
+                ref_virial_name=self.ref_virial_name,
+                device=device,
+                species_list=species_list,
+                **fit_kwargs,
+            )
+            jobs.append(mlip_fit_job)
+
+            return Flow(jobs=jobs, output=mlip_fit_job.output, name=self.name)
+
         mlip_fit_job = machine_learning_fit(
-            database_dir=data_prep_job.output,
+            database_dir=database_dir,
             isolated_atoms_energies=isolated_atoms_energies,
+            num_processes_fit=num_processes_fit,
             auto_delta=auto_delta,
             glue_xml=glue_xml,
             mlip_type=self.mlip_type,
-            mlip_hyper=self.mlip_hyper,
-            num_processes=num_processes,
-            regularization=regularization,
+            HPO=self.HPO,
+            ref_energy_name=self.ref_energy_name,
+            ref_force_name=self.ref_force_name,
+            ref_virial_name=self.ref_virial_name,
+            device=device,
             species_list=species_list,
             **fit_kwargs,
         )
-        jobs.append(mlip_fit_job)  # type: ignore
 
-        # create a flow including all jobs
-        return Flow(jobs=jobs, output=mlip_fit_job.output, name=self.name)
+        return Flow(jobs=mlip_fit_job, output=mlip_fit_job.output, name=self.name)
 
 
 @dataclass
