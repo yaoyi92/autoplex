@@ -384,7 +384,8 @@ def test_supercell_check(mp_1200830):
             max_length=25,
             max_atoms=500,
             min_limit=15,
-            structure=mp_1200830
+            structure=mp_1200830,
+            step_size=2.0
         )
     except ValueError:
         warnings.warn(
