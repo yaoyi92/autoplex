@@ -696,6 +696,7 @@ class RandomStructuresDataGenerator(Maker):
                     min_limit=10,
                     max_atoms=500,
                     min_atoms=50,
+                    step_size=1.0,
                 )
             except ValueError:
                 warnings.warn(

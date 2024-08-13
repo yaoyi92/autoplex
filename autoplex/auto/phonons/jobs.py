@@ -239,6 +239,7 @@ def dft_phonopy_gen_data(
                     min_limit=15,
                     max_atoms=500,
                     min_atoms=300,
+                    step_size=1.0,
                 )
             except ValueError:
                 warnings.warn(
