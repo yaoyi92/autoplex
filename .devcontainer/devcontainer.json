@@ -9,6 +9,6 @@
     "ms-python.python",
     "ms-azuretools.vscode-docker"
   ],
-  "postCreateCommand": "pre-commit install",
+  "postCreateCommand": "pip cache purge && pip install --e autoplex[strict,docs] && pip install ase==3.23.0 && pre-commit install",
   "remoteUser": "vscode"
 }

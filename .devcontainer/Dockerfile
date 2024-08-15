@@ -12,13 +12,9 @@ RUN apt-get update && apt-get install -y \
 RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
     && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia
 
-# Set up the Python environment
+# Install testing dependencies
 RUN python -m pip install --upgrade pip \
     && pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
-
-RUN python -m pip install --upgrade pip && python -m pip cache purge
-RUN python -m pip install .[docs,strict]
-RUN python -m pip install ase==3.23.0
 
 # Install Buildcell
 RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
