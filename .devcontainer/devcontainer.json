@@ -1,0 +1,14 @@
+{
+  "name": "Python DevContainer",
+  "dockerFile": "Dockerfile",
+  "context": ".",
+  "settings": {
+    "python.pythonPath": "/usr/local/bin/python"
+  },
+  "extensions": [
+    "ms-python.python",
+    "ms-azuretools.vscode-docker"
+  ],
+  "postCreateCommand": "pre-commit install",
+  "remoteUser": "vscode"
+}
