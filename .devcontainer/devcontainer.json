@@ -1,5 +1,5 @@
 {
-  "name": "Python DevContainer",
+  "name": "My DevContainer",
   "dockerFile": "Dockerfile",
   "context": ".",
   "settings": {

@@ -4,6 +4,7 @@ FROM python:3.9-slim
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
+    bc \
     unzip \
     wget \
     gfortran \
@@ -33,7 +34,7 @@ RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
     && make neat
 
 # Add Buildcell to PATH
-ENV PATH="${PATH}:/workspace/airss/bin"
+ENV PATH="${PATH}:/airss/bin"
 
 # Set up Julia environment (ACEpotentials.jl interface)
 RUN julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add("ACEpotentials"); Pkg.add("DataFrames"); Pkg.add("CSV")'
