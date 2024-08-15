@@ -16,7 +16,9 @@ RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-
 RUN python -m pip install --upgrade pip \
     && pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
 
-RUN python -m pip cache purge && pip install ase==3.23.0 && pip install .[docs,strict]
+RUN python -m pip cache purge \
+    && pip install .[docs,strict] \
+    && pip install ase==3.23.0
 
 # Install Buildcell
 RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
