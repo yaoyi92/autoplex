@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     unzip \
     wget \
     gfortran \
+    liblapack-dev \
+    libblas-dev \
     cmake \
     make \
     curl \
