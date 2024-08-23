@@ -692,7 +692,7 @@ class RandomStructuresDataGenerator(Maker):
                 supercell_matrix = reduce_supercell_size(
                     structure=structure,
                     min_length=12,
-                    max_length=25,
+                    max_length=22,
                     min_limit=10,
                     max_atoms=500,
                     min_atoms=50,
