@@ -14,7 +14,7 @@ The complete workflow of `autoplex` involves the data generation (including the 
 
 ### Before running the workflow
 
-As a first step, you should check if our algorithm can generate supercells that are small enough to be treated with DFT (small enough) and large enough to result into reliable phonon properties.
+As a first step, you should check if our algorithm can generate supercells that are small enough to be treated with DFT (not too many atoms) and large enough to result into reliable phonon properties.
 To do so, you can use the following function:
 
 ```python
