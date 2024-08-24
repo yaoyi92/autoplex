@@ -6,7 +6,7 @@ import warnings
 from typing import TYPE_CHECKING
 
 from atomate2.common.jobs.phonons import get_supercell_size
-
+from pymatgen.transformations.advanced_transformations import CubicSupercellTransformation
 if TYPE_CHECKING:
     from atomate2.forcefields.jobs import (
         ForceFieldRelaxMaker,
@@ -106,11 +106,11 @@ def update_phonon_displacement_maker(
 def reduce_supercell_size(
     structure,
     min_length: float = 18,
-    max_length: float = 25,
-    min_limit: float = 15,
-    min_atoms: int = 200,
+    max_length: float = 22,
+    fallback_min_length: float = 12,
+    min_atoms: int = 100,
     max_atoms: int = 500,
-    step_size: float = 1.0,
+    step_size: float = 1,
 ) -> Matrix3D:
     """
     Reduce phonopy supercell size.
@@ -127,8 +127,8 @@ def reduce_supercell_size(
         maximally allowed number of atoms in the supercell.
     min_atoms: int
         minimum number of atoms in the supercell that shall be reached.
-    min_limit: float
-        min_length limit.
+    fallback_min_length: float
+        fallback option for minimum length for exceptional cases
     step_size: float
         step_size which is used to increase the supercell.
         If allow_orthorhombic and force_90_degrees is both set to True,
@@ -140,80 +140,103 @@ def reduce_supercell_size(
     -------
     supercell_matrix
     """
-    best_supercell_matrix = None
-    best_num_atoms = max_atoms
-
-    while min_length >= min_limit:
+    for minimum in range(min_length, fallback_min_length, -1):
         try:
-            warnings.warn(
-                message=f"Starting with a cubic supercell with preferred 90°. "
-                f"The current min_length is {min_length}.",
-                stacklevel=2,
-            )
-            supercell_matrix = get_supercell_size.original(
-                structure=structure,
-                min_length=min_length,
-                max_length=max_length,
-                prefer_90_degrees=True,
-                allow_orthorhombic=False,
-                max_atoms=max_atoms,
-                step_size=step_size,
-            )
-            num_atoms = (structure * supercell_matrix).num_sites
-            if num_atoms >= min_atoms:
-                return supercell_matrix
-            if max_atoms >= num_atoms > best_num_atoms:
-                best_supercell_matrix = supercell_matrix
-                best_num_atoms = num_atoms
-        except AttributeError:
-            warnings.warn(
-                message=f"Trying cubic supercell. "
-                f"The current min_length is {min_length}.",
-                stacklevel=2,
-            )
-        try:
-            supercell_matrix = get_supercell_size.original(
-                structure=structure,
-                min_length=min_length,
-                max_length=max_length,
-                prefer_90_degrees=False,
-                allow_orthorhombic=False,
-                max_atoms=max_atoms,
-                step_size=step_size,
-            )
-            num_atoms = (structure * supercell_matrix).num_sites
-            if num_atoms >= min_atoms:
-                return supercell_matrix
-            if max_atoms >= num_atoms > best_num_atoms:
-                best_supercell_matrix = supercell_matrix
-                best_num_atoms = num_atoms
-        except AttributeError:
-            warnings.warn(
-                message=f"Trying orthorhombic supercell. "
-                f"The current min_length is {min_length}.",
-                stacklevel=2,
-            )
-        try:
-            supercell_matrix = get_supercell_size.original(
-                structure=structure,
-                min_length=min_length,
-                max_length=max_length,
-                prefer_90_degrees=False,
-                allow_orthorhombic=True,
-                max_atoms=max_atoms,
-                step_size=step_size,
-            )
-            num_atoms = (structure * supercell_matrix).num_sites
-            if num_atoms >= min_atoms:
-                return supercell_matrix
-            if max_atoms >= num_atoms > best_num_atoms:
-                best_supercell_matrix = supercell_matrix
-                best_num_atoms = num_atoms
-        except AttributeError:
-            min_length -= 2  # Reduce the min_length by a larger step to reduce run time
+            transformation = CubicSupercellTransformation(min_length=minimum, max_length=max_length, min_atoms=min_atoms,max_atoms=max_atoms, step_size=step_size, allow_orthorhombic=True, force_90_degrees=True)
+            transformation.apply_transformation(structure=structure)
 
-    # Return the best supercell found
-    if best_supercell_matrix is not None:
-        return best_supercell_matrix
+        except AttributeError:
+            try:
+                transformation = CubicSupercellTransformation(min_length=minimum, max_length=max_length, min_atoms=min_atoms,
+                                                              max_atoms=max_atoms, step_size=step_size, allow_orthorhombic=True,
+                                                              force_90_degrees=False)
+                transformation.apply_transformation(structure=structure)
 
-    raise ValueError(f"No supercell found with min_length {min_length}.")
+            except AttributeError:
+                try:
+                     transformation = CubicSupercellTransformation(min_length=minimum, max_length=max_length,
+                                                                   min_atoms=min_atoms, max_atoms=max_atoms, step_size=step_size)
+                     transformation.apply_transformation(structure=structure)
+                except AttributeError:
+                     pass
+        return transformation.transformation_matrix.transpose().tolist()
+
+
+    # pseudo code
+    # teste erst eine superzelle zwischen 18 und 25
+    # teste dann eine kleinere zelle ab 15
+
+    # while min_length >= min_limit:
+    #     try:
+    #         warnings.warn(
+    #             message=f"Starting with a cubic supercell with preferred 90°. "
+    #             f"The current min_length is {min_length}.",
+    #             stacklevel=2,
+    #         )
+    #         supercell_matrix = get_supercell_size.original(
+    #             structure=structure,
+    #             min_length=min_length,
+    #             max_length=max_length,
+    #             prefer_90_degrees=True,
+    #             allow_orthorhombic=False,
+    #             max_atoms=max_atoms,
+    #             step_size=step_size,
+    #         )
+    #         num_atoms = (structure * supercell_matrix).num_sites
+    #         if num_atoms >= min_atoms:
+    #             return supercell_matrix
+    #         if max_atoms >= num_atoms > best_num_atoms:
+    #             best_supercell_matrix = supercell_matrix
+    #             best_num_atoms = num_atoms
+    #     except AttributeError:
+    #         warnings.warn(
+    #             message=f"Trying cubic supercell. "
+    #             f"The current min_length is {min_length}.",
+    #             stacklevel=2,
+    #         )
+    #     try:
+    #         supercell_matrix = get_supercell_size.original(
+    #             structure=structure,
+    #             min_length=min_length,
+    #             max_length=max_length,
+    #             prefer_90_degrees=False,
+    #             allow_orthorhombic=False,
+    #             max_atoms=max_atoms,
+    #             step_size=step_size,
+    #         )
+    #         num_atoms = (structure * supercell_matrix).num_sites
+    #         if num_atoms >= min_atoms:
+    #             return supercell_matrix
+    #         if max_atoms >= num_atoms > best_num_atoms:
+    #             best_supercell_matrix = supercell_matrix
+    #             best_num_atoms = num_atoms
+    #     except AttributeError:
+    #         warnings.warn(
+    #             message=f"Trying orthorhombic supercell. "
+    #             f"The current min_length is {min_length}.",
+    #             stacklevel=2,
+    #         )
+    #     try:
+    #         supercell_matrix = get_supercell_size.original(
+    #             structure=structure,
+    #             min_length=min_length,
+    #             max_length=max_length,
+    #             prefer_90_degrees=False,
+    #             allow_orthorhombic=True,
+    #             max_atoms=max_atoms,
+    #             step_size=step_size,
+    #         )
+    #         num_atoms = (structure * supercell_matrix).num_sites
+    #         if num_atoms >= min_atoms:
+    #             return supercell_matrix
+    #         if max_atoms >= num_atoms > best_num_atoms:
+    #             best_supercell_matrix = supercell_matrix
+    #             best_num_atoms = num_atoms
+    #     except AttributeError:
+    #         min_length -= 2  # Reduce the min_length by a larger step to reduce run time
+    #
+    # # Return the best supercell found
+    # if best_supercell_matrix is not None:
+    #     return best_supercell_matrix
+    #
+    # raise ValueError(f"No supercell found with min_length {min_length}.")

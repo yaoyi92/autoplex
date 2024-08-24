@@ -14,7 +14,9 @@ from autoplex.data.common.utils import (
 )
 from autoplex.data.phonons.utils import update_phonon_displacement_maker, reduce_supercell_size
 from atomate2.common.jobs.phonons import get_supercell_size
-
+from pymatgen.transformations.advanced_transformations import (
+    CubicSupercellTransformation,
+)
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
@@ -376,26 +378,17 @@ def test_filter_outliers(test_dir, clean_dir):
 
 def test_supercell_check(mp_1200830):
     import warnings
-    expected_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]  # this is not a matrix from reduce_supercell_size
+    expected_matrix = [[-2, -2, 0], [-2, 0, -2], [0, -2, -2]]  # this is not a matrix from reduce_supercell_size
 
-    try:
-        new_matrix = reduce_supercell_size(
-            min_length=18,
-            max_length=25,
-            max_atoms=500,
-            min_limit=15,
-            structure=mp_1200830,
-            step_size=2.0
-        )
-    except ValueError:
-        warnings.warn(
-            message="Falling back to a simple supercell size schema. "
-                    "Check if this is ok for your use case.",
-            stacklevel=2,
-        )
-        new_matrix = generate_supercell_matrix(
-            mp_1200830, [[3, 0, 0], [0, 3, 0], [0, 0, 3]], max_sites=500
-        )
+    new_matrix = reduce_supercell_size(
+        min_length=15,
+        max_length=25,
+        min_atoms=50,
+        max_atoms=500,
+        fallback_min_length=12,
+        structure=mp_1200830,
+        step_size=2.0
+    )
 
     assert new_matrix == expected_matrix
 
