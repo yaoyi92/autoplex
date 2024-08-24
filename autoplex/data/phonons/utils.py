@@ -260,3 +260,23 @@ def reduce_supercell_size(
     #     return best_supercell_matrix
     #
     # raise ValueError(f"No supercell found with min_length {min_length}.")
+
+
+def check_supercells(structure_list,structure_names, min_length=18, max_length=25, fallback_min_length=10, min_atoms=100, max_atoms=550, tolerance=0.1):
+    min_tolerance=1-tolerance
+    max_tolerance=1+tolerance
+
+    for name, structure in zip(structure_names,structure_list):
+        matrix = reduce_supercell_size(structure, min_length=min_length, max_length=max_length, fallback_min_length=fallback_min_length, min_atoms=min_atoms,
+                                       max_atoms=max_atoms)
+        supercell = structure.make_supercell(np.array(matrix).transpose())
+        a, b, c = supercell.lattice.abc
+        num_atoms = supercell.num_sites
+
+        # check if supercells are in the requirements with a certain tolerance
+        if not (min_atoms*min_tolerance<=num_atoms<=max_atoms*max_tolerance) or (not fallback_min_length*min_tolerance<=a<max_length*max_tolerance) or (not fallback_min_length*min_tolerance<=b<max_length*max_tolerance) or (not fallback_min_length*min_tolerance<=c<max_length*max_tolerance):
+            print("You should not include structure "+name)
+            print("The supercell has the following lattice parameters:")
+            print(a,b,c)
+            print("It has the following sites:")
+            print(num_atoms)
