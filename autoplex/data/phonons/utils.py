@@ -15,7 +15,13 @@ if TYPE_CHECKING:
     )
     from atomate2.vasp.jobs.phonons import PhononDisplacementMaker
     from pymatgen.core import Structure
+import logging
+
 import numpy as np
+
+# Configure the logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def ml_phonon_maker_preparation(
@@ -275,8 +281,16 @@ def check_supercells(
                 < max_length * max_tolerance
             )
         ):
-            print("You should not include structure " + name)
-            print("The supercell has the following lattice parameters:")
-            print(a, b, c)
-            print("It has the following sites:")
-            print(num_atoms)
+            logger.warning("You should not include structure %s \n", name)
+            logger.info(
+                "because the found supercell has the following lattice parameters: %f, %f, %f \n",
+                a,
+                b,
+                c,
+            )
+            logger.info("and it has the following sites: %d \n", num_atoms)
+            logger.info(
+                "which usually leads to convergence issues during the DFT steps."
+            )
+        else:
+            logger.info("%s has passed the supercell check. \n", name)
