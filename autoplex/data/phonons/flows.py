@@ -33,10 +33,8 @@ from jobflow import Flow, Maker, Response, job
 from pymatgen.core import Molecule, Site
 
 from autoplex.data.common.jobs import generate_randomized_structures
-from autoplex.data.phonons.utils import (
-    ml_phonon_maker_preparation,
-    reduce_supercell_size,
-)
+from autoplex.data.phonons.jobs import reduce_supercell_size
+from autoplex.data.phonons.utils import ml_phonon_maker_preparation
 
 __all__ = [
     "DFTPhononMaker",
@@ -254,7 +252,9 @@ class DFTPhononMaker(PhononMaker):
     max_length: float | None = 30.0
     prefer_90_degrees: bool = True
     allow_orthorhombic: bool = False
-    get_supercell_size_kwargs: dict = field(default_factory=lambda: {"max_atoms": 800})
+    get_supercell_size_kwargs: dict = field(
+        default_factory=lambda: {"max_atoms": 800, "step_size": 1.0}
+    )
     use_symmetrized_structure: str | None = None
     create_thermal_displacements: bool = False
     store_force_constants: bool = False
@@ -686,7 +686,7 @@ class RandomStructuresDataGenerator(Maker):
         structure = relaxed.output.structure
 
         if self.adaptive_rattled_supercell_settings:
-            supercell_matrix = reduce_supercell_size(
+            supercell_matrix_job = reduce_supercell_size(
                 structure=structure,
                 min_length=12,
                 max_length=25,
@@ -695,6 +695,8 @@ class RandomStructuresDataGenerator(Maker):
                 min_atoms=50,
                 step_size=1.0,
             )
+            jobs.append(supercell_matrix_job)
+            supercell_matrix = supercell_matrix_job.output
 
         random_rattle_sc = generate_randomized_structures(
             structure=structure,

@@ -20,10 +20,8 @@ from autoplex.data.phonons.flows import (
     TightDFTStaticMaker,
     TightDFTStaticMakerBigSupercells,
 )
-from autoplex.data.phonons.utils import (
-    reduce_supercell_size,
-    update_phonon_displacement_maker,
-)
+from autoplex.data.phonons.jobs import reduce_supercell_size
+from autoplex.data.phonons.utils import update_phonon_displacement_maker
 
 
 @job
@@ -229,7 +227,7 @@ def dft_phonopy_gen_data(
     if adaptive_phonopy_supercell_settings:
         lattice_avg = sum(structure.lattice.abc) / 3
         if lattice_avg > 10.5:
-            supercell_matrix = reduce_supercell_size(
+            supercell_matrix_job = reduce_supercell_size(
                 structure=structure,
                 min_length=min_length,
                 max_length=25,
@@ -238,7 +236,9 @@ def dft_phonopy_gen_data(
                 min_atoms=300,
                 step_size=1.0,
             )
-            # in case everything fails and a fitting supercell matrix cannot be found, reduce the
+            jobs.append(supercell_matrix_job)
+            supercell_matrix = supercell_matrix_job.output
+            # in case everything fails, and a fitting supercell matrix cannot be found, reduce the
             # reciprocal k-point density and search for a supercell within the atomate2 phonon wf:
             if supercell_matrix == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]:
                 supercell_matrix = None
