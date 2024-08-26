@@ -1411,7 +1411,7 @@ def vaspoutput_2_extended_xyz(
         except FileNotFoundError:
             counter += 1
 
-        if counter / len(path_to_vasp_static_calcs) < 0.95:
+        if counter / len(path_to_vasp_static_calcs) > 0.05:
             raise ValueError(
                 "An insufficient number of data points collected. Workflow stopped."
             )
