@@ -1,7 +1,6 @@
 """General AutoPLEX automation jobs."""
 from __future__ import annotations
 
-import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -13,7 +12,6 @@ if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
 
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
-from autoplex.data.common.utils import generate_supercell_matrix
 from autoplex.data.phonons.flows import (
     DFTPhononMaker,
     IsoAtomMaker,
@@ -231,36 +229,22 @@ def dft_phonopy_gen_data(
     if adaptive_phonopy_supercell_settings:
         lattice_avg = sum(structure.lattice.abc) / 3
         if lattice_avg > 10.5:
-            try:
-                supercell_matrix = reduce_supercell_size(
-                    structure=structure,
-                    min_length=min_length,
-                    max_length=25,
-                    min_limit=15,
-                    max_atoms=500,
-                    min_atoms=300,
-                    step_size=1.0,
+            supercell_matrix = reduce_supercell_size(
+                structure=structure,
+                min_length=min_length,
+                max_length=25,
+                fallback_min_length=15,
+                max_atoms=500,
+                min_atoms=300,
+                step_size=1.0,
+            )
+            # in case everything fails and a fitting supercell matrix cannot be found, reduce the
+            # reciprocal k-point density and search for a supercell within the atomate2 phonon wf:
+            if supercell_matrix == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]:
+                supercell_matrix = None
+                phonon_displacement_maker = update_phonon_displacement_maker(
+                    lattice_avg, TightDFTStaticMakerBigSupercells()
                 )
-            except ValueError:
-                warnings.warn(
-                    message="Falling back to a reduced reciprocal k-point density "
-                    "depending on the average lattice parameter length. "
-                    "Check if this is ok for your use case.",
-                    stacklevel=2,
-                )
-                supercell_matrix = generate_supercell_matrix(
-                    structure=structure,
-                    supercell_matrix=supercell_matrix,
-                    max_sites=500,
-                )
-
-                # in case everything fails and a fitting supercell matrix cannot be found,
-                # reduce the reciprocal k-point density:
-                if supercell_matrix == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]:
-                    supercell_matrix = None
-                    phonon_displacement_maker = update_phonon_displacement_maker(
-                        lattice_avg, TightDFTStaticMakerBigSupercells()
-                    )
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(
