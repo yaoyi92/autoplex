@@ -396,6 +396,9 @@ class MLPhononMaker(FFPhononMaker):
         default_factory=lambda: GAPStaticMaker()
     )
     store_force_constants: bool = False
+    get_supercell_size_kwargs: dict = field(
+        default_factory=lambda: {"max_atoms": 20000, "step_size": 0.1}
+    )
     generate_frequencies_eigenvectors_kwargs: dict = field(
         default_factory=lambda: {"units": "THz", "tol_imaginary_modes": 1e-1}
     )

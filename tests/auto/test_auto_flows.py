@@ -152,7 +152,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
     complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
 
     volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-    adaptive_supercell_settings=True).make(
+    adaptive_supercell_settings=True,).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
@@ -178,9 +178,6 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
         2.002641337594289, abs=1.0  # it's kinda fluctuating because of the little data
     )
 
-
-@pytest.mark.skip(reason="This test will work only when atomate2 "
-                         "PR #911 for m3gnet is merged. Thus don't forget to enable it after that")
 def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
 ):

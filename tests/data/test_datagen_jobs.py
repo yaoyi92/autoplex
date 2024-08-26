@@ -335,7 +335,7 @@ def test_plot_force_distribution(test_dir, memory_jobstore, clean_dir):
 
     plot = plot_force_distribution(1.0, str(dir))
 
-    responses = run_locally(
+    run_locally(
         plot, create_folders=False, ensure_success=False, store=memory_jobstore
     )
 
@@ -350,17 +350,20 @@ def test_plot_force_distribution(test_dir, memory_jobstore, clean_dir):
         except Exception as e:
             print(f'Error removing file {file}: {e}')
 
-def test_supercell_check(mp_1200830):
+def test_supercell_check(mp_1200830, memory_jobstore):
+    from jobflow import run_locally
     expected_matrix = [[2.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]]
 
-    new_matrix = reduce_supercell_size.original(
+    new_matrix_job = reduce_supercell_size(
         min_length=18,
         max_length=25,
         min_atoms=50,
         max_atoms=500,
-        fallback_min_length=11,
+        fallback_min_length=12,
         structure=mp_1200830,
         step_size=1.0
     )
 
-    assert new_matrix == expected_matrix
+    run_locally(new_matrix_job, create_folders=False, ensure_success=False, store=memory_jobstore)
+
+    assert new_matrix_job.output.resolve(memory_jobstore) == expected_matrix

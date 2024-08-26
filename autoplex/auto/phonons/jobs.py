@@ -38,9 +38,9 @@ def complete_benchmark(  # this function was put here to prevent circular import
     symprec,
     phonon_displacement_maker: BaseVaspMaker,
     dft_references=None,
+    adaptive_phonopy_supercell_settings: bool = True,
     relax_maker_kwargs: dict | None = None,
     static_maker_kwargs: dict | None = None,
-    benchmark_kwargs: dict | None = None,
     **ml_phonon_maker_kwargs,
 ):
     """
@@ -82,6 +82,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
         Maker used to compute the forces for a supercell.
     dft_references:
         a list of DFT reference files containing the PhononBSDOCDoc object. Default None.
+    adaptive_phonopy_supercell_settings: bool
+        prevent too tight phonopy supercell settings.
     relax_maker_kwargs: dict
         Keyword arguments that can be passed to the RelaxMaker.
     static_maker_kwargs: dict
@@ -143,10 +145,10 @@ def complete_benchmark(  # this function was put here to prevent circular import
                         symprec=symprec,
                         phonon_displacement_maker=phonon_displacement_maker,
                         min_length=min_length,
-                        **benchmark_kwargs,
+                        adaptive_phonopy_supercell_settings=adaptive_phonopy_supercell_settings,
                     )
                     jobs.append(dft_phonons)
-                    dft_references = dft_phonons["data"]["001"].output
+                    dft_references = dft_phonons.output["data"]["001"]
 
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
                     ml_model=ml_model,
