@@ -214,7 +214,9 @@ def check_supercells(
     tolerance: float = 0.1,
 ):
     """
-    Reduce phonopy supercell size.
+    Check the supercell size.
+
+    Prints log output regarding the structures matching the supercell requirements.
 
     Parameters
     ----------
@@ -235,10 +237,6 @@ def check_supercells(
     tolerance: float
         tolerance for min_atoms and max_atoms
 
-
-    Returns
-    -------
-    supercell matrix
     """
     structure_names = (
         [structure.composition.reduced_formula for structure in structure_list]
