@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -34,7 +33,6 @@ from jobflow import Flow, Maker, Response, job
 from pymatgen.core import Molecule, Site
 
 from autoplex.data.common.jobs import generate_randomized_structures
-from autoplex.data.common.utils import generate_supercell_matrix
 from autoplex.data.phonons.utils import (
     ml_phonon_maker_preparation,
     reduce_supercell_size,
@@ -688,25 +686,15 @@ class RandomStructuresDataGenerator(Maker):
         structure = relaxed.output.structure
 
         if self.adaptive_rattled_supercell_settings:
-            try:
-                supercell_matrix = reduce_supercell_size(
-                    structure=structure,
-                    min_length=12,
-                    max_length=22,
-                    min_limit=10,
-                    max_atoms=500,
-                    min_atoms=50,
-                    step_size=1.0,
-                )
-            except ValueError:
-                warnings.warn(
-                    message="Falling back to a simple supercell size schema."
-                    "Check if this is ok for your use case.",
-                    stacklevel=2,
-                )
-                supercell_matrix = generate_supercell_matrix(
-                    structure, supercell_matrix, 500
-                )
+            supercell_matrix = reduce_supercell_size(
+                structure=structure,
+                min_length=12,
+                max_length=25,
+                fallback_min_length=10,
+                max_atoms=500,
+                min_atoms=50,
+                step_size=1.0,
+            )
 
         random_rattle_sc = generate_randomized_structures(
             structure=structure,

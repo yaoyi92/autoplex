@@ -10,13 +10,8 @@ from autoplex.data.common.utils import (
     plot_energy_forces,
     filter_outlier_energy,
     filter_outlier_forces,
-    generate_supercell_matrix,
 )
 from autoplex.data.phonons.utils import update_phonon_displacement_maker, reduce_supercell_size
-from atomate2.common.jobs.phonons import get_supercell_size
-from pymatgen.transformations.advanced_transformations import (
-    CubicSupercellTransformation,
-)
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
@@ -316,7 +311,7 @@ def mp_1200830():
 def test_energy_forces(clean_dir, test_dir):
     parent_dir = os.getcwd()
     os.chdir(test_dir / "data" / "ref_data")
-    energy_forces = plot_energy_forces(
+    plot_energy_forces(
         title="regularization 0.1",
         energy_limit=0.0005,
         force_limit=0.15,
@@ -377,17 +372,16 @@ def test_filter_outliers(test_dir, clean_dir):
 
 
 def test_supercell_check(mp_1200830):
-    import warnings
-    expected_matrix = [[-2, -2, 0], [-2, 0, -2], [0, -2, -2]]  # this is not a matrix from reduce_supercell_size
+    expected_matrix = [[2.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]]
 
     new_matrix = reduce_supercell_size(
-        min_length=15,
+        min_length=18,
         max_length=25,
         min_atoms=50,
         max_atoms=500,
-        fallback_min_length=12,
+        fallback_min_length=10,
         structure=mp_1200830,
-        step_size=2.0
+        step_size=1.0
     )
 
     assert new_matrix == expected_matrix
