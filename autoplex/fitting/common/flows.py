@@ -78,7 +78,7 @@ class MLIPFitMaker(Maker):
         glue_xml: bool = False,  # This is only used for GAP.
         num_processes_fit: int | None = None,
         preprocessing_data: bool = True,
-        database_dir: str | Path | None = None,
+        database_dir: Path | None = None,
         device: str = "cuda",
         **fit_kwargs,
     ):
@@ -123,13 +123,16 @@ class MLIPFitMaker(Maker):
         preprocessing_data: bool
             Determine whether to preprocess the data.
             If not, one needs to input the path to the training database.
-        database_dir: str or Path
+        database_dir: Path
             the database directory.
         device: str
             specify device to use cuda or cpu.
         fit_kwargs : dict.
             dict including MLIP fit keyword args.
         """
+        if database_dir is None:
+            database_dir = Path.cwd()
+
         if self.mlip_type not in ["GAP", "J-ACE", "P-ACE", "NEQUIP", "M3GNET", "MACE"]:
             raise ValueError(
                 "Please correct the MLIP name!"
@@ -172,7 +175,7 @@ class MLIPFitMaker(Maker):
             jobs.append(mlip_fit_job)
 
             return Flow(jobs=jobs, output=mlip_fit_job.output, name=self.name)
-
+        # this will only run if train.extxyz and test.extxyz files are present in the database_dir
         mlip_fit_job = machine_learning_fit(
             database_dir=database_dir,
             isolated_atoms_energies=isolated_atoms_energies,
