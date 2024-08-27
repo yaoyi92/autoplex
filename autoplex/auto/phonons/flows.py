@@ -161,7 +161,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         f_max: float = 40.0,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
-        preprocessing_data=False,
+        preprocessing_data: bool = True,
         atomwise_regularization_parameter: float = 0.1,
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,
@@ -187,8 +187,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             Maximally allowed force in the data set.
         pre_xyz_files: list[str] or None
             names of the pre-database train xyz file and test xyz file.
-        pre_database_dir:
+        pre_database_dir: str or None
             the pre-database directory.
+        preprocessing_data: bool
+            preprocessing the data.
         atomwise_regularization_parameter: float
             regularization value for the atom-wise force components.
         f_min: float
