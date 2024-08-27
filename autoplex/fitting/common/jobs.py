@@ -31,7 +31,7 @@ def machine_learning_fit(
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
     device: str = "cuda",
-    HPO: bool = False,
+    hyper_param_optimization: bool = False,
     **fit_kwargs,
 ):
     """
@@ -52,8 +52,6 @@ def machine_learning_fit(
     mlip_type: str
         Choose one specific MLIP type:
         'GAP' | 'J-ACE' | 'P-ACE' | 'NEQUIP' | 'M3GNET' | 'MACE'
-    regularization: bool
-        For using sigma regularization.
     species_list : list.
             List of element names (str)
     ref_energy_name : str, optional
@@ -62,7 +60,9 @@ def machine_learning_fit(
         Reference force name.
     ref_virial_name : str, optional
         Reference virial name.
-    HPO: bool
+    device: str
+        specify device to use cuda or cpu.
+    hyper_param_optimization: bool
         call hyperparameter optimization (HPO) or not
     fit_kwargs : dict.
             dict including more fit keyword args.

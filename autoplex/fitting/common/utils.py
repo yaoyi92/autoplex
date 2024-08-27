@@ -1088,7 +1088,7 @@ def mace_fitting(
     path_to_default_hyperparameters : str or Path.
         Path to mlip-defaults.json.
     device: str
-        specify device to use cuda or cpu
+        specify device to use cuda or cpu.
     ref_energy_name : str, optional
         Reference energy name.
     ref_force_name : str, optional
