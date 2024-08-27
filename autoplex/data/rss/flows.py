@@ -15,7 +15,7 @@ from autoplex.fitting.common.flows import MLIPFitMaker
 
 
 @job
-def initial_RSS(
+def initial_rss(
     struct_number: int = 10000,
     tag: str = "GeSb2Te4",
     selection_method: str = "cur",
@@ -189,8 +189,8 @@ def initial_RSS(
 
 
 @job
-def do_RSS_iterations(
-    input: dict | None = None,
+def do_rss_iterations(
+    inputs: dict | None = None,
     struct_number: int = 10000,
     tag: str = "GeSb2Te4",
     selection_method1: str = "cur",
@@ -226,7 +226,7 @@ def do_RSS_iterations(
     max_steps: int = 10,
     force_tol: float = 0.1,
     stress_tol: float = 0.1,
-    Hookean_repul: bool = False,
+    hookean_repul: bool = False,
     write_traj: bool = True,
     num_processes_rss: int = 4,
     device: str = "cpu",
@@ -240,8 +240,8 @@ def do_RSS_iterations(
     Each iteration involves generating new structures, sampling, running
     VASP calculations, collecting data, preprocessing data, and fitting a new MLIP.
     """
-    if input is None:
-        input = {
+    if inputs is None:
+        inputs = {
             "test_error": None,
             "pre_database_dir": None,
             "mlip_path": None,
@@ -250,8 +250,8 @@ def do_RSS_iterations(
             "kt": 0.6,
         }
 
-    test_error = input.get("test_error")
-    current_iter = input.get("current_iter")
+    test_error = inputs.get("test_error")
+    current_iter = inputs.get("current_iter")
 
     if (
         test_error is not None
@@ -259,7 +259,7 @@ def do_RSS_iterations(
         and current_iter is not None
         and current_iter < max_iteration_number
     ):
-        kt = input["kt"] - 0.1 if input["kt"] > 0.15 else 0.1
+        kt = inputs["kt"] - 0.1 if inputs["kt"] > 0.15 else 0.1
         print("kt:", kt)
         current_iter += 1
         print("Current iter index:", current_iter)
@@ -280,7 +280,7 @@ def do_RSS_iterations(
         job3 = do_rss(
             mlip_type=mlip_type,
             iteration_index=f"{current_iter}th",
-            mlip_path=input["mlip_path"],
+            mlip_path=inputs["mlip_path"],
             structure=job2.output,
             scalar_pressure_method=scalar_pressure_method,
             scalar_exp_pressure=scalar_exp_pressure,
@@ -290,7 +290,7 @@ def do_RSS_iterations(
             max_steps=max_steps,
             force_tol=force_tol,
             stress_tol=stress_tol,
-            Hookean_repul=Hookean_repul,
+            Hookean_repul=hookean_repul,
             write_traj=write_traj,
             num_processes_rss=num_processes_rss,
             device=device,
@@ -301,7 +301,7 @@ def do_RSS_iterations(
             bcur_params=bcur_params,
             traj_info=job3.output,
             random_seed=random_seed,
-            isol_es=input["isol_es"],
+            isol_es=inputs["isol_es"],
         )
         job5 = DFTStaticMaker(
             e0_spin=e0_spin,
@@ -320,7 +320,7 @@ def do_RSS_iterations(
             distillation=distillation,
             f_max=f_max,
             vasp_ref_dir=job6.output["vasp_ref_dir"],
-            pre_database_dir=input["pre_database_dir"],
+            pre_database_dir=inputs["pre_database_dir"],
         )
         job8 = MLIPFitMaker(
             mlip_type=mlip_type,
@@ -330,18 +330,18 @@ def do_RSS_iterations(
             ref_virial_name=ref_virial_name,
         ).make(
             database_dir=job7.output,
-            isol_es=input["isol_es"],
+            isol_es=inputs["isol_es"],
             num_processes_fit=num_processes_fit,
             preprocessing_data=False,
             **fit_kwargs,
         )
 
-        job9 = do_RSS_iterations(
-            input={
+        job9 = do_rss_iterations(
+            inputs={
                 "test_error": job8.output["test_error"],
                 "pre_database_dir": job7.output,
                 "mlip_path": job8.output["mlip_path"],
-                "isol_es": input["isol_es"],
+                "isol_es": inputs["isol_es"],
                 "current_iter": current_iter,
                 "kt": kt,
             },
@@ -351,4 +351,4 @@ def do_RSS_iterations(
 
         return Response(detour=job_list, output=job9.output)
 
-    return Response(output=input)
+    return Response(output=inputs)
