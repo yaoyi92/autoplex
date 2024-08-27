@@ -207,6 +207,7 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     correlation=3,
     loss="huber",
     default_dtype="float32",
+    device="cuda",
     ...
 )
 ```
