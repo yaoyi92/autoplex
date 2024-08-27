@@ -260,6 +260,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
         correlation=3,
         loss="huber",
         default_dtype="float32",
+        device="cpu",
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
