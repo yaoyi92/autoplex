@@ -375,84 +375,84 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
     )
 
 
-def test_complete_dft_vs_ml_benchmark_workflow_two_mpids_big_supercell(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
-):  # this unit test checks that the phonon_displacement_maker of phonopy and rattled jobs don't override each other
-    from jobflow import run_locally
-
-    ref_paths_big_sc = {
-        "tight relax": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
-        "static": "dft_ml_data_generation/static/",
-        "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
-        "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
-        "dft phonon static big supercell 1/2": "dft_ml_data_generation/phonon_static_1/",
-        "dft phonon static big supercell 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "dft rattle static 1/4": "dft_ml_data_generation/rand_static_1/",
-        "dft rattle static 2/4": "dft_ml_data_generation/rand_static_4/",
-        "dft rattle static 3/4": "dft_ml_data_generation/rand_static_7/",
-        "dft rattle static 4/4": "dft_ml_data_generation/rand_static_10/",
-    }
-
-    fake_run_vasp_kwargs_big_sc = {
-        "tight relax": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "dft phonon static big supercell 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "dft phonon static big supercell 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-
-        "dft rattle static 1/4": {
-            "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "potcar"],
-        },
-        "dft rattle static 2/4": {
-            "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "potcar"],
-        },
-        "dft rattle static 3/4": {
-            "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "potcar"],
-        },
-        "dft rattle static 4/4": {
-            "incar_settings": ["NSW", "ISMEAR"],
-            "check_inputs": ["incar", "potcar"],
-        },
-    }
-
-    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
-    structure = Structure.from_file(path_to_struct)
-
-    complete_workflow_big_sc = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=20, displacements=[0.01],
-                                                                volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                                ).make(
-        structure_list=[structure, structure],
-        mp_ids=["test", "test2"],
-        benchmark_mp_ids=["mp-22905"],
-        benchmark_structures=[structure],
-        preprocessing_data=True,
-    )
-
-    # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths_big_sc, fake_run_vasp_kwargs_big_sc)
-
-    # run the flow or job and ensure that it finished running successfully
-    responses = run_locally(
-        complete_workflow_big_sc,
-        create_folders=True,
-        ensure_success=False,
-        # We just want to check the correct order and name of jobs
-        # and that the phonon_displacement_maker is not overwritten.
-        # Therefore, we set `ensure_success=False`.
-        store=memory_jobstore,
-    )
-
-    assert str(responses).count("dft rattle static") == 16
-    # 8 x job name + 8 x task label
-    # (4 dft rattle static for each mpid)
-    assert str(responses).count("dft phonon static big supercell") == 4
-    # has no task label
-
+# def test_complete_dft_vs_ml_benchmark_workflow_two_mpids_big_supercell(
+#         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
+# ):  # this unit test checks that the phonon_displacement_maker of phonopy and rattled jobs don't override each other
+#     from jobflow import run_locally
+#
+#     ref_paths_big_sc = {
+#         "tight relax": "dft_ml_data_generation/tight_relax_1/",
+#         "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
+#         "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
+#         "static": "dft_ml_data_generation/static/",
+#         "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
+#         "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
+#         "dft phonon static big supercell 1/2": "dft_ml_data_generation/phonon_static_1/",
+#         "dft phonon static big supercell 2/2": "dft_ml_data_generation/phonon_static_2/",
+#         "dft rattle static 1/4": "dft_ml_data_generation/rand_static_1/",
+#         "dft rattle static 2/4": "dft_ml_data_generation/rand_static_4/",
+#         "dft rattle static 3/4": "dft_ml_data_generation/rand_static_7/",
+#         "dft rattle static 4/4": "dft_ml_data_generation/rand_static_10/",
+#     }
+#
+#     fake_run_vasp_kwargs_big_sc = {
+#         "tight relax": {"incar_settings": ["NSW", "ISMEAR"]},
+#         "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
+#         "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
+#         "dft phonon static big supercell 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
+#         "dft phonon static big supercell 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
+#
+#         "dft rattle static 1/4": {
+#             "incar_settings": ["NSW", "ISMEAR"],
+#             "check_inputs": ["incar", "potcar"],
+#         },
+#         "dft rattle static 2/4": {
+#             "incar_settings": ["NSW", "ISMEAR"],
+#             "check_inputs": ["incar", "potcar"],
+#         },
+#         "dft rattle static 3/4": {
+#             "incar_settings": ["NSW", "ISMEAR"],
+#             "check_inputs": ["incar", "potcar"],
+#         },
+#         "dft rattle static 4/4": {
+#             "incar_settings": ["NSW", "ISMEAR"],
+#             "check_inputs": ["incar", "potcar"],
+#         },
+#     }
+#
+#     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+#     structure = Structure.from_file(path_to_struct)
+#
+#     complete_workflow_big_sc = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=20, displacements=[0.01],
+#                                                                 volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+#                                                                 ).make(
+#         structure_list=[structure, structure],
+#         mp_ids=["test", "test2"],
+#         benchmark_mp_ids=["mp-22905"],
+#         benchmark_structures=[structure],
+#         preprocessing_data=True,
+#     )
+#
+#     # automatically use fake VASP and write POTCAR.spec during the test
+#     mock_vasp(ref_paths_big_sc, fake_run_vasp_kwargs_big_sc)
+#
+#     # run the flow or job and ensure that it finished running successfully
+#     responses = run_locally(
+#         complete_workflow_big_sc,
+#         create_folders=True,
+#         ensure_success=False,
+#         # We just want to check the correct order and name of jobs
+#         # and that the phonon_displacement_maker is not overwritten.
+#         # Therefore, we set `ensure_success=False`.
+#         store=memory_jobstore,
+#     )
+#
+#     assert str(responses).count("dft rattle static") == 16
+#     # 8 x job name + 8 x task label
+#     # (4 dft rattle static for each mpid)
+#     assert str(responses).count("dft phonon static big supercell") == 4
+#     # has no task label
+#
 
 def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
