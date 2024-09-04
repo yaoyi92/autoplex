@@ -42,7 +42,8 @@ check_supercells(structure_list, mpids, min_length=18, max_length=25, fallback_m
 `check_supercells` will list all structures that should likely be excluded. 
 However, please carefully check yourself as your local memory requirements might be different.
 Remove all structures which you cannot treat computationally 
-(e.g., structures with lattice parameters larger than 25 Angstrom or more than 500 atoms)
+(e.g., structures with lattice parameters larger than 25 Angstrom or more than 500 atoms).
+Using the `MPRester` is a convenient way to draw structures from the Materials Project database using their MP-ID.
 
 ## Now start the workflow
 
@@ -54,7 +55,6 @@ from mp_api.client import MPRester
 from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
 ```
 We will use [jobflow](https://github.com/materialsproject/jobflow) to control the execution of our jobs in form of flows and jobs.
-Using the `MPRester` is a convenient way to draw structures from the Materials Project database using their MP-ID.
 The only module we need to import from `autoplex` is the `CompleteDFTvsMLBenchmarkWorkflow`.
 
 

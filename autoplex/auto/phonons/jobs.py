@@ -222,31 +222,30 @@ def dft_phonopy_gen_data(
     dft_phonons_dir_output = []
     supercell_matrix = None
 
+    #TODO: fix this logic here
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
-    if min_length >= 15:
-        phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
+    #if min_length >= 15:
+    #    phonon_displacement_maker = TightDFTStaticMakerBigSupercells()
     if adaptive_phonopy_supercell_settings:
-        lattice_avg = sum(structure.lattice.abc) / 3
-        if lattice_avg > 10.5:
-            supercell_matrix_job = reduce_supercell_size(
-                structure=structure,
-                min_length=min_length,
-                max_length=25,
-                fallback_min_length=15,
-                max_atoms=500,
-                min_atoms=300,
-                step_size=1.0,
-            )
-            jobs.append(supercell_matrix_job)
-            supercell_matrix = supercell_matrix_job.output
+        supercell_matrix_job = reduce_supercell_size(
+            structure=structure,
+            min_length=min_length,
+            max_length=25,
+            fallback_min_length=15,
+            max_atoms=500,
+            min_atoms=300,
+            step_size=1.0,
+        )
+        jobs.append(supercell_matrix_job)
+        supercell_matrix = supercell_matrix_job.output
             # in case everything fails, and a fitting supercell matrix cannot be found, reduce the
             # reciprocal k-point density and search for a supercell within the atomate2 phonon wf:
-            if supercell_matrix == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]:
-                supercell_matrix = None
-                phonon_displacement_maker = update_phonon_displacement_maker(
-                    lattice_avg, TightDFTStaticMakerBigSupercells()
-                )
+            #if supercell_matrix == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]:
+            #    supercell_matrix = None
+            #    phonon_displacement_maker = update_phonon_displacement_maker(
+            #        lattice_avg, TightDFTStaticMakerBigSupercells()
+            #    )
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(

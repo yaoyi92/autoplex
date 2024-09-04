@@ -33,7 +33,7 @@ from jobflow import Flow, Maker, Response, job
 from pymatgen.core import Molecule, Site
 
 from autoplex.data.common.jobs import generate_randomized_structures
-from autoplex.data.phonons.jobs import reduce_supercell_size
+from autoplex.data.phonons.jobs import reduce_supercell_size_job
 from autoplex.data.phonons.utils import ml_phonon_maker_preparation
 
 __all__ = [
@@ -689,7 +689,7 @@ class RandomStructuresDataGenerator(Maker):
         structure = relaxed.output.structure
 
         if self.adaptive_rattled_supercell_settings:
-            supercell_matrix_job = reduce_supercell_size(
+            supercell_matrix_job = reduce_supercell_size_job(
                 structure=structure,
                 min_length=12,
                 max_length=25,
