@@ -116,6 +116,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                 structure=benchmark_structure,
                 ml_model=ml_model,
                 potential_file=ml_potential,
+                adaptive_supercell_settings=adaptive_supercell_settings,
                 **ml_phonon_maker_kwargs,
             )
             jobs.append(add_data_ml_phonon)

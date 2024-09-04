@@ -34,6 +34,7 @@ from pymatgen.core import Molecule, Site
 
 from autoplex.data.common.jobs import generate_randomized_structures
 from autoplex.data.phonons.jobs import reduce_supercell_size_job
+from autoplex.data.phonons.utils import reduce_supercell_size
 from autoplex.data.phonons.utils import ml_phonon_maker_preparation
 
 __all__ = [
@@ -412,6 +413,7 @@ class MLPhononMaker(FFPhononMaker):
         potential_file,
         ml_model: str = "GAP",
         calculator_kwargs: dict | None = None,
+        adaptive_supercell_settings: dict|None=None,
         **make_kwargs,
     ):
         """
@@ -430,6 +432,8 @@ class MLPhononMaker(FFPhononMaker):
             Train, test and MLIP files (+ suffixes "", "_wo_sigma", "_phonon", "_rand_struc").
         calculator_kwargs :
             Keyword arguments for the ASE Calculator.
+        adaptive_supercell_settings:
+            dict with supercell settings.
         make_kwargs :
             Keyword arguments for the PhononMaker.
 
@@ -524,8 +528,8 @@ class MLPhononMaker(FFPhononMaker):
             self.phonon_displacement_maker,
             self.static_energy_maker,
         ) = ml_prep
-
-        flow = self.make(structure=structure, **make_kwargs)
+        supercell_matrix=reduce_supercell_size(structure=structure, **adaptive_supercell_settings)
+        flow = self.make(structure=structure, supercell_matrix=supercell_matrix, **make_kwargs)
         return Response(replace=flow, output=flow.output)
 
 
