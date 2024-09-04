@@ -178,8 +178,7 @@ def generate_randomized_structures(
     rattle_std: float = 0.01,
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
-    w_angle: list[float] | None = None,
-    adaptive_rattled_supercell_settings: bool = True,
+    w_angle: list[float] | None = None
 ):
     """
     Take in a pymatgen Structure object and generates angle/volume distorted + rattled structures.
@@ -228,8 +227,6 @@ def generate_randomized_structures(
         Number of Monte Carlo iterations.
         Larger number of iterations will generate larger displacements.
         Default=10.
-    adaptive_rattled_supercell_settings: bool
-        prevent too big rattled supercells
 
     Returns
     -------

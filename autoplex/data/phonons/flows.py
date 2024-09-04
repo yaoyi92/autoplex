@@ -626,8 +626,8 @@ class RandomStructuresDataGenerator(Maker):
         Number of Monte Carlo iterations.
         Larger number of iterations will generate larger displacements.
         Default=10.
-    adaptive_rattled_supercell_settings: bool
-        prevent too big rattled supercells
+    adaptive_rattled_supercell_settings: dict
+        settings for supercells
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
@@ -653,7 +653,7 @@ class RandomStructuresDataGenerator(Maker):
     rattle_seed: int = 42
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
-    adaptive_rattled_supercell_settings: bool = True
+    adaptive_rattled_supercell_settings: dict | None = None
 
     def make(
         self,
@@ -688,18 +688,18 @@ class RandomStructuresDataGenerator(Maker):
         jobs.append(relaxed)
         structure = relaxed.output.structure
 
-        if self.adaptive_rattled_supercell_settings:
-            supercell_matrix_job = reduce_supercell_size_job(
-                structure=structure,
-                min_length=12,
-                max_length=25,
-                fallback_min_length=10,
-                max_atoms=500,
-                min_atoms=50,
-                step_size=1.0,
-            )
-            jobs.append(supercell_matrix_job)
-            supercell_matrix = supercell_matrix_job.output
+
+        supercell_matrix_job = reduce_supercell_size_job(
+            structure=structure,
+            min_length=self.adaptive_rattled_supercell_settings.get("min_length",12),
+            max_length=self.adaptive_rattled_supercell_settings.get("max_length",25),
+            fallback_min_length=self.adaptive_rattled_supercell_settings.get("fallback_min_length",10),
+            max_atoms=self.adaptive_rattled_supercell_settings.get("max_atoms",500),
+            min_atoms=self.adaptive_rattled_supercell_settings.get("min_atoms",50),
+            step_size=self.adaptive_rattled_supercell_settings.get("step_size",1.0),
+        )
+        jobs.append(supercell_matrix_job)
+        supercell_matrix = supercell_matrix_job.output
 
         random_rattle_sc = generate_randomized_structures(
             structure=structure,
@@ -716,7 +716,6 @@ class RandomStructuresDataGenerator(Maker):
             rattle_seed=self.rattle_seed,
             rattle_mc_n_iter=self.rattle_mc_n_iter,
             w_angle=self.w_angle,
-            adaptive_rattled_supercell_settings=self.adaptive_rattled_supercell_settings,
         )
         jobs.append(random_rattle_sc)
         # perform the phonon displaced calculations for randomized displaced structures.

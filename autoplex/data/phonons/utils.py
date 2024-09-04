@@ -238,6 +238,8 @@ def reduce_supercell_size(
     list
         supercell matrix.
     """
+    if fallback_min_length>=min_length:
+        fallback_min_length = min_length - 1
     for minimum in range(int(min_length), int(fallback_min_length), -1):
         try:
             transformation = CubicSupercellTransformation(
@@ -250,6 +252,7 @@ def reduce_supercell_size(
                 force_90_degrees=True,
             )
             new_structure = transformation.apply_transformation(structure=structure)
+            print(new_structure)
             if min_atoms <= new_structure.num_sites <= max_atoms:
                 return transformation.transformation_matrix.transpose().tolist()
         except AttributeError:
@@ -264,6 +267,7 @@ def reduce_supercell_size(
                     force_90_degrees=False,
                 )
                 new_structure = transformation.apply_transformation(structure=structure)
+                print(new_structure)
                 if min_atoms <= new_structure.num_sites <= max_atoms:
                     return transformation.transformation_matrix.transpose().tolist()
             except AttributeError:
@@ -278,6 +282,7 @@ def reduce_supercell_size(
                     new_structure = transformation.apply_transformation(
                         structure=structure
                     )
+                    print(new_structure)
                     if min_atoms <= new_structure.num_sites <= max_atoms:
                         return transformation.transformation_matrix.transpose().tolist()
                 except AttributeError:
