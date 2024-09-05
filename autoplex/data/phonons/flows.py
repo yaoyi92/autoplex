@@ -808,7 +808,7 @@ class IsoAtomMaker(Maker):
                 ),
                 # we should likely remove all handlers here as well
                 # large sigma handler is especially problematic
-                run_vasp_kwargs={"handler": []}
+                run_vasp_kwargs={"handlers": ()}
             ).make(iso_atom)
 
             jobs.append(isoatom_calcs)
