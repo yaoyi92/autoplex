@@ -657,7 +657,7 @@ class RandomStructuresDataGenerator(Maker):
     rattle_seed: int = 42
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
-    adaptive_rattled_supercell_settings: dict | None = None
+    adaptive_rattled_supercell_settings: dict | None = field(default_factory=lambda: {"min_length": 15})
 
     def make(
         self,

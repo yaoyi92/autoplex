@@ -26,12 +26,12 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     structure = Structure.from_file(path_to_struct)
 
     gap_phonon_jobs = MLPhononMaker(
-        min_length=20,
         bulk_relax_maker=GAPRelaxMaker(relax_cell=True, relax_kwargs={"interval": 500}),
         phonon_displacement_maker=GAPStaticMaker(name="gap phonon static"),
         static_energy_maker=GAPStaticMaker(),
+
     ).make_from_ml_model(
-        structure=structure, potential_file=potential_file,
+        structure=structure, potential_file=potential_file, adaptive_supercell_settings={"min_length":20}
     )
 
     responses = run_locally(
@@ -40,7 +40,7 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
 
     assert gap_phonon_jobs.name == "ml phonon"
     assert responses[gap_phonon_jobs.output.uuid][1].replace[0].name == "MLFF.GAP relax"
-    assert responses[gap_phonon_jobs.output.uuid][1].replace[2].name == "MLFF.GAP static"
+    assert responses[gap_phonon_jobs.output.uuid][1].replace[1].name == "MLFF.GAP static"
 
     ml_phonon_bs_doc = responses[gap_phonon_jobs.output.uuid][1].output.resolve(store=memory_jobstore)
     assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
