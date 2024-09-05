@@ -205,7 +205,7 @@ resources_mlip = {"nodes": N, "partition": "name", "time": "02:00:00", "ntasks":
 
 autoplex_flow = set_run_config(autoplex_flow, name_filter="dft phonon static", resources=resources_phon)
 
-auto_flow = set_run_config(autoplex_flow, name_filter="dft rattle static", resources=resources_ratt)
+autoplex_flow = set_run_config(autoplex_flow, name_filter="dft rattle static", resources=resources_ratt)
 
 autoplex_flow = set_run_config(autoplex_flow, name_filter="machine_learning_fit", resources=resources_mlip)
 
