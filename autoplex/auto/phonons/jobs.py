@@ -342,7 +342,7 @@ def dft_random_gen_data(
     )
     jobs.append(random_datagen)
 
-    flow = Flow(jobs, random_datagen.output)
+    flow = Flow(jobs, {"rand_struc_dir": random_datagen.output})
     return Response(replace=flow)
 
 

@@ -210,7 +210,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         fit_input = {}
         hyper_list: list[dict[Any, Any]] = []
         bm_outputs = []
-        print(self.adaptive_supercell_settings)
+
         for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
                 addDFTrand = self.add_dft_random(
@@ -423,12 +423,15 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             supercell settings
 
         """
-        return dft_phonopy_gen_data(
+        dft_phonons= dft_phonopy_gen_data(
             structure=structure,
             displacements=displacements,
             symprec=symprec,
             phonon_displacement_maker=phonon_displacement_maker,
             adaptive_supercell_settings=adaptive_supercell_settings)
+        # we can also append a name?
+        #dft_phonons.name=self.name
+        return dft_phonons
 
     def add_dft_random(
         self,
@@ -527,8 +530,12 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             min_distance=min_distance,
             adaptive_rattled_supercell_settings=adaptive_rattled_supercell_settings,
         )
-        return Flow(
-            jobs=additonal_dft_random,
-            output={"rand_struc_dir": additonal_dft_random.output},
-            name=self.name,
-        )
+        #additonal_dft_random.name=self.name
+        # remove this layer here as well
+        return additonal_dft_random
+        #(
+            #Flow(
+            #jobs=additonal_dft_random,
+            #output={"rand_struc_dir": additonal_dft_random.output},
+            #name=self.name,
+        #))

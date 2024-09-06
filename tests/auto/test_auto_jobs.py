@@ -162,6 +162,6 @@ def test_dft_task_doc(vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean
 
     # check for DFT phonon doc
     assert isinstance(
-        dft_phonon_workflow.output.resolve(store=memory_jobstore)["data"]["001"],
+        dft_phonon_workflow.output.resolve(store=memory_jobstore)["phonon_data"]["001"],
         PhononBSDOSDoc,
     )
