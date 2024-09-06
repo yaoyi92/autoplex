@@ -79,7 +79,9 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow().make(
     structure_list=structure_list, mp_ids=mpids, 
     benchmark_structures=benchmark_structure_list, benchmark_mp_ids=mpbenchmark)
 
-autoplex_flow = Flow([complete_flow], name="tutorial", output=None, uuid=None, hosts=None)
+
+complete_flow.name = "tutorial"
+autoplex_flow = complete_flow
 ```
 The only default information we need to provide is which structures we want to calculate and use for the MLIP fitting 
 and which structures we want to benchmark to.
