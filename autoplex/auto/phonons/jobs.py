@@ -142,7 +142,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                         adaptive_supercell_settings=adaptive_supercell_settings,
                     )
                     jobs.append(dft_phonons)
-                    dft_references = dft_phonons.output["data"]["001"]
+                    dft_references = dft_phonons.output["phonon_data"]["001"]
 
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
                     ml_model=ml_model,
@@ -181,7 +181,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
     return Response(replace=jobs, output=collect_output)
 
 
-@job(data=["data"])
+@job(data=["phonon_data"])
 def dft_phonopy_gen_data(
     structure: Structure,
     displacements,
@@ -229,7 +229,7 @@ def dft_phonopy_gen_data(
         ] = dft_phonons.output
         dft_phonons_dir_output.append(dft_phonons.output.jobdirs.displacements_job_dirs)
 
-    flow = Flow(jobs, {"dirs": dft_phonons_dir_output, "data": dft_phonons_output})
+    flow = Flow(jobs, {"phonon_dir": dft_phonons_dir_output, "phonon_data": dft_phonons_output}, name="dft_phononpy_gen_data")
     return Response(replace=flow)
 
 

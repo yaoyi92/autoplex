@@ -246,7 +246,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 flows.append(addDFTphon)
                 fit_input.update({mp_id: addDFTphon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
-                fit_input.update({mp_id: {**addDFTrand.output, **addDFTphon.output}})
+                fit_input.update({mp_id: {"rand_struc_dir": addDFTrand.output["rand_struc_dir"],
+                                          "phonon_dir": addDFTphon.output["phonon_dir"], "phonon_data" : addDFTphon.output["phonon_data"]} })
             if self.add_rss_struct:
                 raise NotImplementedError
 
@@ -418,23 +419,16 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             and to handle all symmetry-related tasks in phonopy
         phonon_displacement_maker: BaseVaspMaker
             Maker used to compute the forces for a supercell.
+        adaptive_supercell_settings: dict
+            supercell settings
+
         """
-        additonal_dft_phonon = dft_phonopy_gen_data(
+        return dft_phonopy_gen_data(
             structure=structure,
             displacements=displacements,
             symprec=symprec,
             phonon_displacement_maker=phonon_displacement_maker,
-            adaptive_supercell_settings=adaptive_supercell_settings,
-        )
-
-        return Flow(
-            jobs=additonal_dft_phonon,  # flows
-            output={
-                "phonon_dir": additonal_dft_phonon.output["dirs"],
-                "phonon_data": additonal_dft_phonon.output["data"],
-            },
-            name=self.name,
-        )
+            adaptive_supercell_settings=adaptive_supercell_settings)
 
     def add_dft_random(
         self,
