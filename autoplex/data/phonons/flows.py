@@ -100,6 +100,8 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "ISYM": 0,
                 "SYMPREC": 1e-9,
                 "KSPACING": 0.2,
+                # To be removed
+                "NPAR": 4,
             },
             auto_ispin=False,
         )
@@ -266,7 +268,10 @@ class DFTPhononMaker(PhononMaker):
         default_factory=lambda: DoubleRelaxMaker.from_relax_maker(
             TightRelaxMaker(
                 input_set_generator=TightRelaxSetGenerator(
-                    user_incar_settings={"ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
+                    user_incar_settings=
+                    {"ISPIN": 1, "LAECHG": False, "ISMEAR": 0,
+                     # to be removed
+                     "NPAR":4}
                 )
             )
         ),
@@ -275,7 +280,10 @@ class DFTPhononMaker(PhononMaker):
         default_factory=lambda: StaticMaker(
             input_set_generator=StaticSetGenerator(
                 auto_ispin=False,
-                user_incar_settings={"ISPIN": 1, "LAECHG": False, "ISMEAR": 0},
+                user_incar_settings={"ISPIN": 1, "LAECHG": False, "ISMEAR": 0,
+                                     # to be removed
+                                     "NPAR": 4
+                                     },
             )
         )
     )
@@ -570,6 +578,8 @@ class IsoAtomStaticMaker(StaticMaker):
                 "ISPIN": 1,
                 "LAECHG": False,
                 "ISMEAR": 0,
+                # to be removed
+                "NPAR": 4
             },
         )
     )
@@ -641,7 +651,9 @@ class RandomStructuresDataGenerator(Maker):
     bulk_relax_maker: BaseVaspMaker = field(
         default_factory=lambda: TightRelaxMaker(
             input_set_generator=TightRelaxSetGenerator(
-                user_incar_settings={"ISPIN": 1, "LAECHG": False, "ISMEAR": 0}
+                user_incar_settings={"ISPIN": 1, "LAECHG": False, "ISMEAR": 0,
+                                     # to be removed
+                                     "NPAR": 4}
             )
         )
     )
@@ -804,6 +816,8 @@ class IsoAtomMaker(Maker):
                         "ISPIN": 1,
                         "LAECHG": False,
                         "ISMEAR": 0,
+                        # to be removed
+                        "NPAR": 4
                     },
                 ),
                 # we should likely remove all handlers here as well
