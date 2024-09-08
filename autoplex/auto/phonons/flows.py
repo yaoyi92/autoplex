@@ -20,10 +20,11 @@ from autoplex.auto.phonons.jobs import (
     complete_benchmark,
     dft_phonopy_gen_data,
     dft_random_gen_data,
-    get_iso_atom,
+    get_iso_atom, run_supercells,
 )
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.fitting.common.flows import MLIPFitMaker
+from atomate2.common.jobs.phonons import run_phonon_displacements
 
 __all__ = ["CompleteDFTvsMLBenchmarkWorkflow", "SettingsTestMaker"]
 
@@ -548,6 +549,7 @@ class SettingsTestMaker(Maker):
 
     name: str="test dft and supercell settings"
     adaptive_supercell_settings: dict = field(default_factory={"min_length": 15})
+    DFT_Maker: BaseVaspMaker = TightDFTStaticMaker
 
 
 
@@ -557,9 +559,7 @@ class SettingsTestMaker(Maker):
         supercell_job=reduce_supercell_size_job(structures, **self.adaptive_supercell_settings)
         job_list.append(supercell_job)
 
-        for structure in supercell_job.output:
-            job_list.append(TightDFTStaticMaker().make(structure))
+        supercell_job=run_supercells(supercell_job.output, self.DFT_Maker )
+        job_list.append(supercell_job)
 
-        # maybe add an output?
-
-        return Flow(jobs=job_list, name=self.name)
+        return Flow(jobs=job_list,output=supercell_job.output, name=self.name)

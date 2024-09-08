@@ -181,6 +181,40 @@ def complete_benchmark(  # this function was put here to prevent circular import
     return Response(replace=jobs, output=collect_output)
 
 
+
+@job
+def run_supercells(
+    structures: list[Structure],
+    dft_maker: BaseVaspMaker = None,
+) -> Flow:
+    """
+    Run phonon displacements.
+
+    Note, this job will replace itself with N displacement calculations,
+    or a single socket calculation for all displacements.
+
+    Parameters
+    ----------
+    displacements: Sequence
+        All displacements to calculate
+    dft_maker : .BaseVaspMaker or .ForceFieldStaticMaker or .BaseAimsMaker
+        A maker to use to generate dispacement calculations
+    """
+    dft_jobs = []
+    outputs: dict[str, list] = {
+        "uuids": [],
+        "dirs": [],
+    }
+    for structure in enumerate(structures):
+        dft_job = dft_maker.make(structure=structure)
+        dft_jobs.append(dft_job)
+        outputs["uuids"].append(dft_job.output.uuid)
+        outputs["dirs"].append(dft_job.output.dir_name)
+
+    displacement_flow = Flow(dft_jobs, outputs)
+    return Response(replace=displacement_flow)
+
+
 @job(data=["phonon_data"])
 def dft_phonopy_gen_data(
     structure: Structure,
