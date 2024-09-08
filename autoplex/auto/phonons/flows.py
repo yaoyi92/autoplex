@@ -549,7 +549,9 @@ class SettingsTestMaker(Maker):
 
     name: str="test dft and supercell settings"
     adaptive_supercell_settings: dict = field(default_factory={"min_length": 15})
-    DFT_Maker: BaseVaspMaker = TightDFTStaticMaker
+    DFT_Maker: BaseVaspMaker = field(
+        default_factory=TightDFTStaticMaker
+    )
 
 
 
