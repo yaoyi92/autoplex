@@ -5,6 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from autoplex.data.phonons.flows import TightDFTStaticMaker
+from autoplex.data.phonons.jobs import reduce_supercell_size_job
+
 if TYPE_CHECKING:
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from atomate2.vasp.jobs.base import BaseVaspMaker
@@ -22,7 +25,7 @@ from autoplex.auto.phonons.jobs import (
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.fitting.common.flows import MLIPFitMaker
 
-__all__ = ["CompleteDFTvsMLBenchmarkWorkflow"]
+__all__ = ["CompleteDFTvsMLBenchmarkWorkflow", "SettingsTestMaker"]
 
 
 # Volker's idea: provide several default flows with different setting/setups
@@ -533,9 +536,30 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         #additonal_dft_random.name=self.name
         # remove this layer here as well
         return additonal_dft_random
-        #(
-            #Flow(
-            #jobs=additonal_dft_random,
-            #output={"rand_struc_dir": additonal_dft_random.output},
-            #name=self.name,
-        #))
+
+
+
+@dataclass
+class SettingsTestMaker(Maker):
+    """
+       Maker to test the DFT and supercell settings.
+
+    """
+
+    name: str="test dft and supercell settings"
+    adaptive_supercell_settings: dict = field(default_factory={"min_length": 15})
+
+
+
+    def make(self, structures: list[Structure]):
+
+        job_list=[]
+        supercell_job=reduce_supercell_size_job(structures, **self.adaptive_supercell_settings)
+        job_list.append(supercell_job)
+
+        for structure in supercell_job.output:
+            job_list.append(TightDFTStaticMaker().make(structure))
+
+        # maybe add an output?
+
+        return Flow(jobs=job_list, name=self.name)

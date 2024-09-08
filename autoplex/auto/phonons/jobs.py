@@ -318,6 +318,8 @@ def dft_random_gen_data(
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft rattle static")
 
+    #TODO: decide if we should remove the additional response here as well
+    # looks like only the output is changing
     random_datagen = RandomStructuresDataGenerator(
         name="RandomDataGen",
         phonon_displacement_maker=phonon_displacement_maker,

@@ -818,6 +818,7 @@ class IsoAtomMaker(Maker):
                         "ISMEAR": 0,
                         # to be removed
                         "NPAR": 4
+                        # TODO: locpot, chgcar, chg are generated currently
                     },
                 ),
                 # we should likely remove all handlers here as well
