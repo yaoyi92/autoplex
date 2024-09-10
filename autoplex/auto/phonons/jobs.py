@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from jobflow import Flow, Response, job
+import numpy as np
+from numpy.matrixlib.defmatrix import matrix
 
 if TYPE_CHECKING:
     from atomate2.vasp.jobs.base import BaseVaspMaker
@@ -213,6 +215,7 @@ def generate_supercells(
 @job
 def run_supercells(
     structures: list[Structure],
+    supercell_matrices: list[int],
     dft_maker: BaseVaspMaker = None,
 ) -> Flow:
     """
@@ -223,8 +226,8 @@ def run_supercells(
 
     Parameters
     ----------
-    displacements: Sequence
-        All displacements to calculate
+    structures: list[Structure]
+        list of supercells
     dft_maker : .BaseVaspMaker or .ForceFieldStaticMaker or .BaseAimsMaker
         A maker to use to generate dispacement calculations
     """
@@ -233,7 +236,10 @@ def run_supercells(
         "uuids": [],
         "dirs": [],
     }
-    for structure in structures:
+
+
+    for structure, supercell_matrix in zip(structures, supercell_matrices):
+        structure.make_supercell(np.array(supercell_matrix).transpose())
         dft_job = dft_maker.make(structure=structure)
         dft_jobs.append(dft_job)
         outputs["uuids"].append(dft_job.output.uuid)

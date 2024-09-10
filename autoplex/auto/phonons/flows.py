@@ -566,7 +566,7 @@ class SettingsTestMaker(Maker):
 
         job_list.append(supercell_job)
 
-        supercell_job = run_supercells(supercell_job.output, self.DFT_Maker )
+        supercell_job = run_supercells(structure_list, supercell_job.output, self.DFT_Maker )
         job_list.append(supercell_job)
 
         return Flow(jobs=job_list,output=supercell_job.output, name=self.name)
