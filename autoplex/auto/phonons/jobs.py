@@ -203,7 +203,7 @@ def generate_supercells(
     supercells = []
 
     for structure in enumerate(structures):
-        supercells.append(reduce_supercell_size(structure, adaptive_supercell_settings))
+        supercells.append(reduce_supercell_size(structure, **adaptive_supercell_settings))
 
 
     return supercells
