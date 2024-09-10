@@ -45,6 +45,11 @@ Remove all structures which you cannot treat computationally
 (e.g., structures with lattice parameters larger than 25 Angstrom or more than 500 atoms).
 Using the `MPRester` is a convenient way to draw structures from the Materials Project database using their MP-ID.
 
+### Test DFT run times and memory requirements
+
+To get a rough estimate of DFT requirements for the supercells that you have chosen, you can use the `SettingsTestMaker` (or renamed version?) to test the DFT run times for an undisplaced supercell of a similar size to the ones we will use in the overall workflow. This will allow you to check whether memory requirements on your supercomputers are enough and if you might need to switch to smaller systems.
+
+
 ## Now start the workflow
 
 Let us start by importing all the necessary modules:
