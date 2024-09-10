@@ -20,7 +20,7 @@ from autoplex.auto.phonons.jobs import (
     complete_benchmark,
     dft_phonopy_gen_data,
     dft_random_gen_data,
-    get_iso_atom, run_supercells,
+    get_iso_atom, run_supercells, generate_supercells
 )
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.fitting.common.flows import MLIPFitMaker
@@ -545,6 +545,10 @@ class SettingsTestMaker(Maker):
     """
        Maker to test the DFT and supercell settings.
 
+       Please use this maker to test your queue settings for the rattled and phonon supercells.
+       Here, the cells are not displaced but it will nevertheless give you an impression
+       of the required memory and other resources as we run without symmetry considerations.
+
     """
 
     name: str="test dft and supercell settings"
@@ -554,11 +558,12 @@ class SettingsTestMaker(Maker):
     )
 
 
-
-    def make(self, structures: list[Structure]):
+    def make(self, structure_list: list[Structure]):
 
         job_list=[]
-        supercell_job=reduce_supercell_size_job(structures, **self.adaptive_supercell_settings)
+        # modify to run for more than one cell
+        supercell_job=generate_supercells(structure_list, self.adaptive_supercell_settings)
+
         job_list.append(supercell_job)
 
         supercell_job=run_supercells(supercell_job.output, self.DFT_Maker )

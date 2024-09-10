@@ -183,6 +183,34 @@ def complete_benchmark(  # this function was put here to prevent circular import
 
 
 @job
+def generate_supercells(
+    structures: list[Structure],
+    adaptive_supercell_settings: dict,
+) -> Flow:
+    """
+    Run phonon displacements.
+
+    Note, this job will replace itself with N displacement calculations,
+    or a single socket calculation for all displacements.
+
+    Parameters
+    ----------
+    structures : list[Structure]
+    adaptive_supercell_settings: dict
+        settings for supercells
+
+    """
+    supercells = []
+
+    for structure in enumerate(structures):
+        supercells.append(reduce_supercell_size(structure, adaptive_supercell_settings))
+
+
+    return supercells
+
+
+
+@job
 def run_supercells(
     structures: list[Structure],
     dft_maker: BaseVaspMaker = None,
