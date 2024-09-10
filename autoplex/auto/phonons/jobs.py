@@ -233,7 +233,7 @@ def run_supercells(
         "uuids": [],
         "dirs": [],
     }
-    for structure in enumerate(structures):
+    for structure in structures:
         dft_job = dft_maker.make(structure=structure)
         dft_jobs.append(dft_job)
         outputs["uuids"].append(dft_job.output.uuid)
