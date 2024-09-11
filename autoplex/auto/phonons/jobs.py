@@ -216,18 +216,22 @@ def generate_supercells(
 def run_supercells(
     structures: list[Structure],
     supercell_matrices: list[int],
+    mp_ids: list[str],
     dft_maker: BaseVaspMaker = None,
 ) -> Flow:
     """
-    Run phonon displacements.
+    Run supercell calculations.
 
-    Note, this job will replace itself with N displacement calculations,
-    or a single socket calculation for all displacements.
+    Note, this job will replace itself with supercell calculations.
 
     Parameters
     ----------
     structures: list[Structure]
         list of supercells
+    supercell_matrices: list[int]
+        list of supercell matrices
+    mp_ids: list[str]
+        list of material ids
     dft_maker : .BaseVaspMaker or .ForceFieldStaticMaker or .BaseAimsMaker
         A maker to use to generate dispacement calculations
     """

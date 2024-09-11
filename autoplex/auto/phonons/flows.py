@@ -539,34 +539,47 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         return additonal_dft_random
 
 
+on
 
 @dataclass
 class SettingsTestMaker(Maker):
     """
-       Maker to test the DFT and supercell settings.
+    Maker to test the DFT and supercell settings.
 
-       Please use this maker to test your queue settings for the rattled and phonon supercells.
-       Here, the cells are not displaced but it will nevertheless give you an impression
-       of the required memory and other resources as we run without symmetry considerations.
+    This maker is used to test your queue settings for the rattled and phonon supercells.
+    Although the cells are not displaced, it provides an impression of the required memory
+    and other resources as the process runs without symmetry considerations.
+
+    Parameters
+    ----------
+    name (str): The name of the maker. Default is "test dft and supercell settings".
+    adaptive_supercell_settings (dict): Settings for the adaptive supercell. Default is {"min_length": 15}.
+    DFT_Maker (BaseVaspMaker): The DFT maker to be used. Default is TightDFTStaticMaker.
 
     """
 
-    name: str="test dft and supercell settings"
-    adaptive_supercell_settings: dict = field(default_factory={"min_length": 15})
-    DFT_Maker: BaseVaspMaker = field(
-        default_factory=TightDFTStaticMaker
-    )
+    name: str = "test dft and supercell settings"
+    adaptive_supercell_settings: dict = field(default_factory=lambda: {"min_length": 15})
+    DFT_Maker: BaseVaspMaker = field(default_factory=TightDFTStaticMaker)
 
+    def make(self, structure_list: list[Structure], mp_ids: list[str]):
+        """
+        Generates and runs supercell jobs for the given list of structures.
 
-    def make(self, structure_list: list[Structure]):
+        Args:
+            structure_list (list[Structure]): List of structures to process.
+            mp_ids (list[str]): List of MP IDs.
 
-        job_list=[]
-        # modify to run for more than one cell
+        Returns:
+            Flow: A Flow object containing the jobs and their output.
+        """
+        job_list = []
+
+        # Modify to run for more than one cell
         supercell_job = generate_supercells(structure_list, self.adaptive_supercell_settings)
-
         job_list.append(supercell_job)
 
-        supercell_job = run_supercells(structure_list, supercell_job.output, self.DFT_Maker )
+        supercell_job = run_supercells(structure_list, supercell_job.output, mp_ids, self.DFT_Maker)
         job_list.append(supercell_job)
 
-        return Flow(jobs=job_list,output=supercell_job.output, name=self.name)
+        return Flow(jobs=job_list, output=supercell_job.output, name=self.name)
