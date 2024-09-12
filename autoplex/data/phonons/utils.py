@@ -171,19 +171,19 @@ def check_supercells(
         if (
                 not (min_atoms * min_tolerance <= num_atoms <= max_atoms * max_tolerance)
                 or (
-                not fallback_min_length * min_tolerance
+                not (fallback_min_length * min_tolerance
                     <= a
-                    < max_length * max_tolerance
+                    < max_length * max_tolerance)
         )
                 or (
-                not fallback_min_length * min_tolerance
+                not (fallback_min_length * min_tolerance
                     <= b
-                    < max_length * max_tolerance
+                    < max_length * max_tolerance)
         )
                 or (
-                not fallback_min_length * min_tolerance
+                not (fallback_min_length * min_tolerance
                     <= c
-                    < max_length * max_tolerance
+                    < max_length * max_tolerance)
         )
         ):
             logger.warning("You should not include structure %s \n", name)
@@ -239,7 +239,7 @@ def reduce_supercell_size(
         supercell matrix.
     """
     if fallback_min_length>=min_length:
-        fallback_min_length = min_length - 1
+        fallback_min_length = min_length -1
     for minimum in range(int(min_length), int(fallback_min_length), -1):
         try:
             transformation = CubicSupercellTransformation(

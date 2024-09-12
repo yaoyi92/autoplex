@@ -5,6 +5,7 @@ from monty.serialization import loadfn
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from pymatgen.core.structure import Structure
 from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
+from jobflow.core.job import Response
 
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
@@ -982,3 +983,24 @@ def test_phonon_dft_ml_data_generation_flow(
     assert counter == 7
     assert counter_wor == 6
 # TODO testing cell_factor_sequence
+
+
+
+def test_supercell_test_runs(vasp_test_dir, clean_dir, memory_jobstore, test_dir
+):
+    from jobflow import run_locally
+    from atomate2.forcefields.jobs import CHGNetStaticMaker
+    from autoplex.auto.phonons.flows import DFTSupercellSettingsMaker
+
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    structure_list = [structure]
+    mp_ids = ["mp-22905"]
+
+    autoplex_flow = DFTSupercellSettingsMaker(adaptive_supercell_settings={"min_length":10, "min_atoms":10}, DFT_Maker=CHGNetStaticMaker()).make(
+        structure_list=structure_list, mp_ids=mp_ids,)
+
+    responses_flow=run_locally(autoplex_flow)
+    assert responses_flow[autoplex_flow.jobs[-1].output.uuid][1].replace[0].name == "MLFF.CHGNet static"
+

@@ -539,10 +539,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         return additonal_dft_random
 
 
-on
+
 
 @dataclass
-class SettingsTestMaker(Maker):
+class DFTSupercellSettingsMaker(Maker):
     """
     Maker to test the DFT and supercell settings.
 
