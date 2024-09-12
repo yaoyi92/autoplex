@@ -8,6 +8,8 @@ from jobflow import Flow, Response, job
 import numpy as np
 from numpy.matrixlib.defmatrix import matrix
 
+from submit_test_settings import mpids
+
 if TYPE_CHECKING:
     from atomate2.vasp.jobs.base import BaseVaspMaker
     from emmet.core.math import Matrix3D
@@ -242,12 +244,13 @@ def run_supercells(
     }
 
 
-    for structure, supercell_matrix in zip(structures, supercell_matrices):
+    for structure, supercell_matrix, mpid in zip(structures, supercell_matrices, mpids):
         structure.make_supercell(np.array(supercell_matrix).transpose())
         dft_job = dft_maker.make(structure=structure)
         dft_jobs.append(dft_job)
         outputs["uuids"].append(dft_job.output.uuid)
         outputs["dirs"].append(dft_job.output.dir_name)
+        outputs["mp-id"].append(mpid)
 
     displacement_flow = Flow(dft_jobs, outputs)
     return Response(replace=displacement_flow)
