@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from autoplex.data.phonons.flows import TightDFTStaticMaker
-from autoplex.data.phonons.jobs import reduce_supercell_size_job
 
 if TYPE_CHECKING:
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
