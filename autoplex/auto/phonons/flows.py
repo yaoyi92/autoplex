@@ -10,7 +10,6 @@ from autoplex.data.phonons.flows import TightDFTStaticMaker
 if TYPE_CHECKING:
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from atomate2.vasp.jobs.base import BaseVaspMaker
-    from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
 
 from jobflow import Flow, Maker
@@ -19,13 +18,14 @@ from autoplex.auto.phonons.jobs import (
     complete_benchmark,
     dft_phonopy_gen_data,
     dft_random_gen_data,
-    get_iso_atom, run_supercells, generate_supercells
+    generate_supercells,
+    get_iso_atom,
+    run_supercells,
 )
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.fitting.common.flows import MLIPFitMaker
-from atomate2.common.jobs.phonons import run_phonon_displacements
 
-__all__ = ["CompleteDFTvsMLBenchmarkWorkflow", "SettingsTestMaker"]
+__all__ = ["CompleteDFTvsMLBenchmarkWorkflow", "DFTSupercellSettingsMaker"]
 
 
 # Volker's idea: provide several default flows with different setting/setups
@@ -72,8 +72,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
-    supercell_matrix: Matrix3D or None
-        The matrix to construct the supercell.
     distort_type : int.
         0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     volume_scale_factor_range : list[float]
@@ -118,7 +116,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         List of SOAP delta values that are checked.
     n_sparse_list: list
         List of GAP n_sparse values that are checked.
-    adaptive_supercell_settings: dict
+    supercell_settings: dict
         settings for supercell generation
     benchmark_kwargs: dict
         kwargs for the benchmark flows
@@ -136,7 +134,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     volume_custom_scale_factors: list[float] | None = None
     volume_scale_factor_range: list[float] | None = None
     rattle_std: float = 0.01
-    supercell_matrix: Matrix3D | None = None
     distort_type: int = 0
     min_distance: float = 1.5
     angle_percentage_scale: float = 10
@@ -150,7 +147,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     atomwise_regularization_list: list | None = None
     soap_delta_list: list | None = None
     n_sparse_list: list | None = None
-    adaptive_supercell_settings: dict = field(default_factory={"min_length":15})
+    supercell_settings: dict = field(default_factory=lambda: {"min_length": 15})
     benchmark_kwargs: dict = field(default_factory=dict)
 
     def make(
@@ -225,7 +222,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     volume_custom_scale_factors=self.volume_custom_scale_factors,
                     volume_scale_factor_range=self.volume_scale_factor_range,
                     rattle_std=self.rattle_std,
-                    supercell_matrix=self.supercell_matrix,
                     distort_type=self.distort_type,
                     min_distance=self.min_distance,
                     rattle_type=self.rattle_type,
@@ -234,7 +230,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     angle_max_attempts=self.angle_max_attempts,
                     angle_percentage_scale=self.angle_percentage_scale,
                     w_angle=self.w_angle,
-                    adaptive_rattled_supercell_settings=self.adaptive_supercell_settings,
+                    supercell_settings=self.supercell_settings,
                 )
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
@@ -244,13 +240,20 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     displacements=self.displacements,
                     symprec=self.symprec,
                     phonon_displacement_maker=self.phonon_displacement_maker,
-                    adaptive_supercell_settings=self.adaptive_supercell_settings
+                    supercell_settings=self.supercell_settings,
                 )
                 flows.append(addDFTphon)
                 fit_input.update({mp_id: addDFTphon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
-                fit_input.update({mp_id: {"rand_struc_dir": addDFTrand.output["rand_struc_dir"],
-                                          "phonon_dir": addDFTphon.output["phonon_dir"], "phonon_data" : addDFTphon.output["phonon_data"]} })
+                fit_input.update(
+                    {
+                        mp_id: {
+                            "rand_struc_dir": addDFTrand.output["rand_struc_dir"],
+                            "phonon_dir": addDFTphon.output["phonon_dir"],
+                            "phonon_data": addDFTphon.output["phonon_data"],
+                        }
+                    }
+                )
             if self.add_rss_struct:
                 raise NotImplementedError
 
@@ -315,7 +318,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                         symprec=self.symprec,
                         phonon_displacement_maker=self.phonon_displacement_maker,
                         dft_references=dft_references,
-                        adaptive_supercell_settings=self.adaptive_supercell_settings,
+                        supercell_settings=self.supercell_settings,
                         **self.benchmark_kwargs,
                     )
                     flows.append(complete_bm)
@@ -382,7 +385,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                         symprec=self.symprec,
                                         phonon_displacement_maker=self.phonon_displacement_maker,
                                         dft_references=dft_references,
-                                        adaptive_supercell_settings=self.adaptive_supercell_settings,
+                                        supercell_settings=self.supercell_settings,
                                         **self.benchmark_kwargs,
                                     )
                                     flows.append(complete_bm)
@@ -399,13 +402,13 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         return Flow(jobs=flows, output=collect_bm, name=self.name)
 
+    @staticmethod
     def add_dft_phonons(
-        self,
         structure: Structure,
         displacements: list[float],
         symprec: float,
         phonon_displacement_maker: BaseVaspMaker,
-        adaptive_supercell_settings: dict,
+        supercell_settings: dict,
     ):
         """Add DFT phonon runs for reference structures.
 
@@ -422,22 +425,23 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             and to handle all symmetry-related tasks in phonopy
         phonon_displacement_maker: BaseVaspMaker
             Maker used to compute the forces for a supercell.
-        adaptive_supercell_settings: dict
+        supercell_settings: dict
             supercell settings
 
         """
-        dft_phonons= dft_phonopy_gen_data(
+        dft_phonons = dft_phonopy_gen_data(
             structure=structure,
             displacements=displacements,
             symprec=symprec,
             phonon_displacement_maker=phonon_displacement_maker,
-            adaptive_supercell_settings=adaptive_supercell_settings)
-        # we can also append a name?
-        #dft_phonons.name=self.name
+            supercell_settings=supercell_settings,
+        )
+        # let's append a name
+        dft_phonons.name = "single-atom displaced supercells"
         return dft_phonons
 
+    @staticmethod
     def add_dft_random(
-        self,
         structure: Structure,
         mp_id: str,
         phonon_displacement_maker: BaseVaspMaker,
@@ -445,7 +449,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         volume_custom_scale_factors: list[float] | None = None,
         volume_scale_factor_range: list[float] | None = None,
         rattle_std: float = 0.01,
-        supercell_matrix: Matrix3D | None = None,
         distort_type: int = 0,
         n_structures: int = 10,
         min_distance: float = 1.5,
@@ -455,7 +458,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         rattle_seed: int = 42,
         rattle_mc_n_iter: int = 10,
         w_angle: list[float] | None = None,
-        adaptive_rattled_supercell_settings: dict |None =None,
+        supercell_settings: dict | None = None,
     ):
         """Add DFT phonon runs for randomly displaced structures.
 
@@ -470,8 +473,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         uc: bool.
             If True, will generate randomly distorted structures (unitcells)
             and add static computation jobs to the flow.
-        supercell_matrix: Matrix3D or None
-            The matrix to construct the supercell.
         distort_type : int.
             0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
         n_structures : int.
@@ -510,8 +511,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             Number of Monte Carlo iterations.
             Larger number of iterations will generate larger displacements.
             Default=10.
-        adaptive_rattled_supercell_settings: dict
-            settings for adaptive supercells
+        supercell_settings: dict
+            settings for supercells
         """
         additonal_dft_random = dft_random_gen_data(
             structure=structure,
@@ -522,7 +523,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             volume_custom_scale_factors=volume_custom_scale_factors,
             volume_scale_factor_range=volume_scale_factor_range,
             rattle_std=rattle_std,
-            supercell_matrix=supercell_matrix,
             distort_type=distort_type,
             rattle_seed=rattle_seed,
             rattle_mc_n_iter=rattle_mc_n_iter,
@@ -531,13 +531,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             angle_percentage_scale=angle_percentage_scale,
             w_angle=w_angle,
             min_distance=min_distance,
-            adaptive_rattled_supercell_settings=adaptive_rattled_supercell_settings,
+            supercell_settings=supercell_settings,
         )
-        #additonal_dft_random.name=self.name
-        # remove this layer here as well
+        additonal_dft_random.name = "rattled supercells"
         return additonal_dft_random
-
-
 
 
 @dataclass
@@ -552,33 +549,36 @@ class DFTSupercellSettingsMaker(Maker):
     Parameters
     ----------
     name (str): The name of the maker. Default is "test dft and supercell settings".
-    adaptive_supercell_settings (dict): Settings for the adaptive supercell. Default is {"min_length": 15}.
+    supercell_settings (dict): Settings for the supercells. Default is {"min_length": 15}.
     DFT_Maker (BaseVaspMaker): The DFT maker to be used. Default is TightDFTStaticMaker.
 
     """
 
     name: str = "test dft and supercell settings"
-    adaptive_supercell_settings: dict = field(default_factory=lambda: {"min_length": 15})
+    supercell_settings: dict = field(default_factory=lambda: {"min_length": 15})
     DFT_Maker: BaseVaspMaker = field(default_factory=TightDFTStaticMaker)
 
     def make(self, structure_list: list[Structure], mp_ids: list[str]):
         """
-        Generates and runs supercell jobs for the given list of structures.
+        Generate and runs supercell jobs for the given list of structures.
 
         Args:
             structure_list (list[Structure]): List of structures to process.
             mp_ids (list[str]): List of MP IDs.
 
-        Returns:
+        Returns
+        -------
             Flow: A Flow object containing the jobs and their output.
         """
         job_list = []
 
         # Modify to run for more than one cell
-        supercell_job = generate_supercells(structure_list, self.adaptive_supercell_settings)
+        supercell_job = generate_supercells(structure_list, self.supercell_settings)
         job_list.append(supercell_job)
 
-        supercell_job = run_supercells(structure_list, supercell_job.output, mp_ids, self.DFT_Maker)
+        supercell_job = run_supercells(
+            structure_list, supercell_job.output, mp_ids, self.DFT_Maker
+        )
         job_list.append(supercell_job)
 
         return Flow(jobs=job_list, output=supercell_job.output, name=self.name)

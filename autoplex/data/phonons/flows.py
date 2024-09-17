@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from atomate2.vasp.jobs.base import BaseVaspMaker
     from atomate2.vasp.sets.base import VaspInputGenerator
-    from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Species, Structure
 from atomate2.common.jobs.phonons import run_phonon_displacements
 from atomate2.forcefields.flows.phonons import PhononMaker as FFPhononMaker
@@ -34,8 +33,10 @@ from pymatgen.core import Molecule, Site
 
 from autoplex.data.common.jobs import generate_randomized_structures
 from autoplex.data.phonons.jobs import reduce_supercell_size_job
-from autoplex.data.phonons.utils import reduce_supercell_size
-from autoplex.data.phonons.utils import ml_phonon_maker_preparation
+from autoplex.data.phonons.utils import (
+    ml_phonon_maker_preparation,
+    reduce_supercell_size,
+)
 
 __all__ = [
     "DFTPhononMaker",
@@ -268,10 +269,13 @@ class DFTPhononMaker(PhononMaker):
         default_factory=lambda: DoubleRelaxMaker.from_relax_maker(
             TightRelaxMaker(
                 input_set_generator=TightRelaxSetGenerator(
-                    user_incar_settings=
-                    {"ISPIN": 1, "LAECHG": False, "ISMEAR": 0,
-                     # to be removed
-                     "NPAR":4}
+                    user_incar_settings={
+                        "ISPIN": 1,
+                        "LAECHG": False,
+                        "ISMEAR": 0,
+                        # to be removed
+                        "NPAR": 4,
+                    }
                 )
             )
         ),
@@ -280,10 +284,13 @@ class DFTPhononMaker(PhononMaker):
         default_factory=lambda: StaticMaker(
             input_set_generator=StaticSetGenerator(
                 auto_ispin=False,
-                user_incar_settings={"ISPIN": 1, "LAECHG": False, "ISMEAR": 0,
-                                     # to be removed
-                                     "NPAR": 4
-                                     },
+                user_incar_settings={
+                    "ISPIN": 1,
+                    "LAECHG": False,
+                    "ISMEAR": 0,
+                    # to be removed
+                    "NPAR": 4,
+                },
             )
         )
     )
@@ -421,7 +428,7 @@ class MLPhononMaker(FFPhononMaker):
         potential_file,
         ml_model: str = "GAP",
         calculator_kwargs: dict | None = None,
-        adaptive_supercell_settings: dict|None=None,
+        supercell_settings: dict | None = None,
         **make_kwargs,
     ):
         """
@@ -440,7 +447,7 @@ class MLPhononMaker(FFPhononMaker):
             Train, test and MLIP files (+ suffixes "", "_wo_sigma", "_phonon", "_rand_struc").
         calculator_kwargs :
             Keyword arguments for the ASE Calculator.
-        adaptive_supercell_settings:
+        supercell_settings:
             dict with supercell settings.
         make_kwargs :
             Keyword arguments for the PhononMaker.
@@ -450,6 +457,8 @@ class MLPhononMaker(FFPhononMaker):
         PhononMaker jobs.
 
         """
+        if supercell_settings is None:
+            supercell_settings = field(default_factory=lambda: {"min_length": 15})
         if ml_model == "GAP":
             if calculator_kwargs is None:
                 calculator_kwargs = {
@@ -536,8 +545,12 @@ class MLPhononMaker(FFPhononMaker):
             self.phonon_displacement_maker,
             self.static_energy_maker,
         ) = ml_prep
-        supercell_matrix=reduce_supercell_size(structure=structure, **adaptive_supercell_settings)
-        flow = self.make(structure=structure, supercell_matrix=supercell_matrix, **make_kwargs)
+        supercell_matrix = reduce_supercell_size(
+            structure=structure, **supercell_settings
+        )
+        flow = self.make(
+            structure=structure, supercell_matrix=supercell_matrix, **make_kwargs
+        )
         return Response(replace=flow, output=flow.output)
 
 
@@ -579,7 +592,7 @@ class IsoAtomStaticMaker(StaticMaker):
                 "LAECHG": False,
                 "ISMEAR": 0,
                 # to be removed
-                "NPAR": 4
+                "NPAR": 4,
             },
         )
     )
@@ -640,7 +653,7 @@ class RandomStructuresDataGenerator(Maker):
         Number of Monte Carlo iterations.
         Larger number of iterations will generate larger displacements.
         Default=10.
-    adaptive_rattled_supercell_settings: dict
+    supercell_settings: dict
         settings for supercells
     """
 
@@ -651,9 +664,13 @@ class RandomStructuresDataGenerator(Maker):
     bulk_relax_maker: BaseVaspMaker = field(
         default_factory=lambda: TightRelaxMaker(
             input_set_generator=TightRelaxSetGenerator(
-                user_incar_settings={"ISPIN": 1, "LAECHG": False, "ISMEAR": 0,
-                                     # to be removed
-                                     "NPAR": 4}
+                user_incar_settings={
+                    "ISPIN": 1,
+                    "LAECHG": False,
+                    "ISMEAR": 0,
+                    # to be removed
+                    "NPAR": 4,
+                }
             )
         )
     )
@@ -669,13 +686,12 @@ class RandomStructuresDataGenerator(Maker):
     rattle_seed: int = 42
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
-    adaptive_rattled_supercell_settings: dict | None = field(default_factory=lambda: {"min_length": 15})
+    supercell_settings: dict | None = field(default_factory=lambda: {"min_length": 15})
 
     def make(
         self,
         structure: Structure,
         mp_id: str,
-        supercell_matrix: Matrix3D | None = None,
         volume_custom_scale_factors: list[float] | None = None,
         volume_scale_factor_range: list[float] | None = None,
     ):
@@ -688,8 +704,6 @@ class RandomStructuresDataGenerator(Maker):
             Pymatgen structures drawn from the Materials Project.
         mp_id: str
             Materials Project IDs
-        supercell_matrix: Matrix3D.
-            Matrix for obtaining the supercell
         volume_scale_factor_range : list[float]
             [min, max] of volume scale factors.
             e.g. [0.90, 1.10] will distort volume +-10%.
@@ -697,6 +711,8 @@ class RandomStructuresDataGenerator(Maker):
             Specify explicit scale factors (if range is not specified).
             If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
         """
+        if self.supercell_settings is None:
+            self.supercell_settings = field(default_factory=lambda: {"min_length": 15})
         jobs = []  # initializing empty job list
         outputs = []
 
@@ -704,15 +720,14 @@ class RandomStructuresDataGenerator(Maker):
         jobs.append(relaxed)
         structure = relaxed.output.structure
 
-
         supercell_matrix_job = reduce_supercell_size_job(
             structure=structure,
-            min_length=self.adaptive_rattled_supercell_settings.get("min_length",12),
-            max_length=self.adaptive_rattled_supercell_settings.get("max_length",25),
-            fallback_min_length=self.adaptive_rattled_supercell_settings.get("fallback_min_length",10),
-            max_atoms=self.adaptive_rattled_supercell_settings.get("max_atoms",500),
-            min_atoms=self.adaptive_rattled_supercell_settings.get("min_atoms",50),
-            step_size=self.adaptive_rattled_supercell_settings.get("step_size",1.0),
+            min_length=self.supercell_settings.get("min_length", 12),
+            max_length=self.supercell_settings.get("max_length", 25),
+            fallback_min_length=self.supercell_settings.get("fallback_min_length", 10),
+            max_atoms=self.supercell_settings.get("max_atoms", 500),
+            min_atoms=self.supercell_settings.get("min_atoms", 50),
+            step_size=self.supercell_settings.get("step_size", 1.0),
         )
         jobs.append(supercell_matrix_job)
         supercell_matrix = supercell_matrix_job.output
@@ -762,7 +777,6 @@ class RandomStructuresDataGenerator(Maker):
                 rattle_seed=self.rattle_seed,
                 rattle_mc_n_iter=self.rattle_mc_n_iter,
                 w_angle=self.w_angle,
-                adaptive_rattled_supercell_settings=False,
             )
             jobs.append(random_rattle)
             vasp_random_displacement_calcs = run_phonon_displacements(
@@ -823,7 +837,7 @@ class IsoAtomMaker(Maker):
                 ),
                 # we should likely remove all handlers here as well
                 # large sigma handler is especially problematic
-                run_vasp_kwargs={"handlers": ()}
+                run_vasp_kwargs={"handlers": ()},
             ).make(iso_atom)
 
             jobs.append(isoatom_calcs)

@@ -117,7 +117,7 @@ def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
 def test_dft_task_doc(vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir):
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
-    dft_phonon_workflow = dft_phonopy_gen_data(structure=structure, displacements=[0.01], symprec=0.1, phonon_displacement_maker=TightDFTStaticMaker(), adaptive_supercell_settings={"min_length":10, "min_atoms":20})
+    dft_phonon_workflow = dft_phonopy_gen_data(structure=structure, displacements=[0.01], symprec=0.1, phonon_displacement_maker=TightDFTStaticMaker(), supercell_settings={"min_length":10, "min_atoms":20})
 
     ref_paths = {
         "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
