@@ -47,18 +47,38 @@ Using the `MPRester` is a convenient way to draw structures from the Materials P
 
 ### Test DFT run times and memory requirements
 
-To get a rough estimate of DFT requirements for the supercells that you have chosen, you can use the `SettingsTestMaker` (or renamed version?) to test the DFT run times for an undisplaced supercell of a similar size to the ones we will use in the overall workflow. This will allow you to check whether memory requirements on your supercomputers are enough and if you might need to switch to smaller systems.
-
-
-## Now start the workflow
-
-Let us start by importing all the necessary modules:
+To get a rough estimate of DFT requirements for the supercells that you have chosen, you can use the `DFTSupercellSettingsMaker` 
+to test the DFT run times for an undisplaced supercell of a similar size to the ones we will use in the overall workflow. 
 
 ```python
 from jobflow.core.flow import Flow
 from mp_api.client import MPRester
-from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
+from autoplex.auto.phonons.flows import DFTSupercellSettingsMaker
+
+mpr = MPRester(api_key='YOUR_MP_API_KEY')
+structure_list = []
+benchmark_structure_list = []
+mpids = ["mp-22905"]  
+# you can put as many mpids as needed e.g. mpids = ["mp-22905", "mp-1185319"] for all LiCl entries in the Materials Project
+mpbenchmark = ["mp-22905"]
+for mpid in mpids:
+    structure = mpr.get_structure_by_material_id(mpid)
+    structure_list.append(structure)
+for mpbm in mpbenchmark:
+    bm_structure = mpr.get_structure_by_material_id(mpbm)
+    benchmark_structure_list.append(bm_structure)
+
+dft_supercell_check_flow = DFTSupercellSettingsMaker().make(
+    structure_list=structure_list, mp_ids=mpids)
+
+dft_supercell_check_flow.name = "tutorial"
+autoplex_flow = dft_supercell_check_flow
 ```
+
+This will allow you to check whether memory requirements on your supercomputers are enough and if you might need to switch to smaller systems.
+
+
+## Now start the workflow
 We will use [jobflow](https://github.com/materialsproject/jobflow) to control the execution of our jobs in form of flows and jobs.
 The only module we need to import from `autoplex` is the `CompleteDFTvsMLBenchmarkWorkflow`.
 
@@ -67,6 +87,10 @@ Next, we are going to construct the workflow based on the rocksalt-type LiCl ([*
 Remember to replace `YOUR_MP_API_KEY` with your personal [Materials Project API key](https://next-gen.materialsproject.org/api#api-key).
 
 ```python
+from jobflow.core.flow import Flow
+from mp_api.client import MPRester
+from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
+
 mpr = MPRester(api_key='YOUR_MP_API_KEY')
 structure_list = []
 benchmark_structure_list = []
