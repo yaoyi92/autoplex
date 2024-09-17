@@ -212,7 +212,7 @@ def run_supercells(
     supercell_matrices: list[int],
     mp_ids: list[str],
     dft_maker: BaseVaspMaker = None,
-) -> Flow:
+) -> Response:
     """
     Run supercell calculations.
 
