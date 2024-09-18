@@ -105,9 +105,8 @@ for mpbm in mpbenchmark:
     benchmark_structure_list.append(bm_structure)
 
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow().make(
-    structure_list=structure_list, mp_ids=mpids, 
+    structure_list=structure_list, mp_ids=mpids, preprocessing_data=True,
     benchmark_structures=benchmark_structure_list, benchmark_mp_ids=mpbenchmark)
-
 
 complete_flow.name = "tutorial"
 autoplex_flow = complete_flow
@@ -176,7 +175,7 @@ from jobflow.utils.graph import to_mermaid
 
 ...
 
-autoplex_flow = Flow(...)
+autoplex_flow = ...
 
 graph_source = to_mermaid(autoplex_flow, show_flow_boxes=True)
 print(graph_source)  # show mermaid graph
@@ -202,7 +201,7 @@ from jobflow.managers.fireworks import flow_to_workflow
 
 ...
 
-autoplex_flow = Flow(...)
+autoplex_flow = ...
 
 wf = flow_to_workflow(autoplex_flow)
 
@@ -217,7 +216,7 @@ from jobflow_remote import submit_flow, set_run_config
 
 ...
 
-autoplex_flow = Flow(...)
+autoplex_flow = ...
 
 # setting different job setups in the submission script directly:
 resources = {"nodes": N, "partition": "name", "time": "01:00:00", "ntasks": ntasks, "qverbatim": "#SBATCH --get-user-env",

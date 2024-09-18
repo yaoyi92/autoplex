@@ -24,7 +24,7 @@ or adjust the number of processes `num_processes_fit`.
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     ml_models=["GAP", "MACE"], ...,
-).make(..., 
+).make(..., preprocessing_data=True,
     f_max=40.0,
     fit_kwargs={
         "split_ratio": 0.4,

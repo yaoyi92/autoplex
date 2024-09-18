@@ -87,7 +87,7 @@ Similar to the single-atom displaced supercells, you can run the complete `autop
 structures by setting `add_dft_phonon_struct` to `False`.
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(add_dft_phonon_struct=False).make(
-    structure_list=structure_list, mp_ids=mpids, 
+    structure_list=structure_list, mp_ids=mpids, preprocessing_data=True,
     benchmark_structures=benchmark_structure_list, benchmark_mp_ids=mpbenchmark)
 ```
 It can also be used to extend an already existing database in the same way as demonstrated above.
