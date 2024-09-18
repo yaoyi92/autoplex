@@ -29,7 +29,7 @@ from pymatgen.io.vasp.outputs import Vasprun
 
 from autoplex.data.common.utils import (
     ElementCollection,
-    boltzhist_CUR,
+    boltzhist_cur,
     create_soap_descriptor,
     cur_select,
     data_distillation,
@@ -178,7 +178,7 @@ def generate_randomized_structures(
     rattle_std: float = 0.01,
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
-    w_angle: list[float] | None = None
+    w_angle: list[float] | None = None,
 ):
     """
     Take in a pymatgen Structure object and generates angle/volume distorted + rattled structures.
@@ -447,7 +447,7 @@ def Sampling(
             else:
                 raise ValueError("Please provide the energy of isolated atoms!")
 
-            selected_atoms = boltzhist_CUR(
+            selected_atoms = boltzhist_cur(
                 atoms=atoms,
                 isol_es=isol_es,
                 bolt_frac=bcur_params["frac_of_bcur"],

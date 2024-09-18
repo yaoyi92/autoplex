@@ -6,7 +6,7 @@ from autoplex.data.common.jobs import Sampling
 from jobflow import run_locally
 from pathlib import Path
 from ase.io import read
-from autoplex.data.common.utils import cur_select, boltzhist_CUR, ElementCollection
+from autoplex.data.common.utils import cur_select, boltzhist_cur, ElementCollection
 import shutil
 
 
@@ -117,17 +117,17 @@ def test_sampling_bcur(test_dir):
                 ' cutoff_transition_width=' + str(soap_paras['cutoff_transition_width']) + \
                 ' average=' + str(soap_paras['average'])
 
-    selected_atoms = boltzhist_CUR(atoms=atoms,
+    selected_atoms = boltzhist_cur(atoms=atoms,
                                    isol_es={14: -0.81},
-                                   bolt_frac=0.8, 
+                                   bolt_frac=0.8,
                                    bolt_max_num=3000,
-                                   cur_num=num_of_selection, 
-                                   kernel_exp=4, 
-                                   kT=0.3, 
+                                   cur_num=num_of_selection,
+                                   kernel_exp=4,
+                                   kT=0.3,
                                    energy_label='REF_energy',
-                                   P=None,  
+                                   P=None,
                                    descriptor=descriptor,
-                                   random_seed=42,                          
+                                   random_seed=42,
                                    )
     
     ref_energies = [-78.30403724, 

@@ -75,6 +75,9 @@ def rms_dict(x_ref: np.ndarray | list, x_pred: np.ndarray | list) -> dict:
 
     x_ref and x_pred should be of same shape.
 
+    Adapted and adjusted from libatoms GAP tutorial page
+    https://libatoms.github.io/GAP/gap_fitting_tutorial.html#make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas
+
     Parameters
     ----------
     ----------1·
@@ -591,7 +594,8 @@ def energy_plot(
     """
     Plot the distribution of energy per atom on the output vs the input.
 
-    Adapted and adjusted from libatoms GAP tutorial page https://libatoms.github.io/GAP/gap_fitting_tutorial.html.
+    Adapted and adjusted from libatoms GAP tutorial page
+    https://libatoms.github.io/GAP/gap_fitting_tutorial.html#make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas
 
     Parameters
     ----------
@@ -677,6 +681,9 @@ def force_plot(
     Plot the distribution of force components per atom on the output vs the input.
 
     Only plots for the given atom type(s).
+
+    Adapted and adjusted from libatoms GAP tutorial page
+    https://libatoms.github.io/GAP/gap_fitting_tutorial.html#make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas
 
     Parameters
     ----------
@@ -765,6 +772,9 @@ def plot_energy_forces(
 ) -> None:
     """
     Plot energy and forces of the data.
+
+    Adapted and adjusted from libatoms GAP tutorial page
+    https://libatoms.github.io/GAP/gap_fitting_tutorial.html#make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas
 
     Parameters
     ----------
@@ -1076,7 +1086,7 @@ def boltz(e: float, emin: float, kT: float) -> float:
     return np.exp(-(e - emin) / (kT))
 
 
-def boltzhist_CUR(
+def boltzhist_cur(
     atoms,
     descriptor,
     isol_es,
@@ -1222,7 +1232,7 @@ def boltzhist_CUR(
     return selected_atoms
 
 
-def convexhull_CUR(
+def convexhull_cur(
     atoms: list[Atoms],
     descriptor: str,
     bolt_frac: float = 0.1,
