@@ -1,16 +1,12 @@
 {
   "name": "DeveloperEnv",
+  "image": "ghcr.io/naik-aakash/autoplex:3.9",
   "hostRequirements": {
    "cpus": 4,
    "memory": "16gb",
    "storage": "32gb"
   },
-  "dockerFile": "Dockerfile",
-  "context": ".",
-  "settings": {
-    "python.pythonPath": "/usr/local/bin/python"
-  },
-  "extensions": [
+  "customizations/ vscode/ extensions": [
     "ms-python.python",
     "ms-azuretools.vscode-docker"
   ],
