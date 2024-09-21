@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.9, 3.10, 3.11 ]
 
     steps:
     - name: Checkout code
@@ -23,10 +26,14 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        platforms: linux/amd64
-        push: true
-        tags: ghcr.io/${{ github.repository }}:latest
+    # Build Docker image with a custom Python version
+    - name: Build Docker image (Python ${{ matrix.python-version }})
+      run: |
+        docker build \
+        --build-arg PYTHON_VERSION=${{ matrix.python-version }} \
+        -t ghcr.io/${{ github.repository }}/autoplex:python-${{ matrix.python-version }} .
+        -
+   # Push Docker image to GHCR
+    - name: Push Docker image to GHCR (Python ${{ matrix.python-version }})
+      run: |
+        docker push ghcr.io/${{ github.repository }}/autoplex:python-${{ matrix.python-version }}
