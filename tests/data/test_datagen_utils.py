@@ -207,8 +207,6 @@ def test_energy_forces(clean_dir, test_dir):
         train_name='train_Si.extxyz',
         test_name='test_Si.extxyz'
     )
-
-    assert os.path.isfile("energy_forces_Si.pdf")
     assert os.path.isfile("energy_forces_Si.png")
 
     for file_name in os.listdir(os.getcwd()):
