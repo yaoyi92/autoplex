@@ -8,6 +8,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     strategy:
       matrix:
         python-version: [ "3.10", "3.11", "3.12" ]
