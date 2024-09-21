@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ 3.10, 3.11, 3.12 ]
+        python-version: [ "3.10", "3.11", "3.12" ]
 
     steps:
     - name: Checkout code
@@ -31,9 +31,9 @@ jobs:
       run: |
         docker build \
         --build-arg PYTHON_VERSION=${{ matrix.python-version }} \
-        -t ghcr.io/${{ github.repository }}/autoplex:python-${{ matrix.python-version }} .
+        -t ghcr.io/jageo/autoplex:python-${{ matrix.python-version }} .
         -
    # Push Docker image to GHCR
     - name: Push Docker image to GHCR (Python ${{ matrix.python-version }})
       run: |
-        docker push ghcr.io/${{ github.repository }}/autoplex:python-${{ matrix.python-version }}
+        docker push ghcr.io/jageo/autoplex:python-${{ matrix.python-version }}
