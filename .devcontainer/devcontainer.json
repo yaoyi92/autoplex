@@ -6,9 +6,12 @@
    "memory": "16gb",
    "storage": "32gb"
   },
-  "customizations/ vscode/ extensions": [
-    "ms-python.python",
-    "ms-azuretools.vscode-docker"
-  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-azuretools.vscode-docker"]
+    },
+  },
   "postCreateCommand": "pip cache purge && pip install -e .[strict,docs] && pip install ase==3.23.0 && pre-commit install",
 }
