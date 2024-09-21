@@ -32,7 +32,6 @@ jobs:
         docker build \
         --build-arg PYTHON_VERSION=${{ matrix.python-version }} \
         -t ghcr.io/jageo/autoplex:python-${{ matrix.python-version }} .
-        -
    # Push Docker image to GHCR
     - name: Push Docker image to GHCR (Python ${{ matrix.python-version }})
       run: |
