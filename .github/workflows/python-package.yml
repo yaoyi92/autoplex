@@ -21,7 +21,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Pull and Set up Docker image for Python ${{ matrix.python-version }} # Pull the Docker image
+    - name: Check Docker availability
+      run: docker --version
+    - name: Pull and Set up Docker image for Python ${{ matrix.python-version }}
       run: |
         docker pull ghcr.io/jageo/autoplex/autoplex:python-${{ matrix.python-version }}
         docker run --rm \
