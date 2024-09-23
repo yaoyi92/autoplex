@@ -56,4 +56,3 @@ RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
 RUN python -m pip install --upgrade pip \
     && pip install uv \
     && uv pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
-
