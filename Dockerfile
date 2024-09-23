@@ -38,7 +38,9 @@ RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-
 
 # Install Buildcell
 
-RUN curl -fsSL https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz | tar -xf -C /opt/ \
+RUN curl -O /opt/https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
+    && tar -xf  /opt/airss-0.9.3.tgz \
+    && rm  /opt/airss-0.9.3.tgz \
     && cd /opt/airss \
     && make \
     && make install \
