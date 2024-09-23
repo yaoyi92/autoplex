@@ -6,6 +6,9 @@ FROM mambaorg/micromamba:1.5.10
 ENV MAMBA_DOCKERFILE_ACTIVATE=1
 ENV MAMBA_ROOT_PREFIX=/opt/conda
 
+# Switch to root to install system dependencies
+USER root
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -24,6 +27,9 @@ RUN apt-get update && apt-get install -y \
 # Install Julia
 RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
     && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia
+
+# Switch back to the micromamba default user (typically 'micromamba' user)
+USER micromamba
 
 # Create a new environment named "autoplex_test" with the specified Python version
 RUN micromamba create -n autoplex_test python=${PYTHON_VERSION} --yes
