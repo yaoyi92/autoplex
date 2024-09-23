@@ -46,7 +46,7 @@ ENV PATH="${PATH}:/airss/bin"
 # Switch back to the micromamba default user (typically 'mambauser' user)
 #USER $MAMBA_USER
 
-RUN micromamba install -y -n base python=${PYTHON_VERSION} && \
+RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
     micromamba clean --all --yes
 
 # Create a new environment named "autoplex_test" with the specified Python version
