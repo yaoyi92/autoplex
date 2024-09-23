@@ -44,7 +44,7 @@ RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
 ENV PATH="${PATH}:/airss/bin"
 
 # Switch back to the micromamba default user (typically 'mambauser' user)
-USER $MAMBA_USER
+#USER $MAMBA_USER
 
 RUN micromamba install -y -n base python=${PYTHON_VERSION} && \
     micromamba clean --all --yes
