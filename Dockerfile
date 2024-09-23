@@ -38,13 +38,8 @@ RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-
 
 # Install Buildcell
 
-# Define the target directory to download and install AIRSS
-WORKDIR /opt/
-
-RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
-    && tar -xf  airss-0.9.3.tgz \
-    && rm  airss-0.9.3.tgz \
-    && cd airss \
+RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz | tar -xf -C /opt/ \
+    && cd /opt/airss \
     && make \
     && make install \
     && make neat
@@ -52,8 +47,6 @@ RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
 # Add Buildcell to PATH
 ENV PATH="/opt/airss/bin"
 
-# Define the target directory to download and install AIRSS
-WORKDIR -
 
 RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
     micromamba clean --all --yes
