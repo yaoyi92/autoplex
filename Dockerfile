@@ -30,6 +30,15 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Python
+RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
+    micromamba clean --all --yes
+
+# Install testing dependencies
+RUN python -m pip install --upgrade pip \
+    && pip install uv \
+    && uv pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
+
 # Install Julia
 RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
     && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia
@@ -41,19 +50,10 @@ RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-
 RUN curl -fsSL https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz -o /opt/airss-0.9.3.tgz \
     && tar -xf /opt/airss-0.9.3.tgz -C /opt \
     && rm /opt/airss-0.9.3.tgz \
-    && make -C /opt/airss \
-    && make -C /opt/airss install \
-    && make -C /opt/airss neat
+    && cd /opt/airss \
+    && make \
+    && make install \
+    && make neat
 
 # Add Buildcell to PATH
 ENV PATH="/opt/airss/bin"
-
-
-RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
-    micromamba clean --all --yes
-
-
-# Install testing dependencies
-RUN python -m pip install --upgrade pip \
-    && pip install uv \
-    && uv pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
