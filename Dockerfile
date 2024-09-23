@@ -29,7 +29,7 @@ RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-
     && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia
 
 # Switch back to the micromamba default user (typically 'micromamba' user)
-USER micromamba
+USER $MAMBA_USER
 
 # Create a new environment named "autoplex_test" with the specified Python version
 RUN micromamba create -n autoplex_test python=${PYTHON_VERSION} --yes
