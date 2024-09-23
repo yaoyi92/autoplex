@@ -53,7 +53,7 @@ RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
 ENV PATH="/opt/airss/bin"
 
 # Define the target directory to download and install AIRSS
-WORKDIR /
+WORKDIR -
 
 RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
     micromamba clean --all --yes
