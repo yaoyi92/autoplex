@@ -26,21 +26,10 @@ RUN apt-get update && apt-get install -y \
 
 # Install Julia
 RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
-    && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia
+    && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia \
 
-# Switch back to the micromamba default user (typically 'micromamba' user)
-USER $MAMBA_USER
-
-# Create a new environment named "autoplex_test" with the specified Python version
-RUN /opt/conda/bin/micromamba create -n autoplex_test python=${PYTHON_VERSION} --yes
-
-# Activate the autoplex_test environment
-SHELL ["micromamba", "activate", "autoplex_test"]
-
-# Install testing dependencies
-RUN python -m pip install --upgrade pip \
-    && pip install uv \
-    && uv pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
+# Set up Julia environment (ACEpotentials.jl interface)
+RUN julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add("ACEpotentials"); Pkg.add("DataFrames"); Pkg.add("CSV")'
 
 # Install Buildcell
 RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
@@ -54,8 +43,19 @@ RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
 # Add Buildcell to PATH
 ENV PATH="${PATH}:/airss/bin"
 
-# Set up Julia environment (ACEpotentials.jl interface)
-RUN julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add("ACEpotentials"); Pkg.add("DataFrames"); Pkg.add("CSV")'
+# Switch back to the micromamba default user (typically 'mambauser' user)
+USER $MAMBA_USER
+
+# Create a new environment named "autoplex_test" with the specified Python version
+RUN /opt/conda/bin/micromamba create -n autoplex_test python=${PYTHON_VERSION} --yes
+
+# Activate the autoplex_test environment
+SHELL ["micromamba", "activate", "autoplex_test"]
+
+# Install testing dependencies
+RUN python -m pip install --upgrade pip \
+    && pip install uv \
+    && uv pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
 
 # Set the working directory
 # WORKDIR /workspace
