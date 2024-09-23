@@ -39,11 +39,11 @@ RUN julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Regis
 # Install Buildcell
 
 # Define the target directory to download and install AIRSS
-AIRSS_DIR="/opt/"
+WORKDIR /opt/
 
-RUN curl -O $AIRSS_DIR/airss-0.9.3.tgz https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
-    && tar -xf  $AIRSS_DIR/airss-0.9.3.tgz \
-    && rm  $AIRSS_DIR/airss-0.9.3.tgz \
+RUN curl -O airss-0.9.3.tgz https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
+    && tar -xf  airss-0.9.3.tgz \
+    && rm  airss-0.9.3.tgz \
     && cd airss \
     && make \
     && make install \
