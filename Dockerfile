@@ -1,6 +1,10 @@
-# Use an official Python image as the base image
+# Use an official micromamba image as the base image
 ARG PYTHON_VERSION=3.10
-FROM python:${PYTHON_VERSION}-slim
+FROM mambaorg/micromamba:1.5.10
+
+# Set environment variables for micromamba
+ENV MAMBA_DOCKERFILE_ACTIVATE=1
+ENV MAMBA_ROOT_PREFIX=/opt/conda
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,9 +25,16 @@ RUN apt-get update && apt-get install -y \
 RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
     && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia
 
+# Create a new environment named "autoplex_test" with the specified Python version
+RUN micromamba create -n autoplex_test python=${PYTHON_VERSION} --yes
+
+# Activate the autoplex_test environment
+SHELL ["micromamba", "activate", "autoplex_test"]
+
 # Install testing dependencies
 RUN python -m pip install --upgrade pip \
-    && pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
+    && pip install uv \
+    && uv pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
 
 # Install Buildcell
 RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
@@ -47,4 +58,4 @@ RUN julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Regis
 # COPY . /workspace
 
 # Set the default command to bash
-CMD ["bash"]
+# CMD ["bash"]
