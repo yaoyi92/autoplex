@@ -41,7 +41,7 @@ RUN julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Regis
 # Define the target directory to download and install AIRSS
 WORKDIR /opt/
 
-RUN curl -O airss-0.9.3.tgz https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
+RUN curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz \
     && tar -xf  airss-0.9.3.tgz \
     && rm  airss-0.9.3.tgz \
     && cd airss \
