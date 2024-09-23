@@ -32,7 +32,7 @@ RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-
 USER $MAMBA_USER
 
 # Create a new environment named "autoplex_test" with the specified Python version
-RUN micromamba create -n autoplex_test python=${PYTHON_VERSION} --yes
+RUN /opt/conda/bin/micromamba create -n autoplex_test python=${PYTHON_VERSION} --yes
 
 # Activate the autoplex_test environment
 SHELL ["micromamba", "activate", "autoplex_test"]
