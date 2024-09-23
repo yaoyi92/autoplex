@@ -43,6 +43,9 @@ RUN python -m pip install --upgrade pip \
 RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
     && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia
 
+# Print current working directory
+RUN pwd
+
 # Set up Julia environment (ACEpotentials.jl interface)
 #RUN julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add("ACEpotentials"); Pkg.add("DataFrames"); Pkg.add("CSV")'
 
@@ -59,6 +62,9 @@ RUN curl -fsSL https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz -o /opt/airss
 ENV PATH="/opt/airss/bin"
 
 WORKDIR /
+
+# Print current working directory
+RUN pwd
 
 # Set the default command to bash
 CMD ["bash"]
