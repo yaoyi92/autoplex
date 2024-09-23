@@ -17,6 +17,7 @@ ARG PYTHON_VERSION
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
+    bash \
     bc \
     unzip \
     wget \
