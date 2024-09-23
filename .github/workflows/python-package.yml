@@ -22,9 +22,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Check Docker availability
-      run: docker --version
-    - name: Pull and Set up Docker image for Python ${{ matrix.python-version }}
+    - name: Run tests using Docker image for Python ${{ matrix.python-version }}
       run: |
         docker pull ghcr.io/naik-aakash/autoplex/autoplex:python-${{ matrix.python-version }}
         docker run --rm \
@@ -36,16 +34,18 @@ jobs:
           python -m uv pip install pytest pytest-mock pytest-split pytest-cov types-setuptools && \
           python -m uv pip install .[strict] && \
           python -m uv pip install ase==3.23.0 && \
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics && \
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics && \ 
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics && \
           pytest --cov=autoplex --cov-report term-missing --cov-append --splits 4 --group ${{ matrix.split }} -vv --durations-path ./tests/test_data/.pytest-split-durations
         "
     - name: Upload coverage
       uses: actions/upload-artifact@v3
       with:
-        name: coverage-${{ matrix.split }}
-        path: .coverage
-        
+        name: coverage-${{ matrix.python-version }}-${{ matrix.split }}
+        include-hidden-files: true
+        overwrite: false
+        path: ./.coverage
+
   coverage:
       needs: build
       runs-on: ubuntu-latest
@@ -89,4 +89,4 @@ jobs:
             uv pip install --upgrade pip
             uv pip install .[docs,strict]
       - name: Build
-        run: sphinx-build -W docs _build
+        run: micromamba run -n autoplex_docs sphinx-build -W docs _build
