@@ -235,6 +235,7 @@ def run_supercells(
     outputs: dict[str, list] = {
         "uuids": [],
         "dirs": [],
+        "mp-id": [],
     }
 
     for structure, supercell_matrix, mp_id in zip(
