@@ -6,6 +6,7 @@
 
 This tutorial will show you how to control the MLIP fit settings with the `autoplex` workflow. 
 The choice of the correct fit setup and hyperparameter settings has a significant influence on the final result.
+Please note that the fitting might need nodes with very large memory requirements (1 TB) in some cases.
 
 ## General settings
 
