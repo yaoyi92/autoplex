@@ -31,7 +31,7 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
         static_energy_maker=GAPStaticMaker(),
 
     ).make_from_ml_model(
-        structure=structure, potential_file=potential_file, adaptive_supercell_settings={"min_length":20}
+        structure=structure, potential_file=potential_file, supercell_settings={"min_length":20}
     )
 
     responses = run_locally(

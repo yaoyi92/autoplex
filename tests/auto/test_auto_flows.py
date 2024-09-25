@@ -153,7 +153,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
     complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(
         symprec=1e-2, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        adaptive_supercell_settings={"min_length":8, "min_atoms":20} ).make(
+        supercell_settings={"min_length":8, "min_atoms":20} ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
@@ -190,7 +190,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
 
     complete_workflow_m3gnet = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["M3GNET"],
-        symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+        symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
     ).make(
         structure_list=[structure],
@@ -240,7 +240,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
 
     complete_workflow_mace = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["MACE"],
-        symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+        symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
         benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}}
     ).make(
@@ -295,7 +295,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
 
     complete_workflow_nequip = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["NEQUIP"],
-        symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+        symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
         benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}}
     ).make(
@@ -348,7 +348,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_two_mpid = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+    complete_workflow_two_mpid = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
                                                                   volume_custom_scale_factors=[0.975, 1.0, 1.025,
                                                                                                1.05], ).make(
         structure_list=[structure, structure],
@@ -375,86 +375,6 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
         0.7126017685370398, abs=0.5
     )
 
-
-# def test_complete_dft_vs_ml_benchmark_workflow_two_mpids_big_supercell(
-#         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
-# ):  # this unit test checks that the phonon_displacement_maker of phonopy and rattled jobs don't override each other
-#     from jobflow import run_locally
-#
-#     ref_paths_big_sc = {
-#         "tight relax": "dft_ml_data_generation/tight_relax_1/",
-#         "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
-#         "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
-#         "static": "dft_ml_data_generation/static/",
-#         "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
-#         "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
-#         "dft phonon static big supercell 1/2": "dft_ml_data_generation/phonon_static_1/",
-#         "dft phonon static big supercell 2/2": "dft_ml_data_generation/phonon_static_2/",
-#         "dft rattle static 1/4": "dft_ml_data_generation/rand_static_1/",
-#         "dft rattle static 2/4": "dft_ml_data_generation/rand_static_4/",
-#         "dft rattle static 3/4": "dft_ml_data_generation/rand_static_7/",
-#         "dft rattle static 4/4": "dft_ml_data_generation/rand_static_10/",
-#     }
-#
-#     fake_run_vasp_kwargs_big_sc = {
-#         "tight relax": {"incar_settings": ["NSW", "ISMEAR"]},
-#         "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
-#         "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
-#         "dft phonon static big supercell 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
-#         "dft phonon static big supercell 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-#
-#         "dft rattle static 1/4": {
-#             "incar_settings": ["NSW", "ISMEAR"],
-#             "check_inputs": ["incar", "potcar"],
-#         },
-#         "dft rattle static 2/4": {
-#             "incar_settings": ["NSW", "ISMEAR"],
-#             "check_inputs": ["incar", "potcar"],
-#         },
-#         "dft rattle static 3/4": {
-#             "incar_settings": ["NSW", "ISMEAR"],
-#             "check_inputs": ["incar", "potcar"],
-#         },
-#         "dft rattle static 4/4": {
-#             "incar_settings": ["NSW", "ISMEAR"],
-#             "check_inputs": ["incar", "potcar"],
-#         },
-#     }
-#
-#     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
-#     structure = Structure.from_file(path_to_struct)
-#
-#     complete_workflow_big_sc = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=20, displacements=[0.01],
-#                                                                 volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-#                                                                 ).make(
-#         structure_list=[structure, structure],
-#         mp_ids=["test", "test2"],
-#         benchmark_mp_ids=["mp-22905"],
-#         benchmark_structures=[structure],
-#         preprocessing_data=True,
-#     )
-#
-#     # automatically use fake VASP and write POTCAR.spec during the test
-#     mock_vasp(ref_paths_big_sc, fake_run_vasp_kwargs_big_sc)
-#
-#     # run the flow or job and ensure that it finished running successfully
-#     responses = run_locally(
-#         complete_workflow_big_sc,
-#         create_folders=True,
-#         ensure_success=False,
-#         # We just want to check the correct order and name of jobs
-#         # and that the phonon_displacement_maker is not overwritten.
-#         # Therefore, we set `ensure_success=False`.
-#         store=memory_jobstore,
-#     )
-#
-#     assert str(responses).count("dft rattle static") == 16
-#     # 8 x job name + 8 x task label
-#     # (4 dft rattle static for each mpid)
-#     assert str(responses).count("dft phonon static big supercell") == 4
-#     # has no task label
-#
-
 def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
 ):
@@ -463,7 +383,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+    complete_workflow_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
                                                                 volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
                                                                 hyper_para_loop=True,
                                                                 atomwise_regularization_list=[0.01],
@@ -503,7 +423,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sigma_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+    complete_workflow_sigma_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
                                                                       volume_custom_scale_factors=[0.975, 1.0, 1.025,
                                                                                                    1.05],
                                                                       hyper_para_loop=True,
@@ -549,7 +469,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sigma = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+    complete_workflow_sigma = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
                                                                volume_custom_scale_factors=[0.975, 1.0, 1.025,
                                                                                             1.05], ).make(
         structure_list=[structure],
@@ -590,7 +510,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
                                                              volume_custom_scale_factors=[0.975, 1.0, 1.025,
                                                                                           1.05], ).make(
         structure_list=[structure],
@@ -630,7 +550,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sep_3 = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+    complete_workflow_sep_3 = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
                                                                volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
                                                                hyper_para_loop=True,
                                                                atomwise_regularization_list=[0.01],
@@ -676,7 +596,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, adaptive_supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
+    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms":20}, displacements=[0.01],
                                                              volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
                                                              hyper_para_loop=True, atomwise_regularization_list=[0.01],
                                                              n_sparse_list=[3000, 5000], soap_delta_list=[1.0], ).make(
@@ -732,7 +652,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         add_data_workflow = CompleteDFTvsMLBenchmarkWorkflow(
             n_structures=3,
             symprec=1e-2,
-            adaptive_supercell_settings={"min_length": 8, "min_atoms":20},
+            supercell_settings={"min_length": 8, "min_atoms":20},
             displacements=[0.01],
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
@@ -783,7 +703,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         add_data_workflow_with_dft_reference = CompleteDFTvsMLBenchmarkWorkflow(
             n_structures=3,
             symprec=1e-2,
-            adaptive_supercell_settings={"min_length": 8, "min_atoms":20},
+            supercell_settings={"min_length": 8, "min_atoms":20},
             displacements=[0.01],
             add_dft_phonon_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
@@ -832,7 +752,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         add_data_workflow_add_phonon_false = CompleteDFTvsMLBenchmarkWorkflow(
             n_structures=3,
             symprec=1e-2,
-            adaptive_supercell_settings={"min_length": 8, "min_atoms":20},
+            supercell_settings={"min_length": 8, "min_atoms":20},
             displacements=[0.01],
             add_dft_phonon_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
@@ -868,7 +788,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         add_data_workflow_add_random_false = CompleteDFTvsMLBenchmarkWorkflow(
             n_structures=3,
             symprec=1e-2,
-            adaptive_supercell_settings={"min_length": 8, "min_atoms":20},
+            supercell_settings={"min_length": 8, "min_atoms":20},
             displacements=[0.01],
             add_dft_random_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
@@ -904,7 +824,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         add_data_workflow_with_same_mpid = CompleteDFTvsMLBenchmarkWorkflow(
             n_structures=3,
             symprec=1e-2,
-            adaptive_supercell_settings={"min_length": 8, "min_atoms":20},
+            supercell_settings={"min_length": 8, "min_atoms":20},
             displacements=[0.01],
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
         ).make(
@@ -934,7 +854,7 @@ def test_phonon_dft_ml_data_generation_flow(
     mp_ids = ["mp-22905"]
 
     flow_data_generation = CompleteDFTvsMLBenchmarkWorkflow(
-        n_structures=3, adaptive_supercell_settings={"min_length": 10, "min_atoms":20}, symprec=1e-2, volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        n_structures=3, supercell_settings={"min_length": 10, "min_atoms":20}, symprec=1e-2, volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
     ).make(structure_list=structure_list,
            mp_ids=mp_ids,
            benchmark_structures=structure_list,
@@ -946,7 +866,7 @@ def test_phonon_dft_ml_data_generation_flow(
            )
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
-        n_structures=3, adaptive_supercell_settings={"min_length": 10, "min_atoms":20}, symprec=1e-2, add_dft_random_struct=False,
+        n_structures=3, supercell_settings={"min_length": 10, "min_atoms":20}, symprec=1e-2, add_dft_random_struct=False,
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
     ).make(structure_list=structure_list,
            mp_ids=mp_ids,
@@ -998,7 +918,7 @@ def test_supercell_test_runs(vasp_test_dir, clean_dir, memory_jobstore, test_dir
     structure_list = [structure]
     mp_ids = ["mp-22905"]
 
-    autoplex_flow = DFTSupercellSettingsMaker(adaptive_supercell_settings={"min_length":10, "min_atoms":10}, DFT_Maker=CHGNetStaticMaker()).make(
+    autoplex_flow = DFTSupercellSettingsMaker(supercell_settings={"min_length":10, "min_atoms":10}, DFT_Maker=CHGNetStaticMaker()).make(
         structure_list=structure_list, mp_ids=mp_ids,)
 
     responses_flow=run_locally(autoplex_flow)

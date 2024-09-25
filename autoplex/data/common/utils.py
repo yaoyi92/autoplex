@@ -75,6 +75,9 @@ def rms_dict(x_ref: np.ndarray | list, x_pred: np.ndarray | list) -> dict:
 
     x_ref and x_pred should be of same shape.
 
+    Adapted and adjusted from libatoms GAP tutorial page
+    https://libatoms.github.io/GAP/gap_fitting_tutorial.html#make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas
+
     Parameters
     ----------
     ----------1·
@@ -587,11 +590,12 @@ def energy_plot(
     ax: plt.Axes,
     title: str = "Plot of energy",
     label: str = "energy",
-) -> None:
+) -> float:
     """
     Plot the distribution of energy per atom on the output vs the input.
 
-    Adapted and adjusted from libatoms GAP tutorial page https://libatoms.github.io/GAP/gap_fitting_tutorial.html.
+    Adapted and adjusted from libatoms GAP tutorial page
+    https://libatoms.github.io/GAP/gap_fitting_tutorial.html#make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas
 
     Parameters
     ----------
@@ -647,9 +651,9 @@ def energy_plot(
     _rms = rms_dict(ener_in, ener_out)
     rmse_text = (
         "RMSE:\n"
-        + str(np.round(_rms["rmse"], 3))
+        + str(np.round(_rms["rmse"], 7))
         + " +- "
-        + str(np.round(_rms["std"], 3))
+        + str(np.round(_rms["std"], 9))
         + "eV/atom"
     )
     ax.text(
@@ -661,6 +665,8 @@ def energy_plot(
         horizontalalignment="right",
         verticalalignment="bottom",
     )
+
+    return _rms["rmse"]
 
 
 def force_plot(
@@ -675,6 +681,9 @@ def force_plot(
     Plot the distribution of force components per atom on the output vs the input.
 
     Only plots for the given atom type(s).
+
+    Adapted and adjusted from libatoms GAP tutorial page
+    https://libatoms.github.io/GAP/gap_fitting_tutorial.html#make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas
 
     Parameters
     ----------
@@ -737,7 +746,7 @@ def force_plot(
         "RMSE:\n"
         + str(np.round(_rms["rmse"], 3))
         + " +- "
-        + str(np.round(_rms["std"], 3))
+        + str(np.round(_rms["std"], 5))
         + "eV/Å"
     )
     ax.text(
@@ -764,6 +773,9 @@ def plot_energy_forces(
     """
     Plot energy and forces of the data.
 
+    Adapted and adjusted from libatoms GAP tutorial page
+    https://libatoms.github.io/GAP/gap_fitting_tutorial.html#make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas
+
     Parameters
     ----------
     title:
@@ -784,35 +796,43 @@ def plot_energy_forces(
     if species_list is None:
         species_list = ["Si"]
     fig, ax_list = plt.subplots(nrows=3, ncols=2, gridspec_kw={"hspace": 0.3})
-    fig.set_size_inches(15, 20)
+    fig.set_size_inches(10, 15)
     ax_list = ax_list.flat[:]
+    rmse = []
+    rmse.append("Energy and forces and train and test data\n")
 
     pretty_species_list = (
         str(species_list).replace("['", "").replace("']", "").replace("'", "")
     )
 
-    energy_plot(train_name, "quip_" + train_name, ax_list[0], "Energy on training data")
-    # rmse_train =
+    energy_rmse_train = energy_plot(
+        train_name, "quip_" + train_name, ax_list[0], "Energy on training data"
+    )
+    rmse.append(f"Energy train: {energy_rmse_train}")
     for species in species_list:
-        force_plot(
+        force_rmse_train = force_plot(
             train_name,
             "quip_" + train_name,
             ax_list[1],
             species,
             f"Force on training data - {pretty_species_list}",
         )
-    energy_plot(test_name, "quip_" + test_name, ax_list[2], "Energy on test data")
+        rmse.append(f"Force train {species}: {force_rmse_train}")
+    energy_rmse_test = energy_plot(
+        test_name, "quip_" + test_name, ax_list[2], "Energy on test data"
+    )
+    rmse.append(f"Energy test: {energy_rmse_test}")
     filter_outlier_energy(train_name, "quip_" + train_name, energy_limit)
     filter_outlier_energy(test_name, "quip_" + test_name, energy_limit)
-    # rmse_test =
     for species in species_list:
-        force_plot(
+        force_rmse_test = force_plot(
             test_name,
             "quip_" + test_name,
             ax_list[3],
             species,
             f"Force on test data - {pretty_species_list}",
         )
+        rmse.append(f"Force test {species}: {force_rmse_test}")
         filter_outlier_forces(train_name, "quip_" + train_name, species, force_limit)
         filter_outlier_forces(test_name, "quip_" + test_name, species, force_limit)
 
@@ -850,12 +870,11 @@ def plot_energy_forces(
         )
 
     fig.suptitle(title, fontsize=16)
-
-    plt.savefig(
-        train_name.replace("train", "energy_forces").replace(".extxyz", ".pdf"),
-        format="pdf",
-    )
     plt.savefig(train_name.replace("train", "energy_forces").replace(".extxyz", ".png"))
+
+    with open("energy_train_rmse.txt", "a") as file:
+        for entry in rmse:
+            file.write(f"{entry}\n")
 
 
 class ElementCollection:
@@ -1067,7 +1086,7 @@ def boltz(e: float, emin: float, kT: float) -> float:
     return np.exp(-(e - emin) / (kT))
 
 
-def boltzhist_CUR(
+def boltzhist_cur(
     atoms,
     descriptor,
     isol_es,
@@ -1213,7 +1232,7 @@ def boltzhist_CUR(
     return selected_atoms
 
 
-def convexhull_CUR(
+def convexhull_cur(
     atoms: list[Atoms],
     descriptor: str,
     bolt_frac: float = 0.1,

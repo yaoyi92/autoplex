@@ -87,7 +87,7 @@ Similar to the single-atom displaced supercells, you can run the complete `autop
 structures by setting `add_dft_phonon_struct` to `False`.
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(add_dft_phonon_struct=False).make(
-    structure_list=structure_list, mp_ids=mpids, 
+    structure_list=structure_list, mp_ids=mpids, preprocessing_data=True,
     benchmark_structures=benchmark_structure_list, benchmark_mp_ids=mpbenchmark)
 ```
 It can also be used to extend an already existing database in the same way as demonstrated above.
@@ -100,8 +100,7 @@ that can be used to construct customized randomized structures workflows.
 
 ## VASP settings
 
-For the single-atom displaced as well as the randomized structures the [TightDFTStaticMaker](#autoplex.data.phonons.flows.TightDFTStaticMaker) (for huge single-atom 
-displaced supercells with lattice parameters > 18 Å the [TightDFTStaticMakerBigSupercells](#autoplex.data.phonons.flows.TightDFTStaticMakerBigSupercells)) is used to set up the 
+For the single-atom displaced as well as the randomized structures the [TightDFTStaticMaker](#autoplex.data.phonons.flows.TightDFTStaticMaker) is used to set up the 
 VASP calculation input and settings. PBEsol is the default GGA functional.
 
 The `TightDFTStaticMaker` settings can be overridden by 
