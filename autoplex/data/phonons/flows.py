@@ -704,7 +704,7 @@ class RandomStructuresDataGenerator(Maker):
         jobs.append(relaxed)
         structure = relaxed.output.structure
 
-
+        # TODO: treat supercell matrix?
         supercell_matrix_job = reduce_supercell_size_job(
             structure=structure,
             min_length=self.adaptive_rattled_supercell_settings.get("min_length",12),
@@ -715,6 +715,8 @@ class RandomStructuresDataGenerator(Maker):
             step_size=self.adaptive_rattled_supercell_settings.get("step_size",1.0),
         )
         jobs.append(supercell_matrix_job)
+
+
         supercell_matrix = supercell_matrix_job.output
 
         random_rattle_sc = generate_randomized_structures(
@@ -818,7 +820,7 @@ class IsoAtomMaker(Maker):
                         "ISMEAR": 0,
                         # to be removed
                         "NPAR": 4
-                        # TODO: locpot, chgcar, chg are generated currently
+                        # TODO: locpot, chgcar, chg can be deactivated!
                     },
                 ),
                 # we should likely remove all handlers here as well

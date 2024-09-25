@@ -163,6 +163,7 @@ def check_supercells(
             min_atoms=min_atoms,
             max_atoms=max_atoms,
         )
+        print(matrix)
         supercell = structure.make_supercell(np.array(matrix).transpose())
         a, b, c = supercell.lattice.abc
         num_atoms = supercell.num_sites

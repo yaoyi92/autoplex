@@ -24,7 +24,7 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-     "pymatgen>=2024.8.9",
+     "pymatgen>=2024.9.17.1",
      "atomate2[strict]@git+https://github.com/QuantumChemist/atomate2.git@adjust_get_supercell_size",
      #"FireWorks>=2.0.3",
      "ase==3.23.0",
