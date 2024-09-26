@@ -661,7 +661,6 @@ class RandomStructuresDataGenerator(Maker):
         jobs.append(relaxed)
         structure = relaxed.output.structure
 
-
         supercell_matrix_job = reduce_supercell_size_job(
             structure=structure,
             min_length=self.supercell_settings.get("min_length", 12),
@@ -672,7 +671,6 @@ class RandomStructuresDataGenerator(Maker):
             step_size=self.supercell_settings.get("step_size", 1.0),
         )
         jobs.append(supercell_matrix_job)
-
 
         supercell_matrix = supercell_matrix_job.output
 

@@ -7,8 +7,8 @@ from jobflow import Flow, Response, job
 from autoplex.data.common.flows import DFTStaticMaker
 from autoplex.data.common.jobs import (
     Data_preprocessing,
-    Sampling,
     VASP_collect_data,
+    sampling,
 )
 from autoplex.data.rss.jobs import RandomizedStructure, do_rss
 from autoplex.fitting.common.flows import MLIPFitMaker
@@ -133,7 +133,7 @@ def initial_rss(
         The value of kT.
     """
     job1 = RandomizedStructure(struct_number=struct_number, tag=tag).make()
-    job2 = Sampling(
+    job2 = sampling(
         selection_method=selection_method,
         num_of_selection=num_of_selection,
         bcur_params=bcur_params,
@@ -270,7 +270,7 @@ def do_rss_iterations(
         bcur_params["kT"] = kt
 
         job1 = RandomizedStructure(struct_number=struct_number, tag=tag).make()
-        job2 = Sampling(
+        job2 = sampling(
             selection_method=selection_method1,
             num_of_selection=num_of_selection1,
             bcur_params=bcur_params,
@@ -295,7 +295,7 @@ def do_rss_iterations(
             num_processes_rss=num_processes_rss,
             device=device,
         )
-        job4 = Sampling(
+        job4 = sampling(
             selection_method=selection_method2,
             num_of_selection=num_of_selection2,
             bcur_params=bcur_params,

@@ -236,6 +236,9 @@ def generate_randomized_structures(
     if supercell_matrix is None:
         supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
 
+    if n_structures < 10:
+        n_structures = 10
+
     supercell = get_supercell(
         unitcell=get_phonopy_structure(structure),
         supercell_matrix=supercell_matrix,
@@ -317,7 +320,7 @@ def generate_randomized_structures(
 
 
 @job
-def Sampling(
+def sampling(
     selection_method: Literal["cur", "bcur", "random", "uniform"] = "random",
     num_of_selection: int = 5,
     bcur_params: dict | None = None,
@@ -372,6 +375,9 @@ def Sampling(
     isol_es : dict, optional
         Dictionary of isolated energy values for species. Required for 'boltzhist_CUR'
         selection method. Default is None.
+
+    random_seed:
+        Random seed.
 
     Returns
     -------
