@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import numpy as np
-
 from typing import TYPE_CHECKING
+
+import numpy as np
 from pymatgen.transformations.advanced_transformations import (
     CubicSupercellTransformation,
 )
@@ -24,12 +24,12 @@ logger = logging.getLogger(__name__)
 
 
 def ml_phonon_maker_preparation(
-        calculator_kwargs: dict,
-        relax_maker_kwargs: dict | None,
-        static_maker_kwargs: dict | None,
-        bulk_relax_maker: ForceFieldRelaxMaker,
-        phonon_displacement_maker: ForceFieldStaticMaker,
-        static_energy_maker: ForceFieldStaticMaker,
+    calculator_kwargs: dict,
+    relax_maker_kwargs: dict | None,
+    static_maker_kwargs: dict | None,
+    bulk_relax_maker: ForceFieldRelaxMaker,
+    phonon_displacement_maker: ForceFieldStaticMaker,
+    static_energy_maker: ForceFieldStaticMaker,
 ) -> tuple[
     ForceFieldRelaxMaker | None,
     ForceFieldStaticMaker | None,
@@ -83,7 +83,7 @@ def ml_phonon_maker_preparation(
 
 
 def update_phonon_displacement_maker(
-        lattice, phonon_displacement_maker
+    lattice, phonon_displacement_maker
 ) -> PhononDisplacementMaker:
     """
     Update the phonon_displacement_maker.
@@ -111,14 +111,14 @@ def update_phonon_displacement_maker(
 
 
 def check_supercells(
-        structure_list: list[Structure],
-        structure_names: list[str] | None = None,
-        min_length: float = 18,
-        max_length: float = 25,
-        fallback_min_length: float = 10,
-        min_atoms: int = 100,
-        max_atoms: int = 500,
-        tolerance: float = 0.1,
+    structure_list: list[Structure],
+    structure_names: list[str] | None = None,
+    min_length: float = 18,
+    max_length: float = 25,
+    fallback_min_length: float = 10,
+    min_atoms: int = 100,
+    max_atoms: int = 500,
+    tolerance: float = 0.1,
 ):
     """
     Check the supercell size.
@@ -170,22 +170,28 @@ def check_supercells(
 
         # check if supercells are in the requirements with a certain tolerance
         if (
-                not (min_atoms * min_tolerance <= num_atoms <= max_atoms * max_tolerance)
-                or (
-                not (fallback_min_length * min_tolerance
+            not (min_atoms * min_tolerance <= num_atoms <= max_atoms * max_tolerance)
+            or (
+                not (
+                    fallback_min_length * min_tolerance
                     <= a
-                    < max_length * max_tolerance)
-        )
-                or (
-                not (fallback_min_length * min_tolerance
+                    < max_length * max_tolerance
+                )
+            )
+            or (
+                not (
+                    fallback_min_length * min_tolerance
                     <= b
-                    < max_length * max_tolerance)
-        )
-                or (
-                not (fallback_min_length * min_tolerance
+                    < max_length * max_tolerance
+                )
+            )
+            or (
+                not (
+                    fallback_min_length * min_tolerance
                     <= c
-                    < max_length * max_tolerance)
-        )
+                    < max_length * max_tolerance
+                )
+            )
         ):
             logger.warning("You should not include structure %s \n", name)
             logger.info(
@@ -203,13 +209,13 @@ def check_supercells(
 
 
 def reduce_supercell_size(
-        structure: Structure,
-        min_length: float = 18,
-        max_length: float = 22,
-        fallback_min_length: float = 12,
-        min_atoms: int = 100,
-        max_atoms: int = 500,
-        step_size: float = 1,
+    structure: Structure,
+    min_length: float = 18,
+    max_length: float = 22,
+    fallback_min_length: float = 12,
+    min_atoms: int = 100,
+    max_atoms: int = 500,
+    step_size: float = 1,
 ):
     """
     Reduce phonopy supercell size.
@@ -239,8 +245,8 @@ def reduce_supercell_size(
     list
         supercell matrix.
     """
-    if fallback_min_length>=min_length:
-        fallback_min_length = min_length -1
+    if fallback_min_length >= min_length:
+        fallback_min_length = min_length - 1
     for minimum in range(int(min_length), int(fallback_min_length), -1):
         try:
             transformation = CubicSupercellTransformation(
