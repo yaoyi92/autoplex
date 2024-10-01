@@ -172,7 +172,7 @@ exclude_lines = [
 [tool.coverage.paths]
 source = [
     "autoplex/",
-    "/workspace/autoplex/*,
+    "/workspace/autoplex/*",
 ]
 
 [tool.coverage.run]
