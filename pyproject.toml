@@ -179,6 +179,11 @@ exclude_lines = [
 ]
 
 # omit everything in test directory from coverage
+omit = [
+    # omit anything in test directory anywhere
+    "/workspace/autoplex/*/*",
+]
+
 [tool.coverage.run]
 include = ["autoplex/*"]
 
