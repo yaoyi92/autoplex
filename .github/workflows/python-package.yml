@@ -26,8 +26,8 @@ jobs:
       run: |
         docker pull ghcr.io/jageo/autoplex/autoplex:python-${{ matrix.python-version }}
         docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
+          -v ${{ github.workspace }}:/ \
+          -w / \
           ghcr.io/jageo/autoplex/autoplex:python-${{ matrix.python-version }} \
           bash -c "
           python -m pip install --upgrade pip && \
