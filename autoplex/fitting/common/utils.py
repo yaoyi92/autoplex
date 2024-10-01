@@ -107,6 +107,8 @@ def gap_fitting(
         A dictionary with train_error, test_error
 
     """
+    # I am not
+    # completely understanding the purpose of the following line
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     mlip_path: Path = prepare_fit_environment(
         db_dir, Path.cwd(), glue_xml, train_name, test_name
