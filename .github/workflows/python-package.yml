@@ -44,7 +44,7 @@ jobs:
         name: coverage-${{ matrix.python-version }}-${{ matrix.split }}
         include-hidden-files: true
         overwrite: false
-        path: /workspace/.coverage
+        path: ./.coverage
 
   coverage:
       needs: build
