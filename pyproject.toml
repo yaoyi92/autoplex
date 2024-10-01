@@ -169,6 +169,11 @@ exclude_lines = [
   "show_plot",
 ]
 
+[tool.coverage.paths]
+source = [
+    "autoplex/",
+    "/workspace/autoplex/*,
+    ]
 
 [tool.coverage.run]
 include = ["autoplex/*"]
