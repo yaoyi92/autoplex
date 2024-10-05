@@ -1687,7 +1687,8 @@ def run_gap(num_processes_fit: int, parameters) -> None:
         GAP fit parameters.
 
     """
-    #os.environ["OMP_NUM_THREADS"] = str(num_processes_fit)
+    os.environ["OMP_NUM_THREADS"] = str(num_processes_fit)
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
     with open("std_gap_out.log", "w", encoding="utf-8") as file_std, open(
         "std_gap_err.log", "w", encoding="utf-8"
@@ -1713,7 +1714,8 @@ def run_quip(
         Name of the output file.
 
     """
-    #os.environ["OMP_NUM_THREADS"] = str(num_processes_fit)
+    os.environ["OMP_NUM_THREADS"] = str(num_processes_fit)
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
     init_args = "init_args='IP Glue'" if glue_xml else ""
     quip = (
