@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import os
-from unittest import mock
-from pymatgen.core.structure import Structure
-from autoplex.auto.phonons.jobs import (
-    get_iso_atom,
-    dft_phonopy_gen_data,
-)
+
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
-from autoplex.data.phonons.flows import TightDFTStaticMaker
 from jobflow import run_locally
+from pymatgen.core.structure import Structure
+
+from autoplex.auto.phonons.jobs import (
+    dft_phonopy_gen_data,
+    get_iso_atom,
+)
+from autoplex.data.phonons.flows import TightDFTStaticMaker
 
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
@@ -100,24 +101,26 @@ def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
     responses = run_locally(isolated_atom, create_folders=True, ensure_success=True)
 
     assert (
-            "[Element Li, Element C, Element Mo, Element Na, Element Si, Element Cl, Element K]"
-            == f"{responses[isolated_atom.output.uuid][2].output['species']}"
+        f"{responses[isolated_atom.output.uuid][2].output['species']}"
+        == "[Element Li, Element C, Element Mo, Element Na, Element Si, Element Cl, Element K]"
     )
     assert (
-            "Li"
-            and "C"
-            and "Mo"
-            and "Na"
-            and "Si"
-            and "Cl"
-            and "K" in f"{responses[isolated_atom.output.uuid][2].output['species']}"
+        "Li"
+        and "C"
+        and "Mo"
+        and "Na"
+        and "Si"
+        and "Cl"
+        and "K" in f"{responses[isolated_atom.output.uuid][2].output['species']}"
     )
 
 
 def test_dft_task_doc(vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir):
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
-    dft_phonon_workflow = dft_phonopy_gen_data(structure, [0.01], 0.1, TightDFTStaticMaker(), 10)
+    dft_phonon_workflow = dft_phonopy_gen_data(
+        structure, [0.01], 0.1, TightDFTStaticMaker(), 10
+    )
 
     ref_paths = {
         "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
@@ -153,7 +156,7 @@ def test_dft_task_doc(vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean
     mock_vasp(ref_paths, fake_run_vasp_kwargs)
 
     # run the flow or job and ensure that it finished running successfully
-    responses = run_locally(
+    _ = run_locally(
         dft_phonon_workflow,
         create_folders=True,
         ensure_success=True,

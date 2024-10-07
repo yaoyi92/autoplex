@@ -8,7 +8,6 @@ from atomate2.common.schemas.phonons import (
     PhononComputationalSettings,
     PhononJobDirs,
     PhononUUIDs,
-    ThermalDisplacementData,
 )
 from atomate2.vasp.flows.phonons import PhononMaker
 

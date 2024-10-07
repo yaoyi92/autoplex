@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import os.path
 
-from autoplex.fitting.common.jobs import GAP_DEFAULTS_FILE_PATH  # this will not be needed anymore
+from autoplex.fitting.common.jobs import (
+    GAP_DEFAULTS_FILE_PATH,
+)  # this will not be needed anymore
 from autoplex.fitting.common.utils import (
-    load_mlip_hyperparameter_defaults,
-    gap_hyperparameter_constructor,
     check_convergence,
     data_distillation,
+    gap_hyperparameter_constructor,
+    load_mlip_hyperparameter_defaults,
     prepare_fit_environment,
 )
 
@@ -213,10 +215,18 @@ def test_check_convergence():
 
 
 def test_data_distillation(test_dir):
-    atoms = data_distillation((test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz"), 35.0, force_label="REF_forces")
+    atoms = data_distillation(
+        (test_dir / "fitting" / "ref_files" / "vasp_ref.extxyz"),
+        35.0,
+        force_label="REF_forces",
+    )
 
     for atom in atoms:
-        if (atom.symbols == "Li32Cl32").any() or (atom.symbols == "Li").any() or (atom.symbols == "Cl").any():
+        if (
+            (atom.symbols == "Li32Cl32").any()
+            or (atom.symbols == "Li").any()
+            or (atom.symbols == "Cl").any()
+        ):
             assert True
 
 

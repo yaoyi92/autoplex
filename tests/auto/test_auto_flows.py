@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import os
+
 import pytest
-from monty.serialization import loadfn
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
+from monty.serialization import loadfn
 from pymatgen.core.structure import Structure
+
 from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
 
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
@@ -121,7 +124,6 @@ def fake_run_vasp_kwargs4():
         "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-
         "dft rattle static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
@@ -142,7 +144,13 @@ def fake_run_vasp_kwargs4():
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_gap(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     from jobflow import run_locally
 
@@ -150,9 +158,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
     structure = Structure.from_file(path_to_struct)
 
     complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(
-        symprec=1e-2, min_length=8, displacements=[0.01],
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        adaptive_supercell_settings=True, ).make(
+        adaptive_supercell_settings=True,
+    ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
@@ -171,16 +182,29 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
         store=memory_jobstore,
     )
 
-    print("RMSE: ", responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0]["benchmark_phonon_rmse"])
+    print(
+        "RMSE: ",
+        responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0][
+            "benchmark_phonon_rmse"
+        ],
+    )
 
     assert complete_workflow.jobs[4].name == "complete_benchmark"
-    assert responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0]["benchmark_phonon_rmse"] == pytest.approx(
+    assert responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0][
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(
         2.002641337594289, abs=1.0  # it's kinda fluctuating because of the little data
     )
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     from jobflow import run_locally
 
@@ -189,7 +213,9 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
 
     complete_workflow_m3gnet = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["M3GNET"],
-        symprec=1e-2, min_length=8, displacements=[0.01],
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
     ).make(
         structure_list=[structure],
@@ -224,13 +250,20 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
     )
     assert complete_workflow_m3gnet.jobs[4].name == "complete_benchmark"
     assert responses[complete_workflow_m3gnet.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(
         5.2622804443539355, abs=1.0  # bad fit data
     )
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_mace(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     from jobflow import run_locally
 
@@ -239,9 +272,11 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
 
     complete_workflow_mace = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["MACE"],
-        symprec=1e-2, min_length=8, displacements=[0.01],
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}}
+        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}},
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
@@ -277,15 +312,23 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
 
     assert complete_workflow_mace.jobs[4].name == "complete_benchmark"
     assert responses[complete_workflow_mace.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
-        5.391879137001022, abs=3.0
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(
+        5.391879137001022,
+        abs=3.0
         # result is so bad because hyperparameter quality is reduced to a minimum to save time
         # and too little data
     )
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_nequip(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     from jobflow import run_locally
 
@@ -294,9 +337,11 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
 
     complete_workflow_nequip = CompleteDFTvsMLBenchmarkWorkflow(
         ml_models=["NEQUIP"],
-        symprec=1e-2, min_length=8, displacements=[0.01],
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}}
+        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}},
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
@@ -332,24 +377,35 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
 
     assert complete_workflow_nequip.jobs[4].name == "complete_benchmark"
     assert responses[complete_workflow_nequip.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
-        5.633069137001022, abs=3.0
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(
+        5.633069137001022,
+        abs=3.0
         # result is so bad because hyperparameter quality is reduced to a minimum to save time
         # and too little data
     )
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_two_mpid = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                                  volume_custom_scale_factors=[0.975, 1.0, 1.025,
-                                                                                               1.05], ).make(
+    complete_workflow_two_mpid = CompleteDFTvsMLBenchmarkWorkflow(
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+    ).make(
         structure_list=[structure, structure],
         mp_ids=["test", "test2"],
         benchmark_mp_ids=["mp-22905"],
@@ -370,13 +426,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
 
     assert complete_workflow_two_mpid.jobs[6].name == "complete_benchmark"
     assert responses[complete_workflow_two_mpid.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
-        0.7126017685370398, abs=0.5
-    )
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(0.7126017685370398, abs=0.5)
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_two_mpids_big_supercell(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
+    vasp_test_dir, mock_vasp, test_dir, memory_jobstore, clean_dir
 ):  # this unit test checks that the phonon_displacement_maker of phonopy and rattled jobs don't override each other
     from jobflow import run_locally
 
@@ -401,7 +456,6 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids_big_supercell(
         "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static big supercell 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static big supercell 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-
         "dft rattle static 1/4": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
@@ -423,9 +477,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids_big_supercell(
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_big_sc = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=20, displacements=[0.01],
-                                                                volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                                ).make(
+    complete_workflow_big_sc = CompleteDFTvsMLBenchmarkWorkflow(
+        symprec=1e-2,
+        min_length=20,
+        displacements=[0.01],
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+    ).make(
         structure_list=[structure, structure],
         mp_ids=["test", "test2"],
         benchmark_mp_ids=["mp-22905"],
@@ -455,19 +512,29 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids_big_supercell(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                                volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                                hyper_para_loop=True,
-                                                                atomwise_regularization_list=[0.01],
-                                                                n_sparse_list=[3000, 5000],
-                                                                soap_delta_list=[1.0], ).make(
+    complete_workflow_hploop = CompleteDFTvsMLBenchmarkWorkflow(
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        hyper_para_loop=True,
+        atomwise_regularization_list=[0.01],
+        n_sparse_list=[3000, 5000],
+        soap_delta_list=[1.0],
+    ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
@@ -488,33 +555,44 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
 
     assert complete_workflow_hploop.jobs[4].name == "complete_benchmark"
     assert responses[complete_workflow_hploop.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(
         2.002641337594289, abs=1.0  # it's kinda fluctuating because of the little data
     )
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     import glob
+
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sigma_hploop = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                                      volume_custom_scale_factors=[0.975, 1.0, 1.025,
-                                                                                                   1.05],
-                                                                      hyper_para_loop=True,
-                                                                      atomwise_regularization_list=[0.01],
-                                                                      n_sparse_list=[3000, 5000],
-                                                                      soap_delta_list=[1.0], ).make(
+    complete_workflow_sigma_hploop = CompleteDFTvsMLBenchmarkWorkflow(
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        hyper_para_loop=True,
+        atomwise_regularization_list=[0.01],
+        n_sparse_list=[3000, 5000],
+        soap_delta_list=[1.0],
+    ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
         preprocessing_data=True,
-        **{"regularization": True},
+        regularization=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -529,8 +607,9 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
     )
 
     assert complete_workflow_sigma_hploop.jobs[4].name == "complete_benchmark"
-    assert responses[complete_workflow_sigma_hploop.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
+    assert responses[complete_workflow_sigma_hploop.jobs[-1].output.uuid][1].output[0][
+        0
+    ]["benchmark_phonon_rmse"] == pytest.approx(
         1.511743561686686, abs=1.0  # it's kinda fluctuating because of the little data
     )
 
@@ -540,23 +619,33 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     import glob
+
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sigma = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                               volume_custom_scale_factors=[0.975, 1.0, 1.025,
-                                                                                            1.05], ).make(
+    complete_workflow_sigma = CompleteDFTvsMLBenchmarkWorkflow(
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+    ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
         preprocessing_data=True,
-        **{"regularization": True},
+        regularization=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -572,9 +661,8 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
 
     assert complete_workflow_sigma.jobs[4].name == "complete_benchmark"
     assert responses[complete_workflow_sigma.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
-        1.511743561686686, abs=0.5
-    )
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(1.511743561686686, abs=0.5)
 
     # regularization specific test
     reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
@@ -582,16 +670,25 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                             volume_custom_scale_factors=[0.975, 1.0, 1.025,
-                                                                                          1.05], ).make(
+    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+    ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
@@ -599,7 +696,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
         preprocessing_data=True,
-        **{"separated": True},
+        separated=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -615,26 +712,36 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
 
     assert complete_workflow_sep.jobs[4].name == "complete_benchmark"
     assert responses[complete_workflow_sep.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
-        0.8709764794814768, abs=0.5
-    )
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(0.8709764794814768, abs=0.5)
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_mpids(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     import glob
+
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sep_3 = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                               volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                               hyper_para_loop=True,
-                                                               atomwise_regularization_list=[0.01],
-                                                               n_sparse_list=[3000, 5000],
-                                                               soap_delta_list=[1.0], ).make(
+    complete_workflow_sep_3 = CompleteDFTvsMLBenchmarkWorkflow(
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        hyper_para_loop=True,
+        atomwise_regularization_list=[0.01],
+        n_sparse_list=[3000, 5000],
+        soap_delta_list=[1.0],
+    ).make(
         structure_list=[structure, structure, structure],
         mp_ids=["test", "test2", "test3"],
         benchmark_mp_ids=["mp-22905"],
@@ -642,7 +749,8 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
         preprocessing_data=True,
-        **{"regularization": True, "separated": True},
+        regularization=True,
+        separated=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -657,9 +765,8 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
     )
 
     assert responses[complete_workflow_sep_3.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
-        0.8709764794814768, abs=0.5
-    )
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(0.8709764794814768, abs=0.5)
 
     # regularization specific test
     reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
@@ -667,18 +774,31 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+    vasp_test_dir,
+    mock_vasp,
+    test_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    clean_dir,
 ):
     import glob
+
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, min_length=8, displacements=[0.01],
-                                                             volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                             hyper_para_loop=True, atomwise_regularization_list=[0.01],
-                                                             n_sparse_list=[3000, 5000], soap_delta_list=[1.0], ).make(
+    complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(
+        symprec=1e-2,
+        min_length=8,
+        displacements=[0.01],
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        hyper_para_loop=True,
+        atomwise_regularization_list=[0.01],
+        n_sparse_list=[3000, 5000],
+        soap_delta_list=[1.0],
+    ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
@@ -686,7 +806,8 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
         preprocessing_data=True,
-        **{"regularization": True, "separated": True},
+        regularization=True,
+        separated=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -702,9 +823,8 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
 
     assert complete_workflow_sep.jobs[4].name == "complete_benchmark"
     assert responses[complete_workflow_sep.jobs[-1].output.uuid][1].output[0][0][
-               "benchmark_phonon_rmse"] == pytest.approx(
-        0.8709764794814768, abs=0.5
-    )
+        "benchmark_phonon_rmse"
+    ] == pytest.approx(0.8709764794814768, abs=0.5)
 
     # regularization specific test
     reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
@@ -713,14 +833,14 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
 
 class TestCompleteDFTvsMLBenchmarkWorkflow:
     def test_add_data_to_dataset_workflow(
-            self,
-            vasp_test_dir,
-            mock_vasp,
-            test_dir,
-            memory_jobstore,
-            clean_dir,
-            fake_run_vasp_kwargs,
-            ref_paths,
+        self,
+        vasp_test_dir,
+        mock_vasp,
+        test_dir,
+        memory_jobstore,
+        clean_dir,
+        fake_run_vasp_kwargs,
+        ref_paths,
     ):
         import pytest
         from jobflow import run_locally
@@ -733,7 +853,20 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
-            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[
+                0.975,
+                0.975,
+                0.975,
+                1.0,
+                1.0,
+                1.0,
+                1.025,
+                1.025,
+                1.025,
+                1.05,
+                1.05,
+                1.05,
+            ],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -743,7 +876,11 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            general={
+                "two_body": True,
+                "three_body": False,
+                "soap": False,
+            },  # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -757,20 +894,19 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             store=memory_jobstore,
         )
 
-        assert responses[add_data_workflow.jobs[-1].output.uuid][
-                   1
-               ].output[0][0][
-                   "benchmark_phonon_rmse"] == pytest.approx(0.4841808019705598, abs=0.5)
+        assert responses[add_data_workflow.jobs[-1].output.uuid][1].output[0][0][
+            "benchmark_phonon_rmse"
+        ] == pytest.approx(0.4841808019705598, abs=0.5)
 
     def test_add_data_workflow_with_dft_reference(
-            self,
-            vasp_test_dir,
-            mock_vasp,
-            test_dir,
-            memory_jobstore,
-            clean_dir,
-            fake_run_vasp_kwargs,
-            ref_paths,
+        self,
+        vasp_test_dir,
+        mock_vasp,
+        test_dir,
+        memory_jobstore,
+        clean_dir,
+        fake_run_vasp_kwargs,
+        ref_paths,
     ):
         from jobflow import run_locally
 
@@ -785,7 +921,20 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             min_length=8,
             displacements=[0.01],
             add_dft_phonon_struct=False,
-            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[
+                0.975,
+                0.975,
+                0.975,
+                1.0,
+                1.0,
+                1.0,
+                1.025,
+                1.025,
+                1.025,
+                1.05,
+                1.05,
+                1.05,
+            ],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -795,7 +944,11 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=[dft_reference],
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            general={
+                "two_body": True,
+                "three_body": False,
+                "soap": False,
+            },  # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -815,16 +968,15 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             assert job.name != "tight relax 1"
 
     def test_add_data_workflow_add_phonon_false(
-            self,
-            vasp_test_dir,
-            mock_vasp,
-            test_dir,
-            memory_jobstore,
-            clean_dir,
-            fake_run_vasp_kwargs,
-            ref_paths,
+        self,
+        vasp_test_dir,
+        mock_vasp,
+        test_dir,
+        memory_jobstore,
+        clean_dir,
+        fake_run_vasp_kwargs,
+        ref_paths,
     ):
-
         path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
         structure = Structure.from_file(path_to_struct)
 
@@ -834,7 +986,20 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             min_length=8,
             displacements=[0.01],
             add_dft_phonon_struct=False,
-            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[
+                0.975,
+                0.975,
+                0.975,
+                1.0,
+                1.0,
+                1.0,
+                1.025,
+                1.025,
+                1.025,
+                1.05,
+                1.05,
+                1.05,
+            ],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -844,23 +1009,26 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            general={
+                "two_body": True,
+                "three_body": False,
+                "soap": False,
+            },  # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_phonon_false.iterflow():
             assert job.name != "dft_phonopy_gen_data"
 
     def test_add_data_workflow_add_random_false(
-            self,
-            vasp_test_dir,
-            mock_vasp,
-            test_dir,
-            memory_jobstore,
-            clean_dir,
-            fake_run_vasp_kwargs,
-            ref_paths,
+        self,
+        vasp_test_dir,
+        mock_vasp,
+        test_dir,
+        memory_jobstore,
+        clean_dir,
+        fake_run_vasp_kwargs,
+        ref_paths,
     ):
-
         path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
         structure = Structure.from_file(path_to_struct)
 
@@ -870,7 +1038,20 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             min_length=8,
             displacements=[0.01],
             add_dft_random_struct=False,
-            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[
+                0.975,
+                0.975,
+                0.975,
+                1.0,
+                1.0,
+                1.0,
+                1.025,
+                1.025,
+                1.025,
+                1.05,
+                1.05,
+                1.05,
+            ],
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
@@ -880,23 +1061,26 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            general={
+                "two_body": True,
+                "three_body": False,
+                "soap": False,
+            },  # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_random_false.iterflow():
             assert job.name != "dft_random_gen_data"
 
     def test_add_data_workflow_with_same_mpid(
-            self,
-            vasp_test_dir,
-            mock_vasp,
-            test_dir,
-            memory_jobstore,
-            clean_dir,
-            fake_run_vasp_kwargs,
-            ref_paths,
+        self,
+        vasp_test_dir,
+        mock_vasp,
+        test_dir,
+        memory_jobstore,
+        clean_dir,
+        fake_run_vasp_kwargs,
+        ref_paths,
     ):
-
         path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
         structure = Structure.from_file(path_to_struct)
 
@@ -905,7 +1089,20 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             symprec=1e-2,
             min_length=8,
             displacements=[0.01],
-            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            volume_custom_scale_factors=[
+                0.975,
+                0.975,
+                0.975,
+                1.0,
+                1.0,
+                1.0,
+                1.025,
+                1.025,
+                1.025,
+                1.05,
+                1.05,
+                1.05,
+            ],
         ).make(
             structure_list=[structure],
             mp_ids=["mp-22905"],
@@ -915,7 +1112,11 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            general={
+                "two_body": True,
+                "three_body": False,
+                "soap": False,
+            },  # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
@@ -923,7 +1124,13 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
 
 
 def test_phonon_dft_ml_data_generation_flow(
-        vasp_test_dir, mock_vasp, clean_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, test_dir
+    vasp_test_dir,
+    mock_vasp,
+    clean_dir,
+    memory_jobstore,
+    ref_paths4,
+    fake_run_vasp_kwargs4,
+    test_dir,
 ):
     from jobflow import run_locally
 
@@ -933,41 +1140,57 @@ def test_phonon_dft_ml_data_generation_flow(
     mp_ids = ["mp-22905"]
 
     flow_data_generation = CompleteDFTvsMLBenchmarkWorkflow(
-        n_structures=3, min_length=10, symprec=1e-2, volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-    ).make(structure_list=structure_list,
-           mp_ids=mp_ids,
-           benchmark_structures=structure_list,
-           benchmark_mp_ids=mp_ids,
-           pre_xyz_files=["vasp_ref.extxyz"],
-           pre_database_dir=test_dir / "fitting" / "ref_files",
-           preprocessing_data=True,
-           **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
-           )
+        n_structures=3,
+        min_length=10,
+        symprec=1e-2,
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+    ).make(
+        structure_list=structure_list,
+        mp_ids=mp_ids,
+        benchmark_structures=structure_list,
+        benchmark_mp_ids=mp_ids,
+        pre_xyz_files=["vasp_ref.extxyz"],
+        pre_database_dir=test_dir / "fitting" / "ref_files",
+        preprocessing_data=True,
+        general={
+            "two_body": True,
+            "three_body": False,
+            "soap": False,
+        },  # reduce unit test run time
+    )
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
-        n_structures=3, min_length=10, symprec=1e-2, add_dft_random_struct=False,
+        n_structures=3,
+        min_length=10,
+        symprec=1e-2,
+        add_dft_random_struct=False,
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-    ).make(structure_list=structure_list,
-           mp_ids=mp_ids,
-           benchmark_structures=structure_list,
-           benchmark_mp_ids=mp_ids,
-           pre_xyz_files=["vasp_ref.extxyz"],
-           pre_database_dir=test_dir / "fitting" / "ref_files",
-           preprocessing_data=True,
-           **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
-           )
+    ).make(
+        structure_list=structure_list,
+        mp_ids=mp_ids,
+        benchmark_structures=structure_list,
+        benchmark_mp_ids=mp_ids,
+        pre_xyz_files=["vasp_ref.extxyz"],
+        pre_database_dir=test_dir / "fitting" / "ref_files",
+        preprocessing_data=True,
+        general={
+            "two_body": True,
+            "three_body": False,
+            "soap": False,
+        },  # reduce unit test run time
+    )
     # automatically use fake VASP and write POTCAR.spec during the test
     mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
 
     # run the flow or job and ensure that it finished running successfully
-    responses = run_locally(
+    _ = run_locally(
         flow_data_generation,
         create_folders=True,
         ensure_success=True,
         store=memory_jobstore,
     )
 
-    responses_worattled = run_locally(
+    _ = run_locally(
         flow_data_generation_without_rattled_structures,
         create_folders=True,
         ensure_success=False,  # only two phonon calcs are not enough for this to pass
@@ -981,4 +1204,6 @@ def test_phonon_dft_ml_data_generation_flow(
         counter_wor += 1
     assert counter == 7
     assert counter_wor == 6
+
+
 # TODO testing cell_factor_sequence
