@@ -36,7 +36,7 @@ jobs:
           python -m uv pip install ase==3.23.0 && \
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics && \ 
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics && \
-          pytest --cov=autoplex --cov-report term-missing --cov-append --splits 4 --group ${{ matrix.split }} -vv --durations-path ./tests/test_data/.pytest-split-durations
+          pytest --cov=autoplex --cov-report term-missing --cov-append --splits 4 --group ${{ matrix.split }} -vv --durations-path /workspace/tests/test_data/.pytest-split-durations
         "
     - name: Upload coverage
       uses: actions/upload-artifact@v3
