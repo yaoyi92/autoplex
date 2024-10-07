@@ -45,7 +45,6 @@ exclude = ["tutorials", "tests"]
 "autoplex.fitting.common" = ["gap-defaults.json"]
 
 [project.optional-dependencies]
-
 docs = [
     "autodoc_pydantic==2.0.1",
     "ipython",
@@ -60,7 +59,6 @@ docs = [
     "sphinxcontrib-mermaid",
 
 ]
-
 strict = [
      "pymatgen>=2024.8.9",
      "atomate2[strict,strict-forcefields]@git+https://github.com/materialsproject/atomate2.git@480f75e",
@@ -73,6 +71,7 @@ strict = [
      "torchdata==0.7.1",
 ]
 dev = ["pre-commit>=2.12.1"]
+tests = ["flake8", "pytest", "pytest-mock", "pytest-split", "pytest-cov", "types-setuptools"]
 
 [tool.versioningit.vcs]
 method = "git"
