@@ -1,12 +1,14 @@
 from __future__ import annotations
-from autoplex.fitting.common.flows import MLIPFitMaker
+
 import shutil
 from pathlib import Path
+
 from jobflow import run_locally
+
+from autoplex.fitting.common.flows import MLIPFitMaker
 
 
 def test_gap_fit_maker(test_dir, memory_jobstore):
-
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     gapfit = MLIPFitMaker().make(
@@ -15,23 +17,22 @@ def test_gap_fit_maker(test_dir, memory_jobstore):
         twob={"delta": 2.0, "cutoff": 4},
         threeb={"n_sparse": 10},
         preprocessing_data=False,
-        database_dir=database_dir    
-        )
+        database_dir=database_dir,
+    )
 
-    responses = run_locally(
+    _ = run_locally(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    dir = Path('.')
+    dir = Path(".")
     path_to_job_files = list(dir.glob("job*"))
     for path in path_to_job_files:
         shutil.rmtree(path)
 
 
 def test_jace_fit_maker(test_dir, memory_jobstore):
-
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     jacefit = MLIPFitMaker(
@@ -51,7 +52,7 @@ def test_jace_fit_maker(test_dir, memory_jobstore):
 
     assert Path(jacefit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    dir = Path('.')
+    dir = Path(".")
     path_to_job_files = list(dir.glob("job*"))
     for path in path_to_job_files:
         shutil.rmtree(path)
@@ -61,7 +62,7 @@ def test_nqeuip_fit_maker(test_dir, memory_jobstore):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     nequipfit = MLIPFitMaker(
-       mlip_type="NEQUIP",
+        mlip_type="NEQUIP",
     ).make(
         isolated_atoms_energies={14: -0.84696938},
         num_processes_fit=1,
@@ -72,13 +73,13 @@ def test_nqeuip_fit_maker(test_dir, memory_jobstore):
         device="cpu",
     )
 
-    responses = run_locally(
+    _ = run_locally(
         nequipfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    dir = Path('.')
+    dir = Path(".")
     path_to_job_files = list(dir.glob("job*"))
     for path in path_to_job_files:
         shutil.rmtree(path)
@@ -88,7 +89,7 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     nequipfit = MLIPFitMaker(
-            mlip_type="M3GNET",
+        mlip_type="M3GNET",
     ).make(
         isolated_atoms_energies={14: -0.84696938},
         num_processes_fit=1,
@@ -107,13 +108,13 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore):
         test_equal_to_val=True,
     )
 
-    responses = run_locally(
+    _ = run_locally(
         nequipfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    dir = Path('.')
+    dir = Path(".")
     path_to_job_files = list(dir.glob("job*"))
     for path in path_to_job_files:
         shutil.rmtree(path)
@@ -123,7 +124,7 @@ def test_mace_fit_maker(test_dir, memory_jobstore):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     nequipfit = MLIPFitMaker(
-                mlip_type="MACE",
+        mlip_type="MACE",
     ).make(
         isolated_atoms_energies={14: -0.84696938},
         num_processes_fit=1,
@@ -143,14 +144,13 @@ def test_mace_fit_maker(test_dir, memory_jobstore):
         device="cpu",
     )
 
-    responses = run_locally(
+    _ = run_locally(
         nequipfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    dir = Path('.')
+    dir = Path(".")
     path_to_job_files = list(dir.glob("job*"))
     for path in path_to_job_files:
         shutil.rmtree(path)
-
