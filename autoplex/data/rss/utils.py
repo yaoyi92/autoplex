@@ -90,10 +90,12 @@ class HookeanRepulsion(FixConstraint):
     dependent on the potential and the atomic species used. It is not guaranteed
     that the constraint will be either soft enough (e.g. non-exploding in MD) or
     strong enough (to avoid overlaps) for all spring constants and distances.
+
     
     Adapted from:
     *    Title: ASE constraints package at  at ase/ase/constraints.py
     *    Author: Ask Hjorth Larsen
+    *    Copyright 2024, ASE-developers.
     *    Date 07/10/2024
     *    Code version: 3.23.0
     *    Availability: https://gitlab.com/ase/
