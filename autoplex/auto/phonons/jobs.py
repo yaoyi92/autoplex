@@ -93,7 +93,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
     collect_output = []
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
-    for suffix in ["", "_wo_sigma", "_phonon", "_rand_struc"]:
+    # TODO find out why the loop is broken/leads to broken code
+    for suffix in [""]: #, "_wo_sigma", "_phonon", "_rand_struc"]:
         # _wo_sigma", "_phonon", "_rand_struc" only available for GAP at the moment
         if ml_model == "GAP":
             ml_potential = Path(ml_path) / f"gap_file{suffix}.xml"
