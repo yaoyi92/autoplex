@@ -122,6 +122,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
             )
             jobs.append(add_data_ml_phonon)
 
+            # TODO: check this part?
             # DFT benchmark reference preparations
             if dft_references is None and benchmark_mp_ids is not None:
                 if (
@@ -179,7 +180,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
             jobs.append(add_data_bm)
             collect_output.append(add_data_bm.output)
 
-    return Response(replace=jobs, output=collect_output)
+    return Response(replace=Flow(jobs), output=collect_output)
 
 
 @job
