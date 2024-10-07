@@ -97,6 +97,7 @@ class HookeanRepulsion(FixConstraint):
     *    Date 07/10/2024
     *    Code version: 3.23.0
     *    Availability: https://gitlab.com/ase/
+    *    License: LGPLv2.1+
     """
 
     def __init__(
