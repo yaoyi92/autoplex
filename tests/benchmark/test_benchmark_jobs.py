@@ -3,11 +3,8 @@ import pytest
 from pymatgen.core.structure import Structure
 from pymatgen.io.phonopy import get_ph_bs_symm_line
 from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
-from autoplex.benchmark.phonons.jobs import (
-    compute_bandstructure_benchmark_metrics,
-    write_benchmark_metrics,
-)
-
+from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
+from autoplex.benchmark.phonons.utils import compute_bandstructure_benchmark_metrics
 
 def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     import os
@@ -26,13 +23,12 @@ def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     df_bs = PhononBandStructureSymmLine.from_dict(dummy_bs_dict)
     ml_bs = PhononBandStructureSymmLine.from_dict(dummy_bs_dict)
 
-    benchmark_job = compute_bandstructure_benchmark_metrics(
+    result=compute_bandstructure_benchmark_metrics(
         ml_model="GAP", structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
     )
 
-    responses = run_locally(benchmark_job, create_folders=False, ensure_success=True)
 
-    assert responses[benchmark_job.output.uuid][1].output["benchmark_phonon_rmse"] == pytest.approx(0.0)
+    assert result["benchmark_phonon_rmse"] == pytest.approx(0.0)
 
     # get list of generated plot files
     test_files_dir = Path(test_dir / "benchmark").resolve()
@@ -63,13 +59,12 @@ def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
     df_bs = get_ph_bs_symm_line(bands_path=dft_bs_file_path)
     ml_bs = get_ph_bs_symm_line(bands_path=ml_bs_file_path)
 
-    benchmark_job = compute_bandstructure_benchmark_metrics(
+    result= compute_bandstructure_benchmark_metrics(
         ml_model="GAP",structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
     )
 
-    responses = run_locally(benchmark_job, create_folders=False, ensure_success=True)
 
-    assert responses[benchmark_job.output.uuid][1].output["benchmark_phonon_rmse"] == pytest.approx(
+    assert result["benchmark_phonon_rmse"] == pytest.approx(
         0.5716963823412201, abs=0.3  # TODO check results
     )
 

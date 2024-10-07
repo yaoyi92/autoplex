@@ -28,7 +28,6 @@ def test_benchmark(test_dir, clean_dir):
         dft_phonon_task_doc =dft_doc,
         benchmark_mp_id="test",
     )
-    assert len(benchmark_flow.jobs) == 1
 
     responses = run_locally(benchmark_flow, create_folders=False, ensure_success=True)
 

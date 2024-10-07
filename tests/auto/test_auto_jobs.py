@@ -2,18 +2,54 @@ from __future__ import annotations
 
 import os
 from unittest import mock
+from jobflow import Flow
 from pymatgen.core.structure import Structure
 from autoplex.auto.phonons.jobs import (
     get_iso_atom,
     dft_phonopy_gen_data,
+complete_benchmark
 )
+
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from autoplex.data.phonons.flows import TightDFTStaticMaker
 from jobflow import run_locally
 
+from conftest import memory_jobstore
+from get_phonon_doc import response
+from pytest import approx
+
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
+def test_complete_benchmark(test_dir, memory_jobstore):
+    from monty.serialization import loadfn
+    from atomate2.common.schemas.phonons import PhononBSDOSDoc
+    from autoplex.fitting.common.flows import MLIPFitMaker
+    database_dir = test_dir / "fitting/rss_training_dataset/"
+    jobs=[]
+    gapfit = MLIPFitMaker().make(
+        auto_delta=False,
+        glue_xml=False,
+        twob={"delta": 2.0, "cutoff": 4},
+        threeb={"n_sparse": 10},
+        preprocessing_data=False,
+        database_dir=database_dir
+    )
+    dft_data = loadfn(test_dir / "benchmark" / "phonon_doc_si.json")
+    dft_doc: PhononBSDOSDoc = dft_data["output"]
+    structure=dft_doc.structure
+
+    jobs.append(gapfit)
+
+
+    bm=complete_benchmark(ibenchmark_structure=0, benchmark_structure=structure, mp_ids=["mp-82"],benchmark_mp_ids=["mp-82"], ml_path=gapfit.output["mlip_path"], ml_model="GAP", dft_references=[dft_doc], add_dft_phonon_struct=False, fit_input=None,symprec=1e-1, phonon_displacement_maker=None, supercell_settings={"min_length": 8})
+    jobs.append(bm)
+
+    response=run_locally(Flow(jobs), store=memory_jobstore)
+    output=response[bm.output.uuid][1].output[0].resolve(store=memory_jobstore)
+    assert output["benchmark_phonon_rmse"]== approx(1.0, abs=0.5)
+    assert output["dft_imaginary_modes"]== False
+    assert output["ml_imaginary_modes"]== False
 
 def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
     structure_list = [
