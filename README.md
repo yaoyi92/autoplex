@@ -36,7 +36,7 @@ Install julia (the command below installs latest version of Julia)
 
 Once installed, in the terminal run following commands to get Julia v1.9.2 and Julia ACEpotentials dependencies
 
-```bash 
+```bash
 juliaup add 1.9.2
 juliaup default 1.9.2
 ````
