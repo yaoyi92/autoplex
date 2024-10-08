@@ -2,20 +2,17 @@ from __future__ import annotations
 
 import os
 
+from atomate2.vasp.powerups import update_user_incar_settings
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
+from pymatgen.core.structure import Structure
 from atomate2.forcefields.jobs import (
     GAPRelaxMaker,
     GAPStaticMaker,
+
 )
-from atomate2.vasp.powerups import update_user_incar_settings
-from pymatgen.core.structure import Structure
 
 from autoplex.data.common.flows import GenerateTrainingDataForTesting
-from autoplex.data.phonons.flows import (
-    IsoAtomMaker,
-    MLPhononMaker,
-    RandomStructuresDataGenerator,
-)
+from autoplex.data.phonons.flows import IsoAtomMaker, RandomStructuresDataGenerator, MLPhononMaker
 
 os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
@@ -34,8 +31,7 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
         phonon_displacement_maker=GAPStaticMaker(name="gap phonon static"),
         static_energy_maker=GAPStaticMaker(),
     ).make_from_ml_model(
-        structure=structure,
-        potential_file=potential_file,
+        structure=structure, potential_file=potential_file,
     )
 
     responses = run_locally(
@@ -44,15 +40,10 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
 
     assert gap_phonon_jobs.name == "ml phonon"
     assert responses[gap_phonon_jobs.output.uuid][1].replace[0].name == "MLFF.GAP relax"
-    assert (
-        responses[gap_phonon_jobs.output.uuid][1].replace[2].name == "MLFF.GAP static"
-    )
+    assert responses[gap_phonon_jobs.output.uuid][1].replace[2].name == "MLFF.GAP static"
 
-    ml_phonon_bs_doc = responses[gap_phonon_jobs.output.uuid][1].output.resolve(
-        store=memory_jobstore
-    )
+    ml_phonon_bs_doc = responses[gap_phonon_jobs.output.uuid][1].output.resolve(store=memory_jobstore)
     assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
-
 
 def test_data_generation_distort_type_0(vasp_test_dir, mock_vasp, clean_dir):
     from jobflow import run_locally
@@ -178,7 +169,7 @@ def test_data_generation_distort_type_2(vasp_test_dir, mock_vasp, clean_dir):
         volume_custom_scale_factors=[
             1.0,
             1.0,
-        ],  # for distort_type 0 and 2, the number of randomized structures is dependent on the number of scale factors because scale_cell is called
+        ],  # for distort_type 0 and 2, the number of randomized structures is dependent on the number of scale factors becuase scale_cell is called
     )
 
     data_gen_dt_2 = update_user_incar_settings(data_gen_dt_2, {"ISMEAR": 0})
@@ -303,6 +294,6 @@ def test_generate_training_data_for_testing(
         steps=1,
     )
 
-    _ = run_locally(
+    responses = run_locally(
         generate_data, create_folders=True, ensure_success=False, store=memory_jobstore
     )  # atomate2 switched from pckl to json files for the trajectories --> job fails in its current state

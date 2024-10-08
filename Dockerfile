@@ -37,7 +37,7 @@ RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
 # Install testing dependencies
 RUN python -m pip install --upgrade pip \
     && pip install uv \
-    && uv pip install flake8 pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
+    && uv pip install pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
 
 # Install Julia
 RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
