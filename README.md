@@ -31,10 +31,15 @@ pip install ase@git+https://gitlab.com/ase/ase.git@aae51d57721847624cea569f3a2d4
 Additionally, to be able to fit and validate `ACEpotentials`, one also needs to install julia as autoplex relies on [ACEpotentials](https://acesuit.github.io/ACEpotentials.jl/dev/gettingstarted/installation/) which support fitting of linear ACE and currently no python package exists for the same.
 Please run following commands to enable `ACEpotentials` fitting and functionality.
 
-Install julia
+Install julia (the command below installs latest version of Julia)
 `curl -fsSL https://install.julialang.org | sh`
 
-Once installed, in terminal run
+Once installed, in the terminal run following commands to get Julia v1.9.2 and Julia ACEpotentials dependencies
+
+```bash 
+juliaup add 1.9.2
+juliaup default 1.9.2
+````
 
 ```bash
 julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add(Pkg.PackageSpec(;name="ACEpotentials", version="0.6.9")); Pkg.add("DataFrames"); Pkg.add("CSV")'
