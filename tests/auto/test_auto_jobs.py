@@ -33,7 +33,8 @@ def test_complete_benchmark(test_dir, memory_jobstore):
         twob={"delta": 2.0, "cutoff": 4},
         threeb={"n_sparse": 10},
         preprocessing_data=False,
-        database_dir=database_dir
+        database_dir=database_dir,
+        separated=True
     )
     dft_data = loadfn(test_dir / "benchmark" / "phonon_doc_si.json")
     dft_doc: PhononBSDOSDoc = dft_data["output"]

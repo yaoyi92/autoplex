@@ -93,8 +93,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
     collect_output = []
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
-    # TODO find out why the loop is broken/leads to broken code
-    for suffix in [""]: #, "_wo_sigma", "_phonon", "_rand_struc"]:
+
+    for suffix in ["", "_wo_sigma", "_phonon", "_rand_struc"]:
         # _wo_sigma", "_phonon", "_rand_struc" only available for GAP at the moment
         if ml_model == "GAP":
             ml_potential = Path(ml_path) / f"gap_file{suffix}.xml"
@@ -137,6 +137,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
                 ) or (  # else?
                     add_dft_phonon_struct is False
                 ):
+                    # doesn't really make sense that this is in the loop
+                    # would run 4 times for one structure
                     dft_phonons = dft_phonopy_gen_data(
                         structure=benchmark_structure,
                         displacements=[0.01],
@@ -159,16 +161,15 @@ def complete_benchmark(  # this function was put here to prevent circular import
                 and not isinstance(dft_references, list)
                 and benchmark_mp_ids is not None
             ):
-                if benchmark_mp_ids[ibenchmark_structure] not in mp_ids:
-                    add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
-                        # this is important for re-using the same internally calculated DFT reference
-                        # for looping through several settings
-                        ml_model=ml_model,
-                        structure=benchmark_structure,
-                        benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
-                        ml_phonon_task_doc=add_data_ml_phonon.output,
-                        dft_phonon_task_doc=dft_references,
-                    )
+                add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
+                    # this is important for re-using the same internally calculated DFT reference
+                    # for looping through several settings
+                    ml_model=ml_model,
+                    structure=benchmark_structure,
+                    benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
+                    ml_phonon_task_doc=add_data_ml_phonon.output,
+                    dft_phonon_task_doc=dft_references,
+                )
             else:
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
                     # this is important for using a provided DFT reference
