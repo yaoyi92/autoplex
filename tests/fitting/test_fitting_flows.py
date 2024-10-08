@@ -1,7 +1,5 @@
 from __future__ import annotations
-
 import pytest
-
 from autoplex.fitting.common.flows import MLIPFitMaker
 
 
@@ -12,26 +10,26 @@ def fit_input_dict(vasp_test_dir):
             "rand_struc_dir": [
                 [
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_1"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_1"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_2"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_2"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "rand_static_3"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "rand_static_3"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
@@ -40,18 +38,18 @@ def fit_input_dict(vasp_test_dir):
             "phonon_dir": [
                 [
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "phonon_static_1"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "phonon_static_1"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
                     (
-                        vasp_test_dir
-                        / "dft_ml_data_generation"
-                        / "phonon_static_2"
-                        / "outputs"
+                            vasp_test_dir
+                            / "dft_ml_data_generation"
+                            / "phonon_static_2"
+                            / "outputs"
                     )
                     .absolute()
                     .as_posix(),
@@ -74,13 +72,10 @@ def fit_input_dict(vasp_test_dir):
     }
 
 
-def test_mlip_fit_maker(
-    test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit_input_dict
-):
+def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit_input_dict):
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -94,7 +89,7 @@ def test_mlip_fit_maker(
         fit_input=fit_input_dict,
     )
 
-    _ = run_locally(
+    responses = run_locally(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
@@ -110,12 +105,11 @@ def test_mlip_fit_maker(
 
 
 def test_mlip_fit_maker_with_kwargs(
-    test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit_input_dict
+        test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit_input_dict
 ):
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -137,7 +131,7 @@ def test_mlip_fit_maker_with_kwargs(
         f_max=40,
     )
 
-    _ = run_locally(
+    responses = run_locally(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
@@ -154,12 +148,11 @@ def test_mlip_fit_maker_with_kwargs(
 
 
 def test_mlip_fit_maker_with_pre_database_dir(
-    test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -191,12 +184,11 @@ def test_mlip_fit_maker_with_pre_database_dir(
 
 
 def test_mlip_fit_maker_jace(
-    test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -237,12 +229,11 @@ def test_mlip_fit_maker_jace(
 
 
 def test_mlip_fit_maker_nequip(
-    test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -282,12 +273,11 @@ def test_mlip_fit_maker_nequip(
 
 
 def test_mlip_fit_maker_m3gnet(
-    test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -335,12 +325,11 @@ def test_mlip_fit_maker_m3gnet(
 
 
 def test_mlip_fit_maker_mace(
-    test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -387,11 +376,12 @@ def test_mlip_fit_maker_mace(
     os.chdir(parent_dir)
 
 
-def test_mlip_fit_maker_glue_xml(test_dir, memory_jobstore, vasp_test_dir, clean_dir):
+def test_mlip_fit_maker_glue_xml(
+        test_dir, memory_jobstore, vasp_test_dir, clean_dir
+):
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -464,7 +454,7 @@ def test_mlip_fit_maker_glue_xml(test_dir, memory_jobstore, vasp_test_dir, clean
         preprocessing_data=True,
     )
 
-    _ = run_locally(
+    responses = run_locally(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
@@ -481,12 +471,11 @@ def test_mlip_fit_maker_glue_xml(test_dir, memory_jobstore, vasp_test_dir, clean
 
 
 def test_mlip_fit_maker_with_automated_separated_dataset(
-    test_dir, memory_jobstore, vasp_test_dir, clean_dir, fit_input_dict
+        test_dir, memory_jobstore, vasp_test_dir, clean_dir, fit_input_dict
 ):
     import os
     import shutil
     from pathlib import Path
-
     from jobflow import run_locally
 
     parent_dir = os.getcwd()
@@ -501,12 +490,9 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
         isolated_atoms_energy=[-0.28649227, -0.25638457],
         fit_input=fit_input_dict,
         pre_database_dir=str(test_files_dir),
-        pre_xyz_files=[
-            "pre_xyz_train_more_data.extxyz",
-            "pre_xyz_test_more_data.extxyz",
-        ],
+        pre_xyz_files=["pre_xyz_train_more_data.extxyz", "pre_xyz_test_more_data.extxyz"],
         preprocessing_data=True,
-        separated=True,
+        **{"separated": True}
     )
 
     run_locally(gapfit, ensure_success=True, create_folders=True, store=memory_jobstore)
@@ -515,12 +501,8 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
 
     # check if gap potential file is generated
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
-    assert Path(
-        gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_phonon.extxyz"
-    ).exists()
-    assert Path(
-        gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_rand_struc.extxyz"
-    ).exists()
+    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_phonon.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_rand_struc.extxyz").exists()
 
     for job_dir in path_to_job_files:
         shutil.rmtree(job_dir)
