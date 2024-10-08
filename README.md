@@ -34,17 +34,11 @@ Please run following commands to enable `ACEpotentials` fitting and functionalit
 Install julia
 `curl -fsSL https://install.julialang.org | sh`
 
-Once installed, in terminal run `julia` and then run the following commands
+Once installed, in terminal run
 
-```jl
-using Pkg
-Pkg.activate(".")
-Pkg.Registry.add("General")  # only needed when installing Julia for the first time
-Pkg.Registry.add(RegistrySpec(url="https://github.com/ACEsuit/ACEregistry"))
-Pkg.add("ACEpotentials")
-Pkg.add("DataFrames")
-Pkg.add("CSV")
-```
+```bash
+julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add(Pkg.PackageSpec(;name="ACEpotentials", version="0.6.9")); Pkg.add("DataFrames"); Pkg.add("CSV")'
+````
 
 Additionally, `buildcell` as a part of `AIRSS` needs to be installed:
 
