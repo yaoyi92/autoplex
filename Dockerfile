@@ -40,7 +40,7 @@ RUN python -m pip install --upgrade pip \
     && uv pip install pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
 
 # Install Julia
-RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
+RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.11/julia-1.11.0-linux-x86_64.tar.gz | tar -xz -C /opt \
     && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia
 
 
