@@ -126,19 +126,14 @@ def complete_benchmark(  # this function was put here to prevent circular import
             # TODO: check this part?
             # DFT benchmark reference preparations
             if dft_references is None and benchmark_mp_ids is not None:
+                # runs only the first time, then dft_references is added
                 if (
                     benchmark_mp_ids[ibenchmark_structure] in mp_ids
                 ) and add_dft_phonon_struct:
                     dft_references = fit_input[benchmark_mp_ids[ibenchmark_structure]][
                         "phonon_data"
                     ]["001"]
-                elif (
-                    benchmark_mp_ids[ibenchmark_structure] not in mp_ids
-                ) or (  # else?
-                    add_dft_phonon_struct is False
-                ):
-                    # doesn't really make sense that this is in the loop
-                    # would run 4 times for one structure
+                else:
                     dft_phonons = dft_phonopy_gen_data(
                         structure=benchmark_structure,
                         displacements=[0.01],
