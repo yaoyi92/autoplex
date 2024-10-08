@@ -34,7 +34,7 @@ Please run following commands to enable `ACEpotentials` fitting and functionalit
 Install Julia v1.9.2
 
 ```bash
-curl -fsSL https://install.julialang.org | sh -s -- default-channel 1.9.2`
+curl -fsSL https://install.julialang.org | sh -s -- default-channel 1.9.2
 ```
 
 Once installed, in the terminal run following commands to get Julia ACEpotentials dependencies
