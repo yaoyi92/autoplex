@@ -1,120 +1,108 @@
 from __future__ import annotations
-
-from ase.atoms import Atom
+import pytest
 from ase.io import read
-
+from ase.atoms import Atom
 from autoplex.fitting.common.regularization import (
-    calculate_hull_3D,
-    calculate_hull_ND,
+    set_sigma,
     get_convex_hull,
     get_e_distance_to_hull,
-    get_e_distance_to_hull_3D,
     get_intersect,
     get_mole_frac,
     label_stoichiometry_volume,
-    piecewise_linear,
-    point_in_triangle_2D,
     point_in_triangle_ND,
-    set_sigma,
+    point_in_triangle_2D,
+    calculate_hull_ND,
+    calculate_hull_3D,
+    get_e_distance_to_hull_3D,
+    piecewise_linear,
 )
 
 
 def test_set_sigma(test_dir):
     # data setup
-    test_atoms = read(test_dir / "fitting/pre_xyz_train_more_data.extxyz", ":")
+    test_atoms = read(test_dir / 'fitting/pre_xyz_train_more_data.extxyz', ':')
     isol_es = {3: -0.28649227, 17: -0.28649227}
-    reg_minmax = [(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)]
+    reg_minmax = [(0.1, 1), (0.001, 0.1),
+                  (0.0316, 0.316),
+                  (0.0632, 0.632)]
 
     # test series of options for set_sigma
 
-    atoms_modi = set_sigma(
-        test_atoms,
-        reg_minmax,
-        scheme="linear-hull",
-    )
-    assert atoms_modi[2].info["energy_sigma"] == 0.001
+    atoms_modi = set_sigma(test_atoms,
+                           reg_minmax,
+                           scheme='linear-hull', )
+    assert atoms_modi[2].info['energy_sigma'] == 0.001
 
-    atoms_modi = set_sigma(
-        test_atoms,
-        reg_minmax,
-        scheme="linear-hull",
-        config_type_override={"test": [1e-4, 1e-4, 1e-4]},
-    )
-    assert atoms_modi[2].info["energy_sigma"] == 1e-4
+    atoms_modi = set_sigma(test_atoms,
+                           reg_minmax,
+                           scheme='linear-hull',
+                           config_type_override={'test': [1e-4, 1e-4, 1e-4]}
+                           )
+    assert atoms_modi[2].info['energy_sigma'] == 1e-4
 
-    atoms_modi[0].info["REF_energy"] += 20
+    atoms_modi[0].info['REF_energy'] += 20
     for atoms in atoms_modi[:3]:
         atoms.set_cell([10, 10, 10])
     for atoms in atoms_modi[4:]:
         atoms.set_cell([11, 11, 11])
-    atoms_modi = set_sigma(
-        test_atoms,
-        reg_minmax,
-        scheme="linear-hull",
-        max_energy=0.05,
-        isolated_atoms_energies=isol_es,
-        element_order=[3, 17],
-    )
+    atoms_modi = set_sigma(test_atoms,
+                           reg_minmax,
+                           scheme='linear-hull',
+                           max_energy=0.05,
+                           isolated_atoms_energies=isol_es,
+                           element_order=[3, 17],
+                           )
     assert len(atoms_modi) < len(test_atoms)
 
-    atoms_modi[0].append(Atom("Li", [1, 1, 1]))
-    atoms_modi = set_sigma(
-        test_atoms,
-        reg_minmax,
-        scheme="volume-stoichiometry",
-        isolated_atoms_energies=isol_es,
-        element_order=[3, 17],
-    )
+    atoms_modi[0].append(Atom('Li', [1, 1, 1]))
+    atoms_modi = set_sigma(test_atoms,
+                           reg_minmax,
+                           scheme='volume-stoichiometry',
+                           isolated_atoms_energies=isol_es,
+                           element_order=[3, 17],
+                           )
     assert True  # TODO: modify this to test actual condition
 
 
 def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
-    import numpy as np
-    from ase import Atoms
     from ase.io import read
+    from ase import Atoms
+    import numpy as np
 
     file = test_dir / "fitting" / "ref_files" / "quip_train.extxyz"
     atoms: list[Atoms] = read(file, ":")
 
     # Define the arrays
-    array1 = np.array(
-        [
-            [15.2266087, -3.81106994],
-            [15.2266087, -3.80983557],
-            [16.2004607, -3.81927384],
-            [8000.0, -0.28663766],
-        ]
-    )
+    array1 = np.array([
+        [15.2266087, -3.81106994],
+        [15.2266087, -3.80983557],
+        [16.2004607, -3.81927384],
+        [8000.0, -0.28663766]
+    ])
 
-    array2 = np.array(
-        [
-            [15.2266087, -3.80983557],
-            [15.2266087, -3.81106994],
-            [16.2004607, -3.81927264],
-            [16.2004607, -3.81927384],
-            [16.4281758, -3.81869979],
-            [8000.0, -0.28663766],
-            [17.6913485, -3.80636951],
-            [17.6913485, -3.80665250],
-            [19.0176670, -3.77969777],
-            [8000.0, -0.27567309],
-        ]
-    )
+    array2 = np.array([
+        [15.2266087, -3.80983557],
+        [15.2266087, -3.81106994],
+        [16.2004607, -3.81927264],
+        [16.2004607, -3.81927384],
+        [16.4281758, -3.81869979],
+        [8000.0, -0.28663766],
+        [17.6913485, -3.80636951],
+        [17.6913485, -3.80665250],
+        [19.0176670, -3.77969777],
+        [8000.0, -0.27567309],
+    ])
 
-    array3 = np.array(
-        [
-            [0.00000000e00, 8.00000000e03, -1.45390000e-04],
-            [5.00000000e-01, 1.76913485e01, -3.53493109e00],
-            [5.00000000e-01, 1.52266087e01, -3.53839715e00],
-            [5.00000000e-01, 1.62004607e01, -3.54783542e00],
-            [5.00000000e-01, 1.62004607e01, -3.54783422e00],
-            [5.00000000e-01, 1.76913485e01, -3.53521408e00],
-            [5.00000000e-01, 1.64281758e01, -3.54726137e00],
-            [5.00000000e-01, 1.90176670e01, -3.50825935e00],
-            [5.00000000e-01, 1.52266087e01, -3.53963152e00],
-            [1.00000000e00, 8.00000000e03, -1.92885200e-02],
-        ]
-    )
+    array3 = np.array([[0.00000000e+00, 8.00000000e+03, -1.45390000e-04],
+                       [5.00000000e-01, 1.76913485e+01, -3.53493109e+00],
+                       [5.00000000e-01, 1.52266087e+01, -3.53839715e+00],
+                       [5.00000000e-01, 1.62004607e+01, -3.54783542e+00],
+                       [5.00000000e-01, 1.62004607e+01, -3.54783422e+00],
+                       [5.00000000e-01, 1.76913485e+01, -3.53521408e+00],
+                       [5.00000000e-01, 1.64281758e+01, -3.54726137e+00],
+                       [5.00000000e-01, 1.90176670e+01, -3.50825935e+00],
+                       [5.00000000e-01, 1.52266087e+01, -3.53963152e+00],
+                       [1.00000000e+00, 8.00000000e+03, -1.92885200e-02]])
 
     lower_half_hull_points, points = get_convex_hull(atoms, energy_name="REF_energy")
 
@@ -140,13 +128,10 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
     fraction_list = [[1.0]] + [[0.0]] + [[0.5]] * 8
 
     for atom, fraction in zip(atoms, fraction_list):
-        get_e_dist_hull = get_e_distance_to_hull(
-            calc_hull, atom, energy_name="REF_energy"
-        )
+        get_e_dist_hull = get_e_distance_to_hull(calc_hull, atom, energy_name="REF_energy")
         assert get_e_dist_hull == 0
-        get_e_dist_hull_3D = get_e_distance_to_hull_3D(
-            calc_hull_3D, atom, {3: -0.28649227, 17: -0.25638457}, "REF_energy"
-        )
+        get_e_dist_hull_3D = get_e_distance_to_hull_3D(calc_hull_3D, atom, {3: -0.28649227, 17: -0.25638457},
+                                                       "REF_energy")
         assert round(get_e_dist_hull_3D) == 0
         getmole_frac = get_mole_frac(atom, element_order=[3, 17])
         assert getmole_frac == fraction
@@ -162,7 +147,7 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
         (1.0, [1.0, 2.0, 3.0]),
         (2.0, [2.0, 3.0, 4.0]),
         (3.0, [3.0, 4.0, 5.0]),
-        (4.0, [4.0, 5.0, 6.0]),
+        (4.0, [4.0, 5.0, 6.0])
     ]
 
     # Define test values
@@ -174,7 +159,11 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
 
     # Define a test case for 2D (Triangle)
     point_2D_inside = np.array([0.5, 0.5])
-    region_2D = [np.array([0.0, 0.0]), np.array([1.0, 0.0]), np.array([0.0, 1.0])]
+    region_2D = [
+        np.array([0.0, 0.0]),
+        np.array([1.0, 0.0]),
+        np.array([0.0, 1.0])
+    ]
 
     point_2D_outside = np.array([1.5, 1.5])
 
@@ -193,7 +182,7 @@ def test_auxiliary_functions(test_dir, memory_jobstore, clean_dir):
         np.array([0.0, 0.0, 0.0]),
         np.array([1.0, 0.0, 0.0]),
         np.array([0.0, 1.0, 0.0]),
-        np.array([0.0, 0.0, 1.0]),
+        np.array([0.0, 0.0, 1.0])
     ]
 
     point_3D_outside = np.array([1.0, 1.0, 1.0])
