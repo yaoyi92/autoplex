@@ -123,7 +123,6 @@ def complete_benchmark(  # this function was put here to prevent circular import
             )
             jobs.append(add_data_ml_phonon)
 
-            # TODO: check this part?
             # DFT benchmark reference preparations
             if dft_references is None and benchmark_mp_ids is not None:
                 # runs only the first time, then dft_references is added
