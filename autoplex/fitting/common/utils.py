@@ -1669,9 +1669,10 @@ def run_ace(num_processes_fit: int, script_name: str) -> None:
     """
     os.environ["JULIA_NUM_THREADS"] = str(num_processes_fit)
 
-    with open("julia-ace_out.log", "w", encoding="utf-8") as file_out, open(
-        "julia-ace_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open("julia-ace_out.log", "w", encoding="utf-8") as file_out,
+        open("julia-ace_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(["julia", script_name], stdout=file_out, stderr=file_err)
 
 
@@ -1693,9 +1694,10 @@ def run_gap(num_processes_fit: int, parameters) -> None:
     os.environ["MKL_NUM_THREADS"] = "1"  # blas library
     os.environ["NETLIB_NUM_THREADS"] = "1"  # blas library
 
-    with open("std_gap_out.log", "w", encoding="utf-8") as file_std, open(
-        "std_gap_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open("std_gap_out.log", "w", encoding="utf-8") as file_std,
+        open("std_gap_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(["gap_fit", *parameters], stdout=file_std, stderr=file_err)
 
 
@@ -1728,9 +1730,10 @@ def run_quip(
         f"quip {init_args} E=T F=T atoms_filename={data_path} param_filename={xml_file}"
     )
     command = f"{quip} | grep AT | sed 's/AT//' > {filename}"
-    with open("std_quip_out.log", "w", encoding="utf-8") as file_std, open(
-        "std_quip_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open("std_quip_out.log", "w", encoding="utf-8") as file_std,
+        open("std_quip_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(command, stdout=file_std, stderr=file_err, shell=True)
 
 
@@ -1746,9 +1749,10 @@ def run_nequip(command: str, log_prefix: str) -> None:
         Prefix for log file names, used to differentiate between different commands' logs.
 
     """
-    with open(f"{log_prefix}_out.log", "w", encoding="utf-8") as file_out, open(
-        f"{log_prefix}_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open(f"{log_prefix}_out.log", "w", encoding="utf-8") as file_out,
+        open(f"{log_prefix}_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(command.split(), stdout=file_out, stderr=file_err)
 
 
@@ -1762,9 +1766,10 @@ def run_mace(hypers: list) -> None:
         containing all hyperparameters required for the MACE model training.
 
     """
-    with open("mace_train_out.log", "w", encoding="utf-8") as file_std, open(
-        "mace_train_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open("mace_train_out.log", "w", encoding="utf-8") as file_std,
+        open("mace_train_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(["mace_run_train", *hypers], stdout=file_std, stderr=file_err)
 
 

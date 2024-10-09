@@ -1,4 +1,5 @@
 """Utility functions for rss."""
+
 from __future__ import annotations
 
 import json
@@ -105,10 +106,12 @@ class HookeanRepulsion(FixConstraint):
     def __init__(
         self,
         a1: int,
-        a2: int
-        | tuple[float, float, float]
-        | tuple[float, float, float, float]
-        | Literal["cell"],
+        a2: (
+            int
+            | tuple[float, float, float]
+            | tuple[float, float, float, float]
+            | Literal["cell"]
+        ),
         k: float,
         rt: float | None = None,
     ) -> None:
@@ -181,7 +184,7 @@ class HookeanRepulsion(FixConstraint):
             dct["kwargs"]["a1"] = self.index
             dct["kwargs"]["a2"] = self.plane
         else:
-            raise NotImplementedError("Bad type: %s" % self._type)
+            raise NotImplementedError(f"Bad type: {self._type}")
         return dct
 
     def adjust_positions(self, atoms, newpositions):

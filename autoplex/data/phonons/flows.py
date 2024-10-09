@@ -773,7 +773,7 @@ class IsoAtomMaker(Maker):
                         "LAECHG": False,
                         "ISMEAR": 0,
                         # to be removed
-                        "NPAR": 4
+                        "NPAR": 4,
                         # TODO: locpot, chgcar, chg can be deactivated!
                     },
                 ),

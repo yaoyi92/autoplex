@@ -1,4 +1,5 @@
 """Utility functions for training data jobs."""
+
 from __future__ import annotations
 
 import random
@@ -1415,9 +1416,7 @@ def data_distillation(
     return atoms_distilled
 
 
-def stratified_dataset_split(
-    atoms: Atoms, split_ratio: float
-) -> tuple[
+def stratified_dataset_split(atoms: Atoms, split_ratio: float) -> tuple[
     list[Atom | Atoms]
     | list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],
     list[Atom | Atoms | list[Atom | Atoms] | list[Atom | Atoms | list]],

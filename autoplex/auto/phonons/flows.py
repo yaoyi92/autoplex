@@ -284,7 +284,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 **fit_kwargs,
             )
             flows.append(add_data_fit)
-            if "regularization" in fit_kwargs and fit_kwargs["regularization"]:
+            if fit_kwargs.get("regularization"):
                 hyper_list.append(
                     {
                         "f="
@@ -294,7 +294,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             hyper_list.append(
                 {"f=" + str(atomwise_regularization_parameter): "default"}
             )
-            if "separated" in fit_kwargs and fit_kwargs["separated"]:
+            if fit_kwargs.get("separated"):
                 hyper_list.append(
                     {"f=" + str(atomwise_regularization_parameter): "default phonon"}
                 )

@@ -333,9 +333,10 @@ class RandomizedStructure(Maker):
     def _parallel_process(self, i, bt_file, tag, remove_tmp_files):
         tmp_file_name = "tmp." + str(i) + "." + tag + ".cell"
 
-        with open(bt_file) as bt_file_handle, open(
-            tmp_file_name, "w"
-        ) as tmp_file_handle:
+        with (
+            open(bt_file) as bt_file_handle,
+            open(tmp_file_name, "w") as tmp_file_handle,
+        ):
             run(
                 "buildcell",
                 stdin=bt_file_handle,

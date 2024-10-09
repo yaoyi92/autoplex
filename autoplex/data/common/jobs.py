@@ -1,4 +1,5 @@
 """Jobs to create training data for ML potentials."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
@@ -298,19 +299,21 @@ def generate_randomized_structures(
             for cell in distorted_cells
         ]
         if rattle_type == 0
-        else [
-            mc_rattle(
-                structure=cell,
-                n_structures=1,
-                rattle_std=rattle_std,
-                min_distance=min_distance,
-                rattle_seed=rattle_seed,
-                rattle_mc_n_iter=rattle_mc_n_iter,
-            )
-            for cell in distorted_cells
-        ]
-        if rattle_type == 1
-        else None
+        else (
+            [
+                mc_rattle(
+                    structure=cell,
+                    n_structures=1,
+                    rattle_std=rattle_std,
+                    min_distance=min_distance,
+                    rattle_seed=rattle_seed,
+                    rattle_mc_n_iter=rattle_mc_n_iter,
+                )
+                for cell in distorted_cells
+            ]
+            if rattle_type == 1
+            else None
+        )
     )
 
     if rattled_cells is None:

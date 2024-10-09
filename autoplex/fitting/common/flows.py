@@ -307,9 +307,10 @@ class DataPreprocessing(Maker):
             if len(pre_xyz_files) == 2:
                 files_new = ["train.extxyz", "test.extxyz"]
                 for file_name, file_new in zip(pre_xyz_files, files_new):
-                    with open(
-                        os.path.join(pre_database_dir, file_name)
-                    ) as pre_xyz_file, open(file_new, "a") as xyz_file:
+                    with (
+                        open(os.path.join(pre_database_dir, file_name)) as pre_xyz_file,
+                        open(file_new, "a") as xyz_file,
+                    ):
                         xyz_file.write(pre_xyz_file.read())
                     print(f"File {file_name} has been copied to {file_new}")
 

@@ -1,4 +1,5 @@
 """Flows to create and check training data."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
