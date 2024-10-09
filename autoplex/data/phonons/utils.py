@@ -163,7 +163,6 @@ def check_supercells(
             min_atoms=min_atoms,
             max_atoms=max_atoms,
         )
-        print(matrix)
         supercell = structure.make_supercell(np.array(matrix).transpose())
         a, b, c = supercell.lattice.abc
         num_atoms = supercell.num_sites
@@ -259,7 +258,6 @@ def reduce_supercell_size(
                 force_90_degrees=True,
             )
             new_structure = transformation.apply_transformation(structure=structure)
-            print(new_structure)
             if min_atoms <= new_structure.num_sites <= max_atoms:
                 return transformation.transformation_matrix.transpose().tolist()
         except AttributeError:
@@ -274,7 +272,6 @@ def reduce_supercell_size(
                     force_90_degrees=False,
                 )
                 new_structure = transformation.apply_transformation(structure=structure)
-                print(new_structure)
                 if min_atoms <= new_structure.num_sites <= max_atoms:
                     return transformation.transformation_matrix.transpose().tolist()
             except AttributeError:
@@ -289,7 +286,6 @@ def reduce_supercell_size(
                     new_structure = transformation.apply_transformation(
                         structure=structure
                     )
-                    print(new_structure)
                     if min_atoms <= new_structure.num_sites <= max_atoms:
                         return transformation.transformation_matrix.transpose().tolist()
                 except AttributeError:
