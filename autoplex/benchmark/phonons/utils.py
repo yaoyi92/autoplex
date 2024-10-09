@@ -9,9 +9,11 @@ import numpy as np
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
+    from pymatgen.core.structure import Structure
     from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 from pymatgen.phonon.plotter import PhononBSPlotter
-from pymatgen.core.structure import Structure
+
+
 def compute_bandstructure_benchmark_metrics(
     ml_model: str,
     structure: Structure,
@@ -65,10 +67,10 @@ def compute_bandstructure_benchmark_metrics(
         file_name=file_name,
     )
     return {
-            "benchmark_phonon_rmse": overall_rmse,
-            "dft_imaginary_modes": dft_imag_modes,
-            "ml_imaginary_modes": ml_imag_modes,
-        }
+        "benchmark_phonon_rmse": overall_rmse,
+        "dft_imaginary_modes": dft_imag_modes,
+        "ml_imaginary_modes": ml_imag_modes,
+    }
 
 
 def get_rmse(

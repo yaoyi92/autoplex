@@ -5,14 +5,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from jobflow import Flow, Maker
+from jobflow import Maker
 
 if TYPE_CHECKING:
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from pymatgen.core.structure import Structure
 
-from autoplex.benchmark.phonons.utils import compute_bandstructure_benchmark_metrics
 from jobflow import job
+
+from autoplex.benchmark.phonons.utils import compute_bandstructure_benchmark_metrics
+
 __all__ = ["PhononBenchmarkMaker"]
 
 
@@ -57,9 +59,7 @@ class PhononBenchmarkMaker(Maker):
         dft_phonon_task_doc: PhononBSDOSDoc
             Phonon task doc from DFT runs consisting of pymatgen band-structure object.
         """
-
-
-        benchmark_output = compute_bandstructure_benchmark_metrics(
+        return compute_bandstructure_benchmark_metrics(
             ml_model=ml_model,
             ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,
             dft_phonon_bs=dft_phonon_task_doc.phonon_bandstructure,
@@ -67,4 +67,3 @@ class PhononBenchmarkMaker(Maker):
             ml_imag_modes=ml_phonon_task_doc.has_imaginary_modes,
             structure=structure,
         )
-        return benchmark_output
