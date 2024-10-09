@@ -36,6 +36,9 @@ dependencies = [
      "hiphive",
      "dgl==2.1.0",
      "torchdata==0.7.1",
+     # quippy-ase support for py3.12 tracked in https://github.com/libAtoms/QUIP/issues/645
+     "quippy-ase==0.9.14; python_version < '3.12'",
+     "torch==2.2.1",
 ]
 
 [tool.setuptools.packages.find]
@@ -45,7 +48,6 @@ exclude = ["tutorials", "tests"]
 "autoplex.fitting.common" = ["gap-defaults.json"]
 
 [project.optional-dependencies]
-
 docs = [
     "autodoc_pydantic==2.0.1",
     "ipython",
@@ -60,10 +62,12 @@ docs = [
     "sphinxcontrib-mermaid",
 
 ]
-
 strict = [
      "pymatgen>=2024.8.9",
-     "atomate2[strict,strict-forcefields]@git+https://github.com/QuantumChemist/atomate2.git@adjust_get_supercell_size",
+     "atomate2[strict]@git+https://github.com/materialsproject/atomate2.git@main",
+     "matgl==1.1.3",
+     "quippy-ase==0.9.14; python_version < '3.12'",
+     "torch==2.2.1",
      "ase==3.23.0",
      "mace-torch==0.3.4",
      "lightning-utilities==0.11.2",
@@ -73,18 +77,12 @@ strict = [
      "torchdata==0.7.1",
 ]
 dev = ["pre-commit>=2.12.1"]
+tests = ["pytest", "pytest-mock", "pytest-split", "pytest-cov", "types-setuptools"]
 
 [tool.versioningit.vcs]
 method = "git"
 default-tag = "0.0.1"
 
-[tool.flake8]
-exclude = ".git,test"
-max-line-length = 120
-extend-ignore = "E203,W503,E501,F401,RST21,E741,W291,W293,E231"
-select = "C, E, F, W, B"
-min-python-version = "3.9.0"
-docstring-convention = "numpy"
 
 [tool.cibuildwheel.linux]
 archs = ["auto64"]
