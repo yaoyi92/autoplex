@@ -209,6 +209,7 @@ class DFTPhononMaker(PhononMaker):
     bulk_relax_maker: BaseVaspMaker | None = field(
         default_factory=lambda: DoubleRelaxMaker.from_relax_maker(
             TightRelaxMaker(
+                run_vasp_kwargs={"handlers":{}},
                 input_set_generator=TightRelaxSetGenerator(
                     user_incar_settings={
                         "ISPIN": 1,
@@ -604,6 +605,7 @@ class RandomStructuresDataGenerator(Maker):
     )
     bulk_relax_maker: BaseVaspMaker = field(
         default_factory=lambda: TightRelaxMaker(
+            run_vasp_kwargs={"handlers":{}},
             input_set_generator=TightRelaxSetGenerator(
                 user_incar_settings={
                     "ISPIN": 1,
