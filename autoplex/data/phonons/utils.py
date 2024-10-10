@@ -119,7 +119,7 @@ def check_supercells(
     min_atoms: int = 100,
     max_atoms: int = 500,
     tolerance: float = 0.1,
-):
+) -> None:
     """
     Check the supercell size.
 
@@ -215,7 +215,7 @@ def reduce_supercell_size(
     min_atoms: int = 100,
     max_atoms: int = 500,
     step_size: float = 1,
-):
+) -> list:
     """
     Reduce phonopy supercell size.
 
