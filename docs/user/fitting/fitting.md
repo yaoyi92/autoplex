@@ -29,7 +29,7 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     f_max=40.0,
     fit_kwargs={
         "split_ratio": 0.4,
-        "num_processes_fit": 32,
+        "num_processes_fit": 48,
     },
     ...  # put the other hyperparameter commands here as shown below
 )
