@@ -303,29 +303,33 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 hyper_list.append(
                     {"f=" + str(atomwise_regularization_parameter): "default randstruc"}
                 )
-
+            # TODO: where is the displacement?
             if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
                 for ibenchmark_structure, benchmark_structure in enumerate(
                     benchmark_structures
                 ):
-                    complete_bm = complete_benchmark(
-                        ibenchmark_structure=ibenchmark_structure,
-                        benchmark_structure=benchmark_structure,
-                        ml_model=ml_model,
-                        ml_path=add_data_fit.output["mlip_path"],
-                        mp_ids=mp_ids,
-                        benchmark_mp_ids=benchmark_mp_ids,
-                        add_dft_phonon_struct=self.add_dft_phonon_struct,
-                        fit_input=fit_input,
-                        symprec=self.symprec,
-                        phonon_displacement_maker=self.phonon_displacement_maker,
-                        dft_references=dft_references,
-                        supercell_settings=self.supercell_settings,
-                        **self.benchmark_kwargs,
-                    )
-                    complete_bm.append_name("_"+str(benchmark_mp_ids[ibenchmark_structure]))
-                    flows.append(complete_bm)
-                    bm_outputs.append(complete_bm.output)
+                    for displacement in self.displacements:
+                        complete_bm = complete_benchmark(
+                            ibenchmark_structure=ibenchmark_structure,
+                            benchmark_structure=benchmark_structure,
+                            ml_model=ml_model,
+                            ml_path=add_data_fit.output["mlip_path"],
+                            mp_ids=mp_ids,
+                            benchmark_mp_ids=benchmark_mp_ids,
+                            add_dft_phonon_struct=self.add_dft_phonon_struct,
+                            fit_input=fit_input,
+                            symprec=self.symprec,
+                            phonon_displacement_maker=self.phonon_displacement_maker,
+                            dft_references=dft_references,
+                            supercell_settings=self.supercell_settings,
+                            displacement=displacement,
+                            atomwise_regularization_parameter=atomwise_regularization_parameter,
+                            soap_dict=None,
+                            **self.benchmark_kwargs,
+                        )
+                        complete_bm.append_name("_"+str(benchmark_mp_ids[ibenchmark_structure]))
+                        flows.append(complete_bm)
+                        bm_outputs.append(complete_bm.output)
 
             if self.hyper_para_loop:
                 if self.atomwise_regularization_list is None:
@@ -376,31 +380,33 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                     ibenchmark_structure,
                                     benchmark_structure,
                                 ) in enumerate(benchmark_structures):
-                                    complete_bm = complete_benchmark(
-                                        ibenchmark_structure=ibenchmark_structure,
-                                        benchmark_structure=benchmark_structure,
-                                        ml_model=ml_model,
-                                        ml_path=loop_data_fit.output["mlip_path"],
-                                        mp_ids=mp_ids,
-                                        benchmark_mp_ids=benchmark_mp_ids,
-                                        add_dft_phonon_struct=self.add_dft_phonon_struct,
-                                        fit_input=fit_input,
-                                        symprec=self.symprec,
-                                        phonon_displacement_maker=self.phonon_displacement_maker,
-                                        dft_references=dft_references,
-                                        supercell_settings=self.supercell_settings,
-                                        **self.benchmark_kwargs,
-                                    )
-                                    complete_bm.append_name("_"+str(benchmark_mp_ids[ibenchmark_structure]))
-                                    flows.append(complete_bm)
-                                    bm_outputs.append(complete_bm.output)
+                                    for displacement in self.displacements:
+                                        complete_bm = complete_benchmark(
+                                            ibenchmark_structure=ibenchmark_structure,
+                                            benchmark_structure=benchmark_structure,
+                                            ml_model=ml_model,
+                                            ml_path=loop_data_fit.output["mlip_path"],
+                                            mp_ids=mp_ids,
+                                            benchmark_mp_ids=benchmark_mp_ids,
+                                            add_dft_phonon_struct=self.add_dft_phonon_struct,
+                                            fit_input=fit_input,
+                                            symprec=self.symprec,
+                                            phonon_displacement_maker=self.phonon_displacement_maker,
+                                            dft_references=dft_references,
+                                            supercell_settings=self.supercell_settings,
+                                            displacement=displacement,
+                                            # TODO add a hyper paramter here for the benchmark
+                                            atomwise_regularization_param=atomwise_regularization,
+                                            soap_dict=soap_dict,
+                                            **self.benchmark_kwargs,
+                                        )
+                                        complete_bm.append_name("_"+str(benchmark_mp_ids[ibenchmark_structure]))
+                                        flows.append(complete_bm)
+                                        bm_outputs.append(complete_bm.output)
         collect_bm = write_benchmark_metrics(
-            ml_models=self.ml_models,
             benchmark_structures=benchmark_structures,
-            benchmark_mp_ids=benchmark_mp_ids,
             metrics=bm_outputs,
-            displacements=self.displacements,
-            hyper_list=hyper_list,
+
         )
         flows.append(collect_bm)
 

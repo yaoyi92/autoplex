@@ -12,12 +12,8 @@ if TYPE_CHECKING:
 
 @job
 def write_benchmark_metrics(
-    ml_models: list[str],
-    benchmark_structures: list[Structure],
-    benchmark_mp_ids: list[str],
+    benchmark_structures: list,
     metrics: list,
-    displacements: list[float],
-    hyper_list=None,
 ):
     """
     Generate a text file with evaluated benchmark metrics.
@@ -41,49 +37,51 @@ def write_benchmark_metrics(
     -------
     A text file with root mean squared error between DFT and ML potential phonon band-structure
     """
-    if hyper_list is None:
-        hyper_list = ["default"]
+    #if hyper_list is None:
+    #    hyper_list = ["default"]
+    # TODO: fix this part
+    print(metrics)
     metrics_flattened = [item for sublist in metrics for item in sublist]
-    for ml_model in ml_models:
-        for benchmark_structure, mp_id in zip(benchmark_structures, benchmark_mp_ids):
-            structure_composition = benchmark_structure.composition.reduced_formula
-            with open(
-                f"results_{structure_composition}.txt",
-                "a",
-                encoding="utf-8",
-            ) as file:
-                file.write(
-                    "%-11s%-11s%-12s%-18s%-12s%-55s%-16s%-14s"
-                    % (
-                        "Potential",
-                        "Structure",
-                        "MPID",
-                        "Displacement (Å)",
-                        "RMSE (THz)",
-                        "Hyperparameters (atom-wise f, n_sparse, SOAP delta)",
-                        "imagmodes(pot)",
-                        "imagmodes(dft)",
-                    )
+    # TODO: think about a better solution here
+    # the following code assumes all benchmark structures have the same composition
+    structure_composition=benchmark_structures[0].composition.reduced_formula
+    with open(
+            f"results_{structure_composition}.txt",
+            "a",
+            encoding="utf-8",
+    ) as file:
+        file.write(
+            "%-11s%-11s%-12s%-18s%-12s%-55s%-16s%-14s"
+            % (
+                "Potential",
+                "Structure",
+                "MPID",
+                "Displacement (Å)",
+                "RMSE (THz)",
+                "Hyperparameters (atom-wise f, n_sparse, SOAP delta)",
+                "imagmodes(pot)",
+                "imagmodes(dft)",
+            )
+        )
+
+    for metric in metrics_flattened:
+       with open(
+            f"results_{structure_composition}.txt",
+            "a",
+            encoding="utf-8",
+        ) as file:
+            file.write(
+                "\n%-11s%-11s%-12s%-18.2f%-12.5f%-55s%-16s%-5s"
+                % (
+                    metric["ml_model"],
+                    structure_composition,
+                    metric["mp_id"],
+                    metric["displacement"],
+                    metric["benchmark_phonon_rmse"],
+                    str({"f=" + str(metric["atomwise_regularization_parameter"]): metric["soap_dict"]}) if metric["soap_dict"] is not None else str({"f=" + str(metric["atomwise_regularization_parameter"]): metric["suffix"]}),
+                    str(metric["ml_imaginary_modes"]),
+                    str(metric["dft_imaginary_modes"]),
                 )
-            for displacement in displacements:
-                for metric, hyper in zip(metrics_flattened, hyper_list):
-                    with open(
-                        f"results_{structure_composition}.txt",
-                        "a",
-                        encoding="utf-8",
-                    ) as file:
-                        file.write(
-                            "\n%-11s%-11s%-12s%-18.2f%-12.5f%-55s%-16s%-5s"
-                            % (
-                                ml_model,
-                                structure_composition,
-                                mp_id,
-                                displacement,
-                                metric["benchmark_phonon_rmse"],
-                                str(hyper),
-                                str(metric["ml_imaginary_modes"]),
-                                str(metric["dft_imaginary_modes"]),
-                            )
-                        )
+            )
 
     return Response(output=metrics)

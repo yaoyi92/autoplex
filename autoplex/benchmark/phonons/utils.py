@@ -17,10 +17,15 @@ from pymatgen.phonon.plotter import PhononBSPlotter
 def compute_bandstructure_benchmark_metrics(
     ml_model: str,
     structure: Structure,
+    mp_id: str,
     ml_phonon_bs: PhononBandStructureSymmLine,
     dft_phonon_bs: PhononBandStructureSymmLine,
     ml_imag_modes: bool,
     dft_imag_modes: bool,
+    atomwise_regularization_parameter: float,
+    soap_dict: dict,
+    suffix: str,
+    displacement: float = 0.01,
 ):
     """
     Compute phonon band-structure benchmark metrics and generate associated plots.
@@ -70,6 +75,14 @@ def compute_bandstructure_benchmark_metrics(
         "benchmark_phonon_rmse": overall_rmse,
         "dft_imaginary_modes": dft_imag_modes,
         "ml_imaginary_modes": ml_imag_modes,
+        "ml_model": ml_model,
+        "mp_id": mp_id,
+        "structure": structure,
+        "displacement": displacement,
+        "atomwise_regularization_parameter":atomwise_regularization_parameter,
+        "soap_dict": soap_dict,
+        "suffix":suffix,
+
     }
 
 
@@ -95,7 +108,7 @@ def get_rmse(
     float or list[float]
       root mean squared error between DFT and ML phonon band-structure
     """
-    diff = ml_bs.bands - dft_bs.bands
+    diff = ml_bs.bands - dft_bs.bands # TODO: check sorting
     rmse = np.sqrt(np.mean(diff**2))
 
     if q_dependent_rmse:

@@ -14,136 +14,429 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 @pytest.fixture(scope="class")
 def ref_paths():
     return {
-        "tight relax": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
-        "static": "dft_ml_data_generation/static/",
+        "tight relax_test": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 1_test": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 2_test": "dft_ml_data_generation/tight_relax_2/",
+        "static_test": "dft_ml_data_generation/static/",
         "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
         "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
-        "dft phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
-        "dft phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "dft rattle static 1/12": "dft_ml_data_generation/rand_static_1/",
-        "dft rattle static 2/12": "dft_ml_data_generation/rand_static_2/",
-        "dft rattle static 3/12": "dft_ml_data_generation/rand_static_3/",
-        "dft rattle static 4/12": "dft_ml_data_generation/rand_static_4/",
-        "dft rattle static 5/12": "dft_ml_data_generation/rand_static_5/",
-        "dft rattle static 6/12": "dft_ml_data_generation/rand_static_6/",
-        "dft rattle static 7/12": "dft_ml_data_generation/rand_static_7/",
-        "dft rattle static 8/12": "dft_ml_data_generation/rand_static_8/",
-        "dft rattle static 9/12": "dft_ml_data_generation/rand_static_9/",
-        "dft rattle static 10/12": "dft_ml_data_generation/rand_static_10/",
-        "dft rattle static 11/12": "dft_ml_data_generation/rand_static_11/",
-        "dft rattle static 12/12": "dft_ml_data_generation/rand_static_12/",
+        "dft phonon static 1/2_test": "dft_ml_data_generation/phonon_static_1/",
+        "dft phonon static 2/2_test": "dft_ml_data_generation/phonon_static_2/",
+        "dft rattle static 1/12_test": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/12_test": "dft_ml_data_generation/rand_static_2/",
+        "dft rattle static 3/12_test": "dft_ml_data_generation/rand_static_3/",
+        "dft rattle static 4/12_test": "dft_ml_data_generation/rand_static_4/",
+        "dft rattle static 5/12_test": "dft_ml_data_generation/rand_static_5/",
+        "dft rattle static 6/12_test": "dft_ml_data_generation/rand_static_6/",
+        "dft rattle static 7/12_test": "dft_ml_data_generation/rand_static_7/",
+        "dft rattle static 8/12_test": "dft_ml_data_generation/rand_static_8/",
+        "dft rattle static 9/12_test": "dft_ml_data_generation/rand_static_9/",
+        "dft rattle static 10/12_test": "dft_ml_data_generation/rand_static_10/",
+        "dft rattle static 11/12_test": "dft_ml_data_generation/rand_static_11/",
+        "dft rattle static 12/12_test": "dft_ml_data_generation/rand_static_12/",
+        "tight relax_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 1_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 2_mp-22905": "dft_ml_data_generation/tight_relax_2/",
+        "static_mp-22905": "dft_ml_data_generation/static/",
+        "dft phonon static 1/2_mp-22905": "dft_ml_data_generation/phonon_static_1/",
+        "dft phonon static 2/2_mp-22905": "dft_ml_data_generation/phonon_static_2/",
+        "dft rattle static 1/12_mp-22905": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/12_mp-22905": "dft_ml_data_generation/rand_static_2/",
+        "dft rattle static 3/12_mp-22905": "dft_ml_data_generation/rand_static_3/",
+        "dft rattle static 4/12_mp-22905": "dft_ml_data_generation/rand_static_4/",
+        "dft rattle static 5/12_mp-22905": "dft_ml_data_generation/rand_static_5/",
+        "dft rattle static 6/12_mp-22905": "dft_ml_data_generation/rand_static_6/",
+        "dft rattle static 7/12_mp-22905": "dft_ml_data_generation/rand_static_7/",
+        "dft rattle static 8/12_mp-22905": "dft_ml_data_generation/rand_static_8/",
+        "dft rattle static 9/12_mp-22905": "dft_ml_data_generation/rand_static_9/",
+        "dft rattle static 10/12_mp-22905": "dft_ml_data_generation/rand_static_10/",
+        "dft rattle static 11/12_mp-22905": "dft_ml_data_generation/rand_static_11/",
+        "dft rattle static 12/12_mp-22905": "dft_ml_data_generation/rand_static_12/",
+
     }
+
+@pytest.fixture(scope="class")
+def ref_paths_mpid():
+    return {
+        "tight relax_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 1_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 2_mp-22905": "dft_ml_data_generation/tight_relax_2/",
+        "static_mp-22905": "dft_ml_data_generation/static/",
+        "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
+        "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
+        "dft phonon static 1/2_mp-22905": "dft_ml_data_generation/phonon_static_1/",
+        "dft phonon static 2/2_mp-22905": "dft_ml_data_generation/phonon_static_2/",
+        "dft rattle static 1/12_mp-22905": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/12_mp-22905": "dft_ml_data_generation/rand_static_2/",
+        "dft rattle static 3/12_mp-22905": "dft_ml_data_generation/rand_static_3/",
+        "dft rattle static 4/12_mp-22905": "dft_ml_data_generation/rand_static_4/",
+        "dft rattle static 5/12_mp-22905": "dft_ml_data_generation/rand_static_5/",
+        "dft rattle static 6/12_mp-22905": "dft_ml_data_generation/rand_static_6/",
+        "dft rattle static 7/12_mp-22905": "dft_ml_data_generation/rand_static_7/",
+        "dft rattle static 8/12_mp-22905": "dft_ml_data_generation/rand_static_8/",
+        "dft rattle static 9/12_mp-22905": "dft_ml_data_generation/rand_static_9/",
+        "dft rattle static 10/12_mp-22905": "dft_ml_data_generation/rand_static_10/",
+        "dft rattle static 11/12_mp-22905": "dft_ml_data_generation/rand_static_11/",
+        "dft rattle static 12/12_mp-22905": "dft_ml_data_generation/rand_static_12/",
+    }
+
+
 
 
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs():
     return {
-        "tight relax": {"incar_settings": ["NSW"]},
-        "tight relax 1": {"incar_settings": ["NSW"]},
-        "tight relax 2": {"incar_settings": ["NSW"]},
-        "dft phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "dft phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "dft rattle static 1/12": {
+        "tight relax_test": {"incar_settings": ["NSW"]},
+        "tight relax 1_test": {"incar_settings": ["NSW"]},
+        "tight relax 2_test": {"incar_settings": ["NSW"]},
+        "dft phonon static 1/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 2/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft rattle static 1/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 2/12": {
+        "dft rattle static 2/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 3/12": {
+        "dft rattle static 3/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 4/12": {
+        "dft rattle static 4/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 5/12": {
+        "dft rattle static 5/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 6/12": {
+        "dft rattle static 6/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 7/12": {
+        "dft rattle static 7/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 8/12": {
+        "dft rattle static 8/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 9/12": {
+        "dft rattle static 9/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 10/12": {
+        "dft rattle static 10/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 11/12": {
+        "dft rattle static 11/12_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 12/12": {
+        "dft rattle static 12/12_test": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "tight relax_mp-22905": {"incar_settings": ["NSW"]},
+        "tight relax 1_mp-22905": {"incar_settings": ["NSW"]},
+        "tight relax 2_mp-22905": {"incar_settings": ["NSW"]},
+        "dft phonon static 1/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 2/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft rattle static 1/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 2/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 3/12_test": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 4/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 5/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 6/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 7/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 8/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 9/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 10/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 11/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 12/12_mp-22905": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
     }
 
+@pytest.fixture(scope="class")
+def fake_run_vasp_kwargs_mpid():
+    return {
+        "tight relax_mp-22905": {"incar_settings": ["NSW"]},
+        "tight relax 1_mp-22905": {"incar_settings": ["NSW"]},
+        "tight relax 2_mp-22905": {"incar_settings": ["NSW"]},
+        "dft phonon static 1/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 2/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft rattle static 1/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 2/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 3/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 4/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 5/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 6/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 7/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 8/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 9/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 10/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 11/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 12/12_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+    }
 
 @pytest.fixture(scope="class")
 def ref_paths4():
     return {
-        "tight relax": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
-        "static": "dft_ml_data_generation/static/",
+        "tight relax_test": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 1_test": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 2_test": "dft_ml_data_generation/tight_relax_2/",
+        "static_test": "dft_ml_data_generation/static/",
         "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
         "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
-        "dft phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
-        "dft phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
-        "dft rattle static 1/4": "dft_ml_data_generation/rand_static_1/",
-        "dft rattle static 2/4": "dft_ml_data_generation/rand_static_4/",
-        "dft rattle static 3/4": "dft_ml_data_generation/rand_static_7/",
-        "dft rattle static 4/4": "dft_ml_data_generation/rand_static_10/",
+        "dft phonon static 1/2_test": "dft_ml_data_generation/phonon_static_1/",
+        "dft phonon static 2/2_test": "dft_ml_data_generation/phonon_static_2/",
+        "dft rattle static 1/4_test": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/4_test": "dft_ml_data_generation/rand_static_4/",
+        "dft rattle static 3/4_test": "dft_ml_data_generation/rand_static_7/",
+        "dft rattle static 4/4_test": "dft_ml_data_generation/rand_static_10/",
     }
 
 
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs4():
     return {
-        "tight relax": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "dft phonon static 1/2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "dft phonon static 2/2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 1_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 1/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 2/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
 
-        "dft rattle static 1/4": {
+        "dft rattle static 1/4_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 2/4": {
+        "dft rattle static 2/4_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 3/4": {
+        "dft rattle static 3/4_test": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 4/4": {
+        "dft rattle static 4/4_test": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+    }
+
+@pytest.fixture(scope="class")
+def ref_paths4_mpid():
+    return {
+        "tight relax_test": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax_test2": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax_test3": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 1_test": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 2_test": "dft_ml_data_generation/tight_relax_2/",
+        "tight relax 1_test2": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 1_test3": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 2_test2": "dft_ml_data_generation/tight_relax_2/",
+        "tight relax 2_test3": "dft_ml_data_generation/tight_relax_2/",
+        "static_test": "dft_ml_data_generation/static/",
+        "static_test2": "dft_ml_data_generation/static/",
+        "static_test3": "dft_ml_data_generation/static/",
+        "tight relax 1_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "tight relax 2_mp-22905": "dft_ml_data_generation/tight_relax_2/",
+        "static_mp-22905": "dft_ml_data_generation/static/",
+        "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
+        "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
+        "dft phonon static 1/2_test": "dft_ml_data_generation/phonon_static_1/",
+        "dft phonon static 2/2_test": "dft_ml_data_generation/phonon_static_2/",
+        "dft phonon static 1/2_test2": "dft_ml_data_generation/phonon_static_1/",
+        "dft phonon static 1/2_test3": "dft_ml_data_generation/phonon_static_1/",
+        "dft phonon static 2/2_test2": "dft_ml_data_generation/phonon_static_2/",
+        "dft phonon static 2/2_test3": "dft_ml_data_generation/phonon_static_2/",
+        "dft phonon static 1/2_mp-22905": "dft_ml_data_generation/phonon_static_1/",
+        "dft phonon static 2/2_mp-22905": "dft_ml_data_generation/phonon_static_2/",
+        "dft rattle static 1/4_test": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 1/4_mp-22905": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/4_test": "dft_ml_data_generation/rand_static_4/",
+        "dft rattle static 2/4_mp-22905": "dft_ml_data_generation/rand_static_4/",
+        "dft rattle static 3/4_test": "dft_ml_data_generation/rand_static_7/",
+        "dft rattle static 3/4_mp-22905": "dft_ml_data_generation/rand_static_7/",
+        "dft rattle static 4/4_test": "dft_ml_data_generation/rand_static_10/",
+        "dft rattle static 4/4_mp-22905": "dft_ml_data_generation/rand_static_10/",
+        "dft rattle static 1/4_test2": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 1/4_test3": "dft_ml_data_generation/rand_static_1/",
+        "dft rattle static 2/4_test2": "dft_ml_data_generation/rand_static_4/",
+        "dft rattle static 2/4_test3": "dft_ml_data_generation/rand_static_4/",
+        "dft rattle static 3/4_test2": "dft_ml_data_generation/rand_static_7/",
+        "dft rattle static 3/4_test3": "dft_ml_data_generation/rand_static_7/",
+        "dft rattle static 4/4_test2": "dft_ml_data_generation/rand_static_10/",
+        "dft rattle static 4/4_test3": "dft_ml_data_generation/rand_static_10/",
+    }
+
+
+@pytest.fixture(scope="class")
+def fake_run_vasp_kwargs4_mpid():
+    return {
+        "tight relax_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax_test2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 1_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 1_test2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 1_test3": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 2_test2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 2_test3": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 1_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "tight relax 2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 1/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 2/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 1/2_test2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 1/2_test3": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 2/2_test2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 2/2_test3": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 1/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft phonon static 2/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft rattle static 1/4_test": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 2/4_test": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 3/4_test": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 4/4_test": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 1/4_test2": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 2/4_test2": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 3/4_test2": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 4/4_test2": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 1/4_test3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 2/4_test3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 3/4_test3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 4/4_test3": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 1/4_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 2/4_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 3/4_mp-22905": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft rattle static 4/4_mp-22905": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
     }
 
 
+
 def test_complete_dft_vs_ml_benchmark_workflow_gap(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     from jobflow import run_locally
 
@@ -162,7 +455,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -174,14 +467,14 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
 
     print("RMSE: ", responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0]["benchmark_phonon_rmse"])
 
-    assert complete_workflow.jobs[4].name == "complete_benchmark"
+    assert complete_workflow.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0]["benchmark_phonon_rmse"] == pytest.approx(
         2.002641337594289, abs=1.0  # it's kinda fluctuating because of the little data
     )
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     from jobflow import run_locally
 
@@ -214,7 +507,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -223,7 +516,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
         ensure_success=True,
         store=memory_jobstore,
     )
-    assert complete_workflow_m3gnet.jobs[4].name == "complete_benchmark"
+    assert complete_workflow_m3gnet.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_m3gnet.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         5.2622804443539355, abs=1.0  # bad fit data
@@ -231,7 +524,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_mace(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     from jobflow import run_locally
 
@@ -266,7 +559,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -276,7 +569,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_mace.jobs[4].name == "complete_benchmark"
+    assert complete_workflow_mace.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_mace.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         5.391879137001022, abs=3.0
@@ -286,7 +579,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_nequip(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     from jobflow import run_locally
 
@@ -321,7 +614,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -331,7 +624,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_nequip.jobs[4].name == "complete_benchmark"
+    assert complete_workflow_nequip.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_nequip.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         5.633069137001022, abs=3.0
@@ -341,7 +634,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     from jobflow import run_locally
 
@@ -353,13 +646,13 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
                                                                                                1.05], ).make(
         structure_list=[structure, structure],
         mp_ids=["test", "test2"],
-        benchmark_mp_ids=["mp-22905"],
-        benchmark_structures=[structure],
+        benchmark_mp_ids=["mp-22905","test3"],
+        benchmark_structures=[structure, structure],
         preprocessing_data=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -369,14 +662,14 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_two_mpid.jobs[6].name == "complete_benchmark"
+    assert complete_workflow_two_mpid.jobs[6].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_two_mpid.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.7126017685370398, abs=0.5
     )
 
 def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     from jobflow import run_locally
 
@@ -397,7 +690,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -407,7 +700,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_hploop.jobs[4].name == "complete_benchmark"
+    assert complete_workflow_hploop.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_hploop.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         2.002641337594289, abs=1.0  # it's kinda fluctuating because of the little data
@@ -415,7 +708,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     import glob
     from jobflow import run_locally
@@ -439,7 +732,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -449,7 +742,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_sigma_hploop.jobs[4].name == "complete_benchmark"
+    assert complete_workflow_sigma_hploop.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sigma_hploop.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         1.511743561686686, abs=1.0  # it's kinda fluctuating because of the little data
@@ -461,7 +754,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regulaization_hploop(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     import glob
     from jobflow import run_locally
@@ -481,7 +774,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -491,7 +784,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_sigma.jobs[4].name == "complete_benchmark"
+    assert complete_workflow_sigma.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sigma.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         1.511743561686686, abs=0.5
@@ -503,7 +796,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     from jobflow import run_locally
 
@@ -524,7 +817,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -534,7 +827,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_sep.jobs[4].name == "complete_benchmark"
+    assert complete_workflow_sep.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sep.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.8709764794814768, abs=0.5
@@ -542,7 +835,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_mpids(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     import glob
     from jobflow import run_locally
@@ -567,7 +860,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -588,7 +881,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
     import glob
     from jobflow import run_locally
@@ -611,7 +904,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(
@@ -621,7 +914,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_sep.jobs[4].name == "complete_benchmark"
+    assert complete_workflow_sep.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sep.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.8709764794814768, abs=0.5
@@ -730,10 +1023,10 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         )
 
         for job, uuid in add_data_workflow_with_dft_reference.iterflow():
-            assert job.name != "dft_phonopy_gen_data"
+            assert job.name != "dft_phonopy_gen_data_mp-22905"
 
         for job, uuid in add_data_workflow_with_dft_reference.iterflow():
-            assert job.name != "tight relax 1"
+            assert job.name != "tight relax 1_mp-22905"
 
     def test_add_data_workflow_add_phonon_false(
             self,
@@ -769,7 +1062,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         )
 
         for job, uuid in add_data_workflow_add_phonon_false.iterflow():
-            assert job.name != "dft_phonopy_gen_data"
+            assert job.name != "dft_phonopy_gen_data_mp-22905"
 
     def test_add_data_workflow_add_random_false(
             self,
@@ -805,7 +1098,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         )
 
         for job, uuid in add_data_workflow_add_random_false.iterflow():
-            assert job.name != "dft_random_gen_data"
+            assert job.name != "dft_random_gen_data_mp-22905"
 
     def test_add_data_workflow_with_same_mpid(
             self,
@@ -814,8 +1107,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             test_dir,
             memory_jobstore,
             clean_dir,
-            fake_run_vasp_kwargs,
-            ref_paths,
+            fake_run_vasp_kwargs_mpid,
+            ref_paths_mpid,
     ):
 
         path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
@@ -839,12 +1132,13 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
         )
 
+
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
-            assert job.name != "tight relax 1"
+            assert job.name != "tight relax 1_mp-22905"
 
 
 def test_phonon_dft_ml_data_generation_flow(
-        vasp_test_dir, mock_vasp, clean_dir, memory_jobstore, ref_paths4, fake_run_vasp_kwargs4, test_dir
+        vasp_test_dir, mock_vasp, clean_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, test_dir
 ):
     from jobflow import run_locally
 
@@ -878,7 +1172,7 @@ def test_phonon_dft_ml_data_generation_flow(
            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
            )
     # automatically use fake VASP and write POTCAR.spec during the test
-    mock_vasp(ref_paths4, fake_run_vasp_kwargs4)
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(

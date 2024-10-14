@@ -93,7 +93,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "EDIFF": 1e-7,
                 "LAECHG": False,
                 "LREAL": False,
-                "ALGO": "Normal",
+                "ALGO": "Normal", # maybe switch to fast to safe computing time
                 "NSW": 0,
                 "LCHARG": False,
                 "SIGMA": 0.05,
@@ -209,14 +209,17 @@ class DFTPhononMaker(PhononMaker):
     bulk_relax_maker: BaseVaspMaker | None = field(
         default_factory=lambda: DoubleRelaxMaker.from_relax_maker(
             TightRelaxMaker(
-                run_vasp_kwargs={"handlers":{}},
+                #run_vasp_kwargs={"handlers":{}},
                 input_set_generator=TightRelaxSetGenerator(
                     user_incar_settings={
                         "ISPIN": 1,
                         "LAECHG": False,
                         "ISMEAR": 0,
+                        "ENCUT": 700,
+                        "ISYM": 0,
                         # to be removed
                         "NPAR": 4,
+                        "SIGMA": 0.05,
                     }
                 )
             )
@@ -230,6 +233,8 @@ class DFTPhononMaker(PhononMaker):
                     "ISPIN": 1,
                     "LAECHG": False,
                     "ISMEAR": 0,
+                    "ENCUT": 700,
+                    "SIGMA": 0.05,
                     # to be removed
                     "NPAR": 4,
                 },
@@ -605,12 +610,14 @@ class RandomStructuresDataGenerator(Maker):
     )
     bulk_relax_maker: BaseVaspMaker = field(
         default_factory=lambda: TightRelaxMaker(
-            run_vasp_kwargs={"handlers":{}},
+            #run_vasp_kwargs={"handlers":{}},
             input_set_generator=TightRelaxSetGenerator(
                 user_incar_settings={
                     "ISPIN": 1,
                     "LAECHG": False,
+                    "ISYM": 0, # to be changed
                     "ISMEAR": 0,
+                    "SIGMA": 0.05, # to be changed back
                     # to be removed
                     "NPAR": 4,
                 }
@@ -777,6 +784,7 @@ class IsoAtomMaker(Maker):
                         # to be removed
                         "NPAR": 4,
                         # TODO: locpot, chgcar, chg can be deactivated!
+                        # TODO: why don't we use the IsoAtomMaker and adapt it?
                     },
                 ),
                 # we should likely remove all handlers here as well

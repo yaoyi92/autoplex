@@ -166,7 +166,7 @@ def check_supercells(
         supercell = structure.make_supercell(np.array(matrix).transpose())
         a, b, c = supercell.lattice.abc
         num_atoms = supercell.num_sites
-
+        print(supercell)
         # check if supercells are in the requirements with a certain tolerance
         if (
             not (min_atoms * min_tolerance <= num_atoms <= max_atoms * max_tolerance)

@@ -42,6 +42,10 @@ class PhononBenchmarkMaker(Maker):
         benchmark_mp_id: str,
         ml_phonon_task_doc: PhononBSDOSDoc,
         dft_phonon_task_doc: PhononBSDOSDoc,
+        displacement: float,
+        atomwise_regularization_parameter: float,
+        soap_dict: dict,
+        suffix: str,
     ):
         """
         Make flow for benchmarking.
@@ -58,6 +62,8 @@ class PhononBenchmarkMaker(Maker):
             Phonon task doc from ML potential consisting of pymatgen band-structure object.
         dft_phonon_task_doc: PhononBSDOSDoc
             Phonon task doc from DFT runs consisting of pymatgen band-structure object.
+        displacement: float
+            displacement for finite displacement method.
         """
         return compute_bandstructure_benchmark_metrics(
             ml_model=ml_model,
@@ -66,4 +72,9 @@ class PhononBenchmarkMaker(Maker):
             dft_imag_modes=dft_phonon_task_doc.has_imaginary_modes,
             ml_imag_modes=ml_phonon_task_doc.has_imaginary_modes,
             structure=structure,
+            displacement=displacement,
+            atomwise_regularization_parameter=atomwise_regularization_parameter,
+            soap_dict=soap_dict,
+            suffix=suffix,
+            mp_id=benchmark_mp_id,
         )

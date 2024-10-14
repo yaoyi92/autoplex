@@ -38,7 +38,10 @@ def complete_benchmark(  # this function was put here to prevent circular import
     fit_input,
     symprec,
     phonon_displacement_maker: BaseVaspMaker,
+    displacement: float,
+    atomwise_regularization_parameter: float,
     dft_references=None,
+    soap_dict=None,
     supercell_settings: dict | None = None,
     relax_maker_kwargs: dict | None = None,
     static_maker_kwargs: dict | None = None,
@@ -89,6 +92,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
         Keyword arguments that can be passed to the StaticMaker.
     ml_phonon_maker_kwargs: dict
         Keyword arguments that can be passed to the MLPhononMaker.
+    displacement: float
+        displacement used in the finite displacement method
     """
     jobs = []
     collect_output = []
@@ -120,6 +125,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                 ml_model=ml_model,
                 potential_file=ml_potential,
                 supercell_settings=supercell_settings,
+                #TODO:  does the displacement go in here correctly?
                 **ml_phonon_maker_kwargs,
             )
             jobs.append(add_data_ml_phonon)
@@ -150,6 +156,10 @@ def complete_benchmark(  # this function was put here to prevent circular import
                     benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                     ml_phonon_task_doc=add_data_ml_phonon.output,
                     dft_phonon_task_doc=dft_references,
+                    displacement=displacement,
+                    atomwise_regularization_parameter=atomwise_regularization_parameter,
+                    soap_dict=soap_dict,
+                    suffix=suffix,
                 )
             elif (
                 dft_references is not None
@@ -164,6 +174,10 @@ def complete_benchmark(  # this function was put here to prevent circular import
                     benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                     ml_phonon_task_doc=add_data_ml_phonon.output,
                     dft_phonon_task_doc=dft_references,
+                    displacement=displacement,
+                    atomwise_regularization_parameter=atomwise_regularization_parameter,
+                    soap_dict=soap_dict,
+                    suffix=suffix,
                 )
             else:
                 add_data_bm = PhononBenchmarkMaker(name="Benchmark").make(
@@ -173,9 +187,14 @@ def complete_benchmark(  # this function was put here to prevent circular import
                     benchmark_mp_id=benchmark_mp_ids[ibenchmark_structure],
                     ml_phonon_task_doc=add_data_ml_phonon.output,
                     dft_phonon_task_doc=dft_references[ibenchmark_structure],
+                    displacement=displacement,
+                    atomwise_regularization_parameter=atomwise_regularization_parameter,
+                    soap_dict=soap_dict,
+                    suffix=suffix,
                 )
             jobs.append(add_data_bm)
             collect_output.append(add_data_bm.output)
+
 
     return Response(replace=Flow(jobs), output=collect_output)
 
