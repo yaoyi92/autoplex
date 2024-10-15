@@ -303,7 +303,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 hyper_list.append(
                     {"f=" + str(atomwise_regularization_parameter): "default randstruc"}
                 )
-            # TODO: where is the displacement?
             if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
                 for ibenchmark_structure, benchmark_structure in enumerate(
                     benchmark_structures

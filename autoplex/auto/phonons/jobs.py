@@ -38,10 +38,10 @@ def complete_benchmark(  # this function was put here to prevent circular import
     fit_input,
     symprec,
     phonon_displacement_maker: BaseVaspMaker,
-    displacement: float,
     atomwise_regularization_parameter: float,
     dft_references=None,
     soap_dict=None,
+    displacement: float = 0.01,
     supercell_settings: dict | None = None,
     relax_maker_kwargs: dict | None = None,
     static_maker_kwargs: dict | None = None,
@@ -51,7 +51,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
     Construct a complete flow for benchmarking the MLIP fit quality using a DFT based phonon structure.
 
     The complete benchmark flow starts by calculating the MLIP based phonon structure for each structure that has to be
-    benchmarked. Then depending on if the user provided a DFT reference dataset or the DFT reference structure is
+    benchmarked.
+    Then, depending on if the user provided a DFT reference dataset or the DFT reference structure is
     already given from a previous loop, the existing or to-be-calculated DFT reference is used to generate the phonon
     bandstructure comparison plots, the q-point wise RMSE plots and to calculate the overall RMSE.
     This process is repeated with the default ML potential as well as the potentials from the different active user
@@ -60,9 +61,11 @@ def complete_benchmark(  # this function was put here to prevent circular import
     Parameters
     ----------
     ml_path: str
-        Path to MLIP file. Default is path to gap_file.xml
+        Path to MLIP file.
+        Default is path to gap_file.xml
     ml_model: str
-        ML model to be used. Default is GAP.
+        ML model to be used.
+        Default is GAP.
     ibenchmark_structure: int
         ith benchmark structure.
     benchmark_structure: Structure
@@ -83,7 +86,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
     phonon_displacement_maker: BaseVaspMaker
         Maker used to compute the forces for a supercell.
     dft_references:
-        a list of DFT reference files containing the PhononBSDOCDoc object. Default None.
+        a list of DFT reference files containing the PhononBSDOCDoc object.
+        Default None.
     supercell_settings: dict
         settings for supercell generation
     relax_maker_kwargs: dict
@@ -125,12 +129,12 @@ def complete_benchmark(  # this function was put here to prevent circular import
             add_data_ml_phonon = MLPhononMaker(
                 relax_maker_kwargs=relax_maker_kwargs,
                 static_maker_kwargs=static_maker_kwargs,
+                displacement=displacement,
             ).make_from_ml_model(
                 structure=benchmark_structure,
                 ml_model=ml_model,
                 potential_file=ml_potential,
                 supercell_settings=supercell_settings,
-                # TODO:  does the displacement go in here correctly?
                 **ml_phonon_maker_kwargs,
             )
             jobs.append(add_data_ml_phonon)
@@ -147,7 +151,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                 else:
                     dft_phonons = dft_phonopy_gen_data(
                         structure=benchmark_structure,
-                        displacements=[0.01],
+                        displacements=[displacement],
                         symprec=symprec,
                         phonon_displacement_maker=phonon_displacement_maker,
                         supercell_settings=supercell_settings,
