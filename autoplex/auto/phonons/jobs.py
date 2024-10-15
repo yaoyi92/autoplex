@@ -93,7 +93,12 @@ def complete_benchmark(  # this function was put here to prevent circular import
     ml_phonon_maker_kwargs: dict
         Keyword arguments that can be passed to the MLPhononMaker.
     displacement: float
-        displacement used in the finite displacement method
+        displacement used in the finite displacement method.
+    atomwise_regularization_parameter: float
+        regularization value for the atom-wise force components.
+    soap_dict: dict
+        dictionary containing SOAP parameters.
+
     """
     jobs = []
     collect_output = []
@@ -125,7 +130,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                 ml_model=ml_model,
                 potential_file=ml_potential,
                 supercell_settings=supercell_settings,
-                #TODO:  does the displacement go in here correctly?
+                # TODO:  does the displacement go in here correctly?
                 **ml_phonon_maker_kwargs,
             )
             jobs.append(add_data_ml_phonon)
@@ -194,7 +199,6 @@ def complete_benchmark(  # this function was put here to prevent circular import
                 )
             jobs.append(add_data_bm)
             collect_output.append(add_data_bm.output)
-
 
     return Response(replace=Flow(jobs), output=collect_output)
 

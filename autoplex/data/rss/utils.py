@@ -170,6 +170,7 @@ class HookeanRepulsion(FixConstraint):
         """Get number of removed degrees of freedom due to constraint."""
         return 0
 
+    @property
     def todict(self):
         """Convert constraint to dictionary."""
         dct = {"name": "Hookean"}

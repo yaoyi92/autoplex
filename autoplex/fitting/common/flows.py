@@ -27,7 +27,7 @@ __all__ = [
 @dataclass
 class MLIPFitMaker(Maker):
     """
-    Maker to fit ML potentials based on DFT labelled reference data.
+    Maker to fit ML potentials based on DFT labeled reference data.
 
     This Maker will filter the provided dataset in a data preprocessing step and then proceed
     with the MLIP fit (default is GAP).
@@ -127,7 +127,7 @@ class MLIPFitMaker(Maker):
             the database directory.
         device: str
             specify device to use cuda or cpu.
-        fit_kwargs : dict.
+        fit_kwargs : dict
             dict including MLIP fit keyword args.
         """
         if database_dir is None:

@@ -1230,8 +1230,8 @@ def load_mlip_hyperparameter_defaults(mlip_fit_parameter_file_path: str | Path) 
 
     Parameters
     ----------
-    gap_fit_parameter_file_path : str or Path.
-        Path to gap-defaults.json.
+    mlip_fit_parameter_file_path : str or Path.
+        Path to MLIP default parameter JSON files.
 
     Returns
     -------
@@ -1901,6 +1901,8 @@ def write_after_distillation_data_split(
         name of the training data file.
     test_name:
         name of the test data file.
+    force_label: str
+        label of the force entries.
     """
     # reject structures with large force components
     atoms = (

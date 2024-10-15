@@ -63,7 +63,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Must be provided if distorting volume without specifying a range, or if distorting angles.
         Default=10.
     displacements: list[float]
-        displacement distance for phonons
+        displacement distances for phonons
     symprec: float
         Symmetry precision to use in the
         reduction of symmetry to find the primitive/conventional cell
@@ -232,7 +232,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     w_angle=self.w_angle,
                     supercell_settings=self.supercell_settings,
                 )
-                addDFTrand.append_name("_"+str(mp_id))
+                addDFTrand.append_name("_" + str(mp_id))
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
@@ -244,7 +244,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     supercell_settings=self.supercell_settings,
                 )
                 flows.append(addDFTphon)
-                addDFTphon.append_name("_"+str(mp_id))
+                addDFTphon.append_name("_" + str(mp_id))
                 fit_input.update({mp_id: addDFTphon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
                 fit_input.update(
@@ -327,7 +327,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             soap_dict=None,
                             **self.benchmark_kwargs,
                         )
-                        complete_bm.append_name("_"+str(benchmark_mp_ids[ibenchmark_structure]))
+                        complete_bm.append_name(
+                            "_" + str(benchmark_mp_ids[ibenchmark_structure])
+                        )
                         flows.append(complete_bm)
                         bm_outputs.append(complete_bm.output)
 
@@ -395,18 +397,22 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                             dft_references=dft_references,
                                             supercell_settings=self.supercell_settings,
                                             displacement=displacement,
-                                            # TODO add a hyper paramter here for the benchmark
+                                            # TODO add a hyper parameter here for the benchmark
                                             atomwise_regularization_param=atomwise_regularization,
                                             soap_dict=soap_dict,
                                             **self.benchmark_kwargs,
                                         )
-                                        complete_bm.append_name("_"+str(benchmark_mp_ids[ibenchmark_structure]))
+                                        complete_bm.append_name(
+                                            "_"
+                                            + str(
+                                                benchmark_mp_ids[ibenchmark_structure]
+                                            )
+                                        )
                                         flows.append(complete_bm)
                                         bm_outputs.append(complete_bm.output)
         collect_bm = write_benchmark_metrics(
             benchmark_structures=benchmark_structures,
             metrics=bm_outputs,
-
         )
         flows.append(collect_bm)
 

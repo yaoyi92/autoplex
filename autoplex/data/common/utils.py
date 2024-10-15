@@ -110,9 +110,13 @@ def to_ase_trajectory(
 
     Parameters
     ----------
+    traj_obj:
+        trajectory object.
     filename : str | None
         Name of the file to write the ASE trajectory to.
         If None, no file is written.
+    store_magmoms:
+        bool to store magnetic moments.
     """
     for idx in range(len(traj_obj["atom_positions"])):
         atoms = Atoms(symbols=list(traj_obj["atomic_number"]))  # .atoms.copy()
@@ -799,8 +803,7 @@ def plot_energy_forces(
     fig, ax_list = plt.subplots(nrows=3, ncols=2, gridspec_kw={"hspace": 0.3})
     fig.set_size_inches(10, 15)
     ax_list = ax_list.flat[:]
-    rmse = []
-    rmse.append("Energy and forces and train and test data\n")
+    rmse = ["Energy and forces and train and test data\n"]
 
     pretty_species_list = (
         str(species_list).replace("['", "").replace("']", "").replace("'", "")

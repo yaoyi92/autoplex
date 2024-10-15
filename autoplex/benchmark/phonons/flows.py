@@ -64,6 +64,13 @@ class PhononBenchmarkMaker(Maker):
             Phonon task doc from DFT runs consisting of pymatgen band-structure object.
         displacement: float
             displacement for finite displacement method.
+        atomwise_regularization_parameter: float
+        regularization value for the atom-wise force components.
+        suffix: str
+            GAP potential file suffix.
+        soap_dict: dict
+            dictionary containing SOAP parameters.
+
         """
         return compute_bandstructure_benchmark_metrics(
             ml_model=ml_model,
