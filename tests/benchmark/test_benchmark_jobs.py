@@ -6,10 +6,10 @@ from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.benchmark.phonons.utils import compute_bandstructure_benchmark_metrics
 
+
 def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     import os
     from pathlib import Path
-    from jobflow import run_locally
 
     # test if same band structure gives out expected 0.0 rmse
     dummy_bs_file_path = test_dir / "benchmark" / "NaCl.json"
@@ -23,10 +23,10 @@ def test_compute_bandstructure_benchmark_metrics_dummy(test_dir, clean_dir):
     df_bs = PhononBandStructureSymmLine.from_dict(dummy_bs_dict)
     ml_bs = PhononBandStructureSymmLine.from_dict(dummy_bs_dict)
 
-    result=compute_bandstructure_benchmark_metrics(
-        ml_model="GAP", structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
+    result = compute_bandstructure_benchmark_metrics(
+        ml_model="GAP", structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False,
+        dft_imag_modes=False, mp_id="mp-22905", atomwise_regularization_parameter=0.01, soap_dict={}, suffix=""
     )
-
 
     assert result["benchmark_phonon_rmse"] == pytest.approx(0.0)
 
@@ -59,10 +59,10 @@ def test_compute_bandstructure_benchmark_metrics(test_dir, clean_dir):
     df_bs = get_ph_bs_symm_line(bands_path=dft_bs_file_path)
     ml_bs = get_ph_bs_symm_line(bands_path=ml_bs_file_path)
 
-    result= compute_bandstructure_benchmark_metrics(
-        ml_model="GAP",structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False, dft_imag_modes=False,
+    result = compute_bandstructure_benchmark_metrics(
+        ml_model="GAP", structure=df_bs.structure, ml_phonon_bs=ml_bs, dft_phonon_bs=df_bs, ml_imag_modes=False,
+        dft_imag_modes=False, mp_id="mp-22905", atomwise_regularization_parameter=0.01, soap_dict={}, suffix=""
     )
-
 
     assert result["benchmark_phonon_rmse"] == pytest.approx(
         0.5716963823412201, abs=0.3  # TODO check results
@@ -92,31 +92,52 @@ def test_write_benchmark_metrics(test_dir, clean_dir):
     path_to_struct = test_dir / "benchmark" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    metrics = [
+    metric_vals = [
         [{'benchmark_phonon_rmse': 0.87425, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False},
          {'benchmark_phonon_rmse': 0.63839, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}],
         [{'benchmark_phonon_rmse': 0.55506, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}],
         [{'benchmark_phonon_rmse': 0.43216, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}],
-        [{'benchmark_phonon_rmse': 0.38114, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False},
+        [{'benchmark_phonon_rmse': 0.54584, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}],
+        [{'benchmark_phonon_rmse': 0.43216, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}],
+        [{'benchmark_phonon_rmse': 0.36478, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False},
          {'benchmark_phonon_rmse': 0.38100, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}]
     ]
 
-    hyperlist = [
-        {'f=0.1': 'default with sigma'},
-        {'f=0.1': 'default'},
-        {'f=0.1': 'default phonon'},
-        {'f=0.1': 'default randstruc'},
-        {'f=0.01': {'n_sparse': 3000, 'delta': 1.0}},
-        {'f=0.01': {'n_sparse': 5000, 'delta': 1.0}}
+    soap_dict = [
+        None,
+        None,
+        None,
+        None,
+        {'n_sparse': 3000, 'delta': 1.0},
+        {'n_sparse': 5000, 'delta': 1.0},
     ]
 
+    suffixes = ["", '_wo_sigma', '_phonon', '_rand_struc']
+
+    metrics = []
+
+    suffix_index = 0
+
+    for i, metric_group in enumerate(metric_vals):
+        for metric in metric_group:
+            fused_dict = {
+                'benchmark_phonon_rmse': metric['benchmark_phonon_rmse'],
+                'dft_imaginary_modes': metric['dft_imaginary_modes'],
+                'ml_imaginary_modes': metric['ml_imaginary_modes'],
+                'ml_model': 'GAP',
+                'mp_id': 'mp-22905',
+                'structure': structure,
+                'displacement': 0.01,
+                'atomwise_regularization_parameter': 0.1,
+                'soap_dict': soap_dict[i],
+                'suffix': suffixes[suffix_index]
+            }
+            metrics.append(fused_dict)
+        suffix_index = min(suffix_index + 1, len(suffixes) - 1)
+
     write_metrics_job = write_benchmark_metrics(
-        ml_models=["GAP"],
         benchmark_structures=[structure],
-        benchmark_mp_ids=["mp-22905"],
-        metrics=metrics,
-        displacements=[0.01],
-        hyper_list=hyperlist,
+        metrics=[metrics],
     )
 
     _ = run_locally(write_metrics_job, create_folders=False, ensure_success=True)

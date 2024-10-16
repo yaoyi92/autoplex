@@ -24,15 +24,18 @@ def test_benchmark(test_dir, clean_dir):
     benchmark_flow = PhononBenchmarkMaker().make(
         ml_model="GAP",
         structure=dft_doc.structure,
-        ml_phonon_task_doc =ml_doc,
-        dft_phonon_task_doc =dft_doc,
+        ml_phonon_task_doc=ml_doc,
+        dft_phonon_task_doc=dft_doc,
         benchmark_mp_id="test",
+        displacement=0.01,
+        atomwise_regularization_parameter=0.01,
+        soap_dict=None, suffix="",
     )
 
     responses = run_locally(benchmark_flow, create_folders=False, ensure_success=True)
 
     assert responses[benchmark_flow.output.uuid][1].output["benchmark_phonon_rmse"] == pytest.approx(0.0)
-    #0.5716963823412201, abs=0.02
+    # 0.5716963823412201, abs=0.02
 
     # get list of generated plot files
     test_files_dir = Path(test_dir / "benchmark").resolve()
