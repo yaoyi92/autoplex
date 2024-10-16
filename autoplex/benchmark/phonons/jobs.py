@@ -24,10 +24,7 @@ def write_benchmark_metrics(
     -------
     A text file with root mean squared error between DFT and ML potential phonon band-structure
     """
-    # if hyper_list is None:
-    #    hyper_list = ["default"]
     # TODO: fix this part
-    print(metrics)
     metrics_flattened = [item for sublist in metrics for item in sublist]
     # TODO: think about a better solution here
     # the following code assumes all benchmark structures have the same composition
@@ -57,36 +54,24 @@ def write_benchmark_metrics(
             "a",
             encoding="utf-8",
         ) as file:
+            # Build the SOAP dictionary or suffix value
+            soap_or_suffix = (
+                {
+                    f"f={metric['atomwise_regularization_parameter']}": metric[
+                        "soap_dict"
+                    ]
+                }
+                if metric["soap_dict"] is not None
+                else {
+                    f"f={metric['atomwise_regularization_parameter']}": metric["suffix"]
+                }
+            )
+
             file.write(
-                "\n%-11s%-11s%-12s%-18.2f%-12.5f%-55s%-16s%-5s"
-                % (
-                    metric["ml_model"],
-                    structure_composition,
-                    metric["mp_id"],
-                    metric["displacement"],
-                    metric["benchmark_phonon_rmse"],
-                    (
-                        str(
-                            {
-                                "f="
-                                + str(
-                                    metric["atomwise_regularization_parameter"]
-                                ): metric["soap_dict"]
-                            }
-                        )
-                        if metric["soap_dict"] is not None
-                        else str(
-                            {
-                                "f="
-                                + str(
-                                    metric["atomwise_regularization_parameter"]
-                                ): metric["suffix"]
-                            }
-                        )
-                    ),
-                    str(metric["ml_imaginary_modes"]),
-                    str(metric["dft_imaginary_modes"]),
-                )
+                f"\n{metric['ml_model']:<11}{structure_composition:<11}{metric['mp_id']:<12}"
+                f"{metric['displacement']:<18.2f}{metric['benchmark_phonon_rmse']:<12.5f}"
+                f"{soap_or_suffix!s:<55}{metric['ml_imaginary_modes']!s:<16}"
+                f"{metric['dft_imaginary_modes']!s:<5}"
             )
 
     return Response(output=metrics)
