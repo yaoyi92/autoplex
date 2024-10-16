@@ -232,7 +232,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     w_angle=self.w_angle,
                     supercell_settings=self.supercell_settings,
                 )
-                addDFTrand.append_name("_" + str(mp_id))
+                addDFTrand.append_name(f"_{mp_id}")
                 flows.append(addDFTrand)
                 fit_input.update({mp_id: addDFTrand.output})
             if self.add_dft_phonon_struct:
@@ -244,7 +244,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     supercell_settings=self.supercell_settings,
                 )
                 flows.append(addDFTphon)
-                addDFTphon.append_name("_" + str(mp_id))
+                addDFTphon.append_name(f"_{mp_id}")
                 fit_input.update({mp_id: addDFTphon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
                 fit_input.update(
@@ -278,7 +278,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 f_max=f_max,
                 pre_xyz_files=pre_xyz_files,
                 pre_database_dir=pre_database_dir,
-                atomwise_regularization_param=atomwise_regularization_parameter,
+                atomwise_regularization_parameter=atomwise_regularization_parameter,
                 f_min=f_min,
                 atom_wise_regularization=atom_wise_regularization,
                 auto_delta=auto_delta,
@@ -327,7 +327,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             **self.benchmark_kwargs,
                         )
                         complete_bm.append_name(
-                            "_" + str(benchmark_mp_ids[ibenchmark_structure])
+                            f"_{benchmark_mp_ids[ibenchmark_structure]}"
                         )
                         flows.append(complete_bm)
                         bm_outputs.append(complete_bm.output)
@@ -349,7 +349,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                         8000,
                         9000,
                     ]
-                for atomwise_regularization in self.atomwise_regularization_list:
+                for atomwise_reg_parameter in self.atomwise_regularization_list:
                     for n_sparse in self.n_sparse_list:
                         for delta in self.soap_delta_list:
                             soap_dict = {
@@ -364,7 +364,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 f_max=f_max,
                                 pre_xyz_files=pre_xyz_files,
                                 pre_database_dir=pre_database_dir,
-                                atomwise_regularization_param=atomwise_regularization,
+                                atomwise_regularization_parameter=atomwise_reg_parameter,
                                 f_min=f_min,
                                 atom_wise_regularization=atom_wise_regularization,
                                 auto_delta=auto_delta,
@@ -372,7 +372,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             )
                             flows.append(loop_data_fit)
                             hyper_list.append(
-                                {"f=" + str(atomwise_regularization): soap_dict}
+                                {"f=" + str(atomwise_reg_parameter): soap_dict}
                             )
                             if (benchmark_structures is not None) and (
                                 benchmark_mp_ids is not None
@@ -397,15 +397,12 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                             supercell_settings=self.supercell_settings,
                                             displacement=displacement,
                                             # TODO add a hyper parameter here for the benchmark
-                                            atomwise_regularization_param=atomwise_regularization,
+                                            atomwise_regularization_parameter=atomwise_reg_parameter,
                                             soap_dict=soap_dict,
                                             **self.benchmark_kwargs,
                                         )
                                         complete_bm.append_name(
-                                            "_"
-                                            + str(
-                                                benchmark_mp_ids[ibenchmark_structure]
-                                            )
+                                            f"_{benchmark_mp_ids[ibenchmark_structure]}"
                                         )
                                         flows.append(complete_bm)
                                         bm_outputs.append(complete_bm.output)
