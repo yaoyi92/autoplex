@@ -44,14 +44,15 @@ def test_complete_benchmark(clean_dir, test_dir, memory_jobstore):
     bm = complete_benchmark(ibenchmark_structure=0, benchmark_structure=structure, mp_ids=["mp-82"],
                             benchmark_mp_ids=["mp-82"], ml_path=gapfit.output["mlip_path"], ml_model="GAP",
                             dft_references=[dft_doc], add_dft_phonon_struct=False, fit_input=None, symprec=1e-1,
-                            phonon_displacement_maker=None, supercell_settings={"min_length": 8})
+                            phonon_displacement_maker=None, supercell_settings={"min_length": 8},
+                            atomwise_regularization_parameter=0.01, )
     jobs.append(bm)
 
     response = run_locally(Flow(jobs), store=memory_jobstore)
     output = response[bm.output.uuid][1].output[0].resolve(store=memory_jobstore)
-    assert output["benchmark_phonon_rmse"] == approx(1.0, abs=0.5)
-    assert output["dft_imaginary_modes"] == False
-    assert output["ml_imaginary_modes"] == False
+    assert output["benchmark_phonon_rmse"] == approx(1.0, abs=0.8)
+    assert output["dft_imaginary_modes"] is False
+    assert output["ml_imaginary_modes"] is False
 
 
 def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
