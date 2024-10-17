@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from autoplex.data.phonons.flows import TightDFTStaticMaker
 from autoplex.fitting.common.utils import (
@@ -215,7 +215,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         """
         flows = []
         fit_input = {}
-        hyper_list: list[dict[Any, Any]] = []  # check if this list is still used?
         bm_outputs = []
 
         default_hyperparameters = load_mlip_hyperparameter_defaults(
@@ -305,23 +304,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 **fit_kwargs,
             )
             flows.append(add_data_fit)
-            if fit_kwargs.get("regularization"):
-                hyper_list.append(
-                    {
-                        "f="
-                        + str(atomwise_regularization_parameter): "default with sigma"
-                    }
-                )
-            hyper_list.append(
-                {"f=" + str(atomwise_regularization_parameter): "default"}
-            )
-            if fit_kwargs.get("separated"):
-                hyper_list.append(
-                    {"f=" + str(atomwise_regularization_parameter): "default phonon"}
-                )
-                hyper_list.append(
-                    {"f=" + str(atomwise_regularization_parameter): "default randstruc"}
-                )
             if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
                 for ibenchmark_structure, benchmark_structure in enumerate(
                     benchmark_structures
@@ -390,9 +372,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 soap=soap_dict,
                             )
                             flows.append(loop_data_fit)
-                            hyper_list.append(
-                                {"f=" + str(atomwise_reg_parameter): soap_dict}
-                            )
                             if (benchmark_structures is not None) and (
                                 benchmark_mp_ids is not None
                             ):
