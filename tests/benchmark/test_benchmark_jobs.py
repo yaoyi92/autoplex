@@ -103,7 +103,7 @@ def test_write_benchmark_metrics(test_dir, clean_dir):
          {'benchmark_phonon_rmse': 0.38100, 'dft_imaginary_modes': False, 'ml_imaginary_modes': False}]
     ]
 
-    soap_dict = [
+    soap_dict = [  # unit tests for checking correct default soap_dict in tests/auto/test_auto_flows.py
         None,
         None,
         None,
