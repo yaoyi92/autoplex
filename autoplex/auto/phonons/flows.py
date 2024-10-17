@@ -6,8 +6,14 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from autoplex.data.phonons.flows import TightDFTStaticMaker
+from autoplex.fitting.common.utils import (
+    MLIP_PHONON_DEFAULTS_FILE_PATH,
+    load_mlip_hyperparameter_defaults,
+)
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from atomate2.vasp.jobs.base import BaseVaspMaker
     from pymatgen.core.structure import Structure
@@ -149,6 +155,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     n_sparse_list: list | None = None
     supercell_settings: dict = field(default_factory=lambda: {"min_length": 15})
     benchmark_kwargs: dict = field(default_factory=dict)
+    path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH
 
     def make(
         self,
@@ -208,12 +215,24 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         """
         flows = []
         fit_input = {}
-        hyper_list: list[dict[Any, Any]] = []
+        hyper_list: list[dict[Any, Any]] = []  # check if this list is still used?
         bm_outputs = []
+
+        default_hyperparameters = load_mlip_hyperparameter_defaults(
+            mlip_fit_parameter_file_path=self.path_to_default_hyperparameters
+        )
+
+        soap_default_params = default_hyperparameters["GAP"]["soap"]
+
+        soap_default_dict = {
+            key: value
+            for key, value in fit_kwargs.get("soap", soap_default_params).items()
+            if key in ["n_sparse", "delta"]
+        }
 
         for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
-                addDFTrand = self.add_dft_random(
+                add_dft_rand = self.add_dft_random(
                     structure=structure,
                     mp_id=mp_id,
                     phonon_displacement_maker=self.phonon_displacement_maker,
@@ -232,27 +251,27 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     w_angle=self.w_angle,
                     supercell_settings=self.supercell_settings,
                 )
-                addDFTrand.append_name(f"_{mp_id}")
-                flows.append(addDFTrand)
-                fit_input.update({mp_id: addDFTrand.output})
+                add_dft_rand.append_name(f"_{mp_id}")
+                flows.append(add_dft_rand)
+                fit_input.update({mp_id: add_dft_rand.output})
             if self.add_dft_phonon_struct:
-                addDFTphon = self.add_dft_phonons(
+                add_dft_phon = self.add_dft_phonons(
                     structure=structure,
                     displacements=self.displacements,
                     symprec=self.symprec,
                     phonon_displacement_maker=self.phonon_displacement_maker,
                     supercell_settings=self.supercell_settings,
                 )
-                flows.append(addDFTphon)
-                addDFTphon.append_name(f"_{mp_id}")
-                fit_input.update({mp_id: addDFTphon.output})
+                flows.append(add_dft_phon)
+                add_dft_phon.append_name(f"_{mp_id}")
+                fit_input.update({mp_id: add_dft_phon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
                 fit_input.update(
                     {
                         mp_id: {
-                            "rand_struc_dir": addDFTrand.output["rand_struc_dir"],
-                            "phonon_dir": addDFTphon.output["phonon_dir"],
-                            "phonon_data": addDFTphon.output["phonon_data"],
+                            "rand_struc_dir": add_dft_rand.output["rand_struc_dir"],
+                            "phonon_dir": add_dft_phon.output["phonon_dir"],
+                            "phonon_data": add_dft_phon.output["phonon_data"],
                         }
                     }
                 )
@@ -323,7 +342,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             supercell_settings=self.supercell_settings,
                             displacement=displacement,
                             atomwise_regularization_parameter=atomwise_regularization_parameter,
-                            soap_dict=None,
+                            soap_dict=soap_default_dict,
                             **self.benchmark_kwargs,
                         )
                         complete_bm.append_name(
