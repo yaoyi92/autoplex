@@ -118,11 +118,12 @@ def get_rmse(
     float or list[float]
       root mean squared error between DFT and ML phonon band-structure
     """
-    diff = ml_bs.bands - dft_bs.bands  # TODO: check sorting
+    diff = np.sort(ml_bs.bands) - np.sort(dft_bs.bands)
+
     rmse = np.sqrt(np.mean(diff**2))
 
     if q_dependent_rmse:
-        diff_here = np.transpose(diff)
+        diff_here = np.transpose(ml_bs.bands - dft_bs.bands)
         rmse = [np.sqrt(np.mean(diff_here[i] ** 2)) for i in range(len(diff_here))]
 
     return rmse
