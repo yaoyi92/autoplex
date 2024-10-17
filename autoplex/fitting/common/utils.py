@@ -52,14 +52,14 @@ from autoplex.data.common.utils import (
 )
 
 current_dir = Path(__file__).absolute().parent
-GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
-MLIP_DEFAULTS_FILE_PATH = current_dir / "mlip-defaults.json"
+MLIP_PHONON_DEFAULTS_FILE_PATH = current_dir / "mlip-phonon-defaults.json"
+MLIP_RSS_DEFAULTS_FILE_PATH = current_dir / "mlip-rss-defaults.json"
 
 
 def gap_fitting(
     db_dir: Path,
     species_list: list | None = None,
-    path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
@@ -80,7 +80,7 @@ def gap_fitting(
     species_list : list.
         List of element names (str)
     path_to_default_hyperparameters : str or Path.
-        Path to gap-defaults.json.
+        Path to mlip-phonon-defaults.json.
     num_processes_fit: int.
         Number of processes used for gap_fit
     auto_delta: bool
@@ -99,7 +99,7 @@ def gap_fitting(
         Name of the test dataset file.
     fit_kwargs: dict.
         optional dictionary with parameters for gap fitting with keys same as
-        gap-defaults.json.
+        mlip-phonon-defaults.json.
 
     Returns
     -------
@@ -117,9 +117,11 @@ def gap_fitting(
     train_data_path = os.path.join(db_dir, train_name)
     test_data_path = os.path.join(db_dir, test_name)
 
-    gap_default_hyperparameters = load_mlip_hyperparameter_defaults(
+    default_hyperparameters = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=path_to_default_hyperparameters
     )
+
+    gap_default_hyperparameters = default_hyperparameters["GAP"]
 
     gap_default_hyperparameters["general"].update({"gp_file": gap_file_xml})
     gap_default_hyperparameters["general"]["energy_parameter_name"] = ref_energy_name
@@ -243,7 +245,7 @@ def gap_fitting(
 
 def jace_fitting(
     db_dir: str | Path,
-    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     isolated_atoms_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -263,7 +265,7 @@ def jace_fitting(
     db_dir: str or Path
         directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
-        Path to mlip-defaults.json.
+        Path to mlip-rss-defaults.json.
     isolated_atoms_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -276,7 +278,7 @@ def jace_fitting(
         number of processes to use for parallel computation.
     fit_kwargs: dict.
         optional dictionary with parameters for ace fitting with keys same as
-        mlip-defaults.json.
+        mlip-rss-defaults.json.
 
     Tunable hyperparameters:
     ----------
@@ -427,7 +429,7 @@ export2lammps("acemodel.yace", model)
 
 def nequip_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     isolated_atoms_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -447,7 +449,7 @@ def nequip_fitting(
     db_dir: Path
         directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
-        Path to mlip-defaults.json.
+        Path to mlip-rss-defaults.json.
     isolated_atoms_energies: dict
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -460,7 +462,7 @@ def nequip_fitting(
         specify device to use cuda or cpu
     fit_kwargs: dict.
         optional dictionary with parameters for nequip fitting with keys same as
-        mlip-defaults.json.
+        mlip-rss-defaults.json.
 
     Tunable hyperparameters:
     ----------
@@ -706,7 +708,7 @@ per_species_rescale_scales: dataset_forces_rms
 
 def m3gnet_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -721,7 +723,7 @@ def m3gnet_fitting(
     db_dir: Path
         Directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
-        Path to mlip-defaults.json.
+        Path to mlip-rss-defaults.json.
     device: str
         Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
     ref_energy_name : str, optional
@@ -732,7 +734,7 @@ def m3gnet_fitting(
         Reference virial name.
     fit_kwargs: dict.
         optional dictionary with parameters for m3gnet fitting with keys same as
-        mlip-defaults.json.
+        mlip-rss-defaults.json.
 
     Tunable hyperparameters:
     ----------
@@ -1068,7 +1070,7 @@ def m3gnet_fitting(
 
 def mace_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -1087,7 +1089,7 @@ def mace_fitting(
     db_dir: Path
         directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
-        Path to mlip-defaults.json.
+        Path to mlip-rss-defaults.json.
     device: str
         specify device to use cuda or cpu.
     ref_energy_name : str, optional
@@ -1098,7 +1100,7 @@ def mace_fitting(
         Reference virial name.
     fit_kwargs: dict.
         optional dictionary with parameters for mace fitting with keys same as
-        mlip-defaults.json.
+        mlip-rss-defaults.json.
 
     Tunable hyperparameters:
     ----------
@@ -1594,7 +1596,7 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]
     atoms_db: list[Atoms]
         list of Ase atoms objects
     e_name: str
-        energy_parameter_name as defined in gap-defaults.json
+        energy_parameter_name as defined in mlip-phonon-defaults.json
 
     Returns
     -------

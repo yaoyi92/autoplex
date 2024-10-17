@@ -16,7 +16,7 @@ from autoplex.fitting.common.utils import (
 )
 
 current_dir = Path(__file__).absolute().parent
-GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
+GAP_DEFAULTS_FILE_PATH = current_dir / "mlip-phonon-defaults.json"
 
 
 @job
