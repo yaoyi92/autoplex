@@ -98,7 +98,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "LCHARG": False,
                 "SIGMA": 0.05,
                 "ISYM": 0,
-                "SYMPREC": 1e-9,
+                "SYMPREC": 1e-9, # test the influence
                 "KSPACING": 0.2,
                 # To be removed
                 "NPAR": 4,
@@ -209,7 +209,7 @@ class DFTPhononMaker(PhononMaker):
     bulk_relax_maker: BaseVaspMaker | None = field(
         default_factory=lambda: DoubleRelaxMaker.from_relax_maker(
             TightRelaxMaker(
-                # run_vasp_kwargs={"handlers":{}},
+                run_vasp_kwargs={"handlers":{}},
                 input_set_generator=TightRelaxSetGenerator(
                     user_incar_settings={
                         "ISPIN": 1,
@@ -611,7 +611,7 @@ class RandomStructuresDataGenerator(Maker):
     )
     bulk_relax_maker: BaseVaspMaker = field(
         default_factory=lambda: TightRelaxMaker(
-            # run_vasp_kwargs={"handlers":{}},
+            run_vasp_kwargs={"handlers":{}},
             input_set_generator=TightRelaxSetGenerator(
                 user_incar_settings={
                     "ISPIN": 1,
