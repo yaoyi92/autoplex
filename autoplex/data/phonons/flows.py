@@ -98,7 +98,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "LCHARG": False,
                 "SIGMA": 0.05,
                 "ISYM": 0,
-                "SYMPREC": 1e-9, # test the influence
+                "SYMPREC": 1e-9,
                 "KSPACING": 0.2,
                 # To be removed
                 "NPAR": 4,
