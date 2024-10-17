@@ -151,7 +151,7 @@ def fake_run_vasp_kwargs():
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft rattle static 3/12_test": {
+        "dft rattle static 3/12_mp-22905": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
@@ -439,6 +439,7 @@ def fake_run_vasp_kwargs4_mpid():
 def test_complete_dft_vs_ml_benchmark_workflow_gap(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
 ):
+    import glob
     from jobflow import run_locally
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
@@ -472,6 +473,16 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
     assert responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0]["benchmark_phonon_rmse"] == pytest.approx(
         2.002641337594289, abs=1.0  # it's kinda fluctuating because of the little data
     )
+
+    # check if soap_default_dict is correctly constructed from
+    # n_sparse and delta values in mlip_phonon_default json file
+    expected_soap_dict = "{'f=0.1': {'n_sparse': 6000, 'delta': 0.5}}"
+    results_files = glob.glob('job*/results_LiCl.txt')
+
+    for file_path in results_files:
+        with open(file_path, 'r') as file:
+            results_file = file.read().strip()
+            assert expected_soap_dict in results_file, f"Expected soap_dict not found in {file_path}"
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
@@ -780,7 +791,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
         preprocessing_data=True,
-        **{"regularization": True},
+        **{"regularization": True, "soap": {"delta": 3.0, "l_max": 12, "n_max": 10, "n_sparse": 8000, "f0": 0.0}},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -797,12 +808,21 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     assert complete_workflow_sigma.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sigma.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
-        1.511743561686686, abs=0.5
+        0.6438048164792516, abs=0.3
     )
 
     # regularization specific test
     reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
     assert reg_specific_file_exists
+
+    # check if soap_default_dict is correctly constructed from n_sparse and delta values in user fit parameter input
+    expected_soap_dict = "{'f=0.1': {'delta': 3.0, 'n_sparse': 8000}}"
+    results_files = glob.glob('job*/results_LiCl.txt')
+
+    for file_path in results_files:
+        with open(file_path, 'r') as file:
+            results_file = file.read().strip()
+            assert expected_soap_dict in results_file, f"Expected soap_dict not found in {file_path}"
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated(
