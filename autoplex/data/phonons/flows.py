@@ -782,7 +782,11 @@ class IsoAtomMaker(Maker):
 
     name: str = "IsolatedAtomEnergyMaker"
 
-    def make(self, all_species: list[Species]):
+    def make(
+        self,
+        all_species: list[Species],
+        isolated_atom_input_set_generator: VaspInputGenerator = None,
+    ):
         """
         Make a flow to calculate the isolated atom's energy.
 
@@ -790,33 +794,37 @@ class IsoAtomMaker(Maker):
         ----------
         all_species : List of Species
             list of pymatgen specie object.
+        isolated_atom_input_set_generator: VaspInputGenerator
+            VASP input set for the isolated atom calculation.
         """
         jobs = []
         isoatoms_energy = []
         isoatoms_dirs = []
+        if isolated_atom_input_set_generator is None:
+            isolated_atom_input_set_generator = StaticSetGenerator(
+                user_kpoints_settings={"grid_density": 1},
+                user_incar_settings={
+                    "ISPIN": 1,
+                    "LAECHG": False,
+                    "ISMEAR": 0,
+                    "LCHARG": False,  # Do not write the CHGCAR file
+                    "LWAVE": False,  # Do not write the WAVECAR file
+                    "LVTOT": False,  # Do not write LOCPOT file
+                    "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                    "LOPTICS": False,  # No PCDAT file
+                    # to be removed
+                    "NPAR": 4,
+                    # TODO: locpot, chgcar, chg can be deactivated!
+                    # TODO: why don't we use the IsoAtomMaker and adapt it?
+                },
+            )
         for species in all_species:
             site = Site(species=species, coords=[0, 0, 0])
             mol = Molecule.from_sites([site])
             iso_atom = mol.get_boxed_structure(a=20, b=20, c=20)
             isoatom_calcs = IsoAtomStaticMaker(
                 name=str(species) + "-statisoatom",
-                input_set_generator=StaticSetGenerator(
-                    user_kpoints_settings={"grid_density": 1},
-                    user_incar_settings={
-                        "ISPIN": 1,
-                        "LAECHG": False,
-                        "ISMEAR": 0,
-                        "LCHARG": False,  # Do not write the CHGCAR file
-                        "LWAVE": False,  # Do not write the WAVECAR file
-                        "LVTOT": False,  # Do not write LOCPOT file
-                        "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
-                        "LOPTICS": False,  # No PCDAT file
-                        # to be removed
-                        "NPAR": 4,
-                        # TODO: locpot, chgcar, chg can be deactivated!
-                        # TODO: why don't we use the IsoAtomMaker and adapt it?
-                    },
-                ),
+                input_set_generator=isolated_atom_input_set_generator,
                 # we should likely remove all handlers here as well
                 # large sigma handler is especially problematic
                 run_vasp_kwargs={"handlers": ()},

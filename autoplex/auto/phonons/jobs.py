@@ -13,7 +13,12 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from atomate2.vasp.jobs.base import BaseVaspMaker
+    from atomate2.vasp.sets.base import VaspInputGenerator
     from pymatgen.core.structure import Structure
+
+from atomate2.vasp.flows.core import DoubleRelaxMaker
+from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
+from atomate2.vasp.sets.core import StaticSetGenerator, TightRelaxSetGenerator
 
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
 from autoplex.data.phonons.flows import (
@@ -37,6 +42,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
     add_dft_phonon_struct: bool,
     fit_input,
     symprec,
+    phonon_bulk_relax_maker: BaseVaspMaker,
+    phonon_static_energy_maker: BaseVaspMaker,
     phonon_displacement_maker: BaseVaspMaker,
     atomwise_regularization_parameter: float,
     dft_references=None,
@@ -83,6 +90,10 @@ def complete_benchmark(  # this function was put here to prevent circular import
         reduction of symmetry to find the primitive/conventional cell
         (use_primitive_standard_structure, use_conventional_standard_structure)
         and to handle all symmetry-related tasks in phonopy.
+    phonon_bulk_relax_maker: BaseVaspMaker
+        Maker used for the bulk relax unit cell calculation.
+    phonon_static_energy_maker: BaseVaspMaker
+        Maker used for the static energy unit cell calculation.
     phonon_displacement_maker: BaseVaspMaker
         Maker used to compute the forces for a supercell.
     dft_references:
@@ -153,6 +164,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
                         structure=benchmark_structure,
                         displacements=[displacement],
                         symprec=symprec,
+                        phonon_bulk_relax_maker=phonon_bulk_relax_maker,
+                        phonon_static_energy_maker=phonon_static_energy_maker,
                         phonon_displacement_maker=phonon_displacement_maker,
                         supercell_settings=supercell_settings,
                     )
@@ -282,6 +295,8 @@ def dft_phonopy_gen_data(
     structure: Structure,
     displacements,
     symprec,
+    phonon_bulk_relax_maker,
+    phonon_static_energy_maker,
     phonon_displacement_maker,
     supercell_settings,
 ):
@@ -294,6 +309,10 @@ def dft_phonopy_gen_data(
         pymatgen Structure object.
     phonon_displacement_maker : .BaseVaspMaker or None
         Maker used to compute the forces for a supercell.
+    phonon_bulk_relax_maker: BaseVaspMaker
+        Maker used for the bulk relax unit cell calculation.
+    phonon_static_energy_maker: BaseVaspMaker
+        Maker used for the static energy unit cell calculation.
     displacements: list[float]
         list of phonon displacement.
     symprec : float
@@ -311,10 +330,56 @@ def dft_phonopy_gen_data(
 
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
+    if phonon_bulk_relax_maker is None:
+        phonon_bulk_relax_maker = DoubleRelaxMaker.from_relax_maker(
+            TightRelaxMaker(
+                run_vasp_kwargs={"handlers": {}},
+                input_set_generator=TightRelaxSetGenerator(
+                    user_incar_settings={
+                        "ISPIN": 1,
+                        "LAECHG": False,
+                        "ISMEAR": 0,
+                        "ENCUT": 700,
+                        "ISYM": 0,
+                        "SIGMA": 0.05,
+                        "LCHARG": False,  # Do not write the CHGCAR file
+                        "LWAVE": False,  # Do not write the WAVECAR file
+                        "LVTOT": False,  # Do not write LOCPOT file
+                        "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                        "LOPTICS": False,  # No PCDAT file
+                        # to be removed
+                        "NPAR": 4,
+                    }
+                ),
+            )
+        )
+
+    if phonon_static_energy_maker is None:
+        phonon_static_energy_maker = StaticMaker(
+            input_set_generator=StaticSetGenerator(
+                auto_ispin=False,
+                user_incar_settings={
+                    "ISPIN": 1,
+                    "LAECHG": False,
+                    "ISMEAR": 0,
+                    "ENCUT": 700,
+                    "SIGMA": 0.05,
+                    "LCHARG": False,  # Do not write the CHGCAR file
+                    "LWAVE": False,  # Do not write the WAVECAR file
+                    "LVTOT": False,  # Do not write LOCPOT file
+                    "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                    "LOPTICS": False,  # No PCDAT file
+                    # to be removed
+                    "NPAR": 4,
+                },
+            )
+        )
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(
             symprec=symprec,
+            static_energy_maker=phonon_static_energy_maker,
+            bulk_relax_maker=phonon_bulk_relax_maker,
             phonon_displacement_maker=phonon_displacement_maker,
             born_maker=None,
             displacement=displacement,
@@ -337,6 +402,7 @@ def dft_phonopy_gen_data(
 def dft_random_gen_data(
     structure: Structure,
     mp_id,
+    rattled_bulk_relax_maker,
     phonon_displacement_maker,
     uc: bool = False,
     volume_custom_scale_factors: list[float] | None = None,
@@ -362,6 +428,8 @@ def dft_random_gen_data(
         pymatgen Structure object
     phonon_displacement_maker : .BaseVaspMaker or None
         Maker used to compute the forces for a supercell.
+    rattled_bulk_relax_maker: BaseVaspMaker
+        Maker used for the bulk relax unit cell calculation.
     mp_id:
         materials project id
     uc: bool.
@@ -414,11 +482,32 @@ def dft_random_gen_data(
 
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft rattle static")
+    if rattled_bulk_relax_maker is None:
+        rattled_bulk_relax_maker = TightRelaxMaker(
+            run_vasp_kwargs={"handlers": {}},
+            input_set_generator=TightRelaxSetGenerator(
+                user_incar_settings={
+                    "ISPIN": 1,
+                    "LAECHG": False,
+                    "ISYM": 0,  # to be changed
+                    "ISMEAR": 0,
+                    "SIGMA": 0.05,  # to be changed back
+                    "LCHARG": False,  # Do not write the CHGCAR file
+                    "LWAVE": False,  # Do not write the WAVECAR file
+                    "LVTOT": False,  # Do not write LOCPOT file
+                    "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                    "LOPTICS": False,  # No PCDAT file
+                    # to be removed
+                    "NPAR": 4,
+                }
+            ),
+        )
 
     # TODO: decide if we should remove the additional response here as well
     # looks like only the output is changing
     random_datagen = RandomStructuresDataGenerator(
         name="RandomDataGen",
+        bulk_relax_maker=rattled_bulk_relax_maker,
         phonon_displacement_maker=phonon_displacement_maker,
         n_structures=n_structures,
         uc=uc,
@@ -445,7 +534,10 @@ def dft_random_gen_data(
 
 
 @job
-def get_iso_atom(structure_list: list[Structure]):
+def get_iso_atom(
+    structure_list: list[Structure],
+    isolated_atom_input_set_generator: VaspInputGenerator,
+):
     """
     Job to collect all atomic species of the structures and starting VASP calculation of isolated atoms.
 
@@ -453,6 +545,8 @@ def get_iso_atom(structure_list: list[Structure]):
     ----------
     structure_list: list[Structure]
         list of pymatgen Structure objects
+    isolated_atom_input_set_generator: VaspInputGenerator
+        VASP input set for the isolated atom calculation.
     """
     jobs = []
     iso_atoms_dict = {}

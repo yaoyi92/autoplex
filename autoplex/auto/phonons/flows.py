@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from atomate2.vasp.jobs.base import BaseVaspMaker
+    from atomate2.vasp.sets.base import VaspInputGenerator
     from pymatgen.core.structure import Structure
 
 from jobflow import Flow, Maker
@@ -42,8 +43,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     """
     Maker to construct a DFT (VASP) based dataset, composed of the following two configuration types.
 
-    1) single atom displaced supercells (based on the atomate2 PhononMaker subroutines)
-    2) supercells with randomly displaced atoms (based on the ase rattled function).
+    (1) single atom displaced supercells (based on the atomate2 PhononMaker subroutines)
+    (2) supercells with randomly displaced atoms (based on the ase rattled function).
+
     Machine-learned interatomic potential(s) are then fitted on the dataset, followed by
     benchmarking the resulting potential(s) to DFT (VASP) level using the provided benchmark
     structure(s) and comparing the respective DFT and MLIP-based Phonon calculations.
@@ -64,6 +66,14 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         The total number of randomly displaced structures to be generated.
     phonon_displacement_maker: BaseVaspMaker
         Maker used to compute the forces for a supercell.
+    phonon_bulk_relax_maker: BaseVaspMaker
+        Maker used for the bulk relax unit cell calculation.
+    rattled_bulk_relax_maker: BaseVaspMaker
+        Maker used for the bulk relax unit cell calculation.
+    phonon_static_energy_maker: BaseVaspMaker
+        Maker used for the static energy unit cell calculation.
+    isolated_atom_input_set_generator: VaspInputGenerator
+        VASP input set for the isolated atom calculation.
     n_structures : int.
         Total number of distorted structures to be generated.
         Must be provided if distorting volume without specifying a range, or if distorting angles.
@@ -133,6 +143,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     add_dft_random_struct: bool = True
     add_rss_struct: bool = False
     phonon_displacement_maker: BaseVaspMaker = None
+    phonon_bulk_relax_maker: BaseVaspMaker = None
+    phonon_static_energy_maker: BaseVaspMaker = None
+    rattled_bulk_relax_maker: BaseVaspMaker = None
+    isolated_atom_input_set_generator: VaspInputGenerator = None
     n_structures: int = 10
     displacements: list[float] = field(default_factory=lambda: [0.01])
     symprec: float = 1e-4
@@ -235,6 +249,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     structure=structure,
                     mp_id=mp_id,
                     phonon_displacement_maker=self.phonon_displacement_maker,
+                    rattled_bulk_relax_maker=self.rattled_bulk_relax_maker,
                     n_structures=self.n_structures,
                     uc=self.uc,
                     volume_custom_scale_factors=self.volume_custom_scale_factors,
@@ -258,6 +273,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     structure=structure,
                     displacements=self.displacements,
                     symprec=self.symprec,
+                    phonon_bulk_relax_maker=self.phonon_bulk_relax_maker,
+                    phonon_static_energy_maker=self.phonon_static_energy_maker,
                     phonon_displacement_maker=self.phonon_displacement_maker,
                     supercell_settings=self.supercell_settings,
                 )
@@ -277,7 +294,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             if self.add_rss_struct:
                 raise NotImplementedError
 
-        isoatoms = get_iso_atom(structure_list)
+        isoatoms = get_iso_atom(structure_list, self.isolated_atom_input_set_generator)
         flows.append(isoatoms)
 
         if pre_xyz_files is None:
@@ -319,6 +336,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             add_dft_phonon_struct=self.add_dft_phonon_struct,
                             fit_input=fit_input,
                             symprec=self.symprec,
+                            phonon_bulk_relax_maker=self.phonon_bulk_relax_maker,
+                            phonon_static_energy_maker=self.phonon_static_energy_maker,
                             phonon_displacement_maker=self.phonon_displacement_maker,
                             dft_references=dft_references,
                             supercell_settings=self.supercell_settings,
@@ -390,6 +409,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                             add_dft_phonon_struct=self.add_dft_phonon_struct,
                                             fit_input=fit_input,
                                             symprec=self.symprec,
+                                            phonon_bulk_relax_maker=self.phonon_bulk_relax_maker,
+                                            phonon_static_energy_maker=self.phonon_static_energy_maker,
                                             phonon_displacement_maker=self.phonon_displacement_maker,
                                             dft_references=dft_references,
                                             supercell_settings=self.supercell_settings,
@@ -417,6 +438,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         structure: Structure,
         displacements: list[float],
         symprec: float,
+        phonon_bulk_relax_maker: BaseVaspMaker,
+        phonon_static_energy_maker: BaseVaspMaker,
         phonon_displacement_maker: BaseVaspMaker,
         supercell_settings: dict,
     ):
@@ -435,6 +458,11 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             and to handle all symmetry-related tasks in phonopy
         phonon_displacement_maker: BaseVaspMaker
             Maker used to compute the forces for a supercell.
+        phonon_bulk_relax_maker: BaseVaspMaker
+            Maker used for the bulk relax unit cell calculation.
+        phonon_static_energy_maker: BaseVaspMaker
+            Maker used for the static energy unit cell calculation.
+
         supercell_settings: dict
             supercell settings
 
@@ -443,6 +471,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             structure=structure,
             displacements=displacements,
             symprec=symprec,
+            phonon_bulk_relax_maker=phonon_bulk_relax_maker,
+            phonon_static_energy_maker=phonon_static_energy_maker,
             phonon_displacement_maker=phonon_displacement_maker,
             supercell_settings=supercell_settings,
         )
@@ -454,6 +484,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     def add_dft_random(
         structure: Structure,
         mp_id: str,
+        rattled_bulk_relax_maker: BaseVaspMaker,
         phonon_displacement_maker: BaseVaspMaker,
         uc: bool = False,
         volume_custom_scale_factors: list[float] | None = None,
@@ -480,6 +511,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             materials project id
         phonon_displacement_maker: BaseVaspMaker
             Maker used to compute the forces for a supercell.
+        rattled_bulk_relax_maker: BaseVaspMaker
+            Maker used for the bulk relax unit cell calculation.
         uc: bool.
             If True, will generate randomly distorted structures (unitcells)
             and add static computation jobs to the flow.
@@ -527,6 +560,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         additonal_dft_random = dft_random_gen_data(
             structure=structure,
             mp_id=mp_id,
+            rattled_bulk_relax_maker=rattled_bulk_relax_maker,
             phonon_displacement_maker=phonon_displacement_maker,
             n_structures=n_structures,
             uc=uc,
