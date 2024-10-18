@@ -517,55 +517,6 @@ class MLPhononMaker(FFPhononMaker):
 
 
 @dataclass
-class IsoAtomStaticMaker(StaticMaker):
-    """
-    Maker to create Isolated atoms static (VASP) jobs.
-
-    Parameters
-    ----------
-    name : str
-        The job name.
-    input_set_generator : .VaspInputGenerator
-        A generator used to make the input set.
-    write_input_set_kwargs : dict
-        Keyword arguments that will get passed to :obj:`.write_vasp_input_set`.
-    copy_vasp_kwargs : dict
-        Keyword arguments that will get passed to :obj:`.copy_vasp_outputs`.
-    run_vasp_kwargs : dict
-        Keyword arguments that will get passed to :obj:`.run_vasp`.
-    task_document_kwargs : dict
-        Keyword arguments that will get passed to :obj:`.TaskDoc.from_directory`.
-    stop_children_kwargs : dict
-        Keyword arguments that will get passed to :obj:`.should_stop_children`.
-    write_additional_data : dict
-        Additional data to write to the current directory. Given as a dict of
-        {filename: data}. Note that if using FireWorks, dictionary keys cannot contain
-        the "." character which is typically used to denote file extensions. To avoid
-        this, use the ":" character, which will automatically be converted to ".". E.g.
-        ``{"my_file:txt": "contents of the file"}``.
-    """
-
-    name: str = "static"
-    input_set_generator: VaspInputGenerator = field(
-        default_factory=lambda: StaticSetGenerator(
-            user_kpoints_settings={"reciprocal_density": 1},
-            user_incar_settings={
-                "ISPIN": 1,
-                "LAECHG": False,
-                "ISMEAR": 0,
-                "LCHARG": False,  # Do not write the CHGCAR file
-                "LWAVE": False,  # Do not write the WAVECAR file
-                "LVTOT": False,  # Do not write LOCPOT file
-                "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
-                "LOPTICS": False,  # No PCDAT file
-                # to be removed
-                "NPAR": 4,
-            },
-        )
-    )
-
-
-@dataclass
 class RandomStructuresDataGenerator(Maker):
     """
     Maker to generate DFT labelled training data for ML potential fitting based on random atomic displacements.
@@ -767,6 +718,55 @@ class RandomStructuresDataGenerator(Maker):
 
         # create a flow including all jobs
         return Flow(jobs=jobs, output=outputs, name=self.name)
+
+
+@dataclass
+class IsoAtomStaticMaker(StaticMaker):
+    """
+    Maker to create Isolated atoms static (VASP) jobs.
+
+    Parameters
+    ----------
+    name : str
+        The job name.
+    input_set_generator : .VaspInputGenerator
+        A generator used to make the input set.
+    write_input_set_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.write_vasp_input_set`.
+    copy_vasp_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.copy_vasp_outputs`.
+    run_vasp_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.run_vasp`.
+    task_document_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.TaskDoc.from_directory`.
+    stop_children_kwargs : dict
+        Keyword arguments that will get passed to :obj:`.should_stop_children`.
+    write_additional_data : dict
+        Additional data to write to the current directory. Given as a dict of
+        {filename: data}. Note that if using FireWorks, dictionary keys cannot contain
+        the "." character which is typically used to denote file extensions. To avoid
+        this, use the ":" character, which will automatically be converted to ".". E.g.
+        ``{"my_file:txt": "contents of the file"}``.
+    """
+
+    name: str = "static"
+    input_set_generator: VaspInputGenerator = field(
+        default_factory=lambda: StaticSetGenerator(
+            user_kpoints_settings={"reciprocal_density": 1},
+            user_incar_settings={
+                "ISPIN": 1,
+                "LAECHG": False,
+                "ISMEAR": 0,
+                "LCHARG": False,  # Do not write the CHGCAR file
+                "LWAVE": False,  # Do not write the WAVECAR file
+                "LVTOT": False,  # Do not write LOCPOT file
+                "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                "LOPTICS": False,  # No PCDAT file
+                # to be removed
+                "NPAR": 4,
+            },
+        )
+    )
 
 
 @dataclass
