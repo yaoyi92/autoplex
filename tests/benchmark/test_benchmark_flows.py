@@ -14,8 +14,9 @@ def test_benchmark(test_dir, clean_dir):
     # test with two different band-structures
 
     dft_data = loadfn(test_dir / "benchmark" / "PhononBSDOSDoc_LiCl.json")
+    ml_data = loadfn(test_dir / "benchmark" / "PhononBSDOSMLDoc_LiCl.json")
     dft_doc: PhononBSDOSDoc = dft_data["output"]
-    ml_doc: PhononBSDOSDoc = dft_data["output"]  # TODO put ML PhononBSDOSDoc
+    ml_doc: PhononBSDOSDoc = ml_data["output"]
 
     parent_dir = os.getcwd()
 
@@ -34,8 +35,7 @@ def test_benchmark(test_dir, clean_dir):
 
     responses = run_locally(benchmark_flow, create_folders=False, ensure_success=True)
 
-    assert responses[benchmark_flow.output.uuid][1].output["benchmark_phonon_rmse"] == pytest.approx(0.0)
-    # 0.5716963823412201, abs=0.02
+    assert responses[benchmark_flow.output.uuid][1].output["benchmark_phonon_rmse"] == pytest.approx(0.03660647131610)
 
     # get list of generated plot files
     test_files_dir = Path(test_dir / "benchmark").resolve()
