@@ -554,7 +554,10 @@ def get_iso_atom(
         {specie for s in structure_list for specie in s.types_of_species}
     )
 
-    isoatoms = IsoAtomMaker().make(all_species=all_species)
+    isoatoms = IsoAtomMaker().make(
+        all_species=all_species,
+        isolated_atom_input_set_generator=isolated_atom_input_set_generator,
+    )
     jobs.append(isoatoms)
 
     for i, species in enumerate(all_species):
