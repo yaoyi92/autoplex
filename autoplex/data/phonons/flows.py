@@ -93,9 +93,13 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "EDIFF": 1e-7,
                 "LAECHG": False,
                 "LREAL": False,
-                "ALGO": "Normal",  # maybe switch to fast to safe computing time
+                "ALGO": "Normal",  # not switching to Fast because it's not precise enough for the fit
                 "NSW": 0,
-                "LCHARG": False,
+                "LCHARG": False,  # Do not write the CHGCAR file
+                "LWAVE": False,  # Do not write the WAVECAR file
+                "LVTOT": False,  # Do not write LOCPOT file
+                "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                "LOPTICS": False,  # No PCDAT file
                 "SIGMA": 0.05,
                 "ISYM": 0,
                 "SYMPREC": 1e-9,
@@ -209,7 +213,7 @@ class DFTPhononMaker(PhononMaker):
     bulk_relax_maker: BaseVaspMaker | None = field(
         default_factory=lambda: DoubleRelaxMaker.from_relax_maker(
             TightRelaxMaker(
-                run_vasp_kwargs={"handlers":{}},
+                run_vasp_kwargs={"handlers": {}},
                 input_set_generator=TightRelaxSetGenerator(
                     user_incar_settings={
                         "ISPIN": 1,
@@ -217,11 +221,16 @@ class DFTPhononMaker(PhononMaker):
                         "ISMEAR": 0,
                         "ENCUT": 700,
                         "ISYM": 0,
+                        "SIGMA": 0.05,
+                        "LCHARG": False,  # Do not write the CHGCAR file
+                        "LWAVE": False,  # Do not write the WAVECAR file
+                        "LVTOT": False,  # Do not write LOCPOT file
+                        "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                        "LOPTICS": False,  # No PCDAT file
                         # to be removed
                         "NPAR": 4,
-                        "SIGMA": 0.05,
                     }
-                )
+                ),
             )
         ),
     )
@@ -235,6 +244,11 @@ class DFTPhononMaker(PhononMaker):
                     "ISMEAR": 0,
                     "ENCUT": 700,
                     "SIGMA": 0.05,
+                    "LCHARG": False,  # Do not write the CHGCAR file
+                    "LWAVE": False,  # Do not write the WAVECAR file
+                    "LVTOT": False,  # Do not write LOCPOT file
+                    "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                    "LOPTICS": False,  # No PCDAT file
                     # to be removed
                     "NPAR": 4,
                 },
@@ -539,6 +553,11 @@ class IsoAtomStaticMaker(StaticMaker):
                 "ISPIN": 1,
                 "LAECHG": False,
                 "ISMEAR": 0,
+                "LCHARG": False,  # Do not write the CHGCAR file
+                "LWAVE": False,  # Do not write the WAVECAR file
+                "LVTOT": False,  # Do not write LOCPOT file
+                "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                "LOPTICS": False,  # No PCDAT file
                 # to be removed
                 "NPAR": 4,
             },
@@ -611,7 +630,7 @@ class RandomStructuresDataGenerator(Maker):
     )
     bulk_relax_maker: BaseVaspMaker = field(
         default_factory=lambda: TightRelaxMaker(
-            run_vasp_kwargs={"handlers":{}},
+            run_vasp_kwargs={"handlers": {}},
             input_set_generator=TightRelaxSetGenerator(
                 user_incar_settings={
                     "ISPIN": 1,
@@ -619,10 +638,15 @@ class RandomStructuresDataGenerator(Maker):
                     "ISYM": 0,  # to be changed
                     "ISMEAR": 0,
                     "SIGMA": 0.05,  # to be changed back
+                    "LCHARG": False,  # Do not write the CHGCAR file
+                    "LWAVE": False,  # Do not write the WAVECAR file
+                    "LVTOT": False,  # Do not write LOCPOT file
+                    "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                    "LOPTICS": False,  # No PCDAT file
                     # to be removed
                     "NPAR": 4,
                 }
-            )
+            ),
         )
     )
     code: str = "vasp"
@@ -782,6 +806,11 @@ class IsoAtomMaker(Maker):
                         "ISPIN": 1,
                         "LAECHG": False,
                         "ISMEAR": 0,
+                        "LCHARG": False,  # Do not write the CHGCAR file
+                        "LWAVE": False,  # Do not write the WAVECAR file
+                        "LVTOT": False,  # Do not write LOCPOT file
+                        "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                        "LOPTICS": False,  # No PCDAT file
                         # to be removed
                         "NPAR": 4,
                         # TODO: locpot, chgcar, chg can be deactivated!
