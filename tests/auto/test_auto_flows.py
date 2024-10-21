@@ -1186,19 +1186,48 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         from jobflow import run_locally
 
         ref_paths = {
-            "test_bulk_rattled_maker_mp-22905": "dft_ml_data_generation/tight_relax_1/",
-            "test_bulk_phonon_maker_mp-22905": "dft_ml_data_generation/tight_relax_1/",  # it's not a DoubleRelaxMaker in the test
-            "test_phonon_static_energy_maker_mp-22905": "dft_ml_data_generation/static/",
-            "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
-            "Li-stat_iso_atom": "Li_iso_atoms/Li-statisoatom/",
+            "test_bulk_rattled_maker_mp-22905": "dft_ml_data_generation/tight_relax_ISPIN2/",
+            "test_bulk_phonon_maker_mp-22905": "dft_ml_data_generation/tight_relax_ISPIN2/",
+            # it's not a DoubleRelaxMaker in the test
+            "test_phonon_static_energy_maker_mp-22905": "dft_ml_data_generation/tight_relax_ISPIN2/",
+            "Cl-stat_iso_atom": "Cl_iso_atoms_ISMEAR1/Cl-statisoatom/",
+            "Li-stat_iso_atom": "Li_iso_atoms_ISMEAR1/Li-statisoatom/",
+            "test_displacement_maker 1/2_mp-22905": "dft_ml_data_generation/phonon_static_1_ISPIN2/",
+            "test_displacement_maker 2/2_mp-22905": "dft_ml_data_generation/phonon_static_2_ISPIN2/",
+            "test_displacement_maker 1/12_mp-22905": "dft_ml_data_generation/rand_static_1_ISPIN2/",
+            "test_displacement_maker 2/12_mp-22905": "dft_ml_data_generation/rand_static_1_ISPIN2/",
+            "test_displacement_maker 3/12_mp-22905": "dft_ml_data_generation/rand_static_1_ISPIN2/",
+            "test_displacement_maker 4/12_mp-22905": "dft_ml_data_generation/rand_static_4_ISPIN2/",
+            "test_displacement_maker 5/12_mp-22905": "dft_ml_data_generation/rand_static_4_ISPIN2/",
+            "test_displacement_maker 6/12_mp-22905": "dft_ml_data_generation/rand_static_4_ISPIN2/",
+            "test_displacement_maker 7/12_mp-22905": "dft_ml_data_generation/rand_static_8_ISPIN2/",
+            "test_displacement_maker 8/12_mp-22905": "dft_ml_data_generation/rand_static_8_ISPIN2/",
+            "test_displacement_maker 9/12_mp-22905": "dft_ml_data_generation/rand_static_8_ISPIN2/",
+            "test_displacement_maker 10/12_mp-22905": "dft_ml_data_generation/rand_static_12_ISPIN2/",
+            "test_displacement_maker 11/12_mp-22905": "dft_ml_data_generation/rand_static_12_ISPIN2/",
+            "test_displacement_maker 12/12_mp-22905": "dft_ml_data_generation/rand_static_12_ISPIN2/",
         }
 
         fake_run_vasp_kwargs = {
             "test_bulk_rattled_maker_mp-22905": {"incar_settings": ["ISPIN"]},
             "test_bulk_phonon_maker_mp-22905": {"incar_settings": ["ISPIN"]},
             "test_phonon_static_energy_maker_mp-22905": {"incar_settings": ["ISPIN"]},
-            "Cl-stat_iso_atom": {"incar_settings": ["ISPIN"]},
-            "Li-stat_iso_atom": {"incar_settings": ["ISPIN"]},
+            "Cl-stat_iso_atom": {"incar_settings": ["ISMEAR"]},
+            "Li-stat_iso_atom": {"incar_settings": ["ISMEAR"]},
+            "test_displacement_maker 1/2_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 2/2_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 1/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 2/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 3/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 4/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 5/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 6/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 7/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 8/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 9/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 10/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 11/12_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_displacement_maker 12/12_mp-22905": {"incar_settings": ["ISPIN"]},
         }
 
         path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
@@ -1208,6 +1237,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             user_kpoints_settings={"grid_density": 1},
             user_incar_settings={
                 "ISPIN": 2,
+                "ISMEAR": 1,
             },
         )
         test_static_iso_atom_maker = IsoAtomStaticMaker(
@@ -1215,8 +1245,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             input_set_generator=test_iso_atom_static_input_set,
         )
         test_phonon_displacement_maker = TightDFTStaticMaker(
-            name="test_phonon_displacement_maker",
-            # this will always be overwritten by "generate_phonon_displacements" and "run_phonon_displacements"
+            name="test_displacement_maker",
             input_set_generator=test_iso_atom_static_input_set
         )
         test_rattled_bulk_relax_maker = TightRelaxMaker(
@@ -1237,7 +1266,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             supercell_settings={"min_length": 8, "min_atoms": 20},
             displacements=[0.01],
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
-            phonon_displacement_maker=test_phonon_displacement_maker,
+            displacement_maker=test_phonon_displacement_maker,
             phonon_bulk_relax_maker=test_phonon_bulk_relax_maker,
             phonon_static_energy_maker=test_phonon_static_energy_maker,
             rattled_bulk_relax_maker=test_rattled_bulk_relax_maker,
@@ -1259,16 +1288,13 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         responses = run_locally(
             test_different_makers_wf,
             create_folders=True,
-            ensure_success=False,
+            ensure_success=True,
             store=memory_jobstore,
         )
 
         assert "test_phonon_static_energy_maker" in str(responses)
         assert "test_bulk_phonon_maker" in str(responses)
         assert "test_bulk_rattled_maker" in str(responses)
-
-        # when running the test, the terminal output congtains "INCAR value of ISPIN is inconsistent: expected 1, got 2"
-        # so changing VASP settings works, but I'm not sure how to check for that?
 
 
 def test_phonon_dft_ml_data_generation_flow(
