@@ -10,7 +10,7 @@ name = "autoplex"
 description = "Automated machine-learned Potential Landscape explorer"
 readme = "README.md"
 keywords = ["high-throughput", "automated", "mlpotential"]
-license = { text = "MIT License" }
+license = { text = "GPL-3.0 license" }
 authors = [{ name = "Janine George", email = "janine.george@bam.de" }]
 version = "0.2.9"
 classifiers = [
