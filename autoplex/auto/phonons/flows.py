@@ -562,7 +562,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             structure=structure,
             mp_id=mp_id,
             rattled_bulk_relax_maker=rattled_bulk_relax_maker,
-            phonon_displacement_maker=displacement_maker,
+            displacement_maker=displacement_maker,
             n_structures=n_structures,
             uc=uc,
             volume_custom_scale_factors=volume_custom_scale_factors,
