@@ -103,14 +103,15 @@ that can be used to construct customized randomized structures workflows.
 For the single-atom displaced as well as the randomized structures the [TightDFTStaticMaker](#autoplex.data.phonons.flows.TightDFTStaticMaker) is used to set up the 
 VASP calculation input and settings. PBEsol is the default GGA functional.
 
-The `TightDFTStaticMaker` settings can be overridden by 
+The `TightDFTStaticMaker` settings can be overridden by
+
 ```python
 from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
 from autoplex.data.phonons.flows import TightDFTStaticMaker
 from atomate2.vasp.sets.core import StaticSetGenerator
 
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    phonon_displacement_maker=TightDFTStaticMaker(
+    displacement_maker=TightDFTStaticMaker(
     input_set_generator=StaticSetGenerator(user_incar_settings={
         "ALGO": "Normal",
         "IBRION": -1,
