@@ -180,7 +180,7 @@ def scale_cell(
             / (n_structures - 1),
         )
 
-        if 1 not in scale_factors_defined:
+        if not np.isclose(scale_factors_defined, 1.0).any():
             scale_factors_defined = np.append(scale_factors_defined, 1)
             scale_factors_defined = np.sort(scale_factors_defined)
 
