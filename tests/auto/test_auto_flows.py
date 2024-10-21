@@ -791,7 +791,8 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
         preprocessing_data=True,
-        **{"regularization": True, "soap": {"delta": 3.0, "l_max": 12, "n_max": 10, "n_sparse": 8000, "f0": 0.0}},
+        **{"regularization": True,
+           "GAP": {"soap": {"delta": 3.0, "l_max": 12, "n_max": 10, "n_sparse": 8000, "f0": 0.0}}},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -808,7 +809,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     assert complete_workflow_sigma.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sigma.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
-        0.6438048164792516, abs=0.3
+        1.5238754669607177, abs=0.3
     )
 
     # regularization specific test
@@ -993,7 +994,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            **{"GAP": {"general": {"two_body": True, "three_body": False, "soap": False}}}  # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -1045,7 +1046,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=[dft_reference],
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            **{"GAP": {"general": {"two_body": True, "three_body": False, "soap": False}}}  # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -1094,7 +1095,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            **{"GAP": {"general": {"two_body": True, "three_body": False, "soap": False}}}  # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_phonon_false.iterflow():
@@ -1130,7 +1131,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            **{"GAP": {"general": {"two_body": True, "three_body": False, "soap": False}}}  # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_random_false.iterflow():
@@ -1165,7 +1166,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            **{"GAP": {"general": {"two_body": True, "three_body": False, "soap": False}}}  # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
@@ -1280,7 +1281,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             pre_database_dir=test_dir / "fitting" / "ref_files",
             preprocessing_data=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            **{"GAP": {"general": {"two_body": True, "three_body": False, "soap": False}}}  # reduce unit test run time
         )
         mock_vasp(ref_paths, fake_run_vasp_kwargs)
 
@@ -1331,7 +1332,7 @@ def test_phonon_dft_ml_data_generation_flow(
            pre_xyz_files=["vasp_ref.extxyz"],
            pre_database_dir=test_dir / "fitting" / "ref_files",
            preprocessing_data=True,
-           **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+           **{"GAP": {"general": {"two_body": True, "three_body": False, "soap": False}}}  # reduce unit test run time
            )
     # automatically use fake VASP and write POTCAR.spec during the test
     mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
