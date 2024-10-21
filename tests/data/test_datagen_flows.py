@@ -293,12 +293,12 @@ def test_iso_atom_maker(mock_vasp, clean_dir):
     specie = Species("Cl")
 
     ref_paths = {
-        "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
+        "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     fake_run_vasp_kwargs = {
-        "Cl-statisoatom": {"incar_settings": ["NSW", "ISMEAR"]},
+        "Cl-stat_iso_atom": {"incar_settings": ["NSW", "ISMEAR"]},
     }
 
     # automatically use fake VASP and write POTCAR.spec during the test

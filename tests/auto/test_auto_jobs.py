@@ -90,42 +90,42 @@ def test_get_iso_atom(vasp_test_dir, mock_vasp, clean_dir, memory_jobstore):
     ]
 
     ref_paths = {
-        "Li-statisoatom": "Li_iso_atoms/Li-statisoatom/",
-        "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
-        "C-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
-        "Mo-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
-        "K-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
-        "Si-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
-        "Na-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
+        "Li-stat_iso_atom": "Li_iso_atoms/Li-statisoatom/",
+        "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
+        "C-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
+        "Mo-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
+        "K-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
+        "Si-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
+        "Na-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     fake_run_vasp_kwargs = {
-        "Li-statisoatom": {
+        "Li-stat_iso_atom": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints"],
         },
-        "Cl-statisoatom": {
+        "Cl-stat_iso_atom": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints"],
         },
-        "C-statisoatom": {
+        "C-stat_iso_atom": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints"],
         },
-        "Mo-statisoatom": {
+        "Mo-stat_iso_atom": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints"],
         },
-        "K-statisoatom": {
+        "K-stat_iso_atom": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints"],
         },
-        "Si-statisoatom": {
+        "Si-stat_iso_atom": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints"],
         },
-        "Na-statisoatom": {
+        "Na-stat_iso_atom": {
             "incar_settings": ["NSW"],
             "check_inputs": ["incar", "kpoints"],
         },
