@@ -1171,6 +1171,89 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
             assert job.name != "tight relax 1_mp-22905"
 
+    def test_workflow_with_different_makers(
+            self,
+            vasp_test_dir,
+            mock_vasp,
+            test_dir,
+            memory_jobstore,
+            clean_dir,
+            fake_run_vasp_kwargs_mpid,
+            ref_paths_mpid,
+    ):
+        from autoplex.data.phonons.flows import IsoAtomStaticMaker
+        from autoplex.data.phonons.flows import TightDFTStaticMaker
+        from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
+        from atomate2.vasp.sets.core import StaticSetGenerator
+        from jobflow import run_locally
+
+        path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+        structure = Structure.from_file(path_to_struct)
+
+        test_iso_atom_static_input_set = StaticSetGenerator(
+            user_kpoints_settings={"grid_density": 1},
+            user_incar_settings={
+                "ISPIN": 2,
+            },
+        )
+        test_static_iso_atom_maker = IsoAtomStaticMaker(
+            name="test_iso_atom_maker",  # this will always be overwritten by "{specie}-stat_iso_atom"
+            input_set_generator=test_iso_atom_static_input_set,
+        )
+        test_phonon_displacement_maker = TightDFTStaticMaker(
+            name="test_phonon_displacement_maker",
+            # this will always be overwritten by "generate_phonon_displacements" and "run_phonon_displacements"
+            input_set_generator=test_iso_atom_static_input_set
+        )
+        test_rattled_bulk_relax_maker = TightRelaxMaker(
+            name="test_bulk_rattled_maker",
+            input_set_generator=test_iso_atom_static_input_set,
+        )
+        test_phonon_bulk_relax_maker = TightRelaxMaker(
+            name="test_bulk_phonon_maker",
+            input_set_generator=test_iso_atom_static_input_set,
+        )
+        test_phonon_static_energy_maker = StaticMaker(
+            name="test_static_energy_maker",
+            input_set_generator=test_iso_atom_static_input_set,
+        )
+
+        test_different_makers_wf = CompleteDFTvsMLBenchmarkWorkflow(
+            n_structures=3,
+            symprec=1e-2,
+            supercell_settings={"min_length": 8, "min_atoms": 20},
+            displacements=[0.01],
+            volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            phonon_displacement_maker=test_phonon_displacement_maker,
+            phonon_bulk_relax_maker=test_phonon_bulk_relax_maker,
+            phonon_static_energy_maker=test_phonon_static_energy_maker,
+            rattled_bulk_relax_maker=test_rattled_bulk_relax_maker,
+            isolated_atom_maker=test_static_iso_atom_maker,
+        ).make(
+            structure_list=[structure],
+            mp_ids=["mp-22905"],
+            benchmark_mp_ids=["mp-22905"],
+            benchmark_structures=[structure],
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
+            preprocessing_data=True,
+            dft_references=None,
+            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+        )
+
+        responses = run_locally(
+            test_different_makers_wf,
+            create_folders=True,
+            ensure_success=False,
+            store=memory_jobstore,
+        )
+
+        # add test to check INCAR settings? --> would need to add fake DFT test data then
+
+        assert "test_static_energy_maker" in str(responses)
+        assert "test_bulk_phonon_maker" in str(responses)
+        assert "test_bulk_rattled_maker" in str(responses)
+
 
 def test_phonon_dft_ml_data_generation_flow(
         vasp_test_dir, mock_vasp, clean_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, test_dir
