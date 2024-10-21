@@ -1178,14 +1178,28 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             test_dir,
             memory_jobstore,
             clean_dir,
-            fake_run_vasp_kwargs_mpid,
-            ref_paths_mpid,
     ):
         from autoplex.data.phonons.flows import IsoAtomStaticMaker
         from autoplex.data.phonons.flows import TightDFTStaticMaker
         from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
         from atomate2.vasp.sets.core import StaticSetGenerator
         from jobflow import run_locally
+
+        ref_paths = {
+            "test_bulk_rattled_maker_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+            "test_bulk_phonon_maker_mp-22905": "dft_ml_data_generation/tight_relax_1/",  # it's not a DoubleRelaxMaker in the test
+            "test_phonon_static_energy_maker_mp-22905": "dft_ml_data_generation/static/",
+            "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
+            "Li-stat_iso_atom": "Li_iso_atoms/Li-statisoatom/",
+        }
+
+        fake_run_vasp_kwargs = {
+            "test_bulk_rattled_maker_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_bulk_phonon_maker_mp-22905": {"incar_settings": ["ISPIN"]},
+            "test_phonon_static_energy_maker_mp-22905": {"incar_settings": ["ISPIN"]},
+            "Cl-stat_iso_atom": {"incar_settings": ["ISPIN"]},
+            "Li-stat_iso_atom": {"incar_settings": ["ISPIN"]},
+        }
 
         path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
         structure = Structure.from_file(path_to_struct)
@@ -1214,10 +1228,9 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             input_set_generator=test_iso_atom_static_input_set,
         )
         test_phonon_static_energy_maker = StaticMaker(
-            name="test_static_energy_maker",
+            name="test_phonon_static_energy_maker",
             input_set_generator=test_iso_atom_static_input_set,
         )
-
         test_different_makers_wf = CompleteDFTvsMLBenchmarkWorkflow(
             n_structures=3,
             symprec=1e-2,
@@ -1240,6 +1253,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             dft_references=None,
             **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
         )
+        mock_vasp(ref_paths, fake_run_vasp_kwargs)
+
 
         responses = run_locally(
             test_different_makers_wf,
@@ -1248,11 +1263,12 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             store=memory_jobstore,
         )
 
-        # add test to check INCAR settings? --> would need to add fake DFT test data then
-
-        assert "test_static_energy_maker" in str(responses)
+        assert "test_phonon_static_energy_maker" in str(responses)
         assert "test_bulk_phonon_maker" in str(responses)
         assert "test_bulk_rattled_maker" in str(responses)
+
+        # when running the test, the terminal output congtains "INCAR value of ISPIN is inconsistent: expected 1, got 2"
+        # so changing VASP settings works, but I'm not sure how to check for that?
 
 
 def test_phonon_dft_ml_data_generation_flow(
