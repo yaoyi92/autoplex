@@ -404,7 +404,7 @@ def dft_random_gen_data(
     structure: Structure,
     mp_id,
     rattled_bulk_relax_maker,
-    phonon_displacement_maker,
+    displacement_maker,
     uc: bool = False,
     volume_custom_scale_factors: list[float] | None = None,
     volume_scale_factor_range: list[float] | None = None,
@@ -427,8 +427,8 @@ def dft_random_gen_data(
     ----------
     structure: Structure
         pymatgen Structure object
-    phonon_displacement_maker : .BaseVaspMaker or None
-        Maker used to compute the forces for a supercell.
+    displacement_maker : .BaseVaspMaker or None
+        Maker used for a static calculation for a supercell.
     rattled_bulk_relax_maker: BaseVaspMaker
         Maker used for the bulk relax unit cell calculation.
     mp_id:
@@ -481,8 +481,8 @@ def dft_random_gen_data(
     """
     jobs = []
 
-    if phonon_displacement_maker is None:
-        phonon_displacement_maker = TightDFTStaticMaker(name="dft rattle static")
+    if displacement_maker is None:
+        displacement_maker = TightDFTStaticMaker(name="dft rattle static")
     if rattled_bulk_relax_maker is None:
         rattled_bulk_relax_maker = TightRelaxMaker(
             run_vasp_kwargs={"handlers": {}},
@@ -509,7 +509,7 @@ def dft_random_gen_data(
     random_datagen = RandomStructuresDataGenerator(
         name="RandomDataGen",
         bulk_relax_maker=rattled_bulk_relax_maker,
-        phonon_displacement_maker=phonon_displacement_maker,
+        displacement_maker=displacement_maker,
         n_structures=n_structures,
         uc=uc,
         rattle_std=rattle_std,

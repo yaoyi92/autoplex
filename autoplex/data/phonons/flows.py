@@ -275,8 +275,8 @@ class RandomStructuresDataGenerator(Maker):
     ----------
     name : str
         Name of the flows produced by this maker.
-    phonon_displacement_maker : .BaseVaspMaker or None
-        Maker used to compute the forces for a supercell.
+    displacement_maker: .BaseVaspMaker or None
+        Maker used for a static calculation for a supercell.
     code: str
         determines the dft code. currently only vasp is implemented.
         This keyword might enable the implementation of other codes
@@ -321,7 +321,7 @@ class RandomStructuresDataGenerator(Maker):
     """
 
     name: str = "RandomStruturesDataGeneratorForML"
-    phonon_displacement_maker: BaseVaspMaker | None = field(
+    displacement_maker: BaseVaspMaker | None = field(
         default_factory=TightDFTStaticMaker
     )
     bulk_relax_maker: BaseVaspMaker = field(
@@ -427,7 +427,7 @@ class RandomStructuresDataGenerator(Maker):
             displacements=random_rattle_sc.output,  # pylint: disable=E1101
             structure=structure,
             supercell_matrix=None,
-            phonon_maker=self.phonon_displacement_maker,
+            phonon_maker=self.displacement_maker,
         )
 
         jobs.append(vasp_random_sc_displacement_calcs)
@@ -455,7 +455,7 @@ class RandomStructuresDataGenerator(Maker):
                 displacements=random_rattle.output,  # pylint: disable=E1101
                 structure=structure,
                 supercell_matrix=None,
-                phonon_maker=self.phonon_displacement_maker,
+                phonon_maker=self.displacement_maker,
             )
 
             jobs.append(vasp_random_displacement_calcs)
