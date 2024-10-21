@@ -990,6 +990,14 @@ def cur_select(
     Notes
     -----
     This function calculates the descriptor vector for each atom, then performs CUR selection on the resulting vectors.
+
+    Adapted from:
+    *    Title: Research data supporting "De novo exploration and self-guided learning of potential-energy surfaces"
+    *    Script: select_by_descriptor.py
+    *    Author: Noam Bernstein, Gábor Csányi and Volker L. Deringer
+    *    Date 11/10/2019
+    *    Availability: https://www.repository.cam.ac.uk/items/3aff252b-a583-4e7c-afc9-9dc1540cc37e
+    *    License: Attribution 4.0 International (CC BY 4.0) license.
     """
     if random_seed is not None:
         np.random.seed(random_seed)
@@ -1126,6 +1134,14 @@ def boltzhist_CUR(
     -----
     This function selects the most diverse atoms based on the chosen algorithm.
     The algorithm uses a combination of CUR selection and Boltzmann weighting to select the atoms.
+
+    Adapted from:
+    *    Title: Research data supporting "De novo exploration and self-guided learning of potential-energy surfaces"
+    *    Script: select_enthalpy_flat_histogram.py
+    *    Author: Noam Bernstein, Gábor Csányi and Volker L. Deringer
+    *    Date 11/10/2019
+    *    Availability: https://www.repository.cam.ac.uk/items/3aff252b-a583-4e7c-afc9-9dc1540cc37e
+    *    License: Attribution 4.0 International (CC BY 4.0) license.
     """
     if random_seed is not None:
         np.random.seed(random_seed)
