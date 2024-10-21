@@ -819,18 +819,14 @@ class IsoAtomMaker(Maker):
                 },
             )
             isolated_atom_maker = StaticMaker(
-                input_set_generator=isolated_atom_static_input_set
+                input_set_generator=isolated_atom_static_input_set, name="stat_iso_atom"
             )
         for species in all_species:
             site = Site(species=species, coords=[0, 0, 0])
             mol = Molecule.from_sites([site])
             iso_atom = mol.get_boxed_structure(a=20, b=20, c=20)
-            isolated_atom_maker.update_kwargs(
-                {
-                    "name": f"{species}-stat_iso_atom",
-                    "run_vasp_kwargs": {"handlers": ()},
-                }
-            )
+            isolated_atom_maker.name = f"{species}-stat_iso_atom"
+            isolated_atom_maker.run_vasp_kwargs = {"handlers": ()}
             isoatom_calcs = isolated_atom_maker.make(iso_atom)
 
             jobs.append(isoatom_calcs)
