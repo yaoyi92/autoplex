@@ -785,7 +785,7 @@ class IsoAtomMaker(Maker):
     def make(
         self,
         all_species: list[Species],
-        isolated_atom_input_set_generator: VaspInputGenerator = None,
+        isolated_atom_maker: IsoAtomStaticMaker = None,
     ):
         """
         Make a flow to calculate the isolated atom's energy.
@@ -794,14 +794,14 @@ class IsoAtomMaker(Maker):
         ----------
         all_species : List of Species
             list of pymatgen specie object.
-        isolated_atom_input_set_generator: VaspInputGenerator
+        isolated_atom_maker: IsoAtomMaker
             VASP input set for the isolated atom calculation.
         """
         jobs = []
         isoatoms_energy = []
         isoatoms_dirs = []
-        if isolated_atom_input_set_generator is None:
-            isolated_atom_input_set_generator = StaticSetGenerator(
+        if isolated_atom_maker is None:
+            isolated_atom_static_input_set = StaticSetGenerator(
                 user_kpoints_settings={"grid_density": 1},
                 user_incar_settings={
                     "ISPIN": 1,
@@ -818,17 +818,20 @@ class IsoAtomMaker(Maker):
                     # TODO: why don't we use the IsoAtomMaker and adapt it?
                 },
             )
+            isolated_atom_maker = StaticMaker(
+                input_set_generator=isolated_atom_static_input_set
+            )
         for species in all_species:
             site = Site(species=species, coords=[0, 0, 0])
             mol = Molecule.from_sites([site])
             iso_atom = mol.get_boxed_structure(a=20, b=20, c=20)
-            isoatom_calcs = IsoAtomStaticMaker(
-                name=str(species) + "-statisoatom",
-                input_set_generator=isolated_atom_input_set_generator,
-                # we should likely remove all handlers here as well
-                # large sigma handler is especially problematic
-                run_vasp_kwargs={"handlers": ()},
-            ).make(iso_atom)
+            isolated_atom_maker.update_kwargs(
+                {
+                    "name": f"{species}-stat_iso_atom",
+                    "run_vasp_kwargs": {"handlers": ()},
+                }
+            )
+            isoatom_calcs = isolated_atom_maker.make(iso_atom)
 
             jobs.append(isoatom_calcs)
             isoatoms_energy.append(isoatom_calcs.output.output.energy_per_atom)

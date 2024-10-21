@@ -13,8 +13,9 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from atomate2.vasp.jobs.base import BaseVaspMaker
-    from atomate2.vasp.sets.base import VaspInputGenerator
     from pymatgen.core.structure import Structure
+
+    from autoplex.data.phonons.flows import IsoAtomStaticMaker
 
 from atomate2.vasp.flows.core import DoubleRelaxMaker
 from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
@@ -536,7 +537,7 @@ def dft_random_gen_data(
 @job
 def get_iso_atom(
     structure_list: list[Structure],
-    isolated_atom_input_set_generator: VaspInputGenerator,
+    isolated_atom_maker: IsoAtomStaticMaker,
 ):
     """
     Job to collect all atomic species of the structures and starting VASP calculation of isolated atoms.
@@ -545,8 +546,8 @@ def get_iso_atom(
     ----------
     structure_list: list[Structure]
         list of pymatgen Structure objects
-    isolated_atom_input_set_generator: VaspInputGenerator
-        VASP input set for the isolated atom calculation.
+    isolated_atom_maker: IsoAtomStaticMaker
+        VASP maker for the isolated atom calculation.
     """
     jobs = []
     iso_atoms_dict = {}
@@ -556,7 +557,7 @@ def get_iso_atom(
 
     isoatoms = IsoAtomMaker().make(
         all_species=all_species,
-        isolated_atom_input_set_generator=isolated_atom_input_set_generator,
+        isolated_atom_maker=isolated_atom_maker,
     )
     jobs.append(isoatoms)
 

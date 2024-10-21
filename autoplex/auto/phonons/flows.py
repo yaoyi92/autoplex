@@ -16,8 +16,9 @@ if TYPE_CHECKING:
 
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from atomate2.vasp.jobs.base import BaseVaspMaker
-    from atomate2.vasp.sets.base import VaspInputGenerator
     from pymatgen.core.structure import Structure
+
+    from autoplex.data.phonons.flows import IsoAtomStaticMaker
 
 from jobflow import Flow, Maker
 
@@ -72,8 +73,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Maker used for the bulk relax unit cell calculation.
     phonon_static_energy_maker: BaseVaspMaker
         Maker used for the static energy unit cell calculation.
-    isolated_atom_input_set_generator: VaspInputGenerator
-        VASP input set for the isolated atom calculation.
+    isolated_atom_maker: IsoAtomStaticMaker
+        VASP maker for the isolated atom calculation.
     n_structures : int.
         Total number of distorted structures to be generated.
         Must be provided if distorting volume without specifying a range, or if distorting angles.
@@ -146,7 +147,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     phonon_bulk_relax_maker: BaseVaspMaker = None
     phonon_static_energy_maker: BaseVaspMaker = None
     rattled_bulk_relax_maker: BaseVaspMaker = None
-    isolated_atom_input_set_generator: VaspInputGenerator = None
+    isolated_atom_maker: IsoAtomStaticMaker | None = None
     n_structures: int = 10
     displacements: list[float] = field(default_factory=lambda: [0.01])
     symprec: float = 1e-4
@@ -294,7 +295,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             if self.add_rss_struct:
                 raise NotImplementedError
 
-        isoatoms = get_iso_atom(structure_list, self.isolated_atom_input_set_generator)
+        isoatoms = get_iso_atom(structure_list, self.isolated_atom_maker)
         flows.append(isoatoms)
 
         if pre_xyz_files is None:
