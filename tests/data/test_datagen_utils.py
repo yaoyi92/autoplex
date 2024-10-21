@@ -256,3 +256,25 @@ def test_filter_outliers(test_dir, clean_dir):
             os.remove(os.path.join(os.getcwd(), file_name))
 
     os.chdir(parent_dir)
+
+
+def test_scale_cell(vasp_test_dir):
+    from autoplex.data.common.utils import scale_cell
+
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    scaled_cell = scale_cell(structure=structure, volume_scale_factor_range=[0.95, 1.05])
+    scaled_cell_1 = scale_cell(structure=structure, volume_scale_factor_range=[0.95, 1.0])
+    scaled_cell_1_2 = scale_cell(structure=structure, volume_scale_factor_range=[0.95, 1])
+    scaled_cell_2 = scale_cell(structure=structure, volume_custom_scale_factors=[0.95, 1.05, 1.10])
+    scaled_cell_2_2 = scale_cell(structure=structure, volume_custom_scale_factors=[0.95, 1.0, 1.05, 1.10])
+
+    assert len(scaled_cell) == 11
+    assert len(scaled_cell_1) == 10
+    assert len(scaled_cell_1_2) == 10
+    assert len(scaled_cell_2) == 3
+    assert len(scaled_cell_2_2) == 4
+
+
+
