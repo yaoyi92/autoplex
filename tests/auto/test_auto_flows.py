@@ -818,12 +818,13 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
 
     # check if soap_default_dict is correctly constructed from n_sparse and delta values in user fit parameter input
     expected_soap_dict = "{'f=0.1': {'delta': 3.0, 'n_sparse': 8000}}"
+    expected_soap_dict2 = "{'f=0.1': {'n_sparse': 8000, 'delta': 3.0}}"
     results_files = glob.glob('job*/results_LiCl.txt')
 
     for file_path in results_files:
         with open(file_path, 'r') as file:
             results_file = file.read().strip()
-            assert expected_soap_dict in results_file, f"Expected soap_dict not found in {file_path}"
+            assert (expected_soap_dict in results_file) or (expected_soap_dict2 in results_file), f"Expected soap_dict not found in {file_path}"
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_separated(
