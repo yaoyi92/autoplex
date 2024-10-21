@@ -277,4 +277,10 @@ def test_scale_cell(vasp_test_dir):
     assert len(scaled_cell_2_2) == 4
 
 
+def test_reduce_supercell_size(mp_1203790):
+    from autoplex.data.phonons.utils import reduce_supercell_size
+
+    red_sc_mat = reduce_supercell_size(mp_1203790)
+
+    assert red_sc_mat == [[-2, -1, 0], [-2, 1, 0], [0, 0, -1]]
 
