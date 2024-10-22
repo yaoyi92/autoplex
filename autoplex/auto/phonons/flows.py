@@ -3,13 +3,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
+
+from autoplex.data.phonons.flows import TightDFTStaticMaker
+from autoplex.fitting.common.utils import (
+    MLIP_PHONON_DEFAULTS_FILE_PATH,
+    load_mlip_hyperparameter_defaults,
+)
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from atomate2.vasp.jobs.base import BaseVaspMaker
-    from emmet.core.math import Matrix3D
     from pymatgen.core.structure import Structure
+
+    from autoplex.data.phonons.flows import IsoAtomStaticMaker
 
 from jobflow import Flow, Maker
 
@@ -17,12 +26,14 @@ from autoplex.auto.phonons.jobs import (
     complete_benchmark,
     dft_phonopy_gen_data,
     dft_random_gen_data,
+    generate_supercells,
     get_iso_atom,
+    run_supercells,
 )
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.fitting.common.flows import MLIPFitMaker
 
-__all__ = ["CompleteDFTvsMLBenchmarkWorkflow"]
+__all__ = ["CompleteDFTvsMLBenchmarkWorkflow", "DFTSupercellSettingsMaker"]
 
 
 # Volker's idea: provide several default flows with different setting/setups
@@ -33,8 +44,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     """
     Maker to construct a DFT (VASP) based dataset, composed of the following two configuration types.
 
-    1) single atom displaced supercells (based on the atomate2 PhononMaker subroutines)
-    2) supercells with randomly displaced atoms (based on the ase rattled function).
+    (1) single atom displaced supercells (based on the atomate2 PhononMaker subroutines)
+    (2) supercells with randomly displaced atoms (based on the ase rattled function).
+
     Machine-learned interatomic potential(s) are then fitted on the dataset, followed by
     benchmarking the resulting potential(s) to DFT (VASP) level using the provided benchmark
     structure(s) and comparing the respective DFT and MLIP-based Phonon calculations.
@@ -53,16 +65,22 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         If True, will add RSS generated structures for DFT calculation.
         n_structures: int.
         The total number of randomly displaced structures to be generated.
-    phonon_displacement_maker: BaseVaspMaker
-        Maker used to compute the forces for a supercell.
+    displacement_maker: BaseVaspMaker
+        Maker used for a static calculation for a supercell.
+    phonon_bulk_relax_maker: BaseVaspMaker
+        Maker used for the bulk relax unit cell calculation.
+    rattled_bulk_relax_maker: BaseVaspMaker
+        Maker used for the bulk relax unit cell calculation.
+    phonon_static_energy_maker: BaseVaspMaker
+        Maker used for the static energy unit cell calculation.
+    isolated_atom_maker: IsoAtomStaticMaker
+        VASP maker for the isolated atom calculation.
     n_structures : int.
         Total number of distorted structures to be generated.
         Must be provided if distorting volume without specifying a range, or if distorting angles.
         Default=10.
     displacements: list[float]
-        displacement distance for phonons
-    min_length: float
-        min length of the supercell that will be built
+        displacement distances for phonons
     symprec: float
         Symmetry precision to use in the
         reduction of symmetry to find the primitive/conventional cell
@@ -71,8 +89,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     uc: bool.
         If True, will generate randomly distorted structures (unitcells)
         and add static computation jobs to the flow.
-    supercell_matrix: Matrix3D or None
-        The matrix to construct the supercell.
     distort_type : int.
         0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
     volume_scale_factor_range : list[float]
@@ -117,26 +133,30 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         List of SOAP delta values that are checked.
     n_sparse_list: list
         List of GAP n_sparse values that are checked.
-    adaptive_supercell_settings: bool
-        prevent too big rattled supercells or too tight phonopy supercell settings.
+    supercell_settings: dict
+        settings for supercell generation
     benchmark_kwargs: dict
         kwargs for the benchmark flows
+    summary_filename_prefix: str
+        Prefix of the result summary file.
     """
 
     name: str = "add_data"
     add_dft_phonon_struct: bool = True
     add_dft_random_struct: bool = True
     add_rss_struct: bool = False
-    phonon_displacement_maker: BaseVaspMaker = None
+    displacement_maker: BaseVaspMaker = None
+    phonon_bulk_relax_maker: BaseVaspMaker = None
+    phonon_static_energy_maker: BaseVaspMaker = None
+    rattled_bulk_relax_maker: BaseVaspMaker = None
+    isolated_atom_maker: IsoAtomStaticMaker | None = None
     n_structures: int = 10
     displacements: list[float] = field(default_factory=lambda: [0.01])
-    min_length: int = 20
     symprec: float = 1e-4
     uc: bool = False
     volume_custom_scale_factors: list[float] | None = None
     volume_scale_factor_range: list[float] | None = None
     rattle_std: float = 0.01
-    supercell_matrix: Matrix3D | None = None
     distort_type: int = 0
     min_distance: float = 1.5
     angle_percentage_scale: float = 10
@@ -150,8 +170,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     atomwise_regularization_list: list | None = None
     soap_delta_list: list | None = None
     n_sparse_list: list | None = None
-    adaptive_supercell_settings: bool = True
+    supercell_settings: dict = field(default_factory=lambda: {"min_length": 15})
     benchmark_kwargs: dict = field(default_factory=dict)
+    path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH
+    summary_filename_prefix: str = "results_"
 
     def make(
         self,
@@ -211,21 +233,32 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         """
         flows = []
         fit_input = {}
-        hyper_list: list[dict[Any, Any]] = []
         bm_outputs = []
+
+        default_hyperparameters = load_mlip_hyperparameter_defaults(
+            mlip_fit_parameter_file_path=self.path_to_default_hyperparameters
+        )
+
+        soap_default_params = default_hyperparameters["GAP"]["soap"]
+
+        soap_default_dict = {
+            key: value
+            for key, value in fit_kwargs.get("soap", soap_default_params).items()
+            if key in ["n_sparse", "delta"]
+        }
 
         for structure, mp_id in zip(structure_list, mp_ids):
             if self.add_dft_random_struct:
-                addDFTrand = self.add_dft_random(
+                add_dft_rand = self.add_dft_random(
                     structure=structure,
                     mp_id=mp_id,
-                    phonon_displacement_maker=self.phonon_displacement_maker,
+                    displacement_maker=self.displacement_maker,
+                    rattled_bulk_relax_maker=self.rattled_bulk_relax_maker,
                     n_structures=self.n_structures,
                     uc=self.uc,
                     volume_custom_scale_factors=self.volume_custom_scale_factors,
                     volume_scale_factor_range=self.volume_scale_factor_range,
                     rattle_std=self.rattle_std,
-                    supercell_matrix=self.supercell_matrix,
                     distort_type=self.distort_type,
                     min_distance=self.min_distance,
                     rattle_type=self.rattle_type,
@@ -234,27 +267,38 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     angle_max_attempts=self.angle_max_attempts,
                     angle_percentage_scale=self.angle_percentage_scale,
                     w_angle=self.w_angle,
-                    adaptive_rattled_supercell_settings=self.adaptive_supercell_settings,
+                    supercell_settings=self.supercell_settings,
                 )
-                flows.append(addDFTrand)
-                fit_input.update({mp_id: addDFTrand.output})
+                add_dft_rand.append_name(f"_{mp_id}")
+                flows.append(add_dft_rand)
+                fit_input.update({mp_id: add_dft_rand.output})
             if self.add_dft_phonon_struct:
-                addDFTphon = self.add_dft_phonons(
-                    structure,
-                    self.displacements,
-                    self.symprec,
-                    self.phonon_displacement_maker,
-                    self.min_length,
-                    self.adaptive_supercell_settings,
+                add_dft_phon = self.add_dft_phonons(
+                    structure=structure,
+                    displacements=self.displacements,
+                    symprec=self.symprec,
+                    phonon_bulk_relax_maker=self.phonon_bulk_relax_maker,
+                    phonon_static_energy_maker=self.phonon_static_energy_maker,
+                    phonon_displacement_maker=self.displacement_maker,
+                    supercell_settings=self.supercell_settings,
                 )
-                flows.append(addDFTphon)
-                fit_input.update({mp_id: addDFTphon.output})
+                flows.append(add_dft_phon)
+                add_dft_phon.append_name(f"_{mp_id}")
+                fit_input.update({mp_id: add_dft_phon.output})
             if self.add_dft_random_struct and self.add_dft_phonon_struct:
-                fit_input.update({mp_id: {**addDFTrand.output, **addDFTphon.output}})
+                fit_input.update(
+                    {
+                        mp_id: {
+                            "rand_struc_dir": add_dft_rand.output["rand_struc_dir"],
+                            "phonon_dir": add_dft_phon.output["phonon_dir"],
+                            "phonon_data": add_dft_phon.output["phonon_data"],
+                        }
+                    }
+                )
             if self.add_rss_struct:
                 raise NotImplementedError
 
-        isoatoms = get_iso_atom(structure_list)
+        isoatoms = get_iso_atom(structure_list, self.isolated_atom_maker)
         flows.append(isoatoms)
 
         if pre_xyz_files is None:
@@ -273,7 +317,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 f_max=f_max,
                 pre_xyz_files=pre_xyz_files,
                 pre_database_dir=pre_database_dir,
-                atomwise_regularization_param=atomwise_regularization_parameter,
+                atomwise_regularization_parameter=atomwise_regularization_parameter,
                 f_min=f_min,
                 atom_wise_regularization=atom_wise_regularization,
                 auto_delta=auto_delta,
@@ -281,45 +325,36 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 **fit_kwargs,
             )
             flows.append(add_data_fit)
-            if "regularization" in fit_kwargs and fit_kwargs["regularization"]:
-                hyper_list.append(
-                    {
-                        "f="
-                        + str(atomwise_regularization_parameter): "default with sigma"
-                    }
-                )
-            hyper_list.append(
-                {"f=" + str(atomwise_regularization_parameter): "default"}
-            )
-            if "separated" in fit_kwargs and fit_kwargs["separated"]:
-                hyper_list.append(
-                    {"f=" + str(atomwise_regularization_parameter): "default phonon"}
-                )
-                hyper_list.append(
-                    {"f=" + str(atomwise_regularization_parameter): "default randstruc"}
-                )
-
             if (benchmark_structures is not None) and (benchmark_mp_ids is not None):
                 for ibenchmark_structure, benchmark_structure in enumerate(
                     benchmark_structures
                 ):
-                    complete_bm = complete_benchmark(
-                        ibenchmark_structure=ibenchmark_structure,
-                        benchmark_structure=benchmark_structure,
-                        min_length=self.min_length,
-                        ml_model=ml_model,
-                        ml_path=add_data_fit.output["mlip_path"],
-                        mp_ids=mp_ids,
-                        benchmark_mp_ids=benchmark_mp_ids,
-                        add_dft_phonon_struct=self.add_dft_phonon_struct,
-                        fit_input=fit_input,
-                        symprec=self.symprec,
-                        phonon_displacement_maker=self.phonon_displacement_maker,
-                        dft_references=dft_references,
-                        **self.benchmark_kwargs,
-                    )
-                    flows.append(complete_bm)
-                    bm_outputs.append(complete_bm.output)
+                    for displacement in self.displacements:
+                        complete_bm = complete_benchmark(
+                            ibenchmark_structure=ibenchmark_structure,
+                            benchmark_structure=benchmark_structure,
+                            ml_model=ml_model,
+                            ml_path=add_data_fit.output["mlip_path"],
+                            mp_ids=mp_ids,
+                            benchmark_mp_ids=benchmark_mp_ids,
+                            add_dft_phonon_struct=self.add_dft_phonon_struct,
+                            fit_input=fit_input,
+                            symprec=self.symprec,
+                            phonon_bulk_relax_maker=self.phonon_bulk_relax_maker,
+                            phonon_static_energy_maker=self.phonon_static_energy_maker,
+                            phonon_displacement_maker=self.displacement_maker,
+                            dft_references=dft_references,
+                            supercell_settings=self.supercell_settings,
+                            displacement=displacement,
+                            atomwise_regularization_parameter=atomwise_regularization_parameter,
+                            soap_dict=soap_default_dict,
+                            **self.benchmark_kwargs,
+                        )
+                        complete_bm.append_name(
+                            f"_{benchmark_mp_ids[ibenchmark_structure]}"
+                        )
+                        flows.append(complete_bm)
+                        bm_outputs.append(complete_bm.output)
 
             if self.hyper_para_loop:
                 if self.atomwise_regularization_list is None:
@@ -338,7 +373,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                         8000,
                         9000,
                     ]
-                for atomwise_regularization in self.atomwise_regularization_list:
+                for atomwise_reg_parameter in self.atomwise_regularization_list:
                     for n_sparse in self.n_sparse_list:
                         for delta in self.soap_delta_list:
                             soap_dict = {
@@ -353,16 +388,13 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 f_max=f_max,
                                 pre_xyz_files=pre_xyz_files,
                                 pre_database_dir=pre_database_dir,
-                                atomwise_regularization_param=atomwise_regularization,
+                                atomwise_regularization_parameter=atomwise_reg_parameter,
                                 f_min=f_min,
                                 atom_wise_regularization=atom_wise_regularization,
                                 auto_delta=auto_delta,
                                 soap=soap_dict,
                             )
                             flows.append(loop_data_fit)
-                            hyper_list.append(
-                                {"f=" + str(atomwise_regularization): soap_dict}
-                            )
                             if (benchmark_structures is not None) and (
                                 benchmark_mp_ids is not None
                             ):
@@ -370,43 +402,51 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                     ibenchmark_structure,
                                     benchmark_structure,
                                 ) in enumerate(benchmark_structures):
-                                    complete_bm = complete_benchmark(
-                                        ibenchmark_structure=ibenchmark_structure,
-                                        benchmark_structure=benchmark_structure,
-                                        min_length=self.min_length,
-                                        ml_model=ml_model,
-                                        ml_path=loop_data_fit.output["mlip_path"],
-                                        mp_ids=mp_ids,
-                                        benchmark_mp_ids=benchmark_mp_ids,
-                                        add_dft_phonon_struct=self.add_dft_phonon_struct,
-                                        fit_input=fit_input,
-                                        symprec=self.symprec,
-                                        phonon_displacement_maker=self.phonon_displacement_maker,
-                                        dft_references=dft_references,
-                                        **self.benchmark_kwargs,
-                                    )
-                                    flows.append(complete_bm)
-                                    bm_outputs.append(complete_bm.output)
+                                    for displacement in self.displacements:
+                                        complete_bm = complete_benchmark(
+                                            ibenchmark_structure=ibenchmark_structure,
+                                            benchmark_structure=benchmark_structure,
+                                            ml_model=ml_model,
+                                            ml_path=loop_data_fit.output["mlip_path"],
+                                            mp_ids=mp_ids,
+                                            benchmark_mp_ids=benchmark_mp_ids,
+                                            add_dft_phonon_struct=self.add_dft_phonon_struct,
+                                            fit_input=fit_input,
+                                            symprec=self.symprec,
+                                            phonon_bulk_relax_maker=self.phonon_bulk_relax_maker,
+                                            phonon_static_energy_maker=self.phonon_static_energy_maker,
+                                            phonon_displacement_maker=self.displacement_maker,
+                                            dft_references=dft_references,
+                                            supercell_settings=self.supercell_settings,
+                                            displacement=displacement,
+                                            # TODO add a hyper parameter here for the benchmark
+                                            atomwise_regularization_parameter=atomwise_reg_parameter,
+                                            soap_dict=soap_dict,
+                                            **self.benchmark_kwargs,
+                                        )
+                                        complete_bm.append_name(
+                                            f"_{benchmark_mp_ids[ibenchmark_structure]}"
+                                        )
+                                        flows.append(complete_bm)
+                                        bm_outputs.append(complete_bm.output)
         collect_bm = write_benchmark_metrics(
-            ml_models=self.ml_models,
             benchmark_structures=benchmark_structures,
-            benchmark_mp_ids=benchmark_mp_ids,
             metrics=bm_outputs,
-            displacements=self.displacements,
-            hyper_list=hyper_list,
+            filename_prefix=self.summary_filename_prefix,
         )
         flows.append(collect_bm)
 
         return Flow(jobs=flows, output=collect_bm, name=self.name)
 
+    @staticmethod
     def add_dft_phonons(
-        self,
         structure: Structure,
         displacements: list[float],
         symprec: float,
+        phonon_bulk_relax_maker: BaseVaspMaker,
+        phonon_static_energy_maker: BaseVaspMaker,
         phonon_displacement_maker: BaseVaspMaker,
-        min_length: float,
-        adaptive_phonopy_supercell_settings: bool = True,
+        supercell_settings: dict,
     ):
         """Add DFT phonon runs for reference structures.
 
@@ -423,39 +463,38 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             and to handle all symmetry-related tasks in phonopy
         phonon_displacement_maker: BaseVaspMaker
             Maker used to compute the forces for a supercell.
-        min_length: float
-             min length of the supercell that will be built
-        adaptive_phonopy_supercell_settings: bool
-            prevent too tight phonopy supercell settings
+        phonon_bulk_relax_maker: BaseVaspMaker
+            Maker used for the bulk relax unit cell calculation.
+        phonon_static_energy_maker: BaseVaspMaker
+            Maker used for the static energy unit cell calculation.
+
+        supercell_settings: dict
+            supercell settings
+
         """
-        additonal_dft_phonon = dft_phonopy_gen_data(
-            structure,
-            displacements,
-            symprec,
-            phonon_displacement_maker,
-            min_length,
-            adaptive_phonopy_supercell_settings,
+        dft_phonons = dft_phonopy_gen_data(
+            structure=structure,
+            displacements=displacements,
+            symprec=symprec,
+            phonon_bulk_relax_maker=phonon_bulk_relax_maker,
+            phonon_static_energy_maker=phonon_static_energy_maker,
+            phonon_displacement_maker=phonon_displacement_maker,
+            supercell_settings=supercell_settings,
         )
+        # let's append a name
+        dft_phonons.name = "single-atom displaced supercells"
+        return dft_phonons
 
-        return Flow(
-            jobs=additonal_dft_phonon,  # flows
-            output={
-                "phonon_dir": additonal_dft_phonon.output["dirs"],
-                "phonon_data": additonal_dft_phonon.output["data"],
-            },
-            name=self.name,
-        )
-
+    @staticmethod
     def add_dft_random(
-        self,
         structure: Structure,
         mp_id: str,
-        phonon_displacement_maker: BaseVaspMaker,
+        rattled_bulk_relax_maker: BaseVaspMaker,
+        displacement_maker: BaseVaspMaker,
         uc: bool = False,
         volume_custom_scale_factors: list[float] | None = None,
         volume_scale_factor_range: list[float] | None = None,
         rattle_std: float = 0.01,
-        supercell_matrix: Matrix3D | None = None,
         distort_type: int = 0,
         n_structures: int = 10,
         min_distance: float = 1.5,
@@ -465,9 +504,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         rattle_seed: int = 42,
         rattle_mc_n_iter: int = 10,
         w_angle: list[float] | None = None,
-        adaptive_rattled_supercell_settings: bool = True,
+        supercell_settings: dict | None = None,
     ):
-        """Add DFT phonon runs for randomly displaced structures.
+        """Add DFT static runs for randomly displaced structures.
 
         Parameters
         ----------
@@ -475,13 +514,13 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             pymatgen Structure object
         mp_id: str
             materials project id
-        phonon_displacement_maker: BaseVaspMaker
-            Maker used to compute the forces for a supercell.
+        displacement_maker: BaseVaspMaker
+            Maker used for a static calculation for a supercell.
+        rattled_bulk_relax_maker: BaseVaspMaker
+            Maker used for the bulk relax unit cell calculation.
         uc: bool.
             If True, will generate randomly distorted structures (unitcells)
             and add static computation jobs to the flow.
-        supercell_matrix: Matrix3D or None
-            The matrix to construct the supercell.
         distort_type : int.
             0- volume distortion, 1- angle distortion, 2- volume and angle distortion. Default=0.
         n_structures : int.
@@ -520,19 +559,19 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             Number of Monte Carlo iterations.
             Larger number of iterations will generate larger displacements.
             Default=10.
-        adaptive_rattled_supercell_settings: bool
-            prevent too big rattled supercells
+        supercell_settings: dict
+            settings for supercells
         """
         additonal_dft_random = dft_random_gen_data(
             structure=structure,
             mp_id=mp_id,
-            phonon_displacement_maker=phonon_displacement_maker,
+            rattled_bulk_relax_maker=rattled_bulk_relax_maker,
+            displacement_maker=displacement_maker,
             n_structures=n_structures,
             uc=uc,
             volume_custom_scale_factors=volume_custom_scale_factors,
             volume_scale_factor_range=volume_scale_factor_range,
             rattle_std=rattle_std,
-            supercell_matrix=supercell_matrix,
             distort_type=distort_type,
             rattle_seed=rattle_seed,
             rattle_mc_n_iter=rattle_mc_n_iter,
@@ -541,10 +580,54 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             angle_percentage_scale=angle_percentage_scale,
             w_angle=w_angle,
             min_distance=min_distance,
-            adaptive_rattled_supercell_settings=adaptive_rattled_supercell_settings,
+            supercell_settings=supercell_settings,
         )
-        return Flow(
-            jobs=additonal_dft_random,
-            output={"rand_struc_dir": additonal_dft_random.output},
-            name=self.name,
+        additonal_dft_random.name = "rattled supercells"
+        return additonal_dft_random
+
+
+@dataclass
+class DFTSupercellSettingsMaker(Maker):
+    """
+    Maker to test the DFT and supercell settings.
+
+    This maker is used to test your queue settings for the rattled and phonon supercells.
+    Although the cells are not displaced, it provides an impression of the required memory
+    and other resources as the process runs without symmetry considerations.
+
+    Parameters
+    ----------
+    name (str): The name of the maker. Default is "test dft and supercell settings".
+    supercell_settings (dict): Settings for the supercells. Default is {"min_length": 15}.
+    DFT_Maker (BaseVaspMaker): The DFT maker to be used. Default is TightDFTStaticMaker.
+
+    """
+
+    name: str = "test dft and supercell settings"
+    supercell_settings: dict = field(default_factory=lambda: {"min_length": 15})
+    DFT_Maker: BaseVaspMaker = field(default_factory=TightDFTStaticMaker)
+
+    def make(self, structure_list: list[Structure], mp_ids: list[str]):
+        """
+        Generate and runs supercell jobs for the given list of structures.
+
+        Args:
+            structure_list (list[Structure]): List of structures to process.
+            mp_ids (list[str]): List of MP IDs.
+
+        Returns
+        -------
+            Flow: A Flow object containing the jobs and their output.
+        """
+        job_list = []
+
+        # Modify to run for more than one cell
+        supercell_job = generate_supercells(structure_list, self.supercell_settings)
+        job_list.append(supercell_job)
+
+        supercell_job = run_supercells(
+            structure_list, supercell_job.output, mp_ids, self.DFT_Maker
         )
+        job_list.append(supercell_job)
+
+        return Flow(jobs=job_list, output=supercell_job.output, name=self.name)

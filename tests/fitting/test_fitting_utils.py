@@ -13,9 +13,11 @@ from autoplex.fitting.common.utils import (
 
 
 def test_gap_hyperparameter_constructor():
-    gap_hyper_parameter_dict = load_mlip_hyperparameter_defaults(
+    hyper_parameter_dict = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=GAP_DEFAULTS_FILE_PATH
     )
+
+    gap_hyper_parameter_dict = hyper_parameter_dict["GAP"]
 
     gap_input_list = gap_hyperparameter_constructor(
         gap_parameter_dict=gap_hyper_parameter_dict,
@@ -46,9 +48,11 @@ def test_gap_hyperparameter_constructor():
 
     assert ref_list == gap_input_list
 
-    gap_hyper_parameter_dict = load_mlip_hyperparameter_defaults(
+    hyper_parameter_dict = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=GAP_DEFAULTS_FILE_PATH
     )
+
+    gap_hyper_parameter_dict = hyper_parameter_dict["GAP"]
 
     gap_input_list = gap_hyperparameter_constructor(
         gap_parameter_dict=gap_hyper_parameter_dict,
@@ -112,9 +116,11 @@ def test_gap_hyperparameter_constructor():
 
     # check disable three_body and two_body
 
-    gap_hyper_parameter_dict = load_mlip_hyperparameter_defaults(
+    hyper_parameter_dict = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=GAP_DEFAULTS_FILE_PATH
     )
+
+    gap_hyper_parameter_dict = hyper_parameter_dict["GAP"]
 
     # three_body_disable
 
@@ -174,9 +180,11 @@ def test_gap_hyperparameter_constructor():
 
     assert ref_list == gap_input_list
 
-    gap_hyper_parameter_dict = load_mlip_hyperparameter_defaults(
+    hyper_parameter_dict = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=GAP_DEFAULTS_FILE_PATH
     )
+
+    gap_hyper_parameter_dict = hyper_parameter_dict["GAP"]
 
     # check with only soap enabled
 

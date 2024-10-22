@@ -5,13 +5,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from jobflow import Flow, Maker
+from jobflow import Maker
 
 if TYPE_CHECKING:
     from atomate2.common.schemas.phonons import PhononBSDOSDoc
     from pymatgen.core.structure import Structure
 
-from autoplex.benchmark.phonons.jobs import compute_bandstructure_benchmark_metrics
+from jobflow import job
+
+from autoplex.benchmark.phonons.utils import compute_bandstructure_benchmark_metrics
 
 __all__ = ["PhononBenchmarkMaker"]
 
@@ -32,6 +34,7 @@ class PhononBenchmarkMaker(Maker):
 
     name: str = "PhononBenchmark"
 
+    @job
     def make(
         self,
         ml_model: str,
@@ -39,6 +42,10 @@ class PhononBenchmarkMaker(Maker):
         benchmark_mp_id: str,
         ml_phonon_task_doc: PhononBSDOSDoc,
         dft_phonon_task_doc: PhononBSDOSDoc,
+        displacement: float,
+        atomwise_regularization_parameter: float,
+        soap_dict: dict,
+        suffix: str,
     ):
         """
         Make flow for benchmarking.
@@ -55,18 +62,26 @@ class PhononBenchmarkMaker(Maker):
             Phonon task doc from ML potential consisting of pymatgen band-structure object.
         dft_phonon_task_doc: PhononBSDOSDoc
             Phonon task doc from DFT runs consisting of pymatgen band-structure object.
-        """
-        jobs = []
+        displacement: float
+            displacement for finite displacement method.
+        atomwise_regularization_parameter: float
+        regularization value for the atom-wise force components.
+        suffix: str
+            GAP potential file suffix.
+        soap_dict: dict
+            dictionary containing SOAP parameters.
 
-        benchmark_job = compute_bandstructure_benchmark_metrics(
+        """
+        return compute_bandstructure_benchmark_metrics(
             ml_model=ml_model,
             ml_phonon_bs=ml_phonon_task_doc.phonon_bandstructure,
             dft_phonon_bs=dft_phonon_task_doc.phonon_bandstructure,
             dft_imag_modes=dft_phonon_task_doc.has_imaginary_modes,
             ml_imag_modes=ml_phonon_task_doc.has_imaginary_modes,
             structure=structure,
+            displacement=displacement,
+            atomwise_regularization_parameter=atomwise_regularization_parameter,
+            soap_dict=soap_dict,
+            suffix=suffix,
+            mp_id=benchmark_mp_id,
         )
-        jobs.append(benchmark_job)
-
-        # create a flow including all jobs
-        return Flow(jobs=jobs, output=benchmark_job.output, name=self.name)

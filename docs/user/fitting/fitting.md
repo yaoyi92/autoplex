@@ -6,6 +6,7 @@
 
 This tutorial will show you how to control the MLIP fit settings with the `autoplex` workflow. 
 The choice of the correct fit setup and hyperparameter settings has a significant influence on the final result.
+Please note that the fitting might need nodes with very large memory requirements (1 TB) in some cases.
 
 ## General settings
 
@@ -24,11 +25,11 @@ or adjust the number of processes `num_processes_fit`.
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     ml_models=["GAP", "MACE"], ...,
-).make(..., 
+).make(..., preprocessing_data=True,
     f_max=40.0,
     fit_kwargs={
         "split_ratio": 0.4,
-        "num_processes_fit": 32,
+        "num_processes_fit": 48,
     },
     ...  # put the other hyperparameter commands here as shown below
 )

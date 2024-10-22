@@ -26,12 +26,12 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     structure = Structure.from_file(path_to_struct)
 
     gap_phonon_jobs = MLPhononMaker(
-        min_length=20,
         bulk_relax_maker=GAPRelaxMaker(relax_cell=True, relax_kwargs={"interval": 500}),
         phonon_displacement_maker=GAPStaticMaker(name="gap phonon static"),
         static_energy_maker=GAPStaticMaker(),
+
     ).make_from_ml_model(
-        structure=structure, potential_file=potential_file,
+        structure=structure, potential_file=potential_file, supercell_settings={"min_length": 20}
     )
 
     responses = run_locally(
@@ -40,10 +40,11 @@ def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
 
     assert gap_phonon_jobs.name == "ml phonon"
     assert responses[gap_phonon_jobs.output.uuid][1].replace[0].name == "MLFF.GAP relax"
-    assert responses[gap_phonon_jobs.output.uuid][1].replace[2].name == "MLFF.GAP static"
+    assert responses[gap_phonon_jobs.output.uuid][1].replace[1].name == "MLFF.GAP static"
 
     ml_phonon_bs_doc = responses[gap_phonon_jobs.output.uuid][1].output.resolve(store=memory_jobstore)
     assert isinstance(ml_phonon_bs_doc, PhononBSDOSDoc)
+
 
 def test_data_generation_distort_type_0(vasp_test_dir, mock_vasp, clean_dir):
     from jobflow import run_locally
@@ -95,24 +96,59 @@ def test_data_generation_distort_type_1(vasp_test_dir, mock_vasp, clean_dir):
     test_mpid = "mp-22905"
     ref_paths = {
         "tight relax": "dft_ml_data_generation/tight_relax_1/",
-        "dft static 1/3": "dft_ml_data_generation/rand_static_1/",
-        "dft static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "dft static 3/3": "dft_ml_data_generation/rand_static_3/",
+        "dft static 1/10": "dft_ml_data_generation/rand_static_1/",
+        "dft static 2/10": "dft_ml_data_generation/rand_static_2/",
+        "dft static 3/10": "dft_ml_data_generation/rand_static_3/",
+        "dft static 4/10": "dft_ml_data_generation/rand_static_1/",
+        "dft static 5/10": "dft_ml_data_generation/rand_static_2/",
+        "dft static 6/10": "dft_ml_data_generation/rand_static_3/",
+        "dft static 7/10": "dft_ml_data_generation/rand_static_1/",
+        "dft static 8/10": "dft_ml_data_generation/rand_static_2/",
+        "dft static 9/10": "dft_ml_data_generation/rand_static_3/",
+        "dft static 10/10": "dft_ml_data_generation/rand_static_1/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     # disabled poscar checks here to avoid failures due to randomness issues
     fake_run_vasp_kwargs = {
         "tight relax": {"incar_settings": ["NSW"]},
-        "dft static 1/3": {
+        "dft static 1/10": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft static 2/3": {
+        "dft static 2/10": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "dft static 3/3": {
+        "dft static 3/10": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft static 4/10": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft static 5/10": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft static 6/10": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft static 7/10": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft static 8/10": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft static 9/10": {
+            "incar_settings": ["NSW", "ISMEAR"],
+            "check_inputs": ["incar", "potcar"],
+        },
+        "dft static 10/10": {
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
@@ -131,8 +167,10 @@ def test_data_generation_distort_type_1(vasp_test_dir, mock_vasp, clean_dir):
     # run the flow or job and ensure that it finished running successfully
     responses = run_locally(data_gen_dt_1, create_folders=True, ensure_success=True)
 
-    assert len(responses[data_gen_dt_1.output[0].uuid][2].output["dirs"]) == 3
-    job_names = ["dft static 1/3", "dft static 2/3", "dft static 3/3"]
+    # the minimum required numbers of rattled structures are 10
+    assert len(responses[data_gen_dt_1.output[0].uuid][2].output["dirs"]) == 10
+    job_names = ["dft static 1/10", "dft static 2/10", "dft static 3/10", "dft static 4/10", "dft static 5/10",
+                 "dft static 6/10", "dft static 7/10", "dft static 8/10", "dft static 9/10", "dft static 10/10"]
     for inx, name in enumerate(job_names):
         assert responses[data_gen_dt_1.output[0].uuid][1].replace.jobs[inx].name == name
 
@@ -169,7 +207,8 @@ def test_data_generation_distort_type_2(vasp_test_dir, mock_vasp, clean_dir):
         volume_custom_scale_factors=[
             1.0,
             1.0,
-        ],  # for distort_type 0 and 2, the number of randomized structures is dependent on the number of scale factors becuase scale_cell is called
+        ],
+        # for distort_type 0 and 2, the number of randomized structures is dependent on the number of scale factors becuase scale_cell is called
     )
 
     data_gen_dt_2 = update_user_incar_settings(data_gen_dt_2, {"ISMEAR": 0})
@@ -254,12 +293,12 @@ def test_iso_atom_maker(mock_vasp, clean_dir):
     specie = Species("Cl")
 
     ref_paths = {
-        "Cl-statisoatom": "Cl_iso_atoms/Cl-statisoatom/",
+        "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
     }
 
     # settings passed to fake_run_vasp; adjust these to check for certain INCAR settings
     fake_run_vasp_kwargs = {
-        "Cl-statisoatom": {"incar_settings": ["NSW", "ISMEAR"]},
+        "Cl-stat_iso_atom": {"incar_settings": ["NSW", "ISMEAR"]},
     }
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -274,12 +313,12 @@ def test_iso_atom_maker(mock_vasp, clean_dir):
     responses = run_locally(job_iso, create_folders=True, ensure_success=True)
 
     assert (
-        responses[job_iso.job_uuids[0]][1].output.output.energy_per_atom == -0.2563903
+            responses[job_iso.job_uuids[0]][1].output.output.energy_per_atom == -0.2563903
     )
 
 
 def test_generate_training_data_for_testing(
-    vasp_test_dir, test_dir, memory_jobstore, clean_dir
+        vasp_test_dir, test_dir, memory_jobstore, clean_dir
 ):
     from jobflow import run_locally
 

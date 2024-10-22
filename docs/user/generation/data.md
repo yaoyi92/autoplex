@@ -87,7 +87,7 @@ Similar to the single-atom displaced supercells, you can run the complete `autop
 structures by setting `add_dft_phonon_struct` to `False`.
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(add_dft_phonon_struct=False).make(
-    structure_list=structure_list, mp_ids=mpids, 
+    structure_list=structure_list, mp_ids=mpids, preprocessing_data=True,
     benchmark_structures=benchmark_structure_list, benchmark_mp_ids=mpbenchmark)
 ```
 It can also be used to extend an already existing database in the same way as demonstrated above.
@@ -104,13 +104,13 @@ This part will show you how you can adjust the different Makers for the VASP cal
 
 For the single-atom displaced as well as the rattled structures the `autoplex` [TightDFTStaticMaker](#autoplex.data.phonons.flows.TightDFTStaticMaker) is 
 used to set up the VASP calculation input and settings. PBEsol is the default GGA functional. For the VASP calculation 
-of the isolated atoms' energies, `autoplex` also provides its own [IsoAtomStaticMaker](#autoplex.data.phonons.flows.IsoAtomStaticMaker). 
+of the isolated atoms' energies, `autoplex` also provides its own [IsoAtomStaticMaker](#autoplex.data.phonons.flows.IsoAtomStaticMaker), 
+which settings you can further adjust. 
 For the VASP geometry relaxation and static calculations of the unit cells as prerequisite calculations for generating 
 the single-atom displaced as well as the rattled supercells, 
 we rely on the [atomate2](https://materialsproject.github.io/atomate2/user/codes/vasp.html#list-of-vasp-workflows) 
-Makers `StaticMaker`, `TightRelaxMaker` in combination with the `StaticSetGenerator` VASP input set generator.
+Makers `StaticMaker`, `TightRelaxMaker` in combination with the `StaticSetGenerator` VASP input set generator for this example.
 
-The Makers' settings can be overridden as shown in the following code example: 
 ```python
 from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
 from autoplex.data.phonons.flows import IsoAtomStaticMaker, TightDFTStaticMaker
