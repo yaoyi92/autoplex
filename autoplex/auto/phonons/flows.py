@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from autoplex.data.phonons.flows import TightDFTStaticMaker
 from autoplex.fitting.common.utils import (
     MLIP_PHONON_DEFAULTS_FILE_PATH,
+
     load_mlip_hyperparameter_defaults,
 )
 
