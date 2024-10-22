@@ -54,7 +54,7 @@ templates_path = ["_templates"]
 exclude_patterns = ["Thumbs.db", ".DS_Store", "test*.py", "_build"]
 
 # mermaid settings
-mermaid_version = "8.8.4"
+mermaid_version = "11.2.0"
 mermaid_output_format = 'raw'
 mermaid_params = ['--theme', 'base']
 

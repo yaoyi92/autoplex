@@ -280,8 +280,8 @@ def jace_fitting(
         optional dictionary with parameters for ace fitting with keys same as
         mlip-rss-defaults.json.
 
-    Tunable hyperparameters:
-    ----------
+    Tuneable hyperparameters:
+    -------------------------
     order: int
         order of ACE.
     totaldegree: int
@@ -464,8 +464,8 @@ def nequip_fitting(
         optional dictionary with parameters for nequip fitting with keys same as
         mlip-rss-defaults.json.
 
-    Tunable hyperparameters:
-    ----------
+    Tuneable hyperparameters:
+    -------------------------
     r_max: float
         cutoff radius in length units
     num_layers: int
@@ -736,8 +736,8 @@ def m3gnet_fitting(
         optional dictionary with parameters for m3gnet fitting with keys same as
         mlip-rss-defaults.json.
 
-    Tunable hyperparameters:
-    ----------
+    Tuneable hyperparameters:
+    -------------------------
     exp_name: str
         Name of the experiment, used for saving model checkpoints and logs.
     results_dir: str
@@ -1109,8 +1109,8 @@ def mace_fitting(
         optional dictionary with parameters for mace fitting with keys same as
         mlip-rss-defaults.json.
 
-    Tunable hyperparameters:
-    ----------
+    Tuneable hyperparameters:
+    -------------------------
     model: str
         type of model to be trained
     config_type_weights: str
