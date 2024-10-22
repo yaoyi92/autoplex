@@ -63,7 +63,7 @@ def test_output_from_scratch(memory_jobstore):
                               output_file_name='random_structs.extxyz',
                               buildcell_options={'VARVOL': 20,
                                                  'SYMMOPS':'1-2'},
-                              num_processes=2).make()
+                              num_processes=4).make()
     
     responses = run_locally(job, ensure_success=True, create_folders=True, store=memory_jobstore)
     assert Path(job.output.resolve(memory_jobstore)).exists()
@@ -83,7 +83,7 @@ def test_output_from_cell_seed(test_dir, memory_jobstore):
     test_files_dir = test_dir / "data/SiO2.cell"
     job = RandomizedStructure(struct_number=3,
                               cell_seed_path=test_files_dir,
-                              num_processes=2).make()
+                              num_processes=4).make()
     
     responses = run_locally(job, ensure_success=True, create_folders=True, store=memory_jobstore)
     assert Path(job.output.resolve(memory_jobstore)).exists()
