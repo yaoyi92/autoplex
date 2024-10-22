@@ -1,6 +1,5 @@
 from __future__ import annotations
 from autoplex.data.rss.jobs import RandomizedStructure
-import os
 
 
 def test_extract_elements():
@@ -53,7 +52,7 @@ def test_update_buildcell_options():
     assert 'SPECIES=Si%NUM=1,O%NUM=2' in buildcell_update
 
 
-def test_output_from_scratch(memory_jobstore):
+def test_output_from_scratch(memory_jobstore, clean_dir):
     from jobflow import run_locally
     from ase.io import read
     from pathlib import Path
@@ -70,12 +69,8 @@ def test_output_from_scratch(memory_jobstore):
     atoms = read(Path(job.output.resolve(memory_jobstore)), index=":")
     assert len(atoms) == 3
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
-def test_output_from_cell_seed(test_dir, memory_jobstore):
+def test_output_from_cell_seed(test_dir, memory_jobstore, clean_dir):
     from jobflow import run_locally
     from ase.io import read
     from pathlib import Path
@@ -90,10 +85,6 @@ def test_output_from_cell_seed(test_dir, memory_jobstore):
     atoms = read(Path(job.output.resolve(memory_jobstore)), index=":")
     assert len(atoms) == 3
     
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
 
 
