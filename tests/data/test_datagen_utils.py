@@ -13,8 +13,8 @@ from autoplex.data.common.utils import (
 )
 from autoplex.data.phonons.utils import update_phonon_displacement_maker
 
-os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
-os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
+#os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
+#os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
 fig, ax_list = plt.subplots(nrows=1, ncols=1)
 fig.set_size_inches(15, 20)

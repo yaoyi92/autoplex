@@ -1,9 +1,11 @@
-import os 
-os.environ["OMP_NUM_THREADS"] = "1"
+import os
+import pytest  
+#os.environ["OMP_NUM_THREADS"] = "1"
 
 from jobflow import run_locally
 from ase.io import read
 import numpy as np
+
 
 def test_vasp_static(test_dir, memory_jobstore, clean_dir):
     from autoplex.data.common.jobs import Data_preprocessing

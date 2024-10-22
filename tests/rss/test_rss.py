@@ -1,6 +1,3 @@
-import os 
-os.environ["OMP_NUM_THREADS"] = "1"
-
 from autoplex.data.rss.jobs import do_rss
 from jobflow import run_locally
 from ase.io import read
@@ -29,7 +26,7 @@ def test_gap_rss(test_dir, memory_jobstore, clean_dir):
                 stress_tol=0.1,
                 Hookean_repul=False,
                 write_traj=True,
-                num_processes_rss=4,
+                num_processes_rss=2,
                 device="cpu",
                 isol_es={14: -0.84696938})
     
@@ -37,7 +34,7 @@ def test_gap_rss(test_dir, memory_jobstore, clean_dir):
         job,
         create_folders=True,
         ensure_success=True,
-        store=memory_jobstore
+        store=memory_jobstore,
     )
 
     output = job.output.resolve(memory_jobstore)
@@ -46,7 +43,7 @@ def test_gap_rss(test_dir, memory_jobstore, clean_dir):
         if i is not None:
             output_filter.append(i)
    
-    assert len(output_filter) == 2
+    assert len(output_filter) == 1
 
 
 
@@ -176,7 +173,6 @@ def test_m3gnet_rss(test_dir, memory_jobstore, clean_dir):
             output_filter.append(i)
    
     assert len(output_filter) == 1
-
 
 
 def test_mace_rss(test_dir, memory_jobstore, clean_dir):

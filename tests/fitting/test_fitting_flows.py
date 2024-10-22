@@ -184,8 +184,7 @@ def test_mlip_fit_maker_nequip(
     from pathlib import Path
     from jobflow import run_locally
 
-    os.chdir(test_dir / "fitting")
-
+    
     test_files_dir = Path(test_dir / "fitting").resolve()
 
     # Test NEQUIP fit runs with pre_database_dir
