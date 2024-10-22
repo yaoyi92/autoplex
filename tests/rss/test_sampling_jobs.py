@@ -1,5 +1,4 @@
 import os 
-os.environ["OMP_NUM_THREADS"] = "1"
 
 from pymatgen.io.ase import AseAtomsAdaptor
 from autoplex.data.common.jobs import sampling

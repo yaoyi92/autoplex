@@ -1,6 +1,4 @@
 import os
-import pytest  
-#os.environ["OMP_NUM_THREADS"] = "1"
 
 from jobflow import run_locally
 from ase.io import read

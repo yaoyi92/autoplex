@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from jobflow import Flow
 from pymatgen.core.structure import Structure
 from autoplex.auto.phonons.jobs import (
@@ -18,8 +17,6 @@ from tests.conftest import memory_jobstore
 import pytest
 from pytest import approx
 
-#os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
-#os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
 
 @pytest.fixture(scope="class")

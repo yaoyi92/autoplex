@@ -1,6 +1,4 @@
 import os
-import pytest  
-#os.environ["OMP_NUM_THREADS"] = "1"
 
 from autoplex.data.rss.utils import HookeanRepulsion
 from quippy.potential import Potential

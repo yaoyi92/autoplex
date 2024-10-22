@@ -297,9 +297,13 @@ def test_mlip_fit_maker_mace(
 def test_mlip_fit_maker_glue_xml(
         test_dir, memory_jobstore, vasp_test_dir, clean_dir
 ):
+    import os
+    import shutil
     from pathlib import Path
     from jobflow import run_locally
 
+    parent_dir = os.getcwd()
+    os.chdir(test_dir / "fitting")
 
     fit_input_dict = {
         "mp-149": {
@@ -371,8 +375,17 @@ def test_mlip_fit_maker_glue_xml(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
+    test_files_dir = Path(test_dir / "fitting").resolve()
+    path_to_job_files = list(test_files_dir.glob("job*"))
+
     # check if gap fit file is generated
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+
+    for job_dir in path_to_job_files:
+        shutil.rmtree(job_dir)
+
+    os.chdir(parent_dir)
+
 
 
 def test_mlip_fit_maker_with_automated_separated_dataset(

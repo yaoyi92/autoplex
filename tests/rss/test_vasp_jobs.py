@@ -1,5 +1,4 @@
 import os 
-os.environ["OMP_NUM_THREADS"] = "1"
 
 from pymatgen.core.structure import Structure
 from jobflow import run_locally, Flow

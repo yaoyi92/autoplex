@@ -1,5 +1,4 @@
 import os 
-os.environ["OMP_NUM_THREADS"] = "1"
 
 from jobflow import run_locally, Flow
 from jobflow import Response, job
