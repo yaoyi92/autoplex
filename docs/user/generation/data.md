@@ -100,19 +100,26 @@ that can be used to construct customized randomized structures workflows.
 
 ## VASP settings
 
-For the single-atom displaced as well as the randomized structures the [TightDFTStaticMaker](#autoplex.data.phonons.flows.TightDFTStaticMaker) (for huge single-atom 
-displaced supercells with lattice parameters > 18 Å the [TightDFTStaticMakerBigSupercells](#autoplex.data.phonons.flows.TightDFTStaticMakerBigSupercells)) is used to set up the 
-VASP calculation input and settings. PBEsol is the default GGA functional.
+This part will show you how you can adjust the different Makers for the VASP calculations in the workflow.
 
-The `TightDFTStaticMaker` settings can be overridden by 
+For the single-atom displaced as well as the rattled structures the `autoplex` [TightDFTStaticMaker](#autoplex.data.phonons.flows.TightDFTStaticMaker) is 
+used to set up the VASP calculation input and settings. PBEsol is the default GGA functional. For the VASP calculation 
+of the isolated atoms' energies, `autoplex` also provides its own [IsoAtomStaticMaker](#autoplex.data.phonons.flows.IsoAtomStaticMaker). 
+For the VASP geometry relaxation and static calculations of the unit cells as prerequisite calculations for generating 
+the single-atom displaced as well as the rattled supercells, 
+we rely on the [atomate2](https://materialsproject.github.io/atomate2/user/codes/vasp.html#list-of-vasp-workflows) 
+Makers `StaticMaker`, `TightRelaxMaker` in combination with the `StaticSetGenerator` VASP input set generator.
+
+The Makers' settings can be overridden as shown in the following code example: 
 ```python
 from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
-from autoplex.data.phonons.flows import TightDFTStaticMaker
+from autoplex.data.phonons.flows import IsoAtomStaticMaker, TightDFTStaticMaker
+from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
 from atomate2.vasp.sets.core import StaticSetGenerator
 
-complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    phonon_displacement_maker=TightDFTStaticMaker(
-    input_set_generator=StaticSetGenerator(user_incar_settings={
+example_input_set = StaticSetGenerator(  # you can also define multiple input sets
+    user_kpoints_settings={"grid_density": 1},
+    user_incar_settings={
         "ALGO": "Normal",
         "IBRION": -1,
         "ISPIN": 1,
@@ -120,5 +127,33 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
          ...,         # set all INCAR tags you need
         "SIGMA": 0.05,
         "GGA": "PE",  # switches to PBE
-         ...}))).make(...)
+         ...},
+)
+static_isolated_atom_maker = IsoAtomStaticMaker(
+    name="isolated_atom_maker",
+    input_set_generator=example_input_set,
+)
+displacement_maker = TightDFTStaticMaker(
+    name="displacement_maker",
+    input_set_generator=example_input_set,
+)
+rattled_bulk_relax_maker = TightRelaxMaker(
+    name="bulk_rattled_maker",
+    input_set_generator=example_input_set,
+)
+phonon_bulk_relax_maker = TightRelaxMaker(
+    name="bulk_phonon_maker",
+    input_set_generator=example_input_set,
+)
+phonon_static_energy_maker = StaticMaker(
+    name="phonon_static_energy_maker",
+    input_set_generator=example_input_set,
+)
+
+complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
+    displacement_maker=displacement_maker,  # one displacement maker for rattled and single-atom displaced supercells to keep VASP settings consistent
+    phonon_bulk_relax_maker=phonon_bulk_relax_maker,
+    phonon_static_energy_maker=phonon_static_energy_maker,
+    rattled_bulk_relax_maker=rattled_bulk_relax_maker,
+    isolated_atom_maker=static_isolated_atom_maker,).make(...)
 ```
