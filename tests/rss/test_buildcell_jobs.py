@@ -56,7 +56,6 @@ def test_output_from_scratch(memory_jobstore, clean_dir):
     from jobflow import run_locally
     from ase.io import read
     from pathlib import Path
-    import shutil
     job = RandomizedStructure(struct_number=3,
                               tag='SiO2',
                               output_file_name='random_structs.extxyz',
@@ -74,7 +73,6 @@ def test_output_from_cell_seed(test_dir, memory_jobstore, clean_dir):
     from jobflow import run_locally
     from ase.io import read
     from pathlib import Path
-    import shutil
     test_files_dir = test_dir / "data/SiO2.cell"
     job = RandomizedStructure(struct_number=3,
                               cell_seed_path=test_files_dir,
