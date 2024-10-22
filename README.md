@@ -51,7 +51,7 @@ curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz; tar -xf airss-0.9.3
 
 # Contributing guidelines
 
-Please follow the [contributing guidelines](docs/dev/contributing.md)!
+Please follow the [contributing guidelines](https://autoatml.github.io/autoplex/dev/contributing.html)!
 
 # Workflow overview
 
