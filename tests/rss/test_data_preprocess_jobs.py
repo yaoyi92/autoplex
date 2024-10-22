@@ -5,7 +5,7 @@ from jobflow import run_locally
 from ase.io import read
 import numpy as np
 
-def ptest_vasp_static(test_dir, memory_jobstore, clean_dir):
+def test_vasp_static(test_dir, memory_jobstore, clean_dir):
     from autoplex.data.common.jobs import Data_preprocessing
     test_files_dir = test_dir / "data/rss.extxyz"
 
