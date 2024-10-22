@@ -769,6 +769,13 @@ def m3gnet_fitting(
         A dictionary containing keys such as 'train_error', 'test_error', and 'path_to_fitted_model',
         representing the training error, test error, and the location of the saved model, respectively.
 
+    Adapted from:
+    *    Title: Tutorials of Materials Graph Library (MatGL)
+    *    Author: Tsz Wai Ko, Chi Chen and Shyue Ping Ong
+    *    Version: 1.1.3
+    *    Date 7/8/2024
+    *    Availability: https://matgl.ai/tutorials%2FTraining%20a%20M3GNet%20Potential%20with%20PyTorch%20Lightning.html
+    *    License: BSD 3-Clause License
     """
     default_hyperparameters = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=path_to_default_hyperparameters
