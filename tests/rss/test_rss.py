@@ -31,7 +31,7 @@ def test_gap_rss(test_dir, memory_jobstore):
                 stress_tol=0.1,
                 Hookean_repul=False,
                 write_traj=True,
-                num_processes_rss=4,
+                num_processes_rss=2,
                 device="cpu",
                 isol_es={14: -0.84696938})
     
@@ -77,7 +77,7 @@ def test_gap_rss(test_dir, memory_jobstore):
 #                 stress_tol=0.1,
 #                 Hookean_repul=False,
 #                 write_traj=True,
-#                 num_processes_rss=4,
+#                 num_processes_rss=2,
 #                 device="cpu",
 #                 isol_es={14: -0.84696938})
     
@@ -123,7 +123,7 @@ def test_nequip_rss(test_dir, memory_jobstore):
                 stress_tol=0.1,
                 Hookean_repul=False,
                 write_traj=True,
-                num_processes_rss=4,
+                num_processes_rss=2,
                 device="cpu",
                 isol_es={14: -0.84696938})
     
@@ -169,7 +169,7 @@ def test_m3gnet_rss(test_dir, memory_jobstore):
                 stress_tol=0.1,
                 Hookean_repul=False,
                 write_traj=True,
-                num_processes_rss=4,
+                num_processes_rss=2,
                 device="cpu",
                 isol_es={14: -0.84696938})
     
@@ -215,7 +215,7 @@ def test_mace_rss(test_dir, memory_jobstore):
                 stress_tol=0.1,
                 Hookean_repul=False,
                 write_traj=True,
-                num_processes_rss=4,
+                num_processes_rss=2,
                 device="cpu",
                 isol_es={14: -0.84696938})
     

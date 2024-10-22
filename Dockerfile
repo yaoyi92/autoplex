@@ -58,3 +58,15 @@ RUN curl -fsSL https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz -o /opt/airss
 
 # Add Buildcell to PATH
 ENV PATH="${PATH}:/opt/airss/bin"
+
+# Set the working directory
+WORKDIR /workspace
+
+# Copy the current directory contents into the container at /workspace
+COPY . /workspace
+
+# Install autoplex
+RUN uv pip install .[strict,docs]
+
+# Set the default command to bash
+CMD ["bash"]
