@@ -1,14 +1,9 @@
 from __future__ import annotations
-import os
 import pytest
 from monty.serialization import loadfn
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from pymatgen.core.structure import Structure
 from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
-from jobflow.core.job import Response
-
-os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
-os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
 
 
 @pytest.fixture(scope="class")

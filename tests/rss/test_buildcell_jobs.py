@@ -1,9 +1,8 @@
 from __future__ import annotations
 from autoplex.data.rss.jobs import RandomizedStructure
-import os
 
 
-def test_extract_elements():
+def test_extract_elements(test_dir):
     rs = RandomizedStructure()
     elements = rs._extract_elements("SiO2")
     assert elements == {"Si": 1, "O": 2}
@@ -15,7 +14,7 @@ def test_extract_elements():
     assert elements == {"C": 6, "H": 12, "O": 6}
 
 
-def test_make_species():
+def test_make_species(test_dir):
     rs = RandomizedStructure()
     elements = {"Si": 1, "O": 2}
     species = rs._make_species(elements)
@@ -26,13 +25,13 @@ def test_make_species():
     assert species == "H%NUM=2,O%NUM=1"
 
 
-def test_is_metal():
+def test_is_metal(test_dir):
     rs = RandomizedStructure()
     assert rs._is_metal("Fe") == True
     assert rs._is_metal("Si") == False
 
 
-def test_make_minsep():
+def test_make_minsep(test_dir):
     rs = RandomizedStructure()
     radii = {"Si": 1.1, "O": 0.66}
     minsep = rs._make_minsep(radii)
@@ -41,7 +40,7 @@ def test_make_minsep():
     assert "O-O=1.32" in minsep   # r1 * 2.0
 
 
-def test_update_buildcell_options():
+def test_update_buildcell_options(test_dir):
     rs = RandomizedStructure()
     options = {'VARVOL': 20, 'SPECIES': 'Si%NUM=1,O%NUM=2'}
     buildcell_parameters = ['VARVOL=15',
@@ -53,11 +52,10 @@ def test_update_buildcell_options():
     assert 'SPECIES=Si%NUM=1,O%NUM=2' in buildcell_update
 
 
-def test_output_from_scratch(memory_jobstore):
+def test_output_from_scratch(test_dir, memory_jobstore, clean_dir):
     from jobflow import run_locally
     from ase.io import read
     from pathlib import Path
-    import shutil
     job = RandomizedStructure(struct_number=3,
                               tag='SiO2',
                               output_file_name='random_structs.extxyz',
@@ -70,16 +68,11 @@ def test_output_from_scratch(memory_jobstore):
     atoms = read(Path(job.output.resolve(memory_jobstore)), index=":")
     assert len(atoms) == 3
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
-def test_output_from_cell_seed(test_dir, memory_jobstore):
+def test_output_from_cell_seed(test_dir, memory_jobstore, clean_dir):
     from jobflow import run_locally
     from ase.io import read
     from pathlib import Path
-    import shutil
     test_files_dir = test_dir / "data/SiO2.cell"
     job = RandomizedStructure(struct_number=3,
                               cell_seed_path=test_files_dir,
@@ -89,12 +82,3 @@ def test_output_from_cell_seed(test_dir, memory_jobstore):
     assert Path(job.output.resolve(memory_jobstore)).exists()
     atoms = read(Path(job.output.resolve(memory_jobstore)), index=":")
     assert len(atoms) == 3
-    
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
-
-
-
-    

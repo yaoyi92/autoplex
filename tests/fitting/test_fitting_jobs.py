@@ -1,11 +1,10 @@
 from __future__ import annotations
 from autoplex.fitting.common.flows import MLIPFitMaker
-import shutil
 from pathlib import Path
 from jobflow import run_locally
 
 
-def test_gap_fit_maker(test_dir, memory_jobstore):
+def test_gap_fit_maker(test_dir, memory_jobstore, clean_dir):
 
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
@@ -24,13 +23,9 @@ def test_gap_fit_maker(test_dir, memory_jobstore):
 
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
 
-def test_jace_fit_maker(test_dir, memory_jobstore):
+def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
 
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
@@ -51,13 +46,9 @@ def test_jace_fit_maker(test_dir, memory_jobstore):
 
     assert Path(jacefit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
 
-def test_nqeuip_fit_maker(test_dir, memory_jobstore):
+def test_nqeuip_fit_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     nequipfit = MLIPFitMaker(
@@ -78,13 +69,9 @@ def test_nqeuip_fit_maker(test_dir, memory_jobstore):
 
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
 
-def test_m3gnet_fit_maker(test_dir, memory_jobstore):
+def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     nequipfit = MLIPFitMaker(
@@ -113,13 +100,9 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore):
 
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
 
-def test_mace_fit_maker(test_dir, memory_jobstore):
+def test_mace_fit_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     nequipfit = MLIPFitMaker(
@@ -148,9 +131,4 @@ def test_mace_fit_maker(test_dir, memory_jobstore):
     )
 
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
-
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 

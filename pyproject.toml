@@ -77,7 +77,7 @@ strict = [
      "torchdata==0.7.1",
 ]
 dev = ["pre-commit>=2.12.1"]
-tests = ["pytest", "pytest-mock", "pytest-split", "pytest-cov", "types-setuptools"]
+tests = ["pytest", "pytest-mock", "pytest-split==0.9.0", "pytest-cov", "types-setuptools"]
 
 [tool.versioningit.vcs]
 method = "git"

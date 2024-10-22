@@ -1,5 +1,4 @@
-import os 
-os.environ["OMP_NUM_THREADS"] = "1"
+import os
 
 from autoplex.data.rss.utils import HookeanRepulsion
 from quippy.potential import Potential

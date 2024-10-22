@@ -1,14 +1,10 @@
 import os 
-os.environ["OMP_NUM_THREADS"] = "1"
 
 from pymatgen.io.ase import AseAtomsAdaptor
 from autoplex.data.common.jobs import sampling
 from jobflow import run_locally
-from pathlib import Path
 from ase.io import read
 from autoplex.data.common.utils import cur_select, boltzhist_cur, ElementCollection
-import shutil
-
 
 def test_sampling_cur(test_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
@@ -52,7 +48,7 @@ def test_sampling_cur(test_dir):
     assert energies == ref_energies
 
 
-def test_sampling_cur_job(test_dir, memory_jobstore):
+def test_sampling_cur_job(test_dir, memory_jobstore, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
@@ -87,13 +83,9 @@ def test_sampling_cur_job(test_dir, memory_jobstore):
     for atom in selected_atoms:
         assert isinstance(atom, type(structures[0]))
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
 
-def test_sampling_bcur(test_dir):
+def test_sampling_bcur(test_dir, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index=':')
     num_of_selection=5
@@ -140,13 +132,8 @@ def test_sampling_bcur(test_dir):
 
     assert energies == ref_energies
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
-
-def test_sampling_bcur_job(test_dir, memory_jobstore):
+def test_sampling_bcur_job(test_dir, memory_jobstore, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
@@ -183,13 +170,9 @@ def test_sampling_bcur_job(test_dir, memory_jobstore):
     for atom in selected_atoms:
         assert isinstance(atom, type(structures[0]))
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
 
-def test_sampling_random_job(test_dir, memory_jobstore):
+def test_sampling_random_job(test_dir, memory_jobstore, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
@@ -213,13 +196,9 @@ def test_sampling_random_job(test_dir, memory_jobstore):
     for atom in selected_atoms:
         assert isinstance(atom, type(structures[0]))
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
 
-def test_sampling_uniform_job(test_dir, memory_jobstore):
+def test_sampling_uniform_job(test_dir, memory_jobstore, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
@@ -242,8 +221,3 @@ def test_sampling_uniform_job(test_dir, memory_jobstore):
 
     for atom in selected_atoms:
         assert isinstance(atom, type(structures[0]))
-
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)

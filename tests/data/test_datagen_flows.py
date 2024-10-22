@@ -14,9 +14,6 @@ from atomate2.forcefields.jobs import (
 from autoplex.data.common.flows import GenerateTrainingDataForTesting
 from autoplex.data.phonons.flows import IsoAtomMaker, RandomStructuresDataGenerator, MLPhononMaker
 
-os.environ["OMP_NUM_THREADS"] = "4"  # export OMP_NUM_THREADS=4
-os.environ["OPENBLAS_NUM_THREADS"] = "1"  # export OPENBLAS_NUM_THREADS=1
-
 
 def test_ml_phonon_maker(test_dir, clean_dir, memory_jobstore):
     from jobflow import run_locally

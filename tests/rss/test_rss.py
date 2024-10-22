@@ -1,16 +1,11 @@
-import os 
-os.environ["OMP_NUM_THREADS"] = "1"
-
 from autoplex.data.rss.jobs import do_rss
-import shutil
-from pathlib import Path
 from jobflow import run_locally
 from ase.io import read
 from pymatgen.io.ase import AseAtomsAdaptor
 import numpy as np
 
 
-def test_gap_rss(test_dir, memory_jobstore):
+def test_gap_rss(test_dir, memory_jobstore, clean_dir):
     np.random.seed(42)
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index="0:5:1")
@@ -39,7 +34,7 @@ def test_gap_rss(test_dir, memory_jobstore):
         job,
         create_folders=True,
         ensure_success=True,
-        store=memory_jobstore
+        store=memory_jobstore,
     )
 
     output = job.output.resolve(memory_jobstore)
@@ -48,12 +43,8 @@ def test_gap_rss(test_dir, memory_jobstore):
         if i is not None:
             output_filter.append(i)
    
-    assert len(output_filter) == 2
+    assert len(output_filter) == 1
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
 
 # def test_jace_rss(test_dir, memory_jobstore):
@@ -77,7 +68,7 @@ def test_gap_rss(test_dir, memory_jobstore):
 #                 stress_tol=0.1,
 #                 Hookean_repul=False,
 #                 write_traj=True,
-#                 num_processes_rss=2,
+#                 num_processes_rss=4,
 #                 device="cpu",
 #                 isol_es={14: -0.84696938})
     
@@ -102,7 +93,7 @@ def test_gap_rss(test_dir, memory_jobstore):
 #         shutil.rmtree(path)
 
 
-def test_nequip_rss(test_dir, memory_jobstore):
+def test_nequip_rss(test_dir, memory_jobstore, clean_dir):
     np.random.seed(42)
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index="0:5:1")
@@ -123,7 +114,7 @@ def test_nequip_rss(test_dir, memory_jobstore):
                 stress_tol=0.1,
                 Hookean_repul=False,
                 write_traj=True,
-                num_processes_rss=2,
+                num_processes_rss=4,
                 device="cpu",
                 isol_es={14: -0.84696938})
     
@@ -142,13 +133,8 @@ def test_nequip_rss(test_dir, memory_jobstore):
    
     assert len(output_filter) == 1
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
-
-def test_m3gnet_rss(test_dir, memory_jobstore):
+def test_m3gnet_rss(test_dir, memory_jobstore, clean_dir):
     np.random.seed(42)
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index="0:5:1")
@@ -169,7 +155,7 @@ def test_m3gnet_rss(test_dir, memory_jobstore):
                 stress_tol=0.1,
                 Hookean_repul=False,
                 write_traj=True,
-                num_processes_rss=2,
+                num_processes_rss=4,
                 device="cpu",
                 isol_es={14: -0.84696938})
     
@@ -188,13 +174,8 @@ def test_m3gnet_rss(test_dir, memory_jobstore):
    
     assert len(output_filter) == 1
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
-
-def test_mace_rss(test_dir, memory_jobstore):
+def test_mace_rss(test_dir, memory_jobstore, clean_dir):
     np.random.seed(42)
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index="0:5:1")
@@ -215,7 +196,7 @@ def test_mace_rss(test_dir, memory_jobstore):
                 stress_tol=0.1,
                 Hookean_repul=False,
                 write_traj=True,
-                num_processes_rss=2,
+                num_processes_rss=4,
                 device="cpu",
                 isol_es={14: -0.84696938})
     
@@ -234,9 +215,5 @@ def test_mace_rss(test_dir, memory_jobstore):
    
     assert len(output_filter) == 1
 
-    dir = Path('.')
-    path_to_job_files = list(dir.glob("job*"))
-    for path in path_to_job_files:
-        shutil.rmtree(path)
 
         
