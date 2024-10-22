@@ -9,8 +9,91 @@ import numpy as np
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
+    from pymatgen.core.structure import Structure
     from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
 from pymatgen.phonon.plotter import PhononBSPlotter
+
+
+def compute_bandstructure_benchmark_metrics(
+    ml_model: str,
+    structure: Structure,
+    mp_id: str,
+    ml_phonon_bs: PhononBandStructureSymmLine,
+    dft_phonon_bs: PhononBandStructureSymmLine,
+    ml_imag_modes: bool,
+    dft_imag_modes: bool,
+    atomwise_regularization_parameter: float,
+    soap_dict: dict,
+    suffix: str,
+    displacement: float = 0.01,
+):
+    """
+    Compute phonon band-structure benchmark metrics and generate associated plots.
+
+    Parameters
+    ----------
+    ml_model: str
+        ML model to be used. Default is GAP.
+    structure : .Structure
+        A structure object.
+    mp_id:
+        Materials Project ID.
+    ml_phonon_bs: PhononBandStructureSymmLine.
+       ML generated pymatgen phonon band-structure object.
+    dft_phonon_bs: PhononBandStructureSymmLine.
+       DFT generated pymatgen phonon band-structure object.
+    ml_imag_modes: bool
+        Whether the ML-based phonon band structure shows imaginary modes.
+    dft_imag_modes: bool
+        Whether the DFT-based phonon band structure shows imaginary modes.
+    displacement: float
+        displacement distance for phonons
+    atomwise_regularization_parameter: float
+        regularization value for the atom-wise force components.
+    suffix: str
+        GAP potential file suffix.
+    soap_dict: dict
+        dictionary containing SOAP parameters.
+
+
+    Returns
+    -------
+    dict including
+       Overall root mean squared error between DFT and ML phonon band-structure.
+    """
+    # compute overall root mean squared error
+    overall_rmse = get_rmse(ml_bs=ml_phonon_bs, dft_bs=dft_phonon_bs)
+
+    # saves rmse k-dependent plot
+    file_name = f"{structure.composition.reduced_formula}_rmse_phonons.pdf"
+    _ = rmse_qdep_plot(
+        ml_bs=ml_phonon_bs,
+        dft_bs=dft_phonon_bs,
+        which_q_path=2,
+        file_name=file_name,
+        img_format="pdf",
+    )
+
+    # saves DFT and ML phonon band-structure overlay plot
+    file_name = f"{structure.composition.reduced_formula}_band_comparison.pdf"
+    _ = compare_plot(
+        ml_model=ml_model,
+        ml_bs=ml_phonon_bs,
+        dft_bs=dft_phonon_bs,
+        file_name=file_name,
+    )
+    return {
+        "benchmark_phonon_rmse": overall_rmse,
+        "dft_imaginary_modes": dft_imag_modes,
+        "ml_imaginary_modes": ml_imag_modes,
+        "ml_model": ml_model,
+        "mp_id": mp_id,
+        "structure": structure,
+        "displacement": displacement,
+        "atomwise_regularization_parameter": atomwise_regularization_parameter,
+        "soap_dict": soap_dict,
+        "suffix": suffix,
+    }
 
 
 def get_rmse(
@@ -35,7 +118,8 @@ def get_rmse(
     float or list[float]
       root mean squared error between DFT and ML phonon band-structure
     """
-    diff = ml_bs.bands - dft_bs.bands
+    diff = np.sort(ml_bs.bands, axis=0) - np.sort(dft_bs.bands, axis=0)
+
     rmse = np.sqrt(np.mean(diff**2))
 
     if q_dependent_rmse:

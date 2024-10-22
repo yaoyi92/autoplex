@@ -1,4 +1,5 @@
 """Jobs to create training data for ML potentials."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
@@ -29,7 +30,7 @@ from pymatgen.io.vasp.outputs import Vasprun
 
 from autoplex.data.common.utils import (
     ElementCollection,
-    boltzhist_CUR,
+    boltzhist_cur,
     create_soap_descriptor,
     cur_select,
     data_distillation,
@@ -179,7 +180,6 @@ def generate_randomized_structures(
     rattle_seed: int = 42,
     rattle_mc_n_iter: int = 10,
     w_angle: list[float] | None = None,
-    adaptive_rattled_supercell_settings: bool = True,
 ):
     """
     Take in a pymatgen Structure object and generates angle/volume distorted + rattled structures.
@@ -228,8 +228,6 @@ def generate_randomized_structures(
         Number of Monte Carlo iterations.
         Larger number of iterations will generate larger displacements.
         Default=10.
-    adaptive_rattled_supercell_settings: bool
-        prevent too big rattled supercells
 
     Returns
     -------
@@ -238,6 +236,9 @@ def generate_randomized_structures(
     """
     if supercell_matrix is None:
         supercell_matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
+
+    if n_structures < 10:
+        n_structures = 10
 
     supercell = get_supercell(
         unitcell=get_phonopy_structure(structure),
@@ -298,19 +299,21 @@ def generate_randomized_structures(
             for cell in distorted_cells
         ]
         if rattle_type == 0
-        else [
-            mc_rattle(
-                structure=cell,
-                n_structures=1,
-                rattle_std=rattle_std,
-                min_distance=min_distance,
-                rattle_seed=rattle_seed,
-                rattle_mc_n_iter=rattle_mc_n_iter,
-            )
-            for cell in distorted_cells
-        ]
-        if rattle_type == 1
-        else None
+        else (
+            [
+                mc_rattle(
+                    structure=cell,
+                    n_structures=1,
+                    rattle_std=rattle_std,
+                    min_distance=min_distance,
+                    rattle_seed=rattle_seed,
+                    rattle_mc_n_iter=rattle_mc_n_iter,
+                )
+                for cell in distorted_cells
+            ]
+            if rattle_type == 1
+            else None
+        )
     )
 
     if rattled_cells is None:
@@ -320,7 +323,7 @@ def generate_randomized_structures(
 
 
 @job
-def Sampling(
+def sampling(
     selection_method: Literal["cur", "bcur", "random", "uniform"] = "random",
     num_of_selection: int = 5,
     bcur_params: dict | None = None,
@@ -375,6 +378,9 @@ def Sampling(
     isol_es : dict, optional
         Dictionary of isolated energy values for species. Required for 'boltzhist_CUR'
         selection method. Default is None.
+
+    random_seed:
+        Random seed.
 
     Returns
     -------
@@ -450,7 +456,7 @@ def Sampling(
             else:
                 raise ValueError("Please provide the energy of isolated atoms!")
 
-            selected_atoms = boltzhist_CUR(
+            selected_atoms = boltzhist_cur(
                 atoms=atoms,
                 isol_es=isol_es,
                 bolt_frac=bcur_params["frac_of_bcur"],

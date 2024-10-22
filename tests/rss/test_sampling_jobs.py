@@ -2,11 +2,11 @@ import os
 os.environ["OMP_NUM_THREADS"] = "1"
 
 from pymatgen.io.ase import AseAtomsAdaptor
-from autoplex.data.common.jobs import Sampling
+from autoplex.data.common.jobs import sampling
 from jobflow import run_locally
 from pathlib import Path
 from ase.io import read
-from autoplex.data.common.utils import cur_select, boltzhist_CUR, ElementCollection
+from autoplex.data.common.utils import cur_select, boltzhist_cur, ElementCollection
 import shutil
 
 
@@ -57,7 +57,7 @@ def test_sampling_cur_job(test_dir, memory_jobstore):
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
 
-    job = Sampling(
+    job = sampling(
         selection_method='cur',
         num_of_selection=5,
         bcur_params={'soap_paras': {'l_max': 3,
@@ -117,17 +117,17 @@ def test_sampling_bcur(test_dir):
                 ' cutoff_transition_width=' + str(soap_paras['cutoff_transition_width']) + \
                 ' average=' + str(soap_paras['average'])
 
-    selected_atoms = boltzhist_CUR(atoms=atoms,
+    selected_atoms = boltzhist_cur(atoms=atoms,
                                    isol_es={14: -0.81},
-                                   bolt_frac=0.8, 
+                                   bolt_frac=0.8,
                                    bolt_max_num=3000,
-                                   cur_num=num_of_selection, 
-                                   kernel_exp=4, 
-                                   kT=0.3, 
+                                   cur_num=num_of_selection,
+                                   kernel_exp=4,
+                                   kT=0.3,
                                    energy_label='REF_energy',
-                                   P=None,  
+                                   P=None,
                                    descriptor=descriptor,
-                                   random_seed=42,                          
+                                   random_seed=42,
                                    )
     
     ref_energies = [-78.30403724, 
@@ -151,7 +151,7 @@ def test_sampling_bcur_job(test_dir, memory_jobstore):
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
     
-    job = Sampling(selection_method='bcur',
+    job = sampling(selection_method='bcur',
                    num_of_selection=5,
                    bcur_params={'soap_paras': {'l_max': 3,
                                 'n_max': 3,
@@ -165,9 +165,9 @@ def test_sampling_bcur_job(test_dir, memory_jobstore):
                                 'frac_of_bcur': 0.8,
                                 'energy_label': 'REF_energy'
                     },
-                    structure=structures, 
-                    isol_es={14: -0.84696938},
-                    random_seed=42)
+                   structure=structures,
+                   isol_es={14: -0.84696938},
+                   random_seed=42)
 
     response = run_locally(
         job,
@@ -194,7 +194,7 @@ def test_sampling_random_job(test_dir, memory_jobstore):
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
     
-    job = Sampling(selection_method='random',
+    job = sampling(selection_method='random',
                    num_of_selection=5,
                    structure=structures,
                    random_seed=42)
@@ -224,7 +224,7 @@ def test_sampling_uniform_job(test_dir, memory_jobstore):
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
     
-    job = Sampling(selection_method='uniform',
+    job = sampling(selection_method='uniform',
                    num_of_selection=5,
                    structure=structures,
                    random_seed=42)

@@ -52,14 +52,14 @@ from autoplex.data.common.utils import (
 )
 
 current_dir = Path(__file__).absolute().parent
-GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
-MLIP_DEFAULTS_FILE_PATH = current_dir / "mlip-defaults.json"
+MLIP_PHONON_DEFAULTS_FILE_PATH = current_dir / "mlip-phonon-defaults.json"
+MLIP_RSS_DEFAULTS_FILE_PATH = current_dir / "mlip-rss-defaults.json"
 
 
 def gap_fitting(
     db_dir: Path,
     species_list: list | None = None,
-    path_to_default_hyperparameters: Path | str = GAP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
@@ -80,7 +80,7 @@ def gap_fitting(
     species_list : list.
         List of element names (str)
     path_to_default_hyperparameters : str or Path.
-        Path to gap-defaults.json.
+        Path to mlip-phonon-defaults.json.
     num_processes_fit: int.
         Number of processes used for gap_fit
     auto_delta: bool
@@ -99,7 +99,7 @@ def gap_fitting(
         Name of the test dataset file.
     fit_kwargs: dict.
         optional dictionary with parameters for gap fitting with keys same as
-        gap-defaults.json.
+        mlip-phonon-defaults.json.
 
     Returns
     -------
@@ -107,6 +107,7 @@ def gap_fitting(
         A dictionary with train_error, test_error
 
     """
+    # keep additional pre- and suffixes
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     mlip_path: Path = prepare_fit_environment(
         db_dir, Path.cwd(), glue_xml, train_name, test_name
@@ -116,9 +117,11 @@ def gap_fitting(
     train_data_path = os.path.join(db_dir, train_name)
     test_data_path = os.path.join(db_dir, test_name)
 
-    gap_default_hyperparameters = load_mlip_hyperparameter_defaults(
+    default_hyperparameters = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=path_to_default_hyperparameters
     )
+
+    gap_default_hyperparameters = default_hyperparameters["GAP"]
 
     gap_default_hyperparameters["general"].update({"gp_file": gap_file_xml})
     gap_default_hyperparameters["general"]["energy_parameter_name"] = ref_energy_name
@@ -242,7 +245,7 @@ def gap_fitting(
 
 def jace_fitting(
     db_dir: str | Path,
-    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     isolated_atoms_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -262,7 +265,7 @@ def jace_fitting(
     db_dir: str or Path
         directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
-        Path to mlip-defaults.json.
+        Path to mlip-rss-defaults.json.
     isolated_atoms_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -275,7 +278,7 @@ def jace_fitting(
         number of processes to use for parallel computation.
     fit_kwargs: dict.
         optional dictionary with parameters for ace fitting with keys same as
-        mlip-defaults.json.
+        mlip-rss-defaults.json.
 
     Keyword Arguments
     -----------------
@@ -426,7 +429,7 @@ export2lammps("acemodel.yace", model)
 
 def nequip_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     isolated_atoms_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -446,7 +449,7 @@ def nequip_fitting(
     db_dir: Path
         directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
-        Path to mlip-defaults.json.
+        Path to mlip-rss-defaults.json.
     isolated_atoms_energies: dict
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -459,7 +462,7 @@ def nequip_fitting(
         specify device to use cuda or cpu
     fit_kwargs: dict.
         optional dictionary with parameters for nequip fitting with keys same as
-        mlip-defaults.json.
+        mlip-rss-defaults.json.
 
     Keyword Arguments
     -----------------
@@ -705,7 +708,7 @@ per_species_rescale_scales: dataset_forces_rms
 
 def m3gnet_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -720,7 +723,7 @@ def m3gnet_fitting(
     db_dir: Path
         Directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
-        Path to mlip-defaults.json.
+        Path to mlip-rss-defaults.json.
     device: str
         Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
     ref_energy_name : str, optional
@@ -731,7 +734,7 @@ def m3gnet_fitting(
         Reference virial name.
     fit_kwargs: dict.
         optional dictionary with parameters for m3gnet fitting with keys same as
-        mlip-defaults.json.
+        mlip-rss-defaults.json.
 
     Keyword Arguments
     -----------------
@@ -1074,7 +1077,7 @@ def m3gnet_fitting(
 
 def mace_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_DEFAULTS_FILE_PATH,
+    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -1093,7 +1096,7 @@ def mace_fitting(
     db_dir: Path
         directory containing the training and testing data files.
     path_to_default_hyperparameters : str or Path.
-        Path to mlip-defaults.json.
+        Path to mlip-rss-defaults.json.
     device: str
         specify device to use cuda or cpu.
     ref_energy_name : str, optional
@@ -1104,7 +1107,7 @@ def mace_fitting(
         Reference virial name.
     fit_kwargs: dict.
         optional dictionary with parameters for mace fitting with keys same as
-        mlip-defaults.json.
+        mlip-rss-defaults.json.
 
     Keyword Arguments
     -----------------
@@ -1236,8 +1239,8 @@ def load_mlip_hyperparameter_defaults(mlip_fit_parameter_file_path: str | Path) 
 
     Parameters
     ----------
-    gap_fit_parameter_file_path : str or Path.
-        Path to gap-defaults.json.
+    mlip_fit_parameter_file_path : str or Path.
+        Path to MLIP default parameter JSON files.
 
     Returns
     -------
@@ -1600,7 +1603,7 @@ def calculate_delta(atoms_db: list[Atoms], e_name: str) -> tuple[float, ndarray]
     atoms_db: list[Atoms]
         list of Ase atoms objects
     e_name: str
-        energy_parameter_name as defined in gap-defaults.json
+        energy_parameter_name as defined in mlip-phonon-defaults.json
 
     Returns
     -------
@@ -1675,9 +1678,10 @@ def run_ace(num_processes_fit: int, script_name: str) -> None:
     """
     os.environ["JULIA_NUM_THREADS"] = str(num_processes_fit)
 
-    with open("julia-ace_out.log", "w", encoding="utf-8") as file_out, open(
-        "julia-ace_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open("julia-ace_out.log", "w", encoding="utf-8") as file_out,
+        open("julia-ace_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(["julia", script_name], stdout=file_out, stderr=file_err)
 
 
@@ -1694,10 +1698,15 @@ def run_gap(num_processes_fit: int, parameters) -> None:
 
     """
     os.environ["OMP_NUM_THREADS"] = str(num_processes_fit)
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"  # blas library
+    os.environ["BLIS_NUM_THREADS"] = "1"  # blas library
+    os.environ["MKL_NUM_THREADS"] = "1"  # blas library
+    os.environ["NETLIB_NUM_THREADS"] = "1"  # blas library
 
-    with open("std_gap_out.log", "w", encoding="utf-8") as file_std, open(
-        "std_gap_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open("std_gap_out.log", "w", encoding="utf-8") as file_std,
+        open("std_gap_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(["gap_fit", *parameters], stdout=file_std, stderr=file_err)
 
 
@@ -1720,15 +1729,20 @@ def run_quip(
 
     """
     os.environ["OMP_NUM_THREADS"] = str(num_processes_fit)
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"  # blas library
+    os.environ["BLIS_NUM_THREADS"] = "1"  # blas library
+    os.environ["MKL_NUM_THREADS"] = "1"  # blas library
+    os.environ["NETLIB_NUM_THREADS"] = "1"  # blas library
 
     init_args = "init_args='IP Glue'" if glue_xml else ""
     quip = (
         f"quip {init_args} E=T F=T atoms_filename={data_path} param_filename={xml_file}"
     )
     command = f"{quip} | grep AT | sed 's/AT//' > {filename}"
-    with open("std_quip_out.log", "w", encoding="utf-8") as file_std, open(
-        "std_quip_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open("std_quip_out.log", "w", encoding="utf-8") as file_std,
+        open("std_quip_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(command, stdout=file_std, stderr=file_err, shell=True)
 
 
@@ -1744,9 +1758,10 @@ def run_nequip(command: str, log_prefix: str) -> None:
         Prefix for log file names, used to differentiate between different commands' logs.
 
     """
-    with open(f"{log_prefix}_out.log", "w", encoding="utf-8") as file_out, open(
-        f"{log_prefix}_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open(f"{log_prefix}_out.log", "w", encoding="utf-8") as file_out,
+        open(f"{log_prefix}_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(command.split(), stdout=file_out, stderr=file_err)
 
 
@@ -1760,9 +1775,10 @@ def run_mace(hypers: list) -> None:
         containing all hyperparameters required for the MACE model training.
 
     """
-    with open("mace_train_out.log", "w", encoding="utf-8") as file_std, open(
-        "mace_train_err.log", "w", encoding="utf-8"
-    ) as file_err:
+    with (
+        open("mace_train_out.log", "w", encoding="utf-8") as file_std,
+        open("mace_train_err.log", "w", encoding="utf-8") as file_err,
+    ):
         subprocess.call(["mace_run_train", *hypers], stdout=file_std, stderr=file_err)
 
 
@@ -1894,6 +1910,8 @@ def write_after_distillation_data_split(
         name of the training data file.
     test_name:
         name of the test data file.
+    force_label: str
+        label of the force entries.
     """
     # reject structures with large force components
     atoms = (

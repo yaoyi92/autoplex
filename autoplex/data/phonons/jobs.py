@@ -1,20 +1,19 @@
 """Jobs to create training data for ML potentials."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
-from jobflow import Response, job
-from pymatgen.transformations.advanced_transformations import (
-    CubicSupercellTransformation,
-)
+from jobflow import job
 
 if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
 
+from autoplex.data.phonons.utils import reduce_supercell_size
+
 
 @job
-def reduce_supercell_size(
+def reduce_supercell_size_job(
     structure: Structure,
     min_length: float = 18,
     max_length: float = 22,
@@ -48,58 +47,14 @@ def reduce_supercell_size(
 
     Returns
     -------
-    list
-        supercell matrix.
+    reduced_supercell_size call.
     """
-    for minimum in range(int(min_length), int(fallback_min_length), -1):
-        try:
-            transformation = CubicSupercellTransformation(
-                min_length=minimum,
-                max_length=max_length,
-                min_atoms=min_atoms,
-                max_atoms=max_atoms,
-                step_size=step_size,
-                allow_orthorhombic=True,
-                force_90_degrees=True,
-            )
-            new_structure = transformation.apply_transformation(structure=structure)
-            if min_atoms <= new_structure.num_sites <= max_atoms:
-                return transformation.transformation_matrix.transpose().tolist()
-        except AttributeError:
-            try:
-                transformation = CubicSupercellTransformation(
-                    min_length=minimum,
-                    max_length=max_length,
-                    min_atoms=min_atoms,
-                    max_atoms=max_atoms,
-                    step_size=step_size,
-                    allow_orthorhombic=True,
-                    force_90_degrees=False,
-                )
-                new_structure = transformation.apply_transformation(structure=structure)
-                if min_atoms <= new_structure.num_sites <= max_atoms:
-                    return transformation.transformation_matrix.transpose().tolist()
-            except AttributeError:
-                try:
-                    transformation = CubicSupercellTransformation(
-                        min_length=minimum,
-                        max_length=max_length,
-                        min_atoms=min_atoms,
-                        max_atoms=max_atoms,
-                        step_size=step_size,
-                    )
-                    new_structure = transformation.apply_transformation(
-                        structure=structure
-                    )
-                    if min_atoms <= new_structure.num_sites <= max_atoms:
-                        return transformation.transformation_matrix.transpose().tolist()
-                except AttributeError:
-                    pass
-
-    a, b, c = structure.lattice.abc
-    a_factor = np.max((np.floor(max_length / a), 1))
-    b_factor = np.max((np.floor(max_length / b), 1))
-    c_factor = np.max((np.floor(max_length / c), 1))
-
-    matrix = np.array([[a_factor, 0, 0], [0, b_factor, 0], [0, 0, c_factor]])
-    return Response(output=matrix.transpose().tolist())
+    return reduce_supercell_size(
+        structure=structure,
+        min_length=min_length,
+        max_length=max_length,
+        fallback_min_length=fallback_min_length,
+        min_atoms=min_atoms,
+        max_atoms=max_atoms,
+        step_size=step_size,
+    )

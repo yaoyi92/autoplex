@@ -122,7 +122,7 @@ def set_sigma(
     for at in atoms:
         try:
             # skip non-periodic configs, volume is meaningless
-            if "gap_rss_nonperiodic" in at.info and at.info["gap_rss_nonperiodic"]:
+            if at.info.get("gap_rss_nonperiodic"):
                 continue
             points[at.info.get("gap_rss_group")].append(at)
         except Exception:
@@ -209,13 +209,8 @@ def set_sigma(
                 )
             )
         print(
-            "{:>20s}{:>20.4f}{:>20.4f}{:>20d}{:>20d}".format(
-                label,
-                data.mean(),
-                data.std(),
-                (data == data.min()).sum(),
-                (data == data.max()).sum(),
-            )
+            f"{label:>20s}{data.mean():>20.4f}{data.std():>20.4f}"
+            f"{(data == data.min()).sum():>20d}{(data == data.max()).sum():>20d}"
         )
 
     return atoms_modi
