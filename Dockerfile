@@ -67,6 +67,3 @@ COPY . /workspace
 
 # Install autoplex
 RUN uv pip install .[strict,docs]
-
-# Set the default command to bash
-CMD ["bash"]
