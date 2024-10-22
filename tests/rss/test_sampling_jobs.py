@@ -5,7 +5,7 @@ from pymatgen.io.ase import AseAtomsAdaptor
 from autoplex.data.common.jobs import sampling
 from jobflow import run_locally
 from ase.io import read
-from autoplex.data.common.utils import cur_select, boltzhist_CUR, ElementCollection
+from autoplex.data.common.utils import cur_select, boltzhist_cur, ElementCollection
 
 def test_sampling_cur(test_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
