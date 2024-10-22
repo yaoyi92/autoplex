@@ -137,6 +137,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         settings for supercell generation
     benchmark_kwargs: dict
         kwargs for the benchmark flows
+    summary_filename_prefix: str
+        Prefix of the result summary file.
     """
 
     name: str = "add_data"
@@ -171,6 +173,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     supercell_settings: dict = field(default_factory=lambda: {"min_length": 15})
     benchmark_kwargs: dict = field(default_factory=dict)
     path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH
+    summary_filename_prefix: str = "results_"
 
     def make(
         self,
@@ -429,6 +432,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         collect_bm = write_benchmark_metrics(
             benchmark_structures=benchmark_structures,
             metrics=bm_outputs,
+            filename_prefix=self.summary_filename_prefix,
         )
         flows.append(collect_bm)
 

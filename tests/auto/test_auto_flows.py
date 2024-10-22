@@ -784,8 +784,8 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     complete_workflow_sigma = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2,
                                                                supercell_settings={"min_length": 8, "min_atoms": 20},
                                                                displacements=[0.01],
-                                                               volume_custom_scale_factors=[0.975, 1.0, 1.025,
-                                                                                            1.05], ).make(
+                                                               volume_custom_scale_factors=[0.975, 1.0, 1.025,1.05],
+                                                               summary_filename_prefix="test_results_",).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
@@ -819,8 +819,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     # check if soap_default_dict is correctly constructed from n_sparse and delta values in user fit parameter input
     expected_soap_dict = "{'f=0.1': {'delta': 3.0, 'n_sparse': 8000}}"
 
-    results_files = glob.glob('job*/results_LiCl.txt')
-
+    results_files = glob.glob('job*/test_results_LiCl.txt')
     for file_path in results_files:
         with open(file_path, 'r') as file:
             results_file = file.read().strip()

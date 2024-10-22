@@ -9,6 +9,7 @@ from jobflow import Response, job
 def write_benchmark_metrics(
     benchmark_structures: list,
     metrics: list,
+    filename_prefix: str = "results_",
 ):
     """
     Generate a text file with evaluated benchmark metrics.
@@ -19,6 +20,8 @@ def write_benchmark_metrics(
         list of benchmark Structure used for benchmarking.
     metrics: List[float]
         root mean squared error between band structures, imagmodesdft-bool and imagmodesml-bool.
+    filename_prefix: str
+        Prefix of the result summary file.
 
     Returns
     -------
@@ -30,7 +33,7 @@ def write_benchmark_metrics(
     # the following code assumes all benchmark structures have the same composition
     structure_composition = benchmark_structures[0].composition.reduced_formula
     with open(
-        f"results_{structure_composition}.txt",
+        f"{filename_prefix}{structure_composition}.txt",
         "a",
         encoding="utf-8",
     ) as file:
@@ -50,7 +53,7 @@ def write_benchmark_metrics(
 
     for metric in metrics_flattened:
         with open(
-            f"results_{structure_composition}.txt",
+            f"{filename_prefix}{structure_composition}.txt",
             "a",
             encoding="utf-8",
         ) as file:
@@ -73,10 +76,5 @@ def write_benchmark_metrics(
                 f"{soap_or_suffix!s:<55}{metric['ml_imaginary_modes']!s:<16}"
                 f"{metric['dft_imaginary_modes']!s:<5}"
             )
-
-        print(
-            f"TEST f={metric['atomwise_regularization_parameter']} ",
-            metric["soap_dict"],
-        )
 
     return Response(output=metrics)
