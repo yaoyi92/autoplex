@@ -76,7 +76,6 @@ autodoc_typehints = "description"
 napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_use_ivar = True
-napoleon_custom_sections = [('Tuneable Hyperparameters', 'Parameters')]
 
 # The suffix(es) of source filenames.
 source_suffix = {
