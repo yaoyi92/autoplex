@@ -31,7 +31,7 @@ for mpbm in mpbenchmark:
     benchmark_structure_list.append(bm_structure)
 
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow().make(
-    structure_list=structure_list, mp_ids=mpids, 
+    structure_list=structure_list, mp_ids=mpids, preprocessing_data=True,
     benchmark_structures=benchmark_structure_list, benchmark_mp_ids=mpbenchmark, 
     dft_references=[dft_reference])
 ```

@@ -1,4 +1,5 @@
 """General fitting jobs using several MLIPs available."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -15,7 +16,7 @@ from autoplex.fitting.common.utils import (
 )
 
 current_dir = Path(__file__).absolute().parent
-GAP_DEFAULTS_FILE_PATH = current_dir / "gap-defaults.json"
+GAP_DEFAULTS_FILE_PATH = current_dir / "mlip-phonon-defaults.json"
 
 
 @job

@@ -6,7 +6,7 @@ from autoplex.data.common.utils import (
     scale_cell,
     std_rattle
 )
-from autoplex.data.phonons.jobs import reduce_supercell_size
+from autoplex.data.phonons.jobs import reduce_supercell_size_job
 import numpy as np
 import pytest
 
@@ -354,7 +354,7 @@ def test_supercell_check(mp_1200830, memory_jobstore):
     from jobflow import run_locally
     expected_matrix = [[2.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]]
 
-    new_matrix_job = reduce_supercell_size(
+    new_matrix_job = reduce_supercell_size_job(
         min_length=18,
         max_length=25,
         min_atoms=50,

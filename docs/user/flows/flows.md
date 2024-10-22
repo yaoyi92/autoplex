@@ -12,7 +12,7 @@ This tutorial will demonstrate how to use `autoplex` with its default setup and 
 
 The complete workflow of `autoplex` involves the data generation 
 (including the execution of VASP calculations), 
-the fitting of the  machine-learned interatomic potential (MLIP) and the benchmark to the DFT results.
+the fitting of the machine-learned interatomic potential (MLIP) and the benchmark to the DFT results.
 
 ### Before running the workflow
 
@@ -42,19 +42,46 @@ check_supercells(structure_list, mpids, min_length=18, max_length=25, fallback_m
 `check_supercells` will list all structures that should likely be excluded. 
 However, please carefully check yourself as your local memory requirements might be different.
 Remove all structures which you cannot treat computationally 
-(e.g., structures with lattice parameters larger than 25 Angstrom or more than 500 atoms)
+(e.g., structures with lattice parameters larger than 25 Å or more than 500 atoms).
 
-## Now start the workflow
+Using the `MPRester` is a convenient way to draw structures from the Materials Project database using their MP-ID.
 
-Let us start by importing all the necessary modules:
+
+### Test DFT run times and memory requirements
+
+To get a rough estimate of DFT requirements for the supercells that you have chosen, you can use the `DFTSupercellSettingsMaker` 
+to test the DFT run times for an undisplaced supercell of a similar size to the ones we will use in the overall workflow. 
 
 ```python
 from jobflow.core.flow import Flow
 from mp_api.client import MPRester
-from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
+from autoplex.auto.phonons.flows import DFTSupercellSettingsMaker
+
+mpr = MPRester(api_key='YOUR_MP_API_KEY')
+structure_list = []
+benchmark_structure_list = []
+mpids = ["mp-22905"]  
+# you can put as many mpids as needed e.g. mpids = ["mp-22905", "mp-1185319"] for all LiCl entries in the Materials Project
+mpbenchmark = ["mp-22905"]
+for mpid in mpids:
+    structure = mpr.get_structure_by_material_id(mpid)
+    structure_list.append(structure)
+for mpbm in mpbenchmark:
+    bm_structure = mpr.get_structure_by_material_id(mpbm)
+    benchmark_structure_list.append(bm_structure)
+
+dft_supercell_check_flow = DFTSupercellSettingsMaker().make(
+    structure_list=structure_list, mp_ids=mpids)
+
+dft_supercell_check_flow.name = "tutorial"
+autoplex_flow = dft_supercell_check_flow
 ```
+
+This will allow you to check whether memory requirements on your supercomputers are enough and if you might need to switch to smaller systems.
+
+
+## Now start the workflow
 We will use [jobflow](https://github.com/materialsproject/jobflow) to control the execution of our jobs in form of flows and jobs.
-Using the `MPRester` is a convenient way to draw structures from the Materials Project database using their MP-ID.
 The only module we need to import from `autoplex` is the `CompleteDFTvsMLBenchmarkWorkflow`.
 
 
@@ -62,6 +89,10 @@ Next, we are going to construct the workflow based on the rocksalt-type LiCl ([*
 Remember to replace `YOUR_MP_API_KEY` with your personal [Materials Project API key](https://next-gen.materialsproject.org/api#api-key).
 
 ```python
+from jobflow.core.flow import Flow
+from mp_api.client import MPRester
+from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
+
 mpr = MPRester(api_key='YOUR_MP_API_KEY')
 structure_list = []
 benchmark_structure_list = []
@@ -76,10 +107,11 @@ for mpbm in mpbenchmark:
     benchmark_structure_list.append(bm_structure)
 
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow().make(
-    structure_list=structure_list, mp_ids=mpids, 
+    structure_list=structure_list, mp_ids=mpids, preprocessing_data=True,
     benchmark_structures=benchmark_structure_list, benchmark_mp_ids=mpbenchmark)
 
-autoplex_flow = Flow([complete_flow], name="tutorial", output=None, uuid=None, hosts=None)
+complete_flow.name = "tutorial"
+autoplex_flow = complete_flow
 ```
 The only default information we need to provide is which structures we want to calculate and use for the MLIP fitting 
 and which structures we want to benchmark to.
@@ -145,7 +177,7 @@ from jobflow.utils.graph import to_mermaid
 
 ...
 
-autoplex_flow = Flow(...)
+autoplex_flow = ...
 
 graph_source = to_mermaid(autoplex_flow, show_flow_boxes=True)
 print(graph_source)  # show mermaid graph
@@ -171,7 +203,7 @@ from jobflow.managers.fireworks import flow_to_workflow
 
 ...
 
-autoplex_flow = Flow(...)
+autoplex_flow = ...
 
 wf = flow_to_workflow(autoplex_flow)
 
@@ -186,7 +218,7 @@ from jobflow_remote import submit_flow, set_run_config
 
 ...
 
-autoplex_flow = Flow(...)
+autoplex_flow = ...
 
 # setting different job setups in the submission script directly:
 resources = {"nodes": N, "partition": "name", "time": "01:00:00", "ntasks": ntasks, "qverbatim": "#SBATCH --get-user-env",
@@ -205,7 +237,7 @@ resources_mlip = {"nodes": N, "partition": "name", "time": "02:00:00", "ntasks":
 
 autoplex_flow = set_run_config(autoplex_flow, name_filter="dft phonon static", resources=resources_phon)
 
-auto_flow = set_run_config(autoplex_flow, name_filter="dft rattle static", resources=resources_ratt)
+autoplex_flow = set_run_config(autoplex_flow, name_filter="dft rattle static", resources=resources_ratt)
 
 autoplex_flow = set_run_config(autoplex_flow, name_filter="machine_learning_fit", resources=resources_mlip)
 

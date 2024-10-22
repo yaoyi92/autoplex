@@ -27,7 +27,7 @@ __all__ = [
 @dataclass
 class MLIPFitMaker(Maker):
     """
-    Maker to fit ML potentials based on DFT labelled reference data.
+    Maker to fit ML potentials based on DFT labeled reference data.
 
     This Maker will filter the provided dataset in a data preprocessing step and then proceed
     with the MLIP fit (default is GAP).
@@ -71,7 +71,7 @@ class MLIPFitMaker(Maker):
         separated: bool = False,
         pre_xyz_files: list[str] | None = None,
         pre_database_dir: str | None = None,
-        atomwise_regularization_param: float = 0.1,  # This is only used for GAP.
+        atomwise_regularization_parameter: float = 0.1,  # This is only used for GAP.
         f_min: float = 0.01,  # unit: eV Å-1
         atom_wise_regularization: bool = True,  # This is only used for GAP.
         auto_delta: bool = False,  # This is only used for GAP.
@@ -108,7 +108,7 @@ class MLIPFitMaker(Maker):
             names of the pre-database train xyz file and test xyz file.
         pre_database_dir:
             the pre-database directory.
-        atomwise_regularization_param: float
+        atomwise_regularization_parameter: float
             regularization value for the atom-wise force components.
         f_min: float
             minimal force cutoff value for atom-wise regularization.
@@ -127,7 +127,7 @@ class MLIPFitMaker(Maker):
             the database directory.
         device: str
             specify device to use cuda or cpu.
-        fit_kwargs : dict.
+        fit_kwargs : dict
             dict including MLIP fit keyword args.
         """
         if database_dir is None:
@@ -152,7 +152,7 @@ class MLIPFitMaker(Maker):
                 pre_xyz_files=pre_xyz_files,
                 pre_database_dir=pre_database_dir,
                 f_min=f_min,
-                atomwise_regularization_parameter=atomwise_regularization_param,
+                atomwise_regularization_parameter=atomwise_regularization_parameter,
                 atom_wise_regularization=atom_wise_regularization,
             )
             jobs.append(data_prep_job)
@@ -307,9 +307,10 @@ class DataPreprocessing(Maker):
             if len(pre_xyz_files) == 2:
                 files_new = ["train.extxyz", "test.extxyz"]
                 for file_name, file_new in zip(pre_xyz_files, files_new):
-                    with open(
-                        os.path.join(pre_database_dir, file_name)
-                    ) as pre_xyz_file, open(file_new, "a") as xyz_file:
+                    with (
+                        open(os.path.join(pre_database_dir, file_name)) as pre_xyz_file,
+                        open(file_new, "a") as xyz_file,
+                    ):
                         xyz_file.write(pre_xyz_file.read())
                     print(f"File {file_name} has been copied to {file_new}")
 
