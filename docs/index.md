@@ -24,7 +24,6 @@ dev/contributing
 :hidden:
 about/changelog
 about/contributors
-about/contributing
 about/license
 ```
 
