@@ -213,6 +213,61 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
 )
 ```
 
+## Example script for `autoplex` workflow using GAP to fit and benchmark a Si database
+
+The following code snippet will demonstrate, how you can submit an `autoplex` workflow for an automated SOAP-only GAP fit 
+and DFT benchmark for a Si allotrope database. The GAP fit parameters are taken from [J. Chem. Phys. 153, 044104 (2020)](https://pubs.aip.org/aip/jcp/article/153/4/044104/1056348/Combining-phonon-accuracy-with-high).
+In this example we will also use `hyper_para_loop=True` to loop through a set of given GAP fit convergence parameter 
+and hyperparameters set as provided by the lists `atomwise_regularization_list`, `soap_delta_list` and `n_sparse_list`.
+In this example script, we are using `jobflow_remote` to submit the jobs to a remote cluster.
+
+```python
+from jobflow_remote import submit_flow
+from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow
+from mp_api.client import MPRester
+
+mpr = MPRester(api_key='YOUR_MP_API_KEY')
+struc_list = []
+benchmark_structure_list = []
+mpids = ["mp-149"]  # add all the Si structure mpids you are interested in
+mpbenchmark = ["mp-149"]  # add all the Si structure mpids you are interested in
+for mpid in mpids:
+    struc = mpr.get_structure_by_material_id(mpid)
+    struc_list.append(struc)
+for mpbm in mpbenchmark:
+    bm_struc = mpr.get_structure_by_material_id(mpbm)
+    benchmark_structure_list.append(bm_struc)
+
+autoplex_flow = CompleteDFTvsMLBenchmarkWorkflow(
+    n_structures=50, symprec=0.1,
+    volume_scale_factor_range=[0.95, 1.05], rattle_type=0, distort_type=0,
+    hyper_para_loop=True, atomwise_regularization_list=[0.1, 0.01],
+    soap_delta_list=[0.5], n_sparse_list=[7000, 8000, 9000]).make(
+    structure_list=struc_list, mp_ids=mpids, benchmark_structures=benchmark_structure_list,
+    benchmark_mp_ids=mpbenchmark, preprocessing_data=True,
+    **{
+        "split_ratio": 0.33,
+        "regularization": False,
+        "separated": True,
+        "num_processes_fit": 48,
+        "GAP": {"soap": {"delta": 1.0, "l_max": 12, "n_max": 10,
+                         "atom_sigma": 0.5, "zeta": 4, "cutoff": 5.0,
+                         "cutoff_transition_width": 1.0,
+                         "central_weight": 1.0, "n_sparse": 9000, "f0": 0.0,
+                         "covariance_type": "dot_product",
+                         "sparse_method": "cur_points"},
+                "general": {"two_body": False, "three_body": False, "soap": True,
+                            "default_sigma": "{0.001 0.05 0.05 0.0}", "sparse_jitter": 1.0e-8, }}},
+)
+
+autoplex_flow.name = "autoplex_wf"
+
+resources = {...}
+
+print(submit_flow(autoplex_flow, worker="autoplex_worker", resources=resources, project="autoplex"))
+```
+
+
 ## Running a MLIP fit only
 
 The following script shows an example of how you can run a sole GAP fit with `autoplex` using `run_locally` from 
