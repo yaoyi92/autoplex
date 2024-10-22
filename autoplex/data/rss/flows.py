@@ -117,8 +117,8 @@ def initial_rss(
     fit_kwargs : dict, optional
         Additional arguments for the machine learning fit. Default is None.
 
-    Output
-    ------
+    Returns
+    -------
     - test_error: float
         The test error of the fitted MLIP.
     - pre_database_dir: str
