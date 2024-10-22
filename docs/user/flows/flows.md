@@ -12,7 +12,7 @@ This tutorial will demonstrate how to use `autoplex` with its default setup and 
 
 The complete workflow of `autoplex` involves the data generation 
 (including the execution of VASP calculations), 
-the fitting of the  machine-learned interatomic potential (MLIP) and the benchmark to the DFT results.
+the fitting of the machine-learned interatomic potential (MLIP) and the benchmark to the DFT results.
 
 ### Before running the workflow
 
@@ -42,7 +42,7 @@ check_supercells(structure_list, mpids, min_length=18, max_length=25, fallback_m
 `check_supercells` will list all structures that should likely be excluded. 
 However, please carefully check yourself as your local memory requirements might be different.
 Remove all structures which you cannot treat computationally 
-(e.g., structures with lattice parameters larger than 25 Angstrom or more than 500 atoms)
+(e.g., structures with lattice parameters larger than 25 Å or more than 500 atoms).
 
 ## Now start the workflow
 
