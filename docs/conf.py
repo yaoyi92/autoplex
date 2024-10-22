@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 project = "autoplex"
 copyright = "2024, autoplex development team"  # noqa: A001
-author = "Christina Ertural"
+author = "Christina Ertural, Janine George, Aakash A. Naik (alphabetical order)"
 
 # The short X.Y version
 version = __version__
