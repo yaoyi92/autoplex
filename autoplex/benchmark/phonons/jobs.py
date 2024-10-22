@@ -74,4 +74,9 @@ def write_benchmark_metrics(
                 f"{metric['dft_imaginary_modes']!s:<5}"
             )
 
+        print(
+            f"TEST f={metric['atomwise_regularization_parameter']} ",
+            metric["soap_dict"],
+        )
+
     return Response(output=metrics)
