@@ -68,6 +68,7 @@ def gap_fitting(
     ref_virial_name: str = "REF_virial",
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
+    glue_file_path: str = "glue.xml",
     fit_kwargs: dict | None = None,  # pylint: disable=E3701
 ) -> dict:
     """
@@ -97,6 +98,8 @@ def gap_fitting(
         Name of the training dataset file.
     test_name: str
         Name of the test dataset file.
+    glue_file_path: str
+        Name of the glue.xml file path.
     fit_kwargs: dict.
         optional dictionary with parameters for gap fitting with keys same as
         mlip-phonon-defaults.json.
@@ -110,7 +113,7 @@ def gap_fitting(
     # keep additional pre- and suffixes
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     mlip_path: Path = prepare_fit_environment(
-        db_dir, Path.cwd(), glue_xml, train_name, test_name
+        db_dir, Path.cwd(), glue_xml, train_name, test_name, glue_file_path
     )
 
     db_atoms = ase.io.read(os.path.join(db_dir, train_name), index=":")
@@ -1788,22 +1791,25 @@ def prepare_fit_environment(
     glue_xml: bool,
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
+    glue_name: str = "glue.xml",
 ) -> Path:
     """
     Prepare the environment for the fit.
 
     Parameters
     ----------
-    database_dir:
+    database_dir: Path
         Path to database directory.
-    mlip_path:
+    mlip_path: Path
         Path to the MLIP fit run (cwd).
     glue_xml: bool
             use the glue.xml core potential instead of fitting 2b terms.
-    train_name:
+    train_name: str
         name of the training data file.
-    test_name:
+    test_name: str
         name of the test data file.
+    glue_name: str
+        name of the glue.xml file or path.
 
     Returns
     -------
@@ -1819,7 +1825,7 @@ def prepare_fit_environment(
     )
     if glue_xml:
         shutil.copy(
-            os.path.join(database_dir, "../glue.xml"),  # very improvised on purpose
+            os.path.join(database_dir, glue_name),
             os.path.join(mlip_path, "glue.xml"),
         )
 

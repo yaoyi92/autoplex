@@ -72,6 +72,62 @@ def fit_input_dict(vasp_test_dir):
     }
 
 
+@pytest.fixture(scope="class")
+def fit_input_dict_glue_xml(vasp_test_dir):
+    return {
+        "mp-149": {
+            "rand_struc_dir": [
+                [
+                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_1")
+                    .absolute()
+                    .as_posix(),
+                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_2")
+                    .absolute()
+                    .as_posix(),
+                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_3")
+                    .absolute()
+                    .as_posix(),
+                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_4")
+                    .absolute()
+                    .as_posix(),
+                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_5")
+                    .absolute()
+                    .as_posix(),
+                ]
+            ],
+            "phonon_dir": [
+                [
+                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_1")
+                    .absolute()
+                    .as_posix(),
+                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_2")
+                    .absolute()
+                    .as_posix(),
+                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_3")
+                    .absolute()
+                    .as_posix(),
+                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_4")
+                    .absolute()
+                    .as_posix(),
+                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_5")
+                    .absolute()
+                    .as_posix(),
+                ]
+            ],
+            "phonon_data": [],
+        },
+        "IsolatedAtom": {
+            "iso_atoms_dir": [
+                [
+                    (vasp_test_dir / "Si_glue_xml_fit" / "iso_atom")
+                    .absolute()
+                    .as_posix(),
+                ]
+            ]
+        },
+    }
+
+
 def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit_input_dict):
     from pathlib import Path
     from jobflow import run_locally
@@ -96,7 +152,6 @@ def test_mlip_fit_maker_with_kwargs(
 ):
     from pathlib import Path
     from jobflow import run_locally
-
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
     gapfit = MLIPFitMaker().make(
@@ -150,7 +205,6 @@ def test_mlip_fit_maker_jace(
     from pathlib import Path
     from jobflow import run_locally
 
-
     test_files_dir = Path(test_dir / "fitting").resolve()
 
     # Test julia-ACE fit runs with pre_database_dir
@@ -177,14 +231,12 @@ def test_mlip_fit_maker_jace(
     assert Path(jacefit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
 
-
 def test_mlip_fit_maker_nequip(
         test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     from pathlib import Path
     from jobflow import run_locally
 
-    
     test_files_dir = Path(test_dir / "fitting").resolve()
 
     # Test NEQUIP fit runs with pre_database_dir
@@ -206,10 +258,8 @@ def test_mlip_fit_maker_nequip(
         nequipfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-
     # check if NEQUIP potential file is generated
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
-
 
 
 def test_mlip_fit_maker_m3gnet(
@@ -217,7 +267,6 @@ def test_mlip_fit_maker_m3gnet(
 ):
     from pathlib import Path
     from jobflow import run_locally
-
 
     test_files_dir = Path(test_dir / "fitting").resolve()
 
@@ -258,7 +307,6 @@ def test_mlip_fit_maker_mace(
     from pathlib import Path
     from jobflow import run_locally
 
-
     test_files_dir = Path(test_dir / "fitting").resolve()
 
     # Test if MACE fit runs with pre_database_dir
@@ -288,83 +336,25 @@ def test_mlip_fit_maker_mace(
         macefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-
     # check if MACE potential file is generated
     assert Path(macefit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
 
-
 def test_mlip_fit_maker_glue_xml(
-        test_dir, memory_jobstore, vasp_test_dir, clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict_glue_xml, clean_dir
 ):
-    import os
-    import shutil
     from pathlib import Path
     from jobflow import run_locally
 
-    parent_dir = os.getcwd()
-    os.chdir(test_dir / "fitting")
-
-    fit_input_dict = {
-        "mp-149": {
-            "rand_struc_dir": [
-                [
-                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_1")
-                    .absolute()
-                    .as_posix(),
-                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_2")
-                    .absolute()
-                    .as_posix(),
-                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_3")
-                    .absolute()
-                    .as_posix(),
-                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_4")
-                    .absolute()
-                    .as_posix(),
-                    (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_5")
-                    .absolute()
-                    .as_posix(),
-                ]
-            ],
-            "phonon_dir": [
-                [
-                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_1")
-                    .absolute()
-                    .as_posix(),
-                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_2")
-                    .absolute()
-                    .as_posix(),
-                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_3")
-                    .absolute()
-                    .as_posix(),
-                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_4")
-                    .absolute()
-                    .as_posix(),
-                    (vasp_test_dir / "Si_glue_xml_fit" / "phonon_supercell_5")
-                    .absolute()
-                    .as_posix(),
-                ]
-            ],
-            "phonon_data": [],
-        },
-        "IsolatedAtom": {
-            "iso_atoms_dir": [
-                [
-                    (vasp_test_dir / "Si_glue_xml_fit" / "iso_atom")
-                    .absolute()
-                    .as_posix(),
-                ]
-            ]
-        },
-    }
+    glue_file = test_dir / "fitting" / "glue.xml"
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
     gapfit = MLIPFitMaker(
         mlip_type="GAP",
+        glue_file_path=glue_file
     ).make(
         species_list=["Si"],
-        isolated_atoms_energy=[-0.82067307],
-        fit_input=fit_input_dict,
+        fit_input=fit_input_dict_glue_xml,
         auto_delta=False,
         glue_xml=True,
         general={"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"},
@@ -375,17 +365,37 @@ def test_mlip_fit_maker_glue_xml(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    test_files_dir = Path(test_dir / "fitting").resolve()
-    path_to_job_files = list(test_files_dir.glob("job*"))
-
     # check if gap fit file is generated
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
-    for job_dir in path_to_job_files:
-        shutil.rmtree(job_dir)
 
-    os.chdir(parent_dir)
+def test_mlip_fit_maker_glue_xml_with_other_name(
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict_glue_xml, clean_dir
+):
+    from pathlib import Path
+    from jobflow import run_locally
 
+    glue_file = test_dir / "fitting" / "test_glue.xml"
+
+    # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
+    gapfit = MLIPFitMaker(
+        mlip_type="GAP",
+        glue_file_path=glue_file
+    ).make(
+        species_list=["Si"],
+        fit_input=fit_input_dict_glue_xml,
+        auto_delta=False,
+        glue_xml=True,
+        general={"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"},
+        preprocessing_data=True,
+    )
+
+    responses = run_locally(
+        gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
+    )
+
+    # check if gap fit file is generated
+    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_with_automated_separated_dataset(
@@ -393,7 +403,6 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
 ):
     from pathlib import Path
     from jobflow import run_locally
-
 
     test_files_dir = Path(test_dir / "fitting").resolve()
 
@@ -410,9 +419,7 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
 
     run_locally(gapfit, ensure_success=True, create_folders=True, store=memory_jobstore)
 
-
     # check if gap potential file is generated
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_phonon.extxyz").exists()
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_rand_struc.extxyz").exists()
-
