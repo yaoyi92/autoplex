@@ -17,16 +17,13 @@ After setting up `atomate2`, make sure to add `VASP_INCAR_UPDATES: {"NPAR": numb
 Set a number that is a divisor of the number of tasks you use for the VASP calculations.
 
 # Installation
-`autoplex` relies on the `atomate2` and `ase` frameworks.
 
-Developers installation: Navigate to `autoplex` and install it by `pip install -e .[docs,strict,dev]`.
+### Python version
+Before the installation, please make sure that you are using one of the supported Python versions (see [pyproject.toml](https://github.com/autoatml/autoplex/blob/main/pyproject.toml))
 
-Alternatively, the dependencies `atomate2` and `ase` can be installed individually via
-```bash
-pip install atomate2[strict]
+### Standard installation
 
-pip install ase@git+https://gitlab.com/ase/ase.git@aae51d57721847624cea569f3a2d4bb6aa5032b4
-```
+Install using ``pip install autoplex``. This will install all the necessary python packages and dependencies needed for MLIP fits.
 
 Additionally, to be able to fit and validate `ACEpotentials`, one also needs to install julia as autoplex relies on [ACEpotentials](https://acesuit.github.io/ACEpotentials.jl/dev/gettingstarted/installation/) which support fitting of linear ACE and currently no python package exists for the same.
 Please run following commands to enable `ACEpotentials` fitting and functionality.
@@ -41,7 +38,9 @@ Once installed, in the terminal run following commands to get Julia ACEpotential
 
 ```bash
 julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add(Pkg.PackageSpec(;name="ACEpotentials", version="0.6.7")); Pkg.add("DataFrames"); Pkg.add("CSV")'
-````
+```
+
+### Enabling RSS workflows
 
 Additionally, `buildcell` as a part of `AIRSS` needs to be installed, if one wants to use the RSS functionality:
 
@@ -49,9 +48,9 @@ Additionally, `buildcell` as a part of `AIRSS` needs to be installed, if one wan
 curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz; tar -xf airss-0.9.3.tgz; rm airss-0.9.3.tgz; cd airss; make ; make install ; make neat; cd ..
 ```
 
-# Contributing guidelines
+### Contributing guidelines / Developers installation
 
-Please follow the [contributing guidelines](https://autoatml.github.io/autoplex/dev/contributing.html)!
+A short guide to contributing to autoplex can be found [here](https://autoatml.github.io/autoplex/dev/contributing.html). Additional information for developers can be found [here](https://autoatml.github.io/autoplex/dev/dev_install.html).
 
 # Workflow overview
 
