@@ -391,18 +391,21 @@ class RandomStructuresDataGenerator(Maker):
         jobs.append(relaxed)
         structure = relaxed.output.structure
 
-        supercell_matrix_job = reduce_supercell_size_job(
-            structure=structure,
-            min_length=self.supercell_settings.get("min_length", 12),
-            max_length=self.supercell_settings.get("max_length", 25),
-            fallback_min_length=self.supercell_settings.get("fallback_min_length", 10),
-            max_atoms=self.supercell_settings.get("max_atoms", 500),
-            min_atoms=self.supercell_settings.get("min_atoms", 50),
-            step_size=self.supercell_settings.get("step_size", 1.0),
-        )
-        jobs.append(supercell_matrix_job)
-
-        supercell_matrix = supercell_matrix_job.output
+        supercell_matrix = self.supercell_settings.get("supercell_matrix")
+        if not supercell_matrix:
+            supercell_matrix_job = reduce_supercell_size_job(
+                structure=structure,
+                min_length=self.supercell_settings.get("min_length", 12),
+                max_length=self.supercell_settings.get("max_length", 25),
+                fallback_min_length=self.supercell_settings.get(
+                    "fallback_min_length", 10
+                ),
+                max_atoms=self.supercell_settings.get("max_atoms", 500),
+                min_atoms=self.supercell_settings.get("min_atoms", 50),
+                step_size=self.supercell_settings.get("step_size", 1.0),
+            )
+            jobs.append(supercell_matrix_job)
+            supercell_matrix = supercell_matrix_job.output
 
         random_rattle_sc = generate_randomized_structures(
             structure=structure,
