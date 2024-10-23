@@ -301,8 +301,6 @@ def test_mlip_fit_maker_glue_xml(
     from pathlib import Path
     from jobflow import run_locally
 
-    parent_dir = os.getcwd()
-    os.chdir(test_dir / "fitting")
     glue_file = test_dir / "fitting" / "glue.xml"
 
     fit_input_dict = {
@@ -380,12 +378,6 @@ def test_mlip_fit_maker_glue_xml(
 
     # check if gap fit file is generated
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
-
-    for job_dir in path_to_job_files:
-        shutil.rmtree(job_dir)
-
-    os.chdir(parent_dir)
-
 
 
 def test_mlip_fit_maker_with_automated_separated_dataset(
