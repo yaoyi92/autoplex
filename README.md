@@ -9,6 +9,11 @@
 
 `autoplex` is an evolving project and **contributions are very welcome**! To ensure that the code remains of high quality, please raise a pull request for any contributions, which will be reviewed before integration into the main branch of the code. In the beginning, Janine will take care of the reviews.
 
+# Documentation
+
+You can find the `autoplex` documentation [here](https://autoatml.github.io/autoplex/index.html)!
+The documentation also contains tutorials that teach you how to use `autoplex` for different use cases.
+
 # Setup
 
 In order to setup the mandatory prerequisites to be able to use `autoplex`, please follow the [installation guide of atomate2](https://materialsproject.github.io/atomate2/user/install.html).
