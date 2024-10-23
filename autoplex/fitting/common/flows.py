@@ -48,6 +48,8 @@ class MLIPFitMaker(Maker):
         Reference force name.
     ref_virial_name : str, optional
         Reference virial name.
+    glue_name: str
+        Name of the glue.xml file (path).
     """
 
     name: str = "MLpotentialFit"
@@ -56,6 +58,7 @@ class MLIPFitMaker(Maker):
     ref_energy_name: str = "REF_energy"
     ref_force_name: str = "REF_forces"
     ref_virial_name: str = "REF_virial"
+    glue_name: str = "glue.xml"
 
     # TO DO: Combine parameters used only for gap into one category (as noted below),
     # otherwise it will be too specific.
@@ -163,6 +166,7 @@ class MLIPFitMaker(Maker):
                 num_processes_fit=num_processes_fit,
                 auto_delta=auto_delta,
                 glue_xml=glue_xml,
+                glue_name=self.glue_name,
                 mlip_type=self.mlip_type,
                 hyper_param_optimization=self.hyper_param_optimization,
                 ref_energy_name=self.ref_energy_name,
@@ -182,6 +186,7 @@ class MLIPFitMaker(Maker):
             num_processes_fit=num_processes_fit,
             auto_delta=auto_delta,
             glue_xml=glue_xml,
+            glue_name=self.glue_name,
             mlip_type=self.mlip_type,
             hyper_param_optimization=self.hyper_param_optimization,
             ref_energy_name=self.ref_energy_name,
