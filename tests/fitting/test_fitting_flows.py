@@ -365,9 +365,6 @@ def test_mlip_fit_maker_glue_xml(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    test_files_dir = Path(test_dir / "fitting").resolve()
-    path_to_job_files = list(test_files_dir.glob("job*"))
-
     # check if gap fit file is generated
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
