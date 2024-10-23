@@ -15,8 +15,8 @@ reference/index
 ```{toctree}
 :caption: Contributing Guide
 :hidden:
-dev/dev_install
 dev/contributing
+dev/dev_install
 ```
 
 ```{toctree}
