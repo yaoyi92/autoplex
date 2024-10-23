@@ -27,7 +27,7 @@ def machine_learning_fit(
     num_processes_fit: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
-    glue_name: str = "glue.xml",
+    glue_file_path: str = "glue.xml",
     mlip_type: str | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -51,8 +51,8 @@ def machine_learning_fit(
         automatically determine delta for 2b, 3b and SOAP terms.
     glue_xml: bool
         use the glue.xml core potential instead of fitting 2b terms.
-    glue_name: str
-        Name of the glue.xml file (path).
+    glue_file_path: str
+        Name of the glue.xml file path.
     mlip_type: str
         Choose one specific MLIP type:
         'GAP' | 'J-ACE' | 'P-ACE' | 'NEQUIP' | 'M3GNET' | 'MACE'
@@ -103,7 +103,7 @@ def machine_learning_fit(
                     ref_virial_name=ref_virial_name,
                     train_name=train_name,
                     test_name=test_name,
-                    glue_name=glue_name,
+                    glue_file_path=glue_file_path,
                     fit_kwargs=fit_kwargs,
                 )
 

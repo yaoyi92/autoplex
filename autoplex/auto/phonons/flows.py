@@ -139,8 +139,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         kwargs for the benchmark flows
     summary_filename_prefix: str
         Prefix of the result summary file.
-    glue_name: str
-        Name of the glue.xml file (path).
+    glue_file_path: str
+        Name of the glue.xml file path.
     """
 
     name: str = "add_data"
@@ -176,7 +176,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     benchmark_kwargs: dict = field(default_factory=dict)
     path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH
     summary_filename_prefix: str = "results_"
-    glue_name: str = "glue.xml"
+    glue_file_path: str = "glue.xml"
 
     def make(
         self,
@@ -312,7 +312,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         for ml_model in self.ml_models:
             add_data_fit = MLIPFitMaker(
                 mlip_type=ml_model,
-                glue_name=self.glue_name,
+                glue_file_path=self.glue_file_path,
             ).make(
                 species_list=isoatoms.output["species"],
                 isolated_atoms_energies=isoatoms.output["energies"],
@@ -386,7 +386,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             }
                             loop_data_fit = MLIPFitMaker(
                                 mlip_type=ml_model,
-                                glue_name=self.glue_name,
+                                glue_file_path=self.glue_file_path,
                             ).make(
                                 species_list=isoatoms.output["species"],
                                 isolated_atoms_energies=isoatoms.output["energies"],
