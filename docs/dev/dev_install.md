@@ -5,7 +5,7 @@ Install autoplex from source, by cloning the repository via [github](https://git
 ```bash
 git clone https://github.com/JaGeo/autoplex.git
 cd autoplex
-pip install -e .[docs,strict,dev]
+pip install -e .[strict,dev,tests,docs]
 ```
 This will install autoplex will all dependencies for tests, pre-commit and docs building. 
 However, note that non-python programs like `buildcell` and `julia` needed for ACE potential fitting will not be installed with above command. One needs to install these 
@@ -45,6 +45,14 @@ We rely on pytest-split to run tests in parallel on github workflow, thus it is 
 
 ```bash
 pytest --cov=autoplex --cov-append --splits 1 --group 1 --durations-path ./tests/test_data/.pytest-split-durations --store-durations
+```
+
+## Trouble shooting stuck tests
+
+Incase your test execution get stuck, try adding the prefix `OMP_NUM_THREADS=1` before pytest. Below is an example snippet
+
+```bash
+OMP_NUM_THREADS=1 pytest
 ```
 
 ## Building the documentation locally

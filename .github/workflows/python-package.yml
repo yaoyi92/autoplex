@@ -5,6 +5,8 @@ name: Testing Linux
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -30,7 +32,6 @@ jobs:
           bash -c "
           python -m pip install --upgrade pip && \
           python -m uv pip install .[strict,tests] && \
-          python -m uv pip install ase==3.23.0 && \
           OMP_NUM_THREADS=1 pytest --cache-clear --cov=autoplex --cov-report term-missing --cov-append --splits 5 --group ${{ matrix.split }} -vv --durations-path /workspace/tests/test_data/.pytest-split-durations
         "
     - name: Upload coverage

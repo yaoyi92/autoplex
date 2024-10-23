@@ -1,4 +1,4 @@
-# Guidelines for contributions to autoplex
+# Contributing to autoplex
 - Please write unit tests; this is a requirement for any added code to be accepted. (Automated testing will be performed using `pytest`; you can look into the `tests` folder for examples).
 - Please ensure high coverage of the code based on the tests (you can test this with `coverage`).
 - Please use numpy docstrings (use an IDE and switch on this docstring type; you can check examples in our code base; the docstring should be useful for other people)
