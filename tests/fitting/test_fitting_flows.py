@@ -369,6 +369,35 @@ def test_mlip_fit_maker_glue_xml(
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
 
+def test_mlip_fit_maker_glue_xml_with_other_name(
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict_glue_xml, clean_dir
+):
+    from pathlib import Path
+    from jobflow import run_locally
+
+    glue_file = test_dir / "fitting" / "test_glue.xml"
+
+    # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
+    gapfit = MLIPFitMaker(
+        mlip_type="GAP",
+        glue_file_path=glue_file
+    ).make(
+        species_list=["Si"],
+        fit_input=fit_input_dict_glue_xml,
+        auto_delta=False,
+        glue_xml=True,
+        general={"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"},
+        preprocessing_data=True,
+    )
+
+    responses = run_locally(
+        gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
+    )
+
+    # check if gap fit file is generated
+    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+
+
 def test_mlip_fit_maker_with_automated_separated_dataset(
         test_dir, memory_jobstore, vasp_test_dir, clean_dir, fit_input_dict
 ):
