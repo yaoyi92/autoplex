@@ -293,7 +293,6 @@ def test_mlip_fit_maker_mace(
     assert Path(macefit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
 
-
 def test_mlip_fit_maker_glue_xml(
         test_dir, memory_jobstore, vasp_test_dir, clean_dir
 ):
@@ -304,6 +303,7 @@ def test_mlip_fit_maker_glue_xml(
 
     parent_dir = os.getcwd()
     os.chdir(test_dir / "fitting")
+    glue_file = test_dir / "fitting" / "glue.xml"
 
     fit_input_dict = {
         "mp-149": {
@@ -361,9 +361,9 @@ def test_mlip_fit_maker_glue_xml(
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
     gapfit = MLIPFitMaker(
         mlip_type="GAP",
+        glue_file_path=glue_file
     ).make(
         species_list=["Si"],
-        isolated_atoms_energy=[-0.82067307],
         fit_input=fit_input_dict,
         auto_delta=False,
         glue_xml=True,
