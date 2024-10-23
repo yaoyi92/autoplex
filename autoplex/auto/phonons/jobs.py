@@ -327,7 +327,9 @@ def dft_phonopy_gen_data(
     jobs = []
     dft_phonons_output = {}
     dft_phonons_dir_output = []
-    supercell_matrix = reduce_supercell_size(structure, **supercell_settings)
+    supercell_matrix = supercell_settings.get("supercell_matrix")
+    if not supercell_matrix:
+        supercell_matrix = reduce_supercell_size(structure, **supercell_settings)
 
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
