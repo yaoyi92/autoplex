@@ -17,12 +17,11 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
 ]
-requires-python = ">=3.10,<=3.13"
+requires-python = ">=3.10,<=3.11"
 dependencies = [
      "pymatgen>=2024.9.17.1",
      "atomate2[strict]@git+https://github.com/materialsproject/atomate2.git@main",
