@@ -103,7 +103,7 @@ latex_elements = {
 language = "en"
 html_extra_path = ["images/badge.svg"]
 html_static_path = ["_static"]
-html_css_files = ["custom.css", "github.css"]
+html_css_files = ["custom.css"]
 suppress_warnings = "etoc.toctree"
 
 # autodoc options
