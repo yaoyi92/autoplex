@@ -103,7 +103,7 @@ latex_elements = {
 language = "en"
 html_extra_path = ["images/badge.svg"]
 html_static_path = ["_static"]
-html_css_files = ["custom.css", "github.css"]
+html_css_files = ["custom.css"]
 suppress_warnings = "etoc.toctree"
 
 # autodoc options
@@ -152,6 +152,7 @@ autodoc_pydantic_field_show_constraints = False
 #
 html_theme = "sphinx_book_theme"
 html_logo = "_static/autoplex_logo.png"
+html_favicon = "_static/autoplex_favicon.png"
 html_theme_options = {
     "repository_provider": "github",
     "repository_url": "https://github.com/JaGeo/autoplex",
@@ -159,10 +160,7 @@ html_theme_options = {
     "use_issues_button": True,
 }
 
-
 # html_static_path = ["_static"]
-
-html_css_files = ['custom.css']
 
 # hide sphinx footer
 html_show_sphinx = False
