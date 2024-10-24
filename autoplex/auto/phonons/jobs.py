@@ -339,6 +339,7 @@ def dft_phonopy_gen_data(
                 run_vasp_kwargs={"handlers": {}},
                 input_set_generator=TightRelaxSetGenerator(
                     user_incar_settings={
+                        "ALGO": "Normal",
                         "ISPIN": 1,
                         "LAECHG": False,
                         "ISMEAR": 0,
@@ -362,6 +363,7 @@ def dft_phonopy_gen_data(
             input_set_generator=StaticSetGenerator(
                 auto_ispin=False,
                 user_incar_settings={
+                    "ALGO": "Normal",
                     "ISPIN": 1,
                     "LAECHG": False,
                     "ISMEAR": 0,
@@ -490,6 +492,7 @@ def dft_random_gen_data(
             run_vasp_kwargs={"handlers": {}},
             input_set_generator=TightRelaxSetGenerator(
                 user_incar_settings={
+                    "ALGO": "Normal",
                     "ISPIN": 1,
                     "LAECHG": False,
                     "ISYM": 0,  # to be changed

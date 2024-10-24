@@ -85,6 +85,7 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
     input_set_generator: VaspInputGenerator = field(
         default_factory=lambda: StaticSetGenerator(
             user_incar_settings={
+                "ALGO": "Normal",  # not switching to Fast because it's not precise enough for the fit
                 "IBRION": -1,
                 "ISPIN": 1,
                 "ISMEAR": 0,
@@ -93,7 +94,6 @@ class TightDFTStaticMaker(PhononDisplacementMaker):
                 "EDIFF": 1e-7,
                 "LAECHG": False,
                 "LREAL": False,
-                "ALGO": "Normal",  # not switching to Fast because it's not precise enough for the fit
                 "NSW": 0,
                 "LCHARG": False,  # Do not write the CHGCAR file
                 "LWAVE": False,  # Do not write the WAVECAR file
@@ -216,6 +216,7 @@ class DFTPhononMaker(PhononMaker):
                 run_vasp_kwargs={"handlers": {}},
                 input_set_generator=TightRelaxSetGenerator(
                     user_incar_settings={
+                        "ALGO": "Normal",
                         "ISPIN": 1,
                         "LAECHG": False,
                         "ISMEAR": 0,
@@ -239,6 +240,7 @@ class DFTPhononMaker(PhononMaker):
             input_set_generator=StaticSetGenerator(
                 auto_ispin=False,
                 user_incar_settings={
+                    "ALGO": "Normal",
                     "ISPIN": 1,
                     "LAECHG": False,
                     "ISMEAR": 0,
@@ -329,6 +331,7 @@ class RandomStructuresDataGenerator(Maker):
             run_vasp_kwargs={"handlers": {}},
             input_set_generator=TightRelaxSetGenerator(
                 user_incar_settings={
+                    "ALGO": "Normal",
                     "ISPIN": 1,
                     "LAECHG": False,
                     "ISYM": 0,  # to be changed
@@ -757,6 +760,7 @@ class IsoAtomStaticMaker(StaticMaker):
         default_factory=lambda: StaticSetGenerator(
             user_kpoints_settings={"reciprocal_density": 1},
             user_incar_settings={
+                "ALGO": "Normal",
                 "ISPIN": 1,
                 "LAECHG": False,
                 "ISMEAR": 0,
@@ -807,6 +811,7 @@ class IsoAtomMaker(Maker):
             isolated_atom_static_input_set = StaticSetGenerator(
                 user_kpoints_settings={"grid_density": 1},
                 user_incar_settings={
+                    "ALGO": "Normal",
                     "ISPIN": 1,
                     "LAECHG": False,
                     "ISMEAR": 0,
