@@ -327,7 +327,7 @@ def dft_phonopy_gen_data(
     jobs = []
     dft_phonons_output = {}
     dft_phonons_dir_output = []
-    supercell_matrix = supercell_settings.get("supercell_matrix")
+    supercell_matrix = supercell_settings.get(structure, {}).get("supercell_matrix")
     if not supercell_matrix:
         supercell_matrix = reduce_supercell_size(structure, **supercell_settings)
 
