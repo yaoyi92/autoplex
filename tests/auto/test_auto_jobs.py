@@ -184,7 +184,7 @@ def test_dft_task_doc(vasp_test_dir, mock_vasp, test_dir, memory_jobstore, relax
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
-    dft_phonon_workflow = dft_phonopy_gen_data(structure=structure, displacements=[0.01], symprec=0.1,
+    dft_phonon_workflow = dft_phonopy_gen_data(structure=structure, mp_id="test", displacements=[0.01], symprec=0.1,
                                                phonon_displacement_maker=TightDFTStaticMaker(),
                                                phonon_bulk_relax_maker=relax_maker,
                                                phonon_static_energy_maker=StaticMaker(),
