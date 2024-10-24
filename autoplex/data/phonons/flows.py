@@ -394,7 +394,7 @@ class RandomStructuresDataGenerator(Maker):
         jobs.append(relaxed)
         structure = relaxed.output.structure
 
-        supercell_matrix = self.supercell_settings.get(structure, {}).get(
+        supercell_matrix = self.supercell_settings.get(mp_id, {}).get(
             "supercell_matrix"
         )
         if not supercell_matrix:

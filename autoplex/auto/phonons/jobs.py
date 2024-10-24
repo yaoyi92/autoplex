@@ -163,6 +163,7 @@ def complete_benchmark(  # this function was put here to prevent circular import
                 else:
                     dft_phonons = dft_phonopy_gen_data(
                         structure=benchmark_structure,
+                        mp_id=benchmark_mp_ids[ibenchmark_structure],
                         displacements=[displacement],
                         symprec=symprec,
                         phonon_bulk_relax_maker=phonon_bulk_relax_maker,
@@ -294,6 +295,7 @@ def run_supercells(
 @job(data=["phonon_data"])
 def dft_phonopy_gen_data(
     structure: Structure,
+    mp_id: str,
     displacements,
     symprec,
     phonon_bulk_relax_maker,
@@ -308,6 +310,8 @@ def dft_phonopy_gen_data(
     ----------
     structure: Structure
         pymatgen Structure object.
+    mp_id: str
+        materials project id
     phonon_displacement_maker : .BaseVaspMaker or None
         Maker used to compute the forces for a supercell.
     phonon_bulk_relax_maker: BaseVaspMaker
@@ -327,7 +331,7 @@ def dft_phonopy_gen_data(
     jobs = []
     dft_phonons_output = {}
     dft_phonons_dir_output = []
-    supercell_matrix = supercell_settings.get(structure, {}).get("supercell_matrix")
+    supercell_matrix = supercell_settings.get(mp_id, {}).get("supercell_matrix")
     if not supercell_matrix:
         supercell_matrix = reduce_supercell_size(structure, **supercell_settings)
 
