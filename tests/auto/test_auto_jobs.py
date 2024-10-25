@@ -67,9 +67,9 @@ def ref_paths_check_sc_mat():
         "static": "dft_ml_data_generation/static/",
         "dft static 1/2": "dft_ml_data_generation/phonon_static_1_sc_mat/",
         "dft static 2/2": "dft_ml_data_generation/phonon_static_2_sc_mat/",
-        "dft static 1/3": "dft_ml_data_generation/rand_static_1/",
-        "dft static 2/3": "dft_ml_data_generation/rand_static_2/",
-        "dft static 3/3": "dft_ml_data_generation/rand_static_3/",
+        "dft static 1/3": "dft_ml_data_generation/rand_static_1_sc_mat/",
+        "dft static 2/3": "dft_ml_data_generation/rand_static_2_sc_mat/",
+        "dft static 3/3": "dft_ml_data_generation/rand_static_3_sc_mat/",
     }
 
 
@@ -82,15 +82,15 @@ def fake_run_vasp_kwargs():
         "dft static 2/2": {"incar_settings": ["NSW"]},
         "dft static 1/3": {
             "incar_settings": ["NSW"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "poscar", "kpoints", "potcar"],
         },
         "dft static 2/3": {
             "incar_settings": ["NSW"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "poscar", "kpoints", "potcar"],
         },
         "dft static 3/3": {
             "incar_settings": ["NSW"],
-            "check_inputs": ["incar", "kpoints", "potcar"],
+            "check_inputs": ["incar", "poscar", "kpoints", "potcar"],
         },
     }
 
@@ -320,6 +320,8 @@ def test_dft_random_gen_data_manual_supercell_matrix(
         fake_run_vasp_kwargs,
         clean_dir
 ):
+    from pathlib import Path
+    from atomate2.utils.path import strip_hostname
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
 
@@ -348,7 +350,7 @@ def test_dft_random_gen_data_manual_supercell_matrix(
         ensure_success=True,
         store=memory_jobstore,
     )
-    print(dft_rattled_workflow.output.resolve(store=memory_jobstore))
 
-    # result_structure = dft_rattled_workflow.output.resolve(store=memory_jobstore)['phonon_data']['001'].structure
-    # assert result_structure.lattice.abc == pytest.approx(structure.lattice.abc, rel=0.005)
+    for path in dft_rattled_workflow.output.resolve(store=memory_jobstore)['rand_struc_dir'][0]:
+        result_structure = Structure.from_file(Path(strip_hostname(path)).joinpath("POSCAR.gz"))
+        assert result_structure.lattice.abc == pytest.approx(structure.lattice.abc, rel=0.05)
