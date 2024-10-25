@@ -5,6 +5,7 @@ from pymatgen.core.structure import Structure
 from autoplex.auto.phonons.jobs import (
     get_iso_atom,
     dft_phonopy_gen_data,
+    dft_random_gen_data,
     complete_benchmark
 )
 from autoplex.data.phonons.flows import TightDFTStaticMaker
@@ -16,7 +17,6 @@ from jobflow import run_locally
 from tests.conftest import memory_jobstore
 import pytest
 from pytest import approx
-
 
 
 @pytest.fixture(scope="class")
@@ -44,6 +44,7 @@ def relax_maker():
         )
     )
 
+
 @pytest.fixture(scope="class")
 def ref_paths():
     return {
@@ -57,6 +58,7 @@ def ref_paths():
         "dft static 3/3": "dft_ml_data_generation/rand_static_3/",
     }
 
+
 @pytest.fixture(scope="class")
 def ref_paths_check_sc_mat():
     return {
@@ -69,6 +71,7 @@ def ref_paths_check_sc_mat():
         "dft static 2/3": "dft_ml_data_generation/rand_static_2/",
         "dft static 3/3": "dft_ml_data_generation/rand_static_3/",
     }
+
 
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs():
@@ -264,7 +267,7 @@ def test_dft_task_doc(
     )
 
 
-def test_dft_phonpy_gen_data_manual_supercell_matrix(
+def test_dft_phonopy_gen_data_manual_supercell_matrix(
         vasp_test_dir,
         mock_vasp,
         test_dir,
@@ -305,3 +308,47 @@ def test_dft_phonpy_gen_data_manual_supercell_matrix(
 
     result_structure = dft_phonon_workflow.output.resolve(store=memory_jobstore)['phonon_data']['001'].structure
     assert result_structure.lattice.abc == pytest.approx(structure.lattice.abc, rel=0.005)
+
+
+def test_dft_random_gen_data_manual_supercell_matrix(
+        vasp_test_dir,
+        mock_vasp,
+        test_dir,
+        memory_jobstore,
+        relax_maker,
+        ref_paths_check_sc_mat,
+        fake_run_vasp_kwargs,
+        clean_dir
+):
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    supercell_settings = {
+        "test": {
+            "supercell_matrix": [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        },
+        "min_length": 1,
+        "max_length": 25,
+        "min_atoms": 2
+    }
+
+    dft_rattled_workflow = dft_random_gen_data(structure=structure, mp_id="test",
+                                               volume_custom_scale_factors=[0.95, 1.0, 1.05],
+                                               displacement_maker=TightDFTStaticMaker(),
+                                               rattled_bulk_relax_maker=relax_maker,
+                                               supercell_settings=supercell_settings)
+
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths_check_sc_mat, fake_run_vasp_kwargs)
+
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(
+        dft_rattled_workflow,
+        create_folders=True,
+        ensure_success=True,
+        store=memory_jobstore,
+    )
+    print(dft_rattled_workflow.output.resolve(store=memory_jobstore))
+
+    # result_structure = dft_rattled_workflow.output.resolve(store=memory_jobstore)['phonon_data']['001'].structure
+    # assert result_structure.lattice.abc == pytest.approx(structure.lattice.abc, rel=0.005)
