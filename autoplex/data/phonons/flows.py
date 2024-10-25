@@ -14,14 +14,6 @@ from atomate2.forcefields.flows.phonons import PhononMaker as FFPhononMaker
 from atomate2.forcefields.jobs import (
     ForceFieldRelaxMaker,
     ForceFieldStaticMaker,
-    GAPRelaxMaker,
-    GAPStaticMaker,
-    M3GNetRelaxMaker,
-    M3GNetStaticMaker,
-    MACERelaxMaker,
-    MACEStaticMaker,
-    NequipRelaxMaker,
-    NequipStaticMaker,
 )
 from atomate2.vasp.flows.core import DoubleRelaxMaker
 from atomate2.vasp.flows.phonons import PhononMaker
@@ -575,15 +567,20 @@ class MLPhononMaker(FFPhononMaker):
     min_length: float | None = 20.0
     displacement: float = 0.01
     bulk_relax_maker: ForceFieldRelaxMaker | None = field(
-        default_factory=lambda: GAPRelaxMaker(
-            relax_cell=True, relax_kwargs={"interval": 500}
+        default_factory=lambda: ForceFieldRelaxMaker(
+            relax_cell=True,
+            relax_kwargs={"interval": 500},
+            force_field_name="GAP",
         )
     )
     phonon_displacement_maker: ForceFieldStaticMaker | None = field(
-        default_factory=lambda: GAPStaticMaker(name="gap phonon static")
+        default_factory=lambda: ForceFieldStaticMaker(
+            name="gap phonon static",
+            force_field_name="GAP",
+        )
     )
     static_energy_maker: ForceFieldStaticMaker | None = field(
-        default_factory=lambda: GAPStaticMaker()
+        default_factory=lambda: ForceFieldStaticMaker(force_field_name="GAP")
     )
     store_force_constants: bool = False
     get_supercell_size_kwargs: dict = field(
@@ -633,13 +630,54 @@ class MLPhononMaker(FFPhononMaker):
         """
         if supercell_settings is None:
             supercell_settings = field(default_factory=lambda: {"min_length": 15})
+        force_field_makers = {
+            "NEQUIP": {
+                "bulk_relax_maker": ForceFieldRelaxMaker(
+                    relax_cell=True,
+                    relax_kwargs={"interval": 500},
+                    force_field_name="Nequip",
+                ),
+                "phonon_displacement_maker": ForceFieldStaticMaker(
+                    name="nequip phonon static", force_field_name="Nequip"
+                ),
+                "static_energy_maker": ForceFieldStaticMaker(force_field_name="Nequip"),
+                "default_calculator_kwargs": {"device": "cuda"},
+            },
+            "M3GNET": {
+                "bulk_relax_maker": ForceFieldRelaxMaker(
+                    relax_cell=True,
+                    relax_kwargs={"interval": 500},
+                    force_field_name="M3GNet",
+                ),
+                "phonon_displacement_maker": ForceFieldStaticMaker(
+                    name="m3gnet phonon static", force_field_name="M3GNet"
+                ),
+                "static_energy_maker": ForceFieldStaticMaker(force_field_name="M3GNet"),
+                "default_calculator_kwargs": {},
+            },
+            "MACE": {
+                "bulk_relax_maker": ForceFieldRelaxMaker(
+                    relax_cell=True,
+                    relax_kwargs={"interval": 500},
+                    force_field_name="MACE",
+                ),
+                "phonon_displacement_maker": ForceFieldStaticMaker(
+                    name="mace phonon static", force_field_name="MACE"
+                ),
+                "static_energy_maker": ForceFieldStaticMaker(force_field_name="MACE"),
+                "default_calculator_kwargs": {
+                    "device": "cuda",
+                    "model": str(potential_file),
+                },
+            },
+        }
+
         if ml_model == "GAP":
             if calculator_kwargs is None:
                 calculator_kwargs = {
                     "args_str": "IP GAP",
                     "param_filename": str(potential_file),
                 }
-
             ml_prep = ml_phonon_maker_preparation(
                 bulk_relax_maker=self.bulk_relax_maker,
                 phonon_displacement_maker=self.phonon_displacement_maker,
@@ -652,63 +690,22 @@ class MLPhononMaker(FFPhononMaker):
         elif ml_model == "J-ACE":
             raise UserWarning("No atomate2 ACE.jl PhononMaker implemented.")
 
-        elif ml_model == "NEQUIP":
+        elif ml_model in force_field_makers:
+            model_maker = force_field_makers[ml_model]
+
             if calculator_kwargs is None:
-                calculator_kwargs = {
-                    "model_path": str(potential_file),
-                    "device": "cuda",
-                }
+                calculator_kwargs = model_maker["default_calculator_kwargs"].copy()
             else:
                 calculator_kwargs.update({"model_path": str(potential_file)})
 
-            ml_prep = ml_phonon_maker_preparation(
-                bulk_relax_maker=NequipRelaxMaker(
-                    relax_cell=True, relax_kwargs={"interval": 500}
-                ),
-                phonon_displacement_maker=NequipStaticMaker(
-                    name="nequip phonon static"
-                ),
-                static_energy_maker=NequipStaticMaker(),
-                calculator_kwargs=calculator_kwargs,
-                relax_maker_kwargs=self.relax_maker_kwargs,
-                static_maker_kwargs=self.static_maker_kwargs,
-            )
-
-        elif ml_model == "M3GNET":
-            if calculator_kwargs is None:
-                calculator_kwargs = {"path": str(potential_file)}
+            # For MACE, add additional dtype logic
+            if ml_model == "MACE" and "model" in calculator_kwargs:
+                calculator_kwargs.update({"default_dtype": "float64"})
 
             ml_prep = ml_phonon_maker_preparation(
-                bulk_relax_maker=M3GNetRelaxMaker(
-                    relax_cell=True, relax_kwargs={"interval": 500}
-                ),
-                phonon_displacement_maker=M3GNetStaticMaker(
-                    name="m3gnet phonon static"
-                ),
-                static_energy_maker=M3GNetStaticMaker(),
-                calculator_kwargs=calculator_kwargs,
-                relax_maker_kwargs=self.relax_maker_kwargs,
-                static_maker_kwargs=self.static_maker_kwargs,
-            )
-
-        else:  # MACE
-            if calculator_kwargs is None:
-                calculator_kwargs = {"model": str(potential_file), "device": "cuda"}
-            elif "model" in calculator_kwargs:
-                calculator_kwargs.update(
-                    {"default_dtype": "float64"}
-                )  # Use float64 for geometry optimization.
-            else:
-                calculator_kwargs.update(
-                    {"model": str(potential_file), "default_dtype": "float64"}
-                )
-
-            ml_prep = ml_phonon_maker_preparation(
-                bulk_relax_maker=MACERelaxMaker(
-                    relax_cell=True, relax_kwargs={"interval": 500}
-                ),
-                phonon_displacement_maker=MACEStaticMaker(name="mace phonon static"),
-                static_energy_maker=MACEStaticMaker(),
+                bulk_relax_maker=model_maker["bulk_relax_maker"],
+                phonon_displacement_maker=model_maker["phonon_displacement_maker"],
+                static_energy_maker=model_maker["static_energy_maker"],
                 calculator_kwargs=calculator_kwargs,
                 relax_maker_kwargs=self.relax_maker_kwargs,
                 static_maker_kwargs=self.static_maker_kwargs,
