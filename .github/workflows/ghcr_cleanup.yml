@@ -8,6 +8,8 @@ on:
 jobs:
   - name: ghcr.io cleanup
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     if: github.repository_owner == 'autoatml' && github.ref == 'refs/heads/main'
     steps:
       - uses: dataaxiom/ghcr-cleanup-action@v1
