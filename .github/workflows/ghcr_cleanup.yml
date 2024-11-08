@@ -6,10 +6,11 @@ on:
     types: [ created ] # Runs only when a new release is created
 
 jobs:
-  - name: ghcr.io cleanup action
+  cleanup:
     runs-on: ubuntu-latest
     steps:
-      - uses: dataaxiom/ghcr-cleanup-action@v1
+      - name: ghcr.io cleanup action
+        uses: dataaxiom/ghcr-cleanup-action@v1
         with:
           delete-untagged: true
           token: ${{ secrets.GITHUB_TOKEN }}
