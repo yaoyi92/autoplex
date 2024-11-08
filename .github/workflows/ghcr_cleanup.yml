@@ -6,8 +6,10 @@ on:
     types: [ created ] # Runs only when a new release is created
 
 jobs:
-  delete-untagged-images:
-    name: Delete Untagged Images
+  - name: ghcr.io cleanup action
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
+    steps:
+      - uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          delete-untagged: true
+          token: ${{ secrets.GITHUB_TOKEN }}
