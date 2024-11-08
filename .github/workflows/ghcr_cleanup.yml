@@ -1,0 +1,16 @@
+name: Clean git container registry
+
+on:
+  workflow_dispatch:
+  release:
+    types: [ created ] # Runs only when a new release is created
+
+jobs:
+  - name: ghcr.io cleanup
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'autoatml' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          delete-untagged: true
+          token: ${{ secrets.GITHUB_TOKEN }}
