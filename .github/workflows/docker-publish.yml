@@ -37,8 +37,7 @@ jobs:
         echo "IMAGE_NAME=`echo ${{github.repository}} | tr '[:upper:]' '[:lower:]'`" >>${GITHUB_ENV}
     
     - name: Extract version from pyproject.toml
-        id: extract_version
-        run: |
+      run: |
           VERSION=$(grep '^version = ' pyproject.toml | sed -E 's/version = "(.*)"/\1/')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
