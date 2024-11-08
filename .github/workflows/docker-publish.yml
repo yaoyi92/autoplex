@@ -46,8 +46,8 @@ jobs:
       run: |
         docker build \
         --build-arg PYTHON_VERSION=${{ matrix.python-version }} \
-        -t ghcr.io/${{ env.IMAGE_NAME }}/autoplex:python-${{ matrix.python-version }}:${{ env.VERSION }} .
+        -t ghcr.io/${{ env.IMAGE_NAME }}/autoplex-python-${{ matrix.python-version }}:${{ env.VERSION }} .
    # Push Docker image to GHCR
     - name: Push Docker image to GHCR (Python ${{ matrix.python-version }})
       run: |
-        docker push ghcr.io/${{ env.IMAGE_NAME }}/autoplex:python-${{ matrix.python-version }}:${{ env.VERSION }}
+        docker push ghcr.io/${{ env.IMAGE_NAME }}/autoplex-python-${{ matrix.python-version }}:${{ env.VERSION }}
