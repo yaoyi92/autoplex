@@ -15,4 +15,4 @@ jobs:
           packages: autoplex*
           delete-untagged: true
           expand-packages: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GHCR_PAT }}
