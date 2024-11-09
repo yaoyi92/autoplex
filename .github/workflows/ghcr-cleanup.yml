@@ -12,7 +12,5 @@ jobs:
       - name: ghcr.io cleanup action
         uses: dataaxiom/ghcr-cleanup-action@v1
         with:
-          packages: autoplex*
           delete-untagged: true
-          expand-packages: true
           token: ${{ secrets.GHCR_PAT }}
