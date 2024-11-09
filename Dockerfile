@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     bash \
     bc \
+    ffmpeg \
     unzip \
     wget \
     gfortran \
@@ -66,9 +67,10 @@ RUN curl -fsSL https://download.lammps.org/tars/lammps.tar.gz -o /opt/lammps.tar
     && cd /opt/lammps-* \
     && mkdir build \
     && cd build \
-    && cmake ../cmake -D PKG_ML-PACE=yes \
+    && cmake -D PKG_ML-PACE=yes -D PKG_PYTHON=on -D BUILD_LIB=on -D BUILD_SHARED_LIBS=on ../cmake \
     && cmake --build . \
-    && make -j 4 install
+    && make -j 4 install \
+    && make install-python
 
 # Add LAMMPS to PATH
 ENV PATH="${PATH}:/root/.local/bin"
