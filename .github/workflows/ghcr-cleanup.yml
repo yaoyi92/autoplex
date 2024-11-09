@@ -12,5 +12,6 @@ jobs:
       - name: ghcr.io cleanup action
         uses: dataaxiom/ghcr-cleanup-action@v1
         with:
+          packages: autoplex*
           delete-untagged: true
           token: ${{ secrets.GITHUB_TOKEN }}
