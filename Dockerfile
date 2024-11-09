@@ -59,6 +59,20 @@ RUN curl -fsSL https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz -o /opt/airss
 # Add Buildcell to PATH
 ENV PATH="${PATH}:/opt/airss/bin"
 
+# Install LAMMPS (rss)
+RUN curl -fsSL https://download.lammps.org/tars/lammps.tar.gz -o /opt/lammps.tar.gz \
+    && tar -xf /opt/lammps.tar.gz -C /opt \
+    && rm /opt/lammps.tar.gz \
+    && cd /opt/lammps-* \
+    && mkdir build \
+    && cd build \
+    && cmake ../cmake -D PKG_ML-PACE=yes \
+    && cmake --build . \
+    && make -j 4 install
+
+# Add LAMMPS to PATH
+ENV PATH="${PATH}:/root/.local/bin"
+
 # Set the working directory
 WORKDIR /workspace
 
