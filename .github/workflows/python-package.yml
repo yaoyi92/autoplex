@@ -48,7 +48,7 @@ jobs:
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
-        git pull --rebase --autostash origin ${{ github.ref_name }}
+        git pull --rebase --autostash origin -X ours ${{ github.ref_name }}
         git add ./tests/test_data/.pytest-split-durations
         git commit -m "Update pytest split test durations after tests of split ${{ matrix.split }}"
         git push origin ${{ github.ref_name }}
