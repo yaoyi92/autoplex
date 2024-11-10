@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
     "tests/auto/test_auto_flows.py::TestCompleteDFTvsMLBenchmarkWorkflow::test_add_data_to_dataset_workflow": 78.64367969400007,
     "tests/auto/test_auto_flows.py::TestCompleteDFTvsMLBenchmarkWorkflow::test_add_data_workflow_add_phonon_false": 0.024754149999921538,
     "tests/auto/test_auto_flows.py::TestCompleteDFTvsMLBenchmarkWorkflow::test_add_data_workflow_add_random_false": 0.02345725800000764,
@@ -12,9 +13,24 @@
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_MP_settings": 53.90600252599961,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_nequip": 66.84342582099998,
 <<<<<<< Updated upstream
+=======
+    "tests/auto/test_auto_flows.py::TestCompleteDFTvsMLBenchmarkWorkflow::test_add_data_to_dataset_workflow": 78.36874341899988,
+    "tests/auto/test_auto_flows.py::TestCompleteDFTvsMLBenchmarkWorkflow::test_add_data_workflow_add_phonon_false": 0.024451974000044174,
+    "tests/auto/test_auto_flows.py::TestCompleteDFTvsMLBenchmarkWorkflow::test_add_data_workflow_add_random_false": 0.023266103000082694,
+    "tests/auto/test_auto_flows.py::TestCompleteDFTvsMLBenchmarkWorkflow::test_add_data_workflow_with_dft_reference": 58.90985297199995,
+    "tests/auto/test_auto_flows.py::TestCompleteDFTvsMLBenchmarkWorkflow::test_add_data_workflow_with_same_mpid": 0.02844151800002237,
+    "tests/auto/test_auto_flows.py::TestCompleteDFTvsMLBenchmarkWorkflow::test_workflow_with_different_makers": 68.35270398700004,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_gap": 59.14070824000004,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_m3gnet": 48.19149810900001,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_mace": 62.98554232599997,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning": 69.71684534400003,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_MP_settings": 71.02550306199987,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_nequip": 85.67682405099981,
+>>>>>>> Stashed changes
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated": 120.283593494,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop": 276.20916555,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_mpids": 435.64444218500006,
+<<<<<<< Updated upstream
 =======
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated": 122.64754196600006,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop": 274.6561745300001,
@@ -28,6 +44,15 @@
     "tests/auto/test_auto_flows.py::test_phonon_dft_ml_data_generation_flow": 63.56146166099995,
     "tests/auto/test_auto_flows.py::test_supercell_test_runs": 0.09823246199994173,
     "tests/auto/test_auto_jobs.py::test_complete_benchmark": 14.031901189999871,
+=======
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_two_mpids": 117.58305484099992,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_hploop": 132.63194101700014,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization": 77.63706414699999,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization_hploop": 152.872625224,
+    "tests/auto/test_auto_flows.py::test_phonon_dft_ml_data_generation_flow": 64.43595967099998,
+    "tests/auto/test_auto_flows.py::test_supercell_test_runs": 0.11001709600003551,
+    "tests/auto/test_auto_jobs.py::test_complete_benchmark": 14.755475647000026,
+>>>>>>> Stashed changes
     "tests/auto/test_auto_jobs.py::test_dft_phonopy_gen_data_manual_supercell_matrix": 10.028475818000004,
     "tests/auto/test_auto_jobs.py::test_dft_random_gen_data_manual_supercell_matrix": 7.568846569999948,
     "tests/auto/test_auto_jobs.py::test_dft_task_doc": 11.092322668999998,
@@ -195,6 +220,9 @@
     "tests/test_mock_vasp.py::test_phonon_wf_only_displacements3": 6.516569875999949
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
