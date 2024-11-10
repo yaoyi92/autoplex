@@ -11,12 +11,18 @@
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning": 51.31425238799966,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_MP_settings": 53.90600252599961,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_nequip": 66.84342582099998,
+<<<<<<< Updated upstream
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated": 120.283593494,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop": 276.20916555,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_mpids": 435.64444218500006,
+=======
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated": 122.64754196600006,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop": 274.6561745300001,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_mpids": 445.54782055399994,
+>>>>>>> Stashed changes
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_two_mpids": 83.2231761819994,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_hploop": 96.70668841800034,
-    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization": 77.63706414699999,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization": 79.57201164700001,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization_hploop": 113.64828347000002,
 <<<<<<< Updated upstream
     "tests/auto/test_auto_flows.py::test_phonon_dft_ml_data_generation_flow": 63.56146166099995,
@@ -188,6 +194,9 @@
     "tests/test_mock_vasp.py::test_cleanup_auxiliary_files": 0.0011151999999583495,
     "tests/test_mock_vasp.py::test_phonon_wf_only_displacements3": 6.516569875999949
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
