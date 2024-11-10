@@ -11,12 +11,18 @@
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning": 51.31425238799966,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_MP_settings": 53.90600252599961,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_nequip": 66.84342582099998,
+<<<<<<< Updated upstream
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated": 120.283593494,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop": 274.6561745300001,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_mpids": 435.64444218500006,
+=======
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated": 119.66562406999992,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop": 275.81459951299996,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_mpids": 434.31404694799994,
+>>>>>>> Stashed changes
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_two_mpids": 83.2231761819994,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_hploop": 96.70668841800034,
-    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization": 78.22818088399998,
+    "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization": 77.63706414699999,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization_hploop": 113.64828347000002,
     "tests/auto/test_auto_flows.py::test_phonon_dft_ml_data_generation_flow": 63.410252208999964,
     "tests/auto/test_auto_flows.py::test_supercell_test_runs": 0.09961806200010415,
