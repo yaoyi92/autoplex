@@ -1,0 +1,19 @@
+{
+    "tests/rss/test_data_preprocess_jobs.py::test_vasp_static": 0.11912127200002942,
+    "tests/rss/test_hookean.py::test_hookean": 0.1531197199999781,
+    "tests/rss/test_rss.py::test_gap_rss": 2.176375673999985,
+    "tests/rss/test_rss.py::test_m3gnet_rss": 1.7680273160000013,
+    "tests/rss/test_rss.py::test_mace_rss": 1.9406601930000136,
+    "tests/rss/test_rss.py::test_nequip_rss": 6.871955600999996,
+    "tests/rss/test_sampling_jobs.py::test_sampling_bcur": 0.19134961500000713,
+    "tests/rss/test_sampling_jobs.py::test_sampling_bcur_job": 0.5243909200000019,
+    "tests/rss/test_sampling_jobs.py::test_sampling_cur": 0.20575619200002393,
+    "tests/rss/test_sampling_jobs.py::test_sampling_cur_job": 0.5623024969999904,
+    "tests/rss/test_sampling_jobs.py::test_sampling_random_job": 0.3633509729999673,
+    "tests/rss/test_sampling_jobs.py::test_sampling_uniform_job": 0.34969902399998887,
+    "tests/rss/test_vasp_jobs.py::test_vasp_check_convergence": 0.01635505199999443,
+    "tests/rss/test_vasp_jobs.py::test_vasp_static": 8.484075632000042,
+    "tests/rss/test_worklows.py::test_mock_workflow": 20.215805888000034,
+    "tests/test_mock_vasp.py::test_cleanup_auxiliary_files": 0.017331512000026805,
+    "tests/test_mock_vasp.py::test_phonon_wf_only_displacements3": 6.630014854999985
+}
