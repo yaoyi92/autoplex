@@ -48,7 +48,9 @@ jobs:
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
-        git pull origin ${{ github.ref_name }}
+        git stash  # Stash local changes
+        git pull origin ${{ github.ref_name }} # Pull the changes
+        git stash pop  # Apply the stashed changes
         git add ./tests/test_data/.pytest-split-durations
         git commit -m "Update pytest split test durations after tests of split ${{ matrix.split }}"
         git push origin ${{ github.ref_name }}
