@@ -49,11 +49,10 @@ jobs:
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
         git stash  # Stash local changes
-        git pull origin ${{ github.ref_name }} # Pull the changes
+        git pull origin ${{ github.ref_name }} --strategy-option ours # Pull the changes
         git stash pop  # Apply the stashed changes
         git add ./tests/test_data/.pytest-split-durations
         git commit -m "Update pytest split test durations after tests of split ${{ matrix.split }}"
-        git pull --rebase --strategy-option ours # Rebase latest changes (try to auto-resolve merge conflicts)
         git push origin ${{ github.ref_name }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
