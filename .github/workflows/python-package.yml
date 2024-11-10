@@ -53,6 +53,7 @@ jobs:
         git stash pop  # Apply the stashed changes
         git add ./tests/test_data/.pytest-split-durations
         git commit -m "Update pytest split test durations after tests of split ${{ matrix.split }}"
+        git pull --rebase  # Rebase latest changes (try to auto-resolve merge conflicts)
         git push origin ${{ github.ref_name }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
