@@ -38,18 +38,20 @@ jobs:
           python -m pip install --upgrade pip && \
           python -m uv cache clean
           python -m uv pip install .[strict,tests] && \
-          OMP_NUM_THREADS=1 pytest --cache-clear --cov=autoplex --cov-report term-missing --cov-append --splits 5 --group ${{ matrix.split }} -vv --durations-path /workspace/tests/test_data/.pytest-split-durations-${{ matrix.split }}.json --store-durations
+          OMP_NUM_THREADS=1 pytest --cache-clear --cov=autoplex --cov-report term-missing --cov-append --splits 5 --group ${{ matrix.split }} -vv --durations-path /workspace/tests/test_data/.pytest-split-durations --store-durations /workspace/tests/test_data/.pytest-split-durations-${{ matrix.split }} 
         "
     - name: Commit and push test durations
+      if: matrix.python-version == '3.10'
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
-        git add ./tests/test_data/.pytest-split-durations-*.json
+        git pull origin ${{ github.ref_name }}
+        git add ./tests/test_data/.pytest-split-durations-*
         git commit -m "Update pytest split test durations for split ${{ matrix.split }}"
         git push origin ${{ github.ref_name }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
+
     - name: Upload coverage
       uses: actions/upload-artifact@v3
       with:
