@@ -2,6 +2,7 @@
 import glob
 import json
 from collections import defaultdict
+import os
 
 # Define the path to the consolidated durations file
 consolidated_file = "tests/test_data/.pytest-split-durations"
