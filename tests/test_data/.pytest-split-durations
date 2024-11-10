@@ -18,6 +18,7 @@
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_hploop": 96.70668841800034,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization": 77.63706414699999,
     "tests/auto/test_auto_flows.py::test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization_hploop": 113.64828347000002,
+<<<<<<< Updated upstream
     "tests/auto/test_auto_flows.py::test_phonon_dft_ml_data_generation_flow": 63.56146166099995,
     "tests/auto/test_auto_flows.py::test_supercell_test_runs": 0.09823246199994173,
     "tests/auto/test_auto_jobs.py::test_complete_benchmark": 14.031901189999871,
@@ -102,6 +103,53 @@
     "tests/test_mock_vasp.py::test_cleanup_auxiliary_files": 0.0012088429999721484,
     "tests/test_mock_vasp.py::test_phonon_wf_only_displacements3": 6.527247120000084
 =======
+=======
+    "tests/auto/test_auto_flows.py::test_phonon_dft_ml_data_generation_flow": 64.43595967099998,
+    "tests/auto/test_auto_flows.py::test_supercell_test_runs": 0.11001709600003551,
+    "tests/auto/test_auto_jobs.py::test_complete_benchmark": 14.755475647000026,
+    "tests/auto/test_auto_jobs.py::test_dft_phonopy_gen_data_manual_supercell_matrix": 10.07230249500003,
+    "tests/auto/test_auto_jobs.py::test_dft_random_gen_data_manual_supercell_matrix": 7.830681829000014,
+    "tests/auto/test_auto_jobs.py::test_dft_task_doc": 11.398041071000023,
+    "tests/auto/test_auto_jobs.py::test_get_iso_atom": 3.0248479729999644,
+    "tests/benchmark/test_benchmark_flows.py::test_benchmark": 4.182221527999957,
+    "tests/benchmark/test_benchmark_jobs.py::test_compute_bandstructure_benchmark_metrics": 6.489037082999971,
+    "tests/benchmark/test_benchmark_jobs.py::test_compute_bandstructure_benchmark_metrics_dummy": 0.29454545100003315,
+    "tests/benchmark/test_benchmark_jobs.py::test_write_benchmark_metrics": 0.11512480800001867,
+    "tests/benchmark/test_benchmark_utils.py::test_rmse": 0.15078857700001436,
+    "tests/data/test_datagen_flows.py::test_data_generation_distort_type_0": 2.9655987760000357,
+    "tests/data/test_datagen_flows.py::test_data_generation_distort_type_1": 25.493342465000012,
+    "tests/data/test_datagen_flows.py::test_data_generation_distort_type_2": 5.80178812500003,
+    "tests/data/test_datagen_flows.py::test_data_generation_volume_range": 10.069068849000018,
+    "tests/data/test_datagen_flows.py::test_generate_training_data_for_testing": 61.40391013599992,
+    "tests/data/test_datagen_flows.py::test_iso_atom_maker": 0.34560815399999,
+    "tests/data/test_datagen_flows.py::test_ml_phonon_maker": 14.305661182000051,
+    "tests/data/test_datagen_jobs.py::test_convert_to_extxyz": 0.003678188000094451,
+    "tests/data/test_datagen_jobs.py::test_generate_randomized_structures_distort_type_0": 0.10549137399993924,
+    "tests/data/test_datagen_jobs.py::test_generate_randomized_structures_distort_type_1": 0.2758229769999616,
+    "tests/data/test_datagen_jobs.py::test_generate_randomized_structures_distort_type_2": 0.29788764700015236,
+    "tests/data/test_datagen_jobs.py::test_mc_rattle": 0.09845711000002666,
+    "tests/data/test_datagen_jobs.py::test_plot_force_distribution": 0.38432966900006704,
+    "tests/data/test_datagen_jobs.py::test_random_vary_angle": 0.03496563399994557,
+    "tests/data/test_datagen_jobs.py::test_scale_cell": 0.004336098999942806,
+    "tests/data/test_datagen_jobs.py::test_std_rattle": 0.004296284000020023,
+    "tests/data/test_datagen_jobs.py::test_supercell_check": 9.771187115999965,
+    "tests/data/test_datagen_utils.py::test_energy_forces": 8.30641996899999,
+    "tests/data/test_datagen_utils.py::test_energy_plot": 0.7928821840001774,
+    "tests/data/test_datagen_utils.py::test_filter_outliers": 1.367430966000029,
+    "tests/data/test_datagen_utils.py::test_force_plot": 1.640605478999987,
+    "tests/data/test_datagen_utils.py::test_reduce_supercell_size": 1.4356856099999504,
+    "tests/data/test_datagen_utils.py::test_scale_cell": 0.012897397999950044,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker": 14.046853936000048,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker_glue_xml": 87.16784865900001,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker_glue_xml_with_other_name": 87.11170271000003,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker_jace": 105.79567592600006,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker_m3gnet": 8.434713488000057,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker_mace": 22.089096635000033,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker_nequip": 53.490329427999995,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker_with_automated_separated_dataset": 83.12309618700147,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker_with_kwargs": 14.901615891000006,
+    "tests/fitting/test_fitting_flows.py::test_mlip_fit_maker_with_pre_database_dir": 28.787237129999994,
+>>>>>>> Stashed changes
     "tests/fitting/test_fitting_jobs.py::test_gap_fit_maker": 5.606422146999989,
     "tests/fitting/test_fitting_jobs.py::test_jace_fit_maker": 101.30289278999993,
     "tests/fitting/test_fitting_jobs.py::test_m3gnet_fit_maker": 5.029085313999985,
@@ -139,5 +187,8 @@
     "tests/rss/test_worklows.py::test_mock_workflow": 19.577991954999902,
     "tests/test_mock_vasp.py::test_cleanup_auxiliary_files": 0.0011151999999583495,
     "tests/test_mock_vasp.py::test_phonon_wf_only_displacements3": 6.516569875999949
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
