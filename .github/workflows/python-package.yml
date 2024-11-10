@@ -10,6 +10,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write  # Allow the workflow to push changes to the repository
+
 jobs:
   build:
 
