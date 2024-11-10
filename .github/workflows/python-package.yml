@@ -68,8 +68,6 @@ jobs:
 
     - name: Download test duration artifacts
       uses: actions/download-artifact@v3
-      with:
-        name: test-durations-${{ matrix.python-version }}-${{ matrix.split }}
 
     - name: Compute average of test durations
       run: |
