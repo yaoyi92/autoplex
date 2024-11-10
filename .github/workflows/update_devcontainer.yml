@@ -5,6 +5,9 @@ on:
   release:
     types: [ created ] # Runs only when a new release is created
 
+permissions:
+  contents: write  # Allow the workflow to push changes to the repository
+
 jobs:
   update-version:
     runs-on: ubuntu-latest
