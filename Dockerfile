@@ -68,12 +68,7 @@ RUN curl -fsSL https://download.lammps.org/tars/lammps.tar.gz -o /opt/lammps.tar
      && mkdir build \
      && cd build \
      && curl -fsSL https://github.com/wcwitt/lammps-user-pace/archive/main.tar.gz -o libpace.tar.gz \
-     && cmake -D PKG_PYTHON=on -D BUILD_SHARED_LIBS=on \
-     && -DMLIAP_ENABLE_PYTHON=yes -D PKG_KOKKOS=yes -D Kokkos_ARCH_ZEN3=yes \
-     && -D PKG_PHONON=yes -D PKG_MOLECULE=yes -D PKG_MANYBODY=yes \
-     && -D Kokkos_ENABLE_OPENMP=yes -D BUILD_OMP=yes -D LAMMPS_EXCEPTIONS=yes \
-     && -D PKG_ML-PACE=yes -D PACELIB_MD5=$(md5sum libpace.tar.gz | awk '{print $1}') \
-     && -D CMAKE_EXE_LINKER_FLAGS:STRING="-lgfortran" ../cmake \
+     && cmake -D PKG_PYTHON=on -D BUILD_SHARED_LIBS=on -DMLIAP_ENABLE_PYTHON=yes -D PKG_KOKKOS=yes -D Kokkos_ARCH_ZEN3=yes -D PKG_PHONON=yes -D PKG_MOLECULE=yes -D PKG_MANYBODY=yes -D Kokkos_ENABLE_OPENMP=yes -D BUILD_OMP=yes -D LAMMPS_EXCEPTIONS=yes -D PKG_ML-PACE=yes -D PACELIB_MD5=$(md5sum libpace.tar.gz | awk '{print $1}') -D CMAKE_EXE_LINKER_FLAGS:STRING="-lgfortran" ../cmake \
      && cmake --build . \
      && make -j 4 install \
      && make install-python \
