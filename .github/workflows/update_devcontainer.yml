@@ -50,9 +50,13 @@ jobs:
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
 
-        # Create a new branch for the changes
-        BRANCH_NAME="update-devcontainer-$VERSION"
-        git checkout -b $BRANCH_NAME
+        # Try to checkout the `update-devcontainer` branch, create if it doesn't exist
+        if git rev-parse --verify origin/update-devcontainer; then
+          git checkout update-devcontainer
+          git pull origin update-devcontainer
+        else
+          git checkout -b update-devcontainer
+        fi
 
         git add .devcontainer/devcontainer.json
         git commit -m "Update devcontainer.json with new version tag $VERSION"
@@ -66,7 +70,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Update devcontainer.json with new version tag $VERSION"
-        branch: $BRANCH_NAME
+        branch: update-devcontainer
         base: main
         title: "Update devcontainer.json with new version tag $VERSION"
         body: |
