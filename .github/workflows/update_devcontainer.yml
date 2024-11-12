@@ -3,10 +3,11 @@ name: Update devcontainer.json on Release
 on:
   workflow_dispatch:
   release:
-    types: [ created ] # Runs only when a new release is created
+    types: [created] # Runs only when a new release is created
 
 permissions:
   contents: write  # Allow the workflow to push changes to the repository
+  pull-requests: write  # Allow the workflow to create pull requests
 
 jobs:
   update-version:
@@ -43,18 +44,30 @@ jobs:
 
         echo "Updated devcontainer.json with version $VERSION"
 
-    # Commit and push the changes to devcontainer.json
+    # Commit and push the changes to a new branch
     - name: Commit and push changes
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
 
-        # Get the current branch name
-        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-        echo "Current branch: $CURRENT_BRANCH"
+        # Create a new branch for the changes
+        BRANCH_NAME="update-devcontainer-$VERSION"
+        git checkout -b $BRANCH_NAME
 
         git add .devcontainer/devcontainer.json
-        git commit -m "Update devcontainer.json with new version tag"
-        git push origin $CURRENT_BRANCH
+        git commit -m "Update devcontainer.json with new version tag $VERSION"
+        git push origin $BRANCH_NAME
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Create a pull request
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "Update devcontainer.json with new version tag $VERSION"
+        branch: $BRANCH_NAME
+        base: main
+        title: "Update devcontainer.json with new version tag $VERSION"
+        body: |
+          This PR updates the devcontainer.json file with the new version tag $VERSION.
