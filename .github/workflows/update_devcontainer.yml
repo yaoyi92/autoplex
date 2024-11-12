@@ -44,8 +44,20 @@ jobs:
 
         echo "Updated devcontainer.json with version $VERSION"
 
+    # Check if there are changes in devcontainer.json
+    - name: Check for changes
+      run: |
+        if git diff --exit-code .devcontainer/devcontainer.json; then
+          echo "No changes to commit."
+          echo "commit_needed=false" >> $GITHUB_ENV
+        else
+          echo "Changes detected."
+          echo "commit_needed=true" >> $GITHUB_ENV
+        fi
+
     # Commit and push the changes to a new branch
     - name: Commit and push changes
+      if: env.commit_needed == 'true'
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
@@ -66,6 +78,7 @@ jobs:
 
     # Create a pull request
     - name: Create Pull Request
+      if: env.commit_needed == 'true'
       uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
