@@ -1,5 +1,5 @@
 # Changelog
-## v0.0.3
+## v0.0.4
 Essentially, it is the same version as v0.0.2. The release has, however, been updated to work with stable atomate2 and mace-torch versions.
 
 ## v0.0.2
