@@ -168,8 +168,10 @@ exclude_lines = [
 
 [tool.coverage.paths]
 source = [
-    "autoplex/",
-    "/workspace/autoplex/",
+    "src/autoplex/",
+    "/workspace/src/autoplex",
+    "/opt/conda/lib/python3.10/site-packages/autoplex/",
+    "/opt/conda/lib/python3.11/site-packages/autoplex/",
 ]
 
 [tool.coverage.run]
