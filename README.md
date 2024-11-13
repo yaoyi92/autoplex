@@ -2,7 +2,7 @@
 
 <img src="docs/_static/autoplex_logo.png" width="66%">
 
-**Disclaimer**: `autoplex` is still under very active development and is only suitable for expert users as not all of the documentation is in place. This will change in the next two weeks.
+**Disclaimer**: `autoplex` is still under very active development and is only suitable for expert users as not all of the documentation is in place. This will change until end of November 2024.
 
 `autoplex` is a software for generating and benchmarking machine learning (ML)-based interatomic potentials. The aim of `autoplex` is to provide a fully automated solution for creating high-quality ML potentials. The software is interfaced to multiple different ML potential fitting frameworks and to the atomate2 and ase environments for efficient high-throughput computations. The vision of this project is to allow a wide community of researchers to create accurate and reliable ML potentials for materials simulations.
 
