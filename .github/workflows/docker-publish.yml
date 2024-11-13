@@ -96,7 +96,7 @@ jobs:
         git fetch origin
 
         # Check if the branch exists
-        if git rev-parse --verify origin/$BRANCH_NAME; then
+        if git ls-remote --heads origin $BRANCH_NAME | grep -q "refs/heads/$BRANCH_NAME"; then
           # If the branch exists, check it out and rebase with main
           git checkout $BRANCH_NAME
           git rebase origin/main
@@ -105,14 +105,12 @@ jobs:
           git checkout -b $BRANCH_NAME origin/main
         fi
 
-        # Push the changes and set upstream for the branch if needed
-        git add .devcontainer/devcontainer.json
+      # Commit only if there are changes
+      if git diff --cached --quiet; then
+        echo "No changes to commit."
+      else
         git commit -m "Update devcontainer.json version tag"
-        
-        # Push the changes, setting the upstream branch if it's a new branch
-        git push --set-upstream origin $BRANCH_NAME
-
-    - name: Push changes to the branch
-      run: |
-        # This step is already handled in the previous step, so no need to push again.
-        echo "Changes pushed to $BRANCH_NAME"
+      fi
+      
+      # Push the changes, setting the upstream branch if it's a new branch
+      git push --set-upstream origin $BRANCH_NAME
