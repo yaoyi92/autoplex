@@ -105,12 +105,12 @@ jobs:
           git checkout -b $BRANCH_NAME origin/main
         fi
 
-      # Commit only if there are changes
-      if git diff --cached --quiet; then
-        echo "No changes to commit."
-      else
-        git commit -m "Update devcontainer.json version tag"
-      fi
-      
-      # Push the changes, setting the upstream branch if it's a new branch
-      git push --set-upstream origin $BRANCH_NAME
+        # Commit only if there are changes
+        if git diff --cached --quiet; then
+          echo "No changes to commit."
+        else
+          git commit -m "Update devcontainer.json version tag"
+        fi
+        
+        # Push the changes, setting the upstream branch if it's a new branch
+        git push --set-upstream origin $BRANCH_NAME
