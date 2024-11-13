@@ -6,7 +6,7 @@ on:
     types: [ created ] # Runs only when a new release is created
 
 jobs:
-  build:
+  build-image:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'autoatml' && github.ref == 'refs/heads/main'
     permissions:
@@ -51,3 +51,68 @@ jobs:
     - name: Push Docker image to GHCR (Python ${{ matrix.python-version }})
       run: |
         docker push ghcr.io/${{ env.IMAGE_NAME }}/autoplex-python-${{ matrix.python-version }}:${{ env.VERSION }}
+
+  update-devcontainer:
+    needs: build-image
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v4
+      with:
+        ref: main  # Ensure we start from the latest main branch
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Update devcontainer.json with new version
+      run: |
+        TAG=$(curl -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/orgs/autoatml/packages/container/autoplex%2Fautoplex-python-3.10/versions \
+            | jq -r 'sort_by(.created_at) | reverse | .[0].metadata.container.tags[0]')
+
+        # Debug the version extracted
+        echo "Extracted TAG: $TAG"
+        
+        # Update the version in devcontainer.json
+        # Using the escaped version to safely substitute in the JSON file
+        sed -i -E "s|ghcr.io/autoatml/autoplex/autoplex-python-3.10:[^\"]*|ghcr.io/autoatml/autoplex/autoplex-python-3.10:$TAG|" .devcontainer/devcontainer.json
+
+        echo "Updated devcontainer.json with version $TAG"
+
+
+    - name: Set up Git configuration
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "github-actions@github.com"
+
+    - name: Create or update the devcontainer branch
+      run: |
+        BRANCH_NAME="update-devcontainer"
+
+        # Fetch the latest changes from the origin
+        git fetch origin
+
+        # Check if the branch exists
+        if git rev-parse --verify origin/$BRANCH_NAME; then
+          # If the branch exists, check it out and rebase with main
+          git checkout $BRANCH_NAME
+          git rebase origin/main
+        else
+          # If the branch doesn't exist, create it from main
+          git checkout -b $BRANCH_NAME origin/main
+        fi
+
+        # Push the changes and set upstream for the branch if needed
+        git add .devcontainer/devcontainer.json
+        git commit -m "Update devcontainer.json version tag"
+        
+        # Push the changes, setting the upstream branch if it's a new branch
+        git push --set-upstream origin $BRANCH_NAME
+
+    - name: Push changes to the branch
+      run: |
+        # This step is already handled in the previous step, so no need to push again.
+        echo "Changes pushed to $BRANCH_NAME"
