@@ -3,88 +3,73 @@ name: Update devcontainer.json on Release
 on:
   workflow_dispatch:
   release:
-    types: [created] # Runs only when a new release is created
+    types: [created]
 
 permissions:
   contents: write  # Allow the workflow to push changes to the repository
-  pull-requests: write  # Allow the workflow to create pull requests
 
 jobs:
   update-version:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - name: Checkout the repository
+      uses: actions/checkout@v4
+      with:
+        ref: main  # Ensure we start from the latest main branch
 
-    # Set up Python
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
-    # Run the script to update the version in devcontainer.json
     - name: Update devcontainer.json with new version
       run: |
-        #!/bin/bash
-
-        # Fetch the version from pyproject.toml
-        VERSION=$(grep 'version =' pyproject.toml | head -n 1 | sed -E 's/version = "([^\"]+)"/\1/')
+        TAG=$(curl -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/orgs/autoatml/packages/container/autoplex%2Fautoplex-python-3.10/versions \
+            | jq -r 'sort_by(.created_at) | reverse | .[0].metadata.container.tags[0]')
 
         # Debug the version extracted
-        echo "Extracted VERSION: $VERSION"
-
-        # Escape any special characters in VERSION that could cause issues with sed (like `/` or `:`)
-        VERSION_ESCAPED=$(echo "$VERSION" | sed 's/[&/\]/\\&/g')
-
+        echo "Extracted TAG: $TAG"
+        
         # Update the version in devcontainer.json
         # Using the escaped version to safely substitute in the JSON file
-        sed -i -E "s|ghcr.io/autoatml/autoplex/autoplex-python-3.10:[^\"]*|ghcr.io/autoatml/autoplex/autoplex-python-3.10:$VERSION_ESCAPED|" .devcontainer/devcontainer.json
+        sed -i -E "s|ghcr.io/autoatml/autoplex/autoplex-python-3.10:[^\"]*|ghcr.io/autoatml/autoplex/autoplex-python-3.10:$TAG|" .devcontainer/devcontainer.json
 
-        echo "Updated devcontainer.json with version $VERSION"
+        echo "Updated devcontainer.json with version $TAG"
 
-    # Check if there are changes in devcontainer.json
-    - name: Check for changes
+
+    - name: Set up Git configuration
       run: |
-        if git diff --exit-code .devcontainer/devcontainer.json; then
-          echo "No changes to commit."
-          echo "commit_needed=false" >> $GITHUB_ENV
-        else
-          echo "Changes detected."
-          echo "commit_needed=true" >> $GITHUB_ENV
-        fi
-
-    # Commit and push the changes to a new branch
-    - name: Commit and push changes
-      if: env.commit_needed == 'true'
-      run: |
-        git config --global user.name "github-actions"
+        git config --global user.name "GitHub Actions"
         git config --global user.email "github-actions@github.com"
 
-        # Try to checkout the `update-devcontainer` branch, create if it doesn't exist
-        if git rev-parse --verify origin/update-devcontainer; then
-          git checkout update-devcontainer
-          git pull origin update-devcontainer
+    - name: Create or update the feature branch
+      run: |
+        BRANCH_NAME="update-devcontainer"
+
+        # Fetch the latest changes from the origin
+        git fetch origin
+
+        # Check if the branch exists
+        if git rev-parse --verify origin/$BRANCH_NAME; then
+          # If the branch exists, check it out and rebase with main
+          git checkout $BRANCH_NAME
+          git rebase origin/main
         else
-          git checkout -b update-devcontainer
+          # If the branch doesn't exist, create it from main
+          git checkout -b $BRANCH_NAME origin/main
         fi
 
+        # Push the changes and set upstream for the branch if needed
         git add .devcontainer/devcontainer.json
-        git commit -m "Update devcontainer.json with new version tag $VERSION"
-        git push origin $BRANCH_NAME
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        git commit -m "Update devcontainer.json version tag"
+        
+        # Push the changes, setting the upstream branch if it's a new branch
+        git push --set-upstream origin $BRANCH_NAME
 
-    # Create a pull request
-    - name: Create Pull Request
-      if: env.commit_needed == 'true'
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Update devcontainer.json with new version tag $VERSION"
-        branch: update-devcontainer
-        base: main
-        title: "Update devcontainer.json with new version tag $VERSION"
-        body: |
-          This PR updates the devcontainer.json file with the new version tag $VERSION.
+    - name: Push changes to the branch
+      run: |
+        # This step is already handled in the previous step, so no need to push again.
+        echo "Changes pushed to $BRANCH_NAME"
