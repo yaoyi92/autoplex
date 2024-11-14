@@ -11,7 +11,8 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: write  # Allow the workflow to push changes to the repository
+  contents: write
+  pull-requests: write
 
 jobs:
   build:
@@ -61,13 +62,11 @@ jobs:
       with:
         name: coverage-${{ matrix.python-version }}-${{ matrix.split }}
         include-hidden-files: true
-        overwrite: false
         path: ./.coverage
 
   commit-durations:
     needs: build
     runs-on: ubuntu-latest
-    #if: github.repository_owner == github.actor
     steps:
     - uses: actions/checkout@v3
 
@@ -84,6 +83,7 @@ jobs:
     - name: Create Pull Request to push consolidated test durations
       uses: peter-evans/create-pull-request@v7
       with:
+        token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: update test durations
         title: Update test durations file
         body: Auto update test durations file
