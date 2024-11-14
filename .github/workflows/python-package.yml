@@ -11,7 +11,8 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: write  # Allow the workflow to push changes to the repository
+  contents: write
+  pull-requests: write
 
 jobs:
   build:
@@ -48,7 +49,7 @@ jobs:
         "
         
     - name: Upload test durations artifact
-      if: matrix.python-version == '3.10' && github.repository_owner == github.actor
+      if: matrix.python-version == '3.10'
       uses: actions/upload-artifact@v3
       with:
         name: test-durations-${{ matrix.python-version }}-${{ matrix.split }}
@@ -56,17 +57,17 @@ jobs:
         path: ./tests/test_data/.pytest-split-durations
 
     - name: Upload coverage
+      if: matrix.python-version == '3.10'
       uses: actions/upload-artifact@v3
       with:
         name: coverage-${{ matrix.python-version }}-${{ matrix.split }}
         include-hidden-files: true
-        overwrite: false
         path: ./.coverage
 
   commit-durations:
+    if: github.repository_owner == 'autoatml' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
-    if: github.repository_owner == github.actor
     steps:
     - uses: actions/checkout@v3
 
@@ -79,16 +80,18 @@ jobs:
         > tests/test_data/.pytest-split-durations
         # Run the Python script to average out test durations
         python3 .github/scripts/average_test_durations.py
+        rm -rf test-durations-*
 
-    - name: Commit and push consolidated test durations
-      run: |
-        git config --global user.name "github-actions"
-        git config --global user.email "github-actions@github.com"
-        git add ./tests/test_data/.pytest-split-durations
-        git commit -m "Add averaged test durations"
-        git push origin ${{ github.ref_name }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create Pull Request to push consolidated test durations
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ secrets.ACTION_SECRET }}
+        commit-message: update test durations
+        title: Update test durations file
+        body: Auto update test durations file
+        branch: update-test-durations
+        delete-branch: true
+        base: main
 
   coverage:
       needs: build
