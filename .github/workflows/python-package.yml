@@ -79,6 +79,7 @@ jobs:
         > tests/test_data/.pytest-split-durations
         # Run the Python script to average out test durations
         python3 .github/scripts/average_test_durations.py
+        rm -rf test-durations-*
 
     - name: Create Pull Request to push consolidated test durations
       uses: peter-evans/create-pull-request@v7
