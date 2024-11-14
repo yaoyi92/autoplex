@@ -65,6 +65,7 @@ jobs:
         path: ./.coverage
 
   commit-durations:
+    if: github.repository_owner == 'autoatml' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     steps:

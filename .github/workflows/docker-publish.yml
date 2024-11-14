@@ -53,6 +53,7 @@ jobs:
         docker push ghcr.io/${{ env.IMAGE_NAME }}/autoplex-python-${{ matrix.python-version }}:${{ env.VERSION }}
 
   update-devcontainer:
+    if: github.repository_owner == 'autoatml' && github.ref == 'refs/heads/main'
     needs: build-image
     runs-on: ubuntu-latest
     steps:
