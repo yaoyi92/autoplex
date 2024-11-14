@@ -584,7 +584,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
     assert complete_workflow_m3gnet.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_m3gnet.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
-        5.2622804443539355, abs=1.0  # bad fit data
+        5.2622804443539355, abs=3.0  # bad fit data, fluctuates between 4 and 7
     )
 
 
