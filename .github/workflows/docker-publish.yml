@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: write
       attestations: write
       id-token: write
     strategy:
@@ -82,6 +83,7 @@ jobs:
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7
       with:
+        token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: update devcontainer
         title: Update devcontainer.json version tag
         body: Update devcontainer.json version tag to reflect release changes
