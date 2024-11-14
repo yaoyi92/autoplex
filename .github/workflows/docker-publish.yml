@@ -8,7 +8,6 @@ on:
 jobs:
   build-image:
     runs-on: ubuntu-latest
-    # if: github.repository_owner == 'autoatml' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
@@ -58,8 +57,6 @@ jobs:
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v4
-      with:
-        ref: main  # Ensure we start from the latest main branch
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -82,35 +79,12 @@ jobs:
 
         echo "Updated devcontainer.json with version $TAG"
 
-
-    - name: Set up Git configuration
-      run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "github-actions@github.com"
-
-    - name: Create or update the devcontainer branch
-      run: |
-        BRANCH_NAME="update-devcontainer"
-
-        # Fetch the latest changes from the origin
-        git fetch origin
-
-        # Check if the branch exists
-        if git ls-remote --heads origin $BRANCH_NAME | grep -q "refs/heads/$BRANCH_NAME"; then
-          # If the branch exists, check it out and rebase with main
-          git checkout $BRANCH_NAME
-          git rebase origin/main
-        else
-          # If the branch doesn't exist, create it from main
-          git checkout -b $BRANCH_NAME origin/main
-        fi
-
-        # Commit only if there are changes
-        if git diff --cached --quiet; then
-          echo "No changes to commit."
-        else
-          git commit -m "Update devcontainer.json version tag"
-        fi
-        
-        # Push the changes, setting the upstream branch if it's a new branch
-        git push --set-upstream origin $BRANCH_NAME
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v7
+      with:
+        commit-message: update devcontainer
+        title: Update devcontainer.json version tag
+        body: Update devcontainer.json version tag to reflect release changes
+        branch: update-devcontainer
+        delete-branch: true
+        base: main
