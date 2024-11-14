@@ -80,7 +80,7 @@ jobs:
 
         echo "Updated devcontainer.json with version $TAG"
 
-    - name: Create Pull Request
+    - name: Create Pull Request to push updated devcontainer
       uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
