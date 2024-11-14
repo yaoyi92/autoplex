@@ -66,7 +66,7 @@ jobs:
   commit-durations:
     needs: build
     runs-on: ubuntu-latest
-    if: github.repository_owner == github.actor
+    #if: github.repository_owner == github.actor
     steps:
     - uses: actions/checkout@v3
 
@@ -80,15 +80,15 @@ jobs:
         # Run the Python script to average out test durations
         python3 .github/scripts/average_test_durations.py
 
-    - name: Commit and push consolidated test durations
-      run: |
-        git config --global user.name "github-actions"
-        git config --global user.email "github-actions@github.com"
-        git add ./tests/test_data/.pytest-split-durations
-        git commit -m "Add averaged test durations"
-        git push origin ${{ github.ref_name }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create Pull Request to push consolidated test durations
+      uses: peter-evans/create-pull-request@v7
+      with:
+        commit-message: update test durations
+        title: Update test durations file
+        body: Auto update test durations file
+        branch: update-test-durations
+        delete-branch: true
+        base: main
 
   coverage:
       needs: build
