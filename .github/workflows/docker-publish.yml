@@ -9,7 +9,7 @@ jobs:
   build-image:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
       pull-requests: write
       attestations: write
@@ -83,7 +83,7 @@ jobs:
     - name: Create Pull Request to push updated devcontainer
       uses: peter-evans/create-pull-request@v7
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.ACTION_SECRET }}
         commit-message: update devcontainer
         title: Update devcontainer.json version tag
         body: Update devcontainer.json version tag to reflect release changes
