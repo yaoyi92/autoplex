@@ -442,7 +442,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                             dft_references=dft_references,
                                             supercell_settings=self.supercell_settings,
                                             displacement=displacement,
-                                            # TODO add a hyper parameter here for the benchmark
                                             atomwise_regularization_parameter=atomwise_reg_parameter,
                                             soap_dict=soap_dict,
                                             **self.benchmark_kwargs,

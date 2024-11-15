@@ -530,7 +530,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
 
     # check if soap_default_dict is correctly constructed from
     # n_sparse and delta values in mlip_phonon_default json file
-    expected_soap_dict = "{'f=0.1': {'n_sparse': 6000, 'delta': 0.5}}"
+    expected_soap_dict = "atom-wise f=0.1: n_sparse = 6000, SOAP delta = 0.5"
     results_files = glob.glob('job*/results_LiCl.txt')
 
     for file_path in results_files:
@@ -584,7 +584,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
     assert complete_workflow_m3gnet.jobs[4].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_m3gnet.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
-        5.2622804443539355, abs=1.0  # bad fit data
+        5.2622804443539355, abs=3.0  # bad fit data, fluctuates between 4 and 7
     )
 
 
@@ -996,7 +996,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     assert reg_specific_file_exists
 
     # check if soap_default_dict is correctly constructed from n_sparse and delta values in user fit parameter input
-    expected_soap_dict = "{'f=0.1': {'delta': 3.0, 'n_sparse': 8000}}"
+    expected_soap_dict = "atom-wise f=0.1: n_sparse = 8000, SOAP delta = 3.0"
 
     results_files = glob.glob('job*/test_results_LiCl.txt')
     for file_path in results_files:
