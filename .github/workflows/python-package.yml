@@ -79,6 +79,7 @@ jobs:
         # Clear out any existing content in the consolidated file
         > tests/test_data/.pytest-split-durations
         # Run the Python script to average out test durations
+        pip install pytest
         python3 .github/scripts/average_test_durations.py
         rm -rf test-durations-*
 
