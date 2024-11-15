@@ -393,7 +393,7 @@ class RandomStructuresDataGenerator(Maker):
             supercell_matrix_job = reduce_supercell_size_job(
                 structure=structure,
                 min_length=self.supercell_settings.get("min_length", 12),
-                max_length=self.supercell_settings.get("max_length", 25),
+                max_length=self.supercell_settings.get("max_length", 20),
                 fallback_min_length=self.supercell_settings.get(
                     "fallback_min_length", 10
                 ),
