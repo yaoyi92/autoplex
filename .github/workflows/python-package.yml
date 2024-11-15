@@ -80,12 +80,12 @@ jobs:
       uses: mamba-org/setup-micromamba@main
     - name: Create mamba environment
       run: |
-          micromamba create -n autoplex_docs python=3.10 --yes
+          micromamba create -n autoplex_tests python=3.10 --yes
     - name: Install uv
-      run: micromamba run -n autoplex_docs pip install uv
+      run: micromamba run -n autoplex_tests pip install uv
     - name: Install autoplex and dependencies
       run: |
-          micromamba activate autoplex_docs
+          micromamba activate autoplex_tests
           uv pip install --upgrade pip
           uv pip install --prerelease=allow .[tests,strict]
           
@@ -94,7 +94,7 @@ jobs:
 
     - name: Compute average of test durations
       run: |
-        # Run the Python script to average out test durations
+        micromamba activate autoplex_tests
         python3 .github/scripts/average_test_durations.py
         rm -rf test-durations-*
 
