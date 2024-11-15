@@ -84,7 +84,7 @@ jobs:
     - name: Create Pull Request to push consolidated test durations
       uses: peter-evans/create-pull-request@v7
       with:
-        token: ${{ secrets.ACTION_SECRET }}
+        #token: ${{ secrets.ACTION_SECRET }}
         commit-message: update test durations
         title: Update test durations file
         body: Auto update test durations file
