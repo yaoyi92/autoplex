@@ -74,6 +74,7 @@ jobs:
     - name: Download test duration artifacts
       uses: actions/download-artifact@v3
 
+    - uses: actions/checkout@v3
     - name: Compute average of test durations
       run: |
         # Run the Python script to average out test durations
