@@ -73,10 +73,9 @@ def main():
             existing_durations = json.load(f)
 
     
+    # Sort the keys to compare the tests in both dictionaries
     updated_durations_key = sorted(updated_durations.keys())
     existing_durations_key = sorted(existing_durations.keys())
-    for i, j in zip(updated_durations_key, existing_durations_key):
-        print(i,j)
 
 
     # Check if all keys in updated_durations are in existing_durations
