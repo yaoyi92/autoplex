@@ -38,7 +38,7 @@ def write_benchmark_metrics(
         encoding="utf-8",
     ) as file:
         file.write(
-            "%-11s%-11s%-12s%-18s%-12s%-16s%-16s%-16s%-50s"
+            "%-11s%-11s%-12s%-18s%-12s%-16s%-16s%-16s%-18s"
             % (
                 "Potential",
                 "Structure",
