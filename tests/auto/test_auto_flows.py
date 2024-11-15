@@ -996,7 +996,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     assert reg_specific_file_exists
 
     # check if soap_default_dict is correctly constructed from n_sparse and delta values in user fit parameter input
-    expected_soap_dict = "{'f=0.1': {'delta': 3.0, 'n_sparse': 8000}}"
+    expected_soap_dict = "atom-wise f=0.1: n_sparse = 8000, SOAP delta = 3.0"
 
     results_files = glob.glob('job*/test_results_LiCl.txt')
     for file_path in results_files:
