@@ -38,17 +38,17 @@ def write_benchmark_metrics(
         encoding="utf-8",
     ) as file:
         file.write(
-            "%-11s%-11s%-12s%-18s%-12s%-50s%-16s%-16s%-14s"
+            "%-11s%-11s%-12s%-18s%-12s%-16s%-16s%-16s%-50s"
             % (
                 "Potential",
                 "Structure",
                 "MPID",
                 "Displacement (Å)",
                 "RMSE (THz)",
-                "(Hyper-)Parameters",
-                "Database type",
                 "imagmodes(pot)",
                 "imagmodes(dft)",
+                "Database type",
+                "(Hyper-)Parameters",
             )
         )
 
@@ -63,15 +63,21 @@ def write_benchmark_metrics(
                 f"f={metric['atomwise_regularization_parameter']}": metric["soap_dict"]
             }
 
-            key = next(iter(soap_params.keys()))
-            value = next(iter(soap_params.values()))
-            pretty_soap_params = f"atom-wise {key}: n_sparse = {value['n_sparse']}, SOAP delta = {value['delta']}"
+            if metric["ml_model"] == "GAP":
+                key = next(iter(soap_params.keys()))
+                value = next(iter(soap_params.values()))
+                pretty_hyper_params = f"atom-wise {key}: n_sparse = {value['n_sparse']}, SOAP delta = {value['delta']}"
+            else:
+                pretty_hyper_params = "user defined"
+
+            if not metric["suffix"]:
+                metric["suffix"] = "full"
 
             file.write(
                 f"\n{metric['ml_model']:<11}{structure_composition:<11}{metric['mp_id']:<12}"
                 f"{metric['displacement']:<18.2f}{metric['benchmark_phonon_rmse']:<12.5f}"
-                f"{pretty_soap_params!s:<50}{metric['suffix']!s:<16}{metric['ml_imaginary_modes']!s:<16}"
-                f"{metric['dft_imaginary_modes']!s:<5}"
+                f"{metric['ml_imaginary_modes']!s:<16}{metric['dft_imaginary_modes']!s:<16}"
+                f"{metric['suffix']!s:<16}{pretty_hyper_params!s:<50}"
             )
 
     return Response(output=metrics)
