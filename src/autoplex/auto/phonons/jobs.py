@@ -341,7 +341,20 @@ def dft_phonopy_gen_data(
         )
     supercell_matrix = supercell_settings.get(mp_id, {}).get("supercell_matrix")
     if not supercell_matrix:
-        supercell_matrix = reduce_supercell_size(structure, **supercell_settings)
+        filtered_settings = {  # mismatching mp_ids would lead to a key error
+            key: value
+            for key, value in supercell_settings.items()
+            if key
+            in [
+                "min_length",
+                "max_length",
+                "fallback_min_length",
+                "max_atoms",
+                "min_atoms",
+                "step_size",
+            ]
+        }
+        supercell_matrix = reduce_supercell_size(structure, **filtered_settings)
 
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
