@@ -274,10 +274,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             self.supercell_settings.setdefault(mp_id, {})
             supercell_matrix_job = reduce_supercell_size_job(
                 structure=structure,
-                min_length=self.supercell_settings.get("min_length", 12),
+                min_length=self.supercell_settings.get("min_length", 15),
                 max_length=self.supercell_settings.get("max_length", 20),
                 fallback_min_length=self.supercell_settings.get(
-                    "fallback_min_length", 10
+                    "fallback_min_length", 12
                 ),
                 max_atoms=self.supercell_settings.get("max_atoms", 500),
                 min_atoms=self.supercell_settings.get("min_atoms", 50),
