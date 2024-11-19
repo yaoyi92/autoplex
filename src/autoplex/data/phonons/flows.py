@@ -352,7 +352,9 @@ class RandomStructuresDataGenerator(Maker):
     rattle_seed: int = 42
     rattle_mc_n_iter: int = 10
     w_angle: list[float] | None = None
-    supercell_settings: dict | None = field(default_factory=lambda: {"min_length": 15})
+    supercell_settings: dict | None = field(
+        default_factory=lambda: {"min_length": 15, "max_length": 20}
+    )
 
     def make(
         self,
@@ -378,7 +380,9 @@ class RandomStructuresDataGenerator(Maker):
             If None, will default to [0.90, 0.95, 0.98, 0.99, 1.01, 1.02, 1.05, 1.10].
         """
         if self.supercell_settings is None:
-            self.supercell_settings = field(default_factory=lambda: {"min_length": 15})
+            self.supercell_settings = field(
+                default_factory=lambda: {"min_length": 15, "max_length": 20}
+            )
         jobs = []  # initializing empty job list
         outputs = []
 
