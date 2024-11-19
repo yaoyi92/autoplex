@@ -186,7 +186,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     atomwise_regularization_list: list | None = None
     soap_delta_list: list | None = None
     n_sparse_list: list | None = None
-    supercell_settings: dict = field(default_factory=lambda: {"min_length": 15})
+    supercell_settings: dict = field(
+        default_factory=lambda: {"min_length": 15, "max_length": 20}
+    )
     benchmark_kwargs: dict = field(default_factory=dict)
     path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH
     summary_filename_prefix: str = "results_"
