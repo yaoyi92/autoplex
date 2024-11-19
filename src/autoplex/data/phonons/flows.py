@@ -737,9 +737,23 @@ class MLPhononMaker(FFPhononMaker):
             self.phonon_displacement_maker,
             self.static_energy_maker,
         ) = ml_prep
+        filtered_settings = {
+            key: value
+            for key, value in supercell_settings.items()
+            if key
+            in [
+                "min_length",
+                "max_length",
+                "fallback_min_length",
+                "max_atoms",
+                "min_atoms",
+                "step_size",
+            ]
+        }
         supercell_matrix = reduce_supercell_size(
-            structure=structure, **supercell_settings
+            structure=structure, **filtered_settings
         )
+
         flow = self.make(
             structure=structure, supercell_matrix=supercell_matrix, **make_kwargs
         )
