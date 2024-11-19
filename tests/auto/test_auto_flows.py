@@ -520,9 +520,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
         store=memory_jobstore,
     )
 
-    print("RMSE: ", responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0]["benchmark_phonon_rmse"])
-
-    assert complete_workflow.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow.jobs[-1].output.uuid][1].output[0][0]["benchmark_phonon_rmse"] == pytest.approx(
         2.502641337594289, abs=1.5  # it's kinda fluctuating because of the little data
     )
@@ -579,7 +577,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
         ensure_success=True,
         store=memory_jobstore,
     )
-    assert complete_workflow_m3gnet.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_m3gnet.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_m3gnet.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         5.2622804443539355, abs=3.0  # bad fit data, fluctuates between 4 and 7
@@ -630,7 +628,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_mace.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_mace.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_mace.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         5.391879137001022, abs=3.0
@@ -696,7 +694,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_mace.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_mace.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_mace.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.45, abs=0.4
@@ -762,7 +760,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_MP_settings(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_mace.jobs[4].name == "complete_benchmark_test"
+    assert complete_workflow_mace.jobs[5].name == "complete_benchmark_test"
     assert responses[complete_workflow_mace.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.45, abs=0.4
@@ -815,7 +813,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_nequip.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_nequip.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_nequip.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         5.633069137001022, abs=3.0
@@ -853,7 +851,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_two_mpid.jobs[6].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_two_mpid.jobs[7].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_two_mpid.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.7126017685370398, abs=0.5
@@ -892,7 +890,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_hploop.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_hploop.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_hploop.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         2.002641337594289, abs=1.0  # it's kinda fluctuating because of the little data
@@ -935,7 +933,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization_hploop(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_sigma_hploop.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_sigma_hploop.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sigma_hploop.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         1.511743561686686, abs=1.0  # it's kinda fluctuating because of the little data
@@ -979,7 +977,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_sigma.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_sigma.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sigma.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.6205293987404107, abs=0.3
@@ -1031,7 +1029,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_sep.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_sep.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sep.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.8709764794814768, abs=0.5
@@ -1120,7 +1118,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_sep.jobs[4].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_sep.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_sep.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.8709764794814768, abs=0.5
