@@ -41,6 +41,7 @@ from autoplex.auto.phonons.jobs import (
     run_supercells,
 )
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
+from autoplex.data.phonons.jobs import reduce_supercell_size_job
 from autoplex.fitting.common.flows import MLIPFitMaker
 
 __all__ = [
@@ -270,6 +271,23 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         }
 
         for structure, mp_id in zip(structure_list, mp_ids):
+            self.supercell_settings.setdefault(mp_id, {})
+            supercell_matrix_job = reduce_supercell_size_job(
+                structure=structure,
+                min_length=self.supercell_settings.get("min_length", 12),
+                max_length=self.supercell_settings.get("max_length", 20),
+                fallback_min_length=self.supercell_settings.get(
+                    "fallback_min_length", 10
+                ),
+                max_atoms=self.supercell_settings.get("max_atoms", 500),
+                min_atoms=self.supercell_settings.get("min_atoms", 50),
+                step_size=self.supercell_settings.get("step_size", 1.0),
+            )
+            flows.append(supercell_matrix_job)
+            self.supercell_settings[mp_id][
+                "supercell_matrix"
+            ] = supercell_matrix_job.output
+
             if self.add_dft_random_struct:
                 add_dft_rand = self.add_dft_random(
                     structure=structure,
