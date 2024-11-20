@@ -527,7 +527,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
 
     # check if soap_default_dict is correctly constructed from
     # n_sparse and delta values in mlip_phonon_default json file
-    expected_soap_dict = "atom-wise f=0.1: n_sparse = 6000, SOAP delta = 0.5"
+    expected_soap_dict = "atom-wise f=0.1: n_sparse = 6000, SOAP delta = 1.0"
     results_files = glob.glob('job*/results_LiCl.txt')
 
     for file_path in results_files:
