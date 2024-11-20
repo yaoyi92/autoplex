@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -272,6 +273,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         for structure, mp_id in zip(structure_list, mp_ids):
             self.supercell_settings.setdefault(mp_id, {})
+            logging.info(
+                "Currently, "
+                "the same supercell settings for single-atom displaced and rattled supercells are used."
+            )
             supercell_matrix_job = reduce_supercell_size_job(
                 structure=structure,
                 min_length=self.supercell_settings.get("min_length", 15),
