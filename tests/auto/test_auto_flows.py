@@ -703,7 +703,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning(
     )
 
 
-def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_MP_settings(
+def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_mp_settings(
         vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths5_mpid, fake_run_vasp_kwargs5_mpid, clean_dir
 ):
     path_to_struct = vasp_test_dir / "MP_finetuning" / "POSCAR"
@@ -851,7 +851,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
         store=memory_jobstore,
     )
 
-    assert complete_workflow_two_mpid.jobs[7].name == "complete_benchmark_mp-22905"
+    assert complete_workflow_two_mpid.jobs[8].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_two_mpid.jobs[-1].output.uuid][1].output[0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
         0.7126017685370398, abs=0.5
