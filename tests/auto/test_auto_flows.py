@@ -1516,8 +1516,8 @@ def test_phonon_dft_ml_data_generation_flow(
         counter += 1
     for job, uuid in flow_data_generation_without_rattled_structures.iterflow():
         counter_wor += 1
-    assert counter == 7
-    assert counter_wor == 6
+    assert counter == 8
+    assert counter_wor == 7
 
 
 # TODO testing cell_factor_sequence
