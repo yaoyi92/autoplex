@@ -273,7 +273,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         for structure, mp_id in zip(structure_list, mp_ids):
             self.supercell_settings.setdefault(mp_id, {})
-            logging.info(
+            logging.warning(
                 "Currently, "
                 "the same supercell settings for single-atom displaced and rattled supercells are used."
             )
