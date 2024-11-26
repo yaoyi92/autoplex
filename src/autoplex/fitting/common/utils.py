@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pymatgen.core import Structure
 
+import logging
 from collections.abc import Iterable
 
 import ase
@@ -219,24 +220,27 @@ def gap_fitting(
 
     # Calculate training error
     train_error = energy_remain("quip_" + train_name)
-    print("Training error of MLIP (eV/at.):", round(train_error, 7))
+    logging.info(f"Training error of MLIP (eV/at.): {round(train_error, 7)}")
 
     # Calculate testing error
     run_quip(
         num_processes_fit, test_data_path, gap_file_xml, "quip_" + test_name, glue_xml
     )
     test_error = energy_remain("quip_" + test_name)
-    print("Testing error of MLIP (eV/at.):", round(test_error, 7))
+    logging.info(f"Testing error of MLIP (eV/at.): {round(test_error, 7)}")
 
     if not glue_xml and species_list:
-        plot_energy_forces(
-            title="Data error metrics",
-            energy_limit=0.005,
-            force_limit=0.1,
-            species_list=species_list,
-            train_name=train_name,
-            test_name=test_name,
-        )
+        try:
+            plot_energy_forces(
+                title="Data error metrics",
+                energy_limit=0.005,
+                force_limit=0.1,
+                species_list=species_list,
+                train_name=train_name,
+                test_name=test_name,
+            )
+        except ValueError as e:
+            logging.warning(f"Skipped error metrics plot because of: {e}")
 
     return {
         "train_error": train_error,
