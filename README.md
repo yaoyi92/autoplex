@@ -22,7 +22,7 @@
 # Documentation
 
 You can find the `autoplex` documentation [here](https://autoatml.github.io/autoplex/index.html)!
-The documentation also contains tutorials that teach you how to use `autoplex` for different use cases.
+The documentation also contains tutorials that teach you how to use `autoplex` for different use cases for the RSS and phonon workflows and individual modules therein.
 
 # Before you start using `autoplex`
 
