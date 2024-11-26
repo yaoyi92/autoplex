@@ -243,7 +243,7 @@ def gap_fitting(
                 test_name=test_name,
             )
         except ValueError as e:
-            logging.warning(f"Skipped fit error metrics plot because of: {e}")
+            logging.warning(f"Skipped fit error metrics plot because of: \n{e}")
 
     return {
         "train_error": train_error,
