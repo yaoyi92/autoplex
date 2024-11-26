@@ -55,6 +55,9 @@ from autoplex.data.common.utils import (
 current_dir = Path(__file__).absolute().parent
 MLIP_PHONON_DEFAULTS_FILE_PATH = current_dir / "mlip-phonon-defaults.json"
 MLIP_RSS_DEFAULTS_FILE_PATH = current_dir / "mlip-rss-defaults.json"
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def gap_fitting(
@@ -240,7 +243,7 @@ def gap_fitting(
                 test_name=test_name,
             )
         except ValueError as e:
-            logging.warning(f"Skipped error metrics plot because of: {e}")
+            logging.warning(f"Skipped fit error metrics plot because of: {e}")
 
     return {
         "train_error": train_error,
@@ -364,7 +367,7 @@ def jace_fitting(
 using LinearAlgebra: norm, Diagonal
 using CSV, DataFrames
 using Distributed
-addprocs({num_processes_fit-1}, exeflags="--project=$(Base.active_project())")
+addprocs({num_processes_fit - 1}, exeflags="--project=$(Base.active_project())")
 @everywhere using ACEpotentials
 
 data_file = "train_ace.extxyz"
