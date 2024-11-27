@@ -408,7 +408,9 @@ def process_rss(
         from ase.calculators.lammpslib import LAMMPSlib
 
         try:
-            pass
+            from lammps import lammps
+
+            _ = lammps()
         except Exception as exc:
             raise ImportError(
                 "To use RSS flow with J-ACE potential, it needs LAMMPS compiled with"
