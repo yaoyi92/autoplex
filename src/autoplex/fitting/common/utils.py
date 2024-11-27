@@ -251,8 +251,9 @@ def gap_fitting(
 
 @requires(
     which("julia"),
-    "J-ACE fitting requires the executables 'julia' and ACEPotentials.jl library to be in PATH. "
-    "Please follow the instructions in the README (https://autoatml.github.io/autoplex/user/index.html) to install required dependencies and add them to PATH.",
+    "J-ACE fitting requires the executable 'julia' and ACEPotentials.jl library to be in PATH. "
+    "Please follow the instructions in the README (https://autoatml.github.io/autoplex/user/index.html) to install "
+    "required dependencies and add them to PATH.",
 )
 def jace_fitting(
     db_dir: str | Path,

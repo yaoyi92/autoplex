@@ -75,7 +75,8 @@ class RandomizedStructure(Maker):
     @requires(
         which("buildcell"),
         "RSS flows requires the executable 'buildcell' to be in PATH. "
-        "Please follow the instructions in the README (https://autoatml.github.io/autoplex/user/index.html) to install required dependencies and add them to PATH.",
+        "Please follow the instructions in the README (https://autoatml.github.io/autoplex/user/index.html) to "
+        "install required dependencies and add them to PATH.",
     )
     @job
     def make(self):
