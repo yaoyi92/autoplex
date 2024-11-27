@@ -7,9 +7,10 @@ import re
 from dataclasses import dataclass
 from multiprocessing import Pool
 from pathlib import Path
-from subprocess import run
 from shutil import which
+from subprocess import run
 from typing import TYPE_CHECKING
+
 from monty.dev import requires
 
 if TYPE_CHECKING:
