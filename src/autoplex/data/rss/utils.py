@@ -412,7 +412,7 @@ def process_rss(
 
             _ = lammps()
         except Exception as exc:
-            raise ImportError(
+            raise RuntimeError(
                 "To use RSS flow with J-ACE potential, it needs LAMMPS compiled with"
                 "python bindings and lammps-user-pace. Please follow the instructions in"
                 "the autoplex Documentation to install LAMMPS with the required packages."
