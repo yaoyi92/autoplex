@@ -12,7 +12,9 @@ import sys
 import xml.etree.ElementTree as ET
 from functools import partial
 from pathlib import Path
+from shutil import which
 from typing import TYPE_CHECKING
+from monty.dev import requires
 
 if TYPE_CHECKING:
     from pymatgen.core import Structure
@@ -246,6 +248,11 @@ def gap_fitting(
     }
 
 
+@requires(
+        which("julia"),
+        "J-ACE fitting requires the executables 'julia' and ACEPotentials.jl library to be in PATH. "
+        "Please follow the instructions in the README (https://autoatml.github.io/autoplex/user/index.html) to install required dependencies and add them to PATH.",
+    )
 def jace_fitting(
     db_dir: str | Path,
     path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
