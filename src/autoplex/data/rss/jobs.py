@@ -75,8 +75,8 @@ class RandomizedStructure(Maker):
     @requires(
         which("buildcell"),
         "RSS flows requires the executable 'buildcell' to be in PATH. "
-        "Please follow the instructions in the README to install AIRSS library "
-        "and add it to PATH here:"
+        "Please follow the instructions in the autoplex documentation to install "
+        "the AIRSS library and add it to PATH. Link to the documentation:"
         " https://autoatml.github.io/autoplex/user/index.html#enabling-rss-workflows",
     )
     @job

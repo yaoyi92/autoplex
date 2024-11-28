@@ -415,15 +415,16 @@ def process_rss(
                 raise RuntimeError(
                     "To use RSS flow with J-ACE potential, it needs LAMMPS compiled with"
                     "lammps-user-pace library. ML-PACE is not found in the current LAMMPS binary installation."
-                    "Please follow the instructions in the autoplex Documentation to install"
-                    "LAMMPS with the required packages here:"
+                    "Please follow the instructions in the autoplex documentation to install"
+                    "LAMMPS with the required packages. Link to the documentation: "
                     " https://autoatml.github.io/autoplex/user/index.html#lammps-installation"
                 )
         except Exception as exc:
             raise RuntimeError(
                 "To use RSS flow with J-ACE potential, it needs LAMMPS compiled with"
                 "python bindings and lammps-user-pace. Please follow the instructions in"
-                "the autoplex documentation to install LAMMPS with the required packages here:"
+                "the autoplex documentation to install LAMMPS with the required packages. "
+                "Link to the documentation:"
                 " https://autoatml.github.io/autoplex/user/index.html#lammps-installation"
             ) from exc
 
