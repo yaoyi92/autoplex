@@ -7,8 +7,11 @@ import re
 from dataclasses import dataclass
 from multiprocessing import Pool
 from pathlib import Path
+from shutil import which
 from subprocess import run
 from typing import TYPE_CHECKING
+
+from monty.dev import requires
 
 if TYPE_CHECKING:
     from pymatgen.core import Structure
@@ -69,6 +72,13 @@ class RandomizedStructure(Maker):
     fragment_file: str | None = None
     fragment_numbers: list[str] | None = None
 
+    @requires(
+        which("buildcell"),
+        "RSS flows requires the executable 'buildcell' to be in PATH. "
+        "Please follow the instructions in the autoplex documentation to install "
+        "the AIRSS library and add it to PATH. Link to the documentation:"
+        " https://autoatml.github.io/autoplex/user/index.html#enabling-rss-workflows",
+    )
     @job
     def make(self):
         """Maker to create random structures by buildcell."""
