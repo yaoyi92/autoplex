@@ -1,4 +1,12 @@
 # Changelog
+## v0.0.9
+### What's Changed
+The release is in principle same as v0.0.8 with following changes: LAMMPS is now pinned to a stable release (`stable_29Aug2024_update1`):
+* Pin lammps ci and in Docs by @naik-aakash in https://github.com/autoatml/autoplex/pull/277
+* Update devcontainer.json version tag by @JaGeo in https://github.com/autoatml/autoplex/pull/276
+
+**Full Changelog**: https://github.com/autoatml/autoplex/compare/v0.0.8...v0.0.9
+
 ## v0.0.8
 ### What's Changed
 * Update devcontainer.json version tag by @JaGeo in https://github.com/autoatml/autoplex/pull/253
