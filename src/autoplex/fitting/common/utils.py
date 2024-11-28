@@ -19,6 +19,7 @@ from monty.dev import requires
 if TYPE_CHECKING:
     from pymatgen.core import Structure
 
+import logging
 from collections.abc import Iterable
 
 import ase
@@ -56,6 +57,9 @@ from autoplex.data.common.utils import (
 current_dir = Path(__file__).absolute().parent
 MLIP_PHONON_DEFAULTS_FILE_PATH = current_dir / "mlip-phonon-defaults.json"
 MLIP_RSS_DEFAULTS_FILE_PATH = current_dir / "mlip-rss-defaults.json"
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def gap_fitting(
@@ -221,24 +225,27 @@ def gap_fitting(
 
     # Calculate training error
     train_error = energy_remain("quip_" + train_name)
-    print("Training error of MLIP (eV/at.):", round(train_error, 7))
+    logging.info(f"Training error of MLIP (eV/at.): {round(train_error, 7)}")
 
     # Calculate testing error
     run_quip(
         num_processes_fit, test_data_path, gap_file_xml, "quip_" + test_name, glue_xml
     )
     test_error = energy_remain("quip_" + test_name)
-    print("Testing error of MLIP (eV/at.):", round(test_error, 7))
+    logging.info(f"Testing error of MLIP (eV/at.): {round(test_error, 7)}")
 
     if not glue_xml and species_list:
-        plot_energy_forces(
-            title="Data error metrics",
-            energy_limit=0.005,
-            force_limit=0.1,
-            species_list=species_list,
-            train_name=train_name,
-            test_name=test_name,
-        )
+        try:
+            plot_energy_forces(
+                title="Data error metrics",
+                energy_limit=0.005,
+                force_limit=0.1,
+                species_list=species_list,
+                train_name=train_name,
+                test_name=test_name,
+            )
+        except ValueError as e:
+            logging.warning(f"Skipped fit error metrics plot because of: \n{e}")
 
     return {
         "train_error": train_error,
@@ -379,7 +386,7 @@ def jace_fitting(
 using LinearAlgebra: norm, Diagonal
 using CSV, DataFrames
 using Distributed
-addprocs({num_processes_fit-1}, exeflags="--project=$(Base.active_project())")
+addprocs({num_processes_fit - 1}, exeflags="--project=$(Base.active_project())")
 @everywhere using ACEpotentials
 
 data_file = "train_ace.extxyz"
