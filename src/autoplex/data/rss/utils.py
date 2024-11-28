@@ -410,13 +410,21 @@ def process_rss(
         try:
             from lammps import lammps
 
-            _ = lammps()
+            lmp = lammps()
+            if "ML-PACE" not in lmp.installed_packages:
+                raise RuntimeError(
+                    "To use RSS flow with J-ACE potential, it needs LAMMPS compiled with"
+                    "lammps-user-pace library. ML-PACE is not found in the current LAMMPS binary installation."
+                    "Please follow the instructions in the autoplex Documentation to install"
+                    "LAMMPS with the required packages here:"
+                    " https://autoatml.github.io/autoplex/user/index.html#lammps-installation"
+                )
         except Exception as exc:
             raise RuntimeError(
                 "To use RSS flow with J-ACE potential, it needs LAMMPS compiled with"
                 "python bindings and lammps-user-pace. Please follow the instructions in"
-                "the autoplex Documentation to install LAMMPS with the required packages."
-                "https://autoatml.github.io/autoplex/user/index.html#lammps-installation"
+                "the autoplex Documentation to install LAMMPS with the required packages here:"
+                " https://autoatml.github.io/autoplex/user/index.html#lammps-installation"
             ) from exc
 
         ace_label = os.path.join(mlip_path, "acemodel.yace")
