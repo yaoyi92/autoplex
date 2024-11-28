@@ -1525,7 +1525,7 @@ def data_distillation(
         if f_component_max < force_max:
             atoms_distilled.append(at)
 
-    print(
+    logging.warning(
         f"After distillation, there are still {len(atoms_distilled)} data points remaining."
     )
 
