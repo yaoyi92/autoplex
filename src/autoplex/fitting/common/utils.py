@@ -12,7 +12,6 @@ import sys
 import xml.etree.ElementTree as ET
 from functools import partial
 from pathlib import Path
-from shutil import which
 from typing import TYPE_CHECKING
 
 from monty.dev import requires
@@ -249,13 +248,6 @@ def gap_fitting(
     }
 
 
-@requires(
-    which("julia"),
-    "J-ACE fitting requires 'julia' and ACEPotentials.jl v0.6.7 library to be in PATH. "
-    "Please follow the instructions in the autoplex documentation to install the required julia dependencies "
-    "and add them to PATH. Link to the documentation:"
-    " https://autoatml.github.io/autoplex/user/index.html#standard-installation",
-)
 @requires(
     (
         subprocess.run(
