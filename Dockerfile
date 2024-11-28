@@ -74,8 +74,9 @@ RUN curl -fsSL https://download.lammps.org/tars/lammps.tar.gz -o /opt/lammps.tar
      && make install-python \
      && cmake --build . --target clean
 
-# Add LAMMPS to PATH
+# Add LAMMPS to PATH and Shared LAMMPS library to LD_LIBRARY_PATH
 ENV PATH="${PATH}:/root/.local/bin"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/root/.local/lib"
 
 # Set the working directory
 WORKDIR /workspace
