@@ -87,7 +87,7 @@ You only need to install LAMMPS, if you want to use J-ACE as your MLIP.
 Recipe for compiling lammps-ace including the download of the `libpace.tar.gz` file:
 
 ```
-git clone -b release https://github.com/lammps/lammps
+git clone -b stable_29Aug2024_update1 https://github.com/lammps/lammps.git
 cd lammps
 mkdir build
 cd build
@@ -111,12 +111,14 @@ Use `BUILD_MPI=yes` to enable MPI for parallelization.
 After the installation is completed, enter the following commands in the Python environment.
 If you get the same output, it means the installation was successful.
 
-```
+```python
 from lammps import lammps; lmp = lammps()
-LAMMPS (27 Jun 2024)
+```
+```bash
+LAMMPS (29 Aug 2024 - Update 1)
 OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
   using 1 OpenMP thread(s) per MPI task
-Total wall time: 0:02:22
+>>>
 ```
 It is very important to have it compiled with Python (`-D PKG_PYTHON=on`) and
 LIB PACE flags (`-D PACELIB_MD5=$(md5sum libpace.tar.gz | awk '{print $1}')`).
