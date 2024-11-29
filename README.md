@@ -109,7 +109,7 @@ $LAMMPS_INSTALL is the conda environment for installing the lammps-python interf
 Use `BUILD_MPI=yes` to enable MPI for parallelization.
 
 After the installation is completed, enter the following commands in the Python environment.
-If you get the same output, it means the installation was successful.
+If you get the same output, it means the installation was successful. 
 
 ```python
 from lammps import lammps; lmp = lammps()
