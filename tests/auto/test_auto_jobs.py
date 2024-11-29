@@ -11,7 +11,7 @@ from autoplex.auto.phonons.jobs import (
 from autoplex.data.phonons.flows import TightDFTStaticMaker
 from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
 from atomate2.vasp.flows.core import DoubleRelaxMaker
-from atomate2.vasp.sets.core import TightRelaxSetGenerator
+from atomate2.vasp.sets.core import TightRelaxSetGenerator, StaticSetGenerator
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from jobflow import run_locally
 from tests.conftest import memory_jobstore
@@ -45,6 +45,29 @@ def relax_maker():
             ),
         )
     )
+
+@pytest.fixture(scope="class")
+def static_energy_maker():
+    return StaticMaker(
+            input_set_generator=StaticSetGenerator(
+                auto_ispin=False,
+                user_incar_settings={
+                    "ALGO": "Normal",
+                    "ISPIN": 1,
+                    "LAECHG": False,
+                    "ISMEAR": 0,
+                    "ENCUT": 700,
+                    "SIGMA": 0.05,
+                    "LCHARG": False,  # Do not write the CHGCAR file
+                    "LWAVE": False,  # Do not write the WAVECAR file
+                    "LVTOT": False,  # Do not write LOCPOT file
+                    "LORBIT": 0,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                    "LOPTICS": False,  # No PCDAT file
+                    # to be removed
+                    "NPAR": 4,
+                },
+            )
+        )
 
 
 @pytest.fixture(scope="class")
@@ -241,6 +264,7 @@ def test_dft_task_doc(
         test_dir,
         memory_jobstore,
         relax_maker,
+        static_energy_maker,
         ref_paths,
         fake_run_vasp_kwargs,
         clean_dir
@@ -251,7 +275,7 @@ def test_dft_task_doc(
     dft_phonon_workflow = dft_phonopy_gen_data(structure=structure, mp_id="test", displacements=[0.01], symprec=0.1,
                                                phonon_displacement_maker=TightDFTStaticMaker(),
                                                phonon_bulk_relax_maker=relax_maker,
-                                               phonon_static_energy_maker=StaticMaker(),
+                                               phonon_static_energy_maker=static_energy_maker,
                                                supercell_settings={"min_length": 10, "min_atoms": 20})
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -278,6 +302,7 @@ def test_dft_phonopy_gen_data_manual_supercell_matrix(
         test_dir,
         memory_jobstore,
         relax_maker,
+        static_energy_maker,
         ref_paths_check_sc_mat,
         fake_run_vasp_kwargs,
         clean_dir
@@ -297,7 +322,7 @@ def test_dft_phonopy_gen_data_manual_supercell_matrix(
     dft_phonon_workflow = dft_phonopy_gen_data(structure=structure, mp_id="test", displacements=[0.01], symprec=0.1,
                                                phonon_displacement_maker=TightDFTStaticMaker(),
                                                phonon_bulk_relax_maker=relax_maker,
-                                               phonon_static_energy_maker=StaticMaker(),
+                                               phonon_static_energy_maker=static_energy_maker,
                                                supercell_settings=supercell_settings)
 
     # automatically use fake VASP and write POTCAR.spec during the test
