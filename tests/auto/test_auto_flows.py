@@ -1,7 +1,5 @@
 from __future__ import annotations
 import os
-
-os.environ["OMP_NUM_THREADS"] = "1"
 import pytest
 from monty.serialization import loadfn
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
@@ -15,6 +13,8 @@ from autoplex.fitting.common.flows import MLIPFitMaker
 from typing import Optional, Dict, Any
 from pathlib import Path
 from jobflow import run_locally, Flow
+
+os.environ["OMP_NUM_THREADS"] = "1"
 
 
 @pytest.fixture(scope="class")
