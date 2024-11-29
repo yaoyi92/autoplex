@@ -19,3 +19,4 @@ NELM = 200
 NSW = 0
 PREC = Accurate
 SIGMA = 0.2
+NPAR = 4
