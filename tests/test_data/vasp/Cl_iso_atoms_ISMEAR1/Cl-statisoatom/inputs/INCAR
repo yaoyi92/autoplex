@@ -1,4 +1,4 @@
-ALGO = Fast
+ALGO = Nornal
 EDIFF = 1e-05
 ENAUG = 1360
 ENCUT = 680
