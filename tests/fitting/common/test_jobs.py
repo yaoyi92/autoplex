@@ -24,7 +24,6 @@ def test_gap_fit_maker(test_dir, memory_jobstore, clean_dir):
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
 
-
 def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
 
     database_dir = test_dir / "fitting/rss_training_dataset/"
@@ -47,7 +46,6 @@ def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
     assert Path(jacefit.output["mlip_path"].resolve(memory_jobstore)).exists()
 
 
-
 def test_nequip_fit_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
@@ -68,7 +66,6 @@ def test_nequip_fit_maker(test_dir, memory_jobstore, clean_dir):
     )
 
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
-
 
 
 def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
@@ -99,7 +96,6 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
     )
 
     assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
-
 
 
 def test_mace_fit_maker(test_dir, memory_jobstore, clean_dir):
@@ -176,6 +172,7 @@ def test_mace_finetuning_maker(test_dir, memory_jobstore, clean_dir):
     )
 
     assert Path(macefit.output["mlip_path"].resolve(memory_jobstore)).exists()
+
 
 def test_mace_finetuning_maker2(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
