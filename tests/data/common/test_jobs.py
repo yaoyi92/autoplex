@@ -42,7 +42,6 @@ def test_generate_randomized_structures_distort_type_0():
 
 # test distort_type=1, i.e. angle distortion
 def test_generate_randomized_structures_distort_type_1():
-
     structure = Structure(
         lattice=[[0, 2.73, 2.73], [2.73, 0, 2.73], [2.73, 2.73, 0]],
         species=["Si", "Si"],
@@ -72,7 +71,6 @@ def test_generate_randomized_structures_distort_type_1():
 
 # test distort_type=2, i.e. simultaneous volume and angle distortion
 def test_generate_randomized_structures_distort_type_2():
-
     structure = Structure(
         lattice=[[0, 2.73, 2.73], [2.73, 0, 2.73], [2.73, 2.73, 0]],
         species=["Si", "Si"],
@@ -162,10 +160,10 @@ def test_sampling_cur_job(test_dir, memory_jobstore, clean_dir):
                                     'average': True,
                                     'species': True,
                                     },
-                      },
+                     },
         structure=structures,
     )
-    
+
     response = run_locally(
         job_sample,
         create_folders=True,
@@ -185,24 +183,24 @@ def test_sampling_bcur1s_job(test_dir, memory_jobstore, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
-    
+
     job_sample = sample_data(selection_method='bcur1s',
-                   num_of_selection=5,
-                   bcur_params={'soap_paras': {'l_max': 3,
-                                'n_max': 3,
-                                'atom_sigma': 0.5,
-                                'cutoff': 4.0,
-                                'cutoff_transition_width': 1.0,
-                                'zeta': 4.0,
-                                'average': True,
-                                'species': True,
-                                },
-                                'frac_of_bcur': 0.8,
-                                'energy_label': 'REF_energy'
-                    },
-                    structure=structures, 
-                    isolated_atom_energies={14: -0.84696938},
-                    random_seed=42)
+                             num_of_selection=5,
+                             bcur_params={'soap_paras': {'l_max': 3,
+                                                         'n_max': 3,
+                                                         'atom_sigma': 0.5,
+                                                         'cutoff': 4.0,
+                                                         'cutoff_transition_width': 1.0,
+                                                         'zeta': 4.0,
+                                                         'average': True,
+                                                         'species': True,
+                                                         },
+                                          'frac_of_bcur': 0.8,
+                                          'energy_label': 'REF_energy'
+                                          },
+                             structure=structures,
+                             isolated_atom_energies={14: -0.84696938},
+                             random_seed=42)
 
     response = run_locally(
         job_sample,
@@ -223,11 +221,11 @@ def test_sampling_random_job(test_dir, memory_jobstore, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
-    
+
     job_sample = sample_data(selection_method='random',
-                   num_of_selection=5,
-                   structure=structures,
-                   random_seed=42)
+                             num_of_selection=5,
+                             structure=structures,
+                             random_seed=42)
 
     response = run_locally(
         job_sample,
@@ -248,11 +246,11 @@ def test_sampling_uniform_job(test_dir, memory_jobstore, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     atoms = read(test_files_dir, index=':')
     structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
-    
+
     job_sample = sample_data(selection_method='uniform',
-                   num_of_selection=5,
-                   structure=structures,
-                   random_seed=42)
+                             num_of_selection=5,
+                             structure=structures,
+                             random_seed=42)
 
     response = run_locally(
         job_sample,
