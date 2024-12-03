@@ -13,7 +13,7 @@ All rights reserved.
 
 import logging
 from pathlib import Path
-from typing import Any, Callable, Dict, Final, Generator, Union
+from typing import Any, Callable, Dict, Final, Generator, Union, Optional
 
 import pytest
 from pytest import MonkeyPatch
@@ -24,7 +24,6 @@ from autoplex.data.rss.jobs import do_rss_single_node, do_rss_multi_node
 from autoplex.data.common.jobs import sample_data, collect_dft_data, preprocess_data
 from autoplex.data.common.flows import DFTStaticLabelling
 from autoplex.fitting.common.flows import MLIPFitMaker
-from typing import Optional, Dict, Any
 from jobflow import Flow
 
 logger = logging.getLogger("autoplex")
@@ -129,7 +128,6 @@ def memory_jobstore():
 
     return store
 
-@pytest.fixture()
 @job
 def mock_rss(input_dir: str = None,
              selection_method: str = 'cur',
@@ -200,7 +198,6 @@ def mock_rss(input_dir: str = None,
     )
 
 
-@pytest.fixture()
 @job
 def mock_do_rss_iterations(input=None,
                            input_dir: str = None,
@@ -279,7 +276,6 @@ def mock_do_rss_iterations(input=None,
         return Response(detour=job_list, output=job4.output)
 
 
-@pytest.fixture()
 @job
 def mock_do_rss_iterations_multi_jobs(input=None,
                                       input_dir: str = None,
