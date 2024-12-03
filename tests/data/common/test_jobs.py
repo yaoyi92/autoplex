@@ -9,7 +9,6 @@ from autoplex.data.common.utils import (
     std_rattle
 )
 from autoplex.data.phonons.jobs import reduce_supercell_size_job
-import numpy as np
 import pytest
 from autoplex.data.rss.jobs import RandomizedStructure, do_rss_single_node, do_rss_multi_node
 from autoplex.data.common.jobs import sample_data
