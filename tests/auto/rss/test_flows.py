@@ -3,11 +3,12 @@ import os
 import pytest
 from pathlib import Path
 from jobflow import run_locally, Flow
+from tests.conftest import mock_rss, mock_do_rss_iterations, mock_do_rss_iterations_multi_jobs
 
 os.environ["OMP_NUM_THREADS"] = "1"
 
 
-def test_mock_workflow(test_dir, mock_vasp, memory_jobstore, clean_dir, mock_rss, mock_do_rss_iterations):
+def test_mock_workflow(test_dir, mock_vasp, memory_jobstore, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     # atoms = read(test_files_dir, index=':')
     # structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
@@ -157,7 +158,7 @@ def test_mock_workflow(test_dir, mock_vasp, memory_jobstore, clean_dir, mock_rss
     assert len(selected_atoms) == 3
 
 
-def test_mock_workflow_multi_node(test_dir, mock_vasp, memory_jobstore, clean_dir, mock_rss, mock_do_rss_iterations_multi_jobs):
+def test_mock_workflow_multi_node(test_dir, mock_vasp, memory_jobstore, clean_dir):
     test_files_dir = test_dir / "data/rss.extxyz"
     # atoms = read(test_files_dir, index=':')
     # structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
