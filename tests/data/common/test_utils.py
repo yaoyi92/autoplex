@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import numpy as np
 import matplotlib.pyplot as plt
 from pymatgen.core.structure import Structure
 from autoplex.data.common.utils import (
@@ -9,11 +10,101 @@ from autoplex.data.common.utils import (
     plot_energy_forces,
     filter_outlier_energy,
     filter_outlier_forces,
+    mc_rattle,
+    random_vary_angle,
+    scale_cell,
+    std_rattle
 )
 
 
 fig, ax_list = plt.subplots(nrows=1, ncols=1)
 fig.set_size_inches(15, 20)
+
+
+def test_mc_rattle():
+    structure = Structure(
+        lattice=[[0, 2.73, 2.73], [2.73, 0, 2.73], [2.73, 2.73, 0]],
+        species=["Si", "Si"],
+        coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
+    )
+
+    mc_rattle_job = mc_rattle(structure=structure, n_structures=10)
+
+    # check if correct number of structures are generated
+    assert len(mc_rattle_job) == 10
+    for struct in mc_rattle_job:
+        # check if all outputs are Structure objects
+        assert isinstance(struct, Structure)
+        # check if the rattled structures have the same number of sites as the original structure
+        assert struct.num_sites == structure.num_sites
+        # check if lattice parameters are unchanged
+        assert (struct.lattice.matrix).all() == (structure.lattice.matrix).all()
+        # check if atom positions are reasonably close to positions before rattling
+        assert np.allclose(struct.frac_coords, structure.frac_coords, atol=0.05)
+
+
+def test_std_rattle():
+    structure = Structure(
+        lattice=[[0, 2.73, 2.73], [2.73, 0, 2.73], [2.73, 2.73, 0]],
+        species=["Si", "Si"],
+        coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
+    )
+
+    std_rattle_job = std_rattle(structure=structure, n_structures=10)
+
+    # check if correct number of structures are generated
+    assert len(std_rattle_job) == 10
+    for struct in std_rattle_job:
+        # check if all outputs are Structure objects
+        assert isinstance(struct, Structure)
+        # check if the rattled structures have the same number of sites as the original structure
+        assert struct.num_sites == structure.num_sites
+        # check if lattice parameters are unchanged
+        assert (struct.lattice.matrix).all() == (structure.lattice.matrix).all()
+        # check if atom positions are reasonably close to positions before rattling
+        assert np.allclose(struct.frac_coords, structure.frac_coords, atol=0.05)
+
+
+def test_random_vary_angle():
+    structure = Structure(
+        lattice=[[0, 2.73, 2.73], [2.73, 0, 2.73], [2.73, 2.73, 0]],
+        species=["Si", "Si"],
+        coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
+    )
+
+    random_vary_angle_job = random_vary_angle(structure=structure, n_structures=10)
+
+    # check if correct number of structures are generated
+    assert len(random_vary_angle_job) == 10
+    for struct in random_vary_angle_job:
+        # check if all outputs are Structure objects
+        assert isinstance(struct, Structure)
+        # check if the distorted structures have the same number of sites as the original structure
+        assert struct.num_sites == structure.num_sites
+        # check lattice parameters are reasonably close to those before distorting
+        assert np.allclose((struct.lattice.matrix).all(), (structure.lattice.matrix).all(), atol=0.5)
+
+
+# adapt to check for each input possible e.g. inputting range/manual scale_factors?
+def test_scale_cell():
+    structure = Structure(
+        lattice=[[0, 2.73, 2.73], [2.73, 0, 2.73], [2.73, 2.73, 0]],
+        species=["Si", "Si"],
+        coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
+    )
+
+    scale_cell_job = scale_cell(structure=structure, volume_scale_factor_range=[0.90, 1.10], n_structures=10)
+
+    # check if correct number of structures are generated
+    assert len(scale_cell_job) == 11
+    for struct in scale_cell_job:
+        # check if all outputs are Structure objects
+        assert isinstance(struct, Structure)
+        # check if the distorted structures have the same number of sites as the original structure
+        assert struct.num_sites == structure.num_sites
+        # check lattice parameters are within +-10% of original value
+        assert np.allclose(np.abs(np.array(struct.lattice.abc) - np.array(structure.lattice.abc)), 0,
+                           atol=0.1 * np.array(structure.lattice.abc))
 
 
 def test_energy_forces(clean_dir, test_dir):
