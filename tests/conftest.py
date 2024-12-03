@@ -202,12 +202,7 @@ def mock_rss(input_dir: str = None,
 
 @pytest.fixture()
 @job
-def mock_do_rss_iterations(input: Dict[str, Optional[Any]] = {'test_error': None,
-                                                              'pre_database_dir': None,
-                                                              'mlip_path': None,
-                                                              'isolated_atom_energies': None,
-                                                              'current_iter': None,
-                                                              'kt': 0.6},
+def mock_do_rss_iterations(input=None,
                            input_dir: str = None,
                            selection_method1: str = 'cur',
                            selection_method2: str = 'bcur1s',
@@ -231,6 +226,13 @@ def mock_do_rss_iterations(input: Dict[str, Optional[Any]] = {'test_error': None
                            stop_criterion: float = 0.01,
                            max_iteration_number: int = 9,
                            **fit_kwargs, ):
+    if input is None:
+        input = {'test_error': None,
+                 'pre_database_dir': None,
+                 'mlip_path': None,
+                 'isolated_atom_energies': None,
+                 'current_iter': None,
+                 'kt': 0.6}
     if input['test_error'] is not None and input['test_error'] > stop_criterion and input[
         'current_iter'] < max_iteration_number:
         if input['kt'] > 0.15:
@@ -279,12 +281,7 @@ def mock_do_rss_iterations(input: Dict[str, Optional[Any]] = {'test_error': None
 
 @pytest.fixture()
 @job
-def mock_do_rss_iterations_multi_jobs(input: Dict[str, Optional[Any]] = {'test_error': None,
-                                                                         'pre_database_dir': None,
-                                                                         'mlip_path': None,
-                                                                         'isolated_atom_energies': None,
-                                                                         'current_iter': None,
-                                                                         'kt': 0.6},
+def mock_do_rss_iterations_multi_jobs(input=None,
                                       input_dir: str = None,
                                       selection_method1: str = 'cur',
                                       selection_method2: str = 'bcur1s',
@@ -310,6 +307,13 @@ def mock_do_rss_iterations_multi_jobs(input: Dict[str, Optional[Any]] = {'test_e
                                       num_groups: int = 2,
                                       remove_traj_files: bool = True,
                                       **fit_kwargs, ):
+    if input is None:
+        input = {'test_error': None,
+                 'pre_database_dir': None,
+                 'mlip_path': None,
+                 'isolated_atom_energies': None,
+                 'current_iter': None,
+                 'kt': 0.6}
     if input['test_error'] is not None and input['test_error'] > stop_criterion and input[
         'current_iter'] < max_iteration_number:
         if input['kt'] > 0.15:
