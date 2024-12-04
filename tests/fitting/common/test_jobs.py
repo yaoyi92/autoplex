@@ -8,13 +8,14 @@ def test_gap_fit_maker(test_dir, memory_jobstore, clean_dir):
 
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
-    gapfit = MLIPFitMaker().make(
+    gapfit = MLIPFitMaker(
         auto_delta=False,
         glue_xml=False,
+        apply_data_preprocessing=False,
+        database_dir=database_dir
+    ).make(
         twob={"delta": 2.0, "cutoff": 4},
         threeb={"n_sparse": 10},
-        apply_data_preprocessing=False,
-        database_dir=database_dir    
         )
 
     responses = run_locally(
@@ -30,11 +31,11 @@ def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
 
     jacefit = MLIPFitMaker(
         mlip_type="J-ACE",
-    ).make(
-        isolated_atom_energies={14: -0.84696938},
         num_processes_fit=4,
         apply_data_preprocessing=False,
         database_dir=database_dir,
+    ).make(
+        isolated_atom_energies={14: -0.84696938},
         order=2,
         totaldegree=4,
     )
@@ -50,12 +51,12 @@ def test_nequip_fit_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     nequipfit = MLIPFitMaker(
-       mlip_type="NEQUIP",
-    ).make(
-        isolated_atom_energies={14: -0.84696938},
+        mlip_type="NEQUIP",
         num_processes_fit=1,
         apply_data_preprocessing=False,
         database_dir=database_dir,
+    ).make(
+        isolated_atom_energies={14: -0.84696938},
         r_max=3.14,
         max_epochs=10,
         device="cpu",
@@ -72,12 +73,12 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     nequipfit = MLIPFitMaker(
-            mlip_type="M3GNET",
-    ).make(
-        isolated_atom_energies={14: -0.84696938},
+        mlip_type="M3GNET",
         num_processes_fit=1,
         apply_data_preprocessing=False,
         database_dir=database_dir,
+    ).make(
+        isolated_atom_energies={14: -0.84696938},
         cutoff=3.0,
         threebody_cutoff=2.0,
         batch_size=1,
@@ -102,12 +103,12 @@ def test_mace_fit_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
     macefit = MLIPFitMaker(
-                mlip_type="MACE",
-    ).make(
-        isolated_atom_energies={14: -0.84696938},
+        mlip_type="MACE",
         num_processes_fit=1,
         apply_data_preprocessing=False,
         database_dir=database_dir,
+    ).make(
+        isolated_atom_energies={14: -0.84696938},
         model="MACE",
         config_type_weights='{"Default":1.0}',
         hidden_irreps="32x0e + 32x1o",
@@ -138,10 +139,10 @@ def test_mace_finetuning_maker(test_dir, memory_jobstore, clean_dir):
         ref_force_name=None,
         ref_virial_name=None,
         use_defaults=False,
-    ).make(
         num_processes_fit=1,
         apply_data_preprocessing=False,
         database_dir=database_dir,
+    ).make(
         name="MACE_final",
         foundation_model="small",
         multiheads_finetuning=False,
@@ -177,17 +178,16 @@ def test_mace_finetuning_maker(test_dir, memory_jobstore, clean_dir):
 def test_mace_finetuning_maker2(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
-
     macefit = MLIPFitMaker(
         mlip_type="MACE",
         ref_energy_name=None,
         ref_force_name=None,
         ref_virial_name=None,
         use_defaults=False,
-    ).make(
         num_processes_fit=1,
         apply_data_preprocessing=False,
         database_dir=database_dir,
+    ).make(
         name="MACE_final",
         foundation_model="small",
         multiheads_finetuning=False,
