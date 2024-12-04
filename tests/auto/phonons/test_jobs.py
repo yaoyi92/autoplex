@@ -127,14 +127,15 @@ def test_complete_benchmark(clean_dir, test_dir, memory_jobstore):
     database_dir = test_dir / "fitting/rss_training_dataset/"
     jobs = []
     fit_kwargs = {"general": {"two_body": True}}
-    gapfit = MLIPFitMaker().make(
+    gapfit = MLIPFitMaker(
         auto_delta=False,
         glue_xml=False,
+        apply_data_preprocessing=False,
+        separated=True,
+    ).make(
         twob={"delta": 2.0, "cutoff": 4},
         threeb={"n_sparse": 10},
-        apply_data_preprocessing=False,
         database_dir=database_dir,
-        separated=True,
         **fit_kwargs
     )
     dft_data = loadfn(test_dir / "benchmark" / "phonon_doc_si.json")
