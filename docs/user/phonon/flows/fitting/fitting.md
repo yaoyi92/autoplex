@@ -14,17 +14,19 @@ that will affect the fit regardless of the chosen MLIP method, and e.g. changes 
 like e.g. the choice of hyperparameters.
 
 In case of the general settings, you can pass the MLIP model you want to use with the `ml_models` parameter list.
-You can set the maximum force threshold `f_max` for filtering the data ("distillation") in the MLIP fit preprocess step.
-In principle, the distillation step can be turned off by passing `"distillation": False` in the `fit_kwargs` keyword arguments,
+You can set the maximum force threshold `force_max` for filtering the data ("distillation") in the MLIP fit preprocess step.
+In principle, the distillation step can be turned off by passing `distillation=False`,
 but it is strongly advised to filter out too high force data points.
-The hyperparameters and further parameters can be passed in the `make` call (see below) or using `fit_kwargs` (or `**{...}`),
-like e.g. you can adjust the number of processes with `num_processes_fit`.
+The hyperparameters and further parameters can be passed in the `make` call (see below) or using `fit_kwargs` (or `**{...}`).
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    ml_models=["GAP", "MACE"], ..., apply_data_preprocessing=True, f_max=40.0, split_ratio=0.4
+    ml_models=["GAP", "MACE"], ..., 
+    apply_data_preprocessing=True, 
+    f_max=40.0, split_ratio=0.4,
+    num_processes_fit=48,
 ).make(..., 
     fit_kwargs={
-        "num_processes_fit": 48,
+        "general": {"two_body": True, "three_body": False, "soap": False}
     },
     ...  # put the other hyperparameter commands here as shown below
 )
@@ -67,10 +69,10 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    **{...,
-     "glue_xml": False,
-     "regularization": False,
-     "separated": False,
+    glue_xml=False,
+    regularization=False,
+    separated=False,
+    **{
      "general": {"default_sigma": "{0.001 0.05 0.05 0.0}", {"two_body": True, "three_body": False,"soap": False},...},
      "twob": {"cutoff": 5.0,...},
      "threeb": {"cutoff": 3.25,...},
@@ -289,22 +291,19 @@ autoplex_flow = CompleteDFTvsMLBenchmarkWorkflow(
     volume_scale_factor_range=[0.95, 1.05], rattle_type=0, distort_type=0,
     hyper_para_loop=True, atomwise_regularization_list=[0.1, 0.01],
     apply_data_preprocessing=True,
-    soap_delta_list=[0.5], n_sparse_list=[7000, 8000, 9000]).make(
+    soap_delta_list=[0.5], n_sparse_list=[7000, 8000, 9000],
+    split_ratio=0.33, regularization=False,
+    separated=True, num_processes_fit=48,).make(
     structure_list=struc_list, mp_ids=mpids, benchmark_structures=benchmark_structure_list,
     benchmark_mp_ids=mpbenchmark,
-    **{
-        "split_ratio": 0.33,
-        "regularization": False,
-        "separated": True,
-        "num_processes_fit": 48,
-        "GAP": {"soap": {"delta": 1.0, "l_max": 12, "n_max": 10,
-                         "atom_sigma": 0.5, "zeta": 4, "cutoff": 5.0,
-                         "cutoff_transition_width": 1.0,
-                         "central_weight": 1.0, "n_sparse": 9000, "f0": 0.0,
-                         "covariance_type": "dot_product",
-                         "sparse_method": "cur_points"},
-                "general": {"two_body": False, "three_body": False, "soap": True,
-                            "default_sigma": "{0.001 0.05 0.05 0.0}", "sparse_jitter": 1.0e-8, }}},
+    **{"soap": {"delta": 1.0, "l_max": 12, "n_max": 10,
+                "atom_sigma": 0.5, "zeta": 4, "cutoff": 5.0,
+                "cutoff_transition_width": 1.0,
+                "central_weight": 1.0, "n_sparse": 9000, "f0": 0.0,
+                "covariance_type": "dot_product",
+                "sparse_method": "cur_points"},
+       "general": {"two_body": False, "three_body": False, "soap": True,
+                   "default_sigma": "{0.001 0.05 0.05 0.0}", "sparse_jitter": 1.0e-8, }}},
 )
 
 autoplex_flow.name = "autoplex_wf"
