@@ -86,8 +86,6 @@ class MLIPFitMaker(Maker):
         Determine whether to preprocess the data.
     database_dir: Path | str
         Path to the directory containing the database.
-    device: str
-        Device to be used for model fitting, either "cpu" or "cuda".
     use_defaults: bool
         If true, uses default fit parameters
     """
@@ -114,7 +112,6 @@ class MLIPFitMaker(Maker):
     num_processes_fit: int | None = None
     apply_data_preprocessing: bool = True
     database_dir: Path | str | None = None
-    device: str = "cpu"
     use_defaults: bool = True
 
     # TO DO: Combine parameters used only for gap into one category (as noted below),
@@ -124,6 +121,7 @@ class MLIPFitMaker(Maker):
         fit_input: dict | None = None,  # This is specific to phonon workflow
         species_list: list | None = None,
         isolated_atom_energies: dict | None = None,
+        device: str = "cpu",
         **fit_kwargs,
     ):
         """
@@ -137,6 +135,8 @@ class MLIPFitMaker(Maker):
             List of element names (strings) involved in the training dataset
         isolated_atom_energies: dict
             Dictionary of isolated atoms energies.
+        device: str
+            Device to be used for model fitting, either "cpu" or "cuda".
         fit_kwargs: dict
             Additional keyword arguments for MLIP fitting.
         """
@@ -177,7 +177,7 @@ class MLIPFitMaker(Maker):
                 ref_force_name=self.ref_force_name,
                 ref_virial_name=self.ref_virial_name,
                 use_defaults=self.use_defaults,
-                device=self.device,
+                device=device,
                 species_list=species_list,
                 **fit_kwargs,
             )
@@ -201,7 +201,7 @@ class MLIPFitMaker(Maker):
             ref_energy_name=self.ref_energy_name,
             ref_force_name=self.ref_force_name,
             ref_virial_name=self.ref_virial_name,
-            device=self.device,
+            device=device,
             species_list=species_list,
             **fit_kwargs,
         )
