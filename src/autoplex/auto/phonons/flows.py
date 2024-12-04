@@ -79,7 +79,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         If True, will add randomly distorted structures for DFT calculation.
     add_rss_struct: bool.
         If True, will add RSS generated structures for DFT calculation.
-        n_structures: int.
+    n_structures: int.
         The total number of randomly displaced structures to be generated.
     displacement_maker: BaseVaspMaker
         Maker used for a static calculation for a supercell.
@@ -148,6 +148,14 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     split_ratio: float.
         Parameter to divide the training set and the test set.
         A value of 0.1 means that the ratio of the training set to the test set is 9:1.
+    regularization: bool
+        For using sigma regularization.
+    distillation: bool
+        For using data distillation.
+    separated: bool
+        Repeat the fit for each data_type available in the (combined) database.
+    num_processes_fit: int
+        Number of processes for fitting.
     pre_xyz_files: list[str] or None
         Names of the pre-database train xyz file and test xyz file.
     pre_database_dir: str or None
@@ -210,6 +218,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     force_max: float = 40.0
     force_min: float = 0.01  # unit: eV Å-1
     split_ratio: float = 0.4
+    regularization: bool = False
+    separated: bool = False
+    num_processes_fit: int | None = None
+    distillation: bool = True
     pre_xyz_files: list[str] | None = None
     pre_database_dir: str | None = None
     apply_data_preprocessing: bool = True
@@ -366,6 +378,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 atom_wise_regularization=self.atom_wise_regularization,
                 auto_delta=self.auto_delta,
                 apply_data_preprocessing=self.apply_data_preprocessing,
+                num_processes_fit=self.num_processes_fit,
+                separated=self.separated,
+                regularization=self.regularization,
+                distillation=self.distillation,
             ).make(
                 species_list=isoatoms.output["species"],
                 isolated_atom_energies=isoatoms.output["energies"],
@@ -438,6 +454,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 atomwise_regularization_parameter=atomwise_reg_parameter,
                                 force_min=self.force_min,
                                 auto_delta=self.auto_delta,
+                                num_processes_fit=self.num_processes_fit,
+                                separated=self.separated,
+                                regularization=self.regularization,
+                                distillation=self.distillation,
                             ).make(
                                 species_list=isoatoms.output["species"],
                                 isolated_atom_energies=isoatoms.output["energies"],
