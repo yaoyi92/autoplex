@@ -133,7 +133,6 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit
     from jobflow import run_locally
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. two_body and soap is True)
-    print(fit_input_dict)
     gapfit = MLIPFitMaker(apply_data_preprocessing=True).make(
         species_list=["Li", "Cl"],
         fit_input=fit_input_dict,
@@ -413,10 +412,10 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train_more_data.extxyz", "pre_xyz_test_more_data.extxyz"],
         apply_data_preprocessing=True,
+        separated=True
     ).make(
         species_list=["Li", "Cl"],
         fit_input=fit_input_dict,
-        **{"separated": True}
     )
 
     run_locally(gapfit, ensure_success=True, create_folders=True, store=memory_jobstore)
