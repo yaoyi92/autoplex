@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import shutil
 from dataclasses import dataclass
@@ -16,6 +17,10 @@ from autoplex.fitting.common.utils import (
     get_list_of_vasp_calc_dirs,
     vaspoutput_2_extended_xyz,
     write_after_distillation_data_split,
+)
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 __all__ = [
@@ -293,7 +298,7 @@ class DataPreprocessing(Maker):
                         current_working_directory, "vasp_ref.extxyz"
                     )
                     shutil.copy(source_file_path, destination_file_path)
-                    print(
+                    logging.info(
                         f"File {file_name} has been copied to {destination_file_path}"
                     )
 
@@ -322,7 +327,7 @@ class DataPreprocessing(Maker):
                         open(file_new, "a") as xyz_file,
                     ):
                         xyz_file.write(pre_xyz_file.read())
-                    print(f"File {file_name} has been copied to {file_new}")
+                    logging.info(f"File {file_name} has been copied to {file_new}")
 
             elif len(self.pre_xyz_files) > 2:
                 raise ValueError(
