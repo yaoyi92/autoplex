@@ -224,6 +224,16 @@ class DataPreprocessing(Maker):
         For using data distillation.
     force_max: float
         Maximally allowed force in the data set.
+    force_min: float
+        Minimal force cutoff value for atom-wise regularization.
+    pre_database_dir: str or None
+        The pre-database directory.
+    pre_xyz_files: list[str] or None
+        Names of the pre-database train xyz file and test xyz file labelled by VASP.
+    atomwise_regularization_parameter: float
+        Regularization value for the atom-wise force components.
+    atom_wise_regularization: bool
+        If True, includes atom-wise regularization.
 
     """
 
@@ -233,16 +243,16 @@ class DataPreprocessing(Maker):
     separated: bool = False
     distillation: bool = False
     force_max: float = 40.0
+    force_min: float = 0.01  # unit: eV Å-1
+    pre_database_dir: str | None = None
+    pre_xyz_files: list[str] | None = None
+    atomwise_regularization_parameter: float = 0.1
+    atom_wise_regularization: bool = True
 
     @job
     def make(
         self,
         fit_input: dict,
-        pre_database_dir: str | None = None,
-        pre_xyz_files: list[str] | None = None,
-        atomwise_regularization_parameter: float = 0.1,
-        force_min: float = 0.01,  # unit: eV Å-1
-        atom_wise_regularization: bool = True,
     ):
         """
         Maker for data preprocessing.
@@ -251,20 +261,9 @@ class DataPreprocessing(Maker):
         ----------
         fit_input:
             Mixed list of dictionary and lists of the fit input data.
-        pre_database_dir: str or None
-            The pre-database directory.
-        pre_xyz_files: list[str] or None
-            Names of the pre-database train xyz file and test xyz file labelled by VASP.
-        atomwise_regularization_parameter: float
-            Regularization value for the atom-wise force components.
-        force_min: float
-            Minimal force cutoff value for atom-wise regularization.
-        atom_wise_regularization: bool
-            If True, includes atom-wise regularization.
-
         """
-        if pre_xyz_files is None:
-            pre_xyz_files = ["train.extxyz", "test.extxyz"]
+        if self.pre_xyz_files is None:
+            self.pre_xyz_files = ["train.extxyz", "test.extxyz"]
 
         list_of_vasp_calc_dirs = get_list_of_vasp_calc_dirs(flow_output=fit_input)
 
@@ -284,12 +283,12 @@ class DataPreprocessing(Maker):
             for _ in value2[0]
         ]
 
-        if pre_database_dir and os.path.exists(pre_database_dir):
+        if self.pre_database_dir and os.path.exists(self.pre_database_dir):
             current_working_directory = os.getcwd()
 
-            if len(pre_xyz_files) == 1:
-                for file_name in pre_xyz_files:
-                    source_file_path = os.path.join(pre_database_dir, file_name)
+            if len(self.pre_xyz_files) == 1:
+                for file_name in self.pre_xyz_files:
+                    source_file_path = os.path.join(self.pre_database_dir, file_name)
                     destination_file_path = os.path.join(
                         current_working_directory, "vasp_ref.extxyz"
                     )
@@ -302,9 +301,9 @@ class DataPreprocessing(Maker):
             path_to_vasp_static_calcs=list_of_vasp_calc_dirs,
             config_types=config_types,
             data_types=data_types,
-            f_min=force_min,
-            regularization=atomwise_regularization_parameter,
-            atom_wise_regularization=atom_wise_regularization,
+            f_min=self.force_min,
+            regularization=self.atomwise_regularization_parameter,
+            atom_wise_regularization=self.atom_wise_regularization,
         )
 
         write_after_distillation_data_split(
@@ -312,18 +311,20 @@ class DataPreprocessing(Maker):
         )
 
         # Merging database
-        if pre_database_dir and os.path.exists(pre_database_dir):
-            if len(pre_xyz_files) == 2:
+        if self.pre_database_dir and os.path.exists(self.pre_database_dir):
+            if len(self.pre_xyz_files) == 2:
                 files_new = ["train.extxyz", "test.extxyz"]
-                for file_name, file_new in zip(pre_xyz_files, files_new):
+                for file_name, file_new in zip(self.pre_xyz_files, files_new):
                     with (
-                        open(os.path.join(pre_database_dir, file_name)) as pre_xyz_file,
+                        open(
+                            os.path.join(self.pre_database_dir, file_name)
+                        ) as pre_xyz_file,
                         open(file_new, "a") as xyz_file,
                     ):
                         xyz_file.write(pre_xyz_file.read())
                     print(f"File {file_name} has been copied to {file_new}")
 
-            elif len(pre_xyz_files) > 2:
+            elif len(self.pre_xyz_files) > 2:
                 raise ValueError(
                     "Please provide a train and a test extxyz file (two files in total) for the pre_xyz_files."
                 )
