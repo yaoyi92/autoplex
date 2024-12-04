@@ -114,7 +114,7 @@ class MLIPFitMaker(Maker):
     database_dir: Path | str | None = None
     use_defaults: bool = True
 
-    # TO DO: Combine parameters used only for gap into one category (as noted below),
+    # TODO: Combine parameters used only for gap into one category (as noted below),
     # otherwise it will be too specific.
     def make(
         self,
