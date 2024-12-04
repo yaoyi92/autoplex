@@ -911,12 +911,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization_hploop(
                                                                       n_sparse_list=[3000, 5000],
                                                                       soap_delta_list=[1.0],
                                                                       apply_data_preprocessing=True,
+                                                                      regularization=True,
                                                                       ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        **{"regularization": True},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -955,13 +955,13 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
                                                                volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
                                                                summary_filename_prefix="test_results_",
                                                                apply_data_preprocessing=True,
+                                                               regularization=True,
                                                                ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        **{"regularization": True,
-           "soap": {"delta": 3.0, "l_max": 12, "n_max": 10, "n_sparse": 8000, "f0": 0.0}},
+        **{"soap": {"delta": 3.0, "l_max": 12, "n_max": 10, "n_sparse": 8000, "f0": 0.0}},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -1009,12 +1009,12 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
                                                              pre_xyz_files=["vasp_ref.extxyz"],
                                                              pre_database_dir=test_dir / "fitting" / "ref_files",
                                                              apply_data_preprocessing=True,
+                                                             separated=True,
                                                              ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        **{"separated": True},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -1054,12 +1054,13 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
                                                                pre_xyz_files=["vasp_ref.extxyz"],
                                                                pre_database_dir=test_dir / "fitting" / "ref_files",
                                                                apply_data_preprocessing=True,
+                                                               regularization=True,
+                                                               separated=True,
                                                                ).make(
         structure_list=[structure, structure, structure],
         mp_ids=["test", "test2", "test3"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        **{"regularization": True, "separated": True},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -1100,12 +1101,13 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
                                                              pre_xyz_files=["vasp_ref.extxyz"],
                                                              pre_database_dir=test_dir / "fitting" / "ref_files",
                                                              apply_data_preprocessing=True,
+                                                             regularization=True,
+                                                             separated=True,
                                                              ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        **{"regularization": True, "separated": True},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
