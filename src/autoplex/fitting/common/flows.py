@@ -99,9 +99,9 @@ class MLIPFitMaker(Maker):
     ref_force_name: str = "REF_forces"
     ref_virial_name: str = "REF_virial"
     glue_file_path: str = "glue.xml"
-    split_ratio: float = (0.4,)
-    force_max: float = (40.0,)
-    force_min: float = (0.01,)  # unit: eV Å-1
+    split_ratio: float = 0.4
+    force_max: float = 40.0
+    force_min: float = 0.01  # unit: eV Å-1
     distillation: bool = True
     separated: bool = False
     pre_xyz_files: list[str] | None = None
