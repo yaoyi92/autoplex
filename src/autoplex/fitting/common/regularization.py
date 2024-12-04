@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import ast
+import logging
 import traceback
 from contextlib import suppress
 from typing import TYPE_CHECKING
@@ -13,6 +14,10 @@ from scipy.spatial import ConvexHull, Delaunay
 
 if TYPE_CHECKING:
     from ase import Atoms
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def set_custom_sigma(
@@ -99,12 +104,12 @@ def set_custom_sigma(
     isolated_atom_energies = isolated_atom_energies or {}
 
     if scheme == "linear-hull":
-        print("Regularising with linear hull")
+        logging.info("Regularising with linear hull")
         hull, points = get_convex_hull(atoms, energy_name=energy_name)
         get_e_distance_func = get_e_distance_to_hull
 
     elif scheme == "volume-stoichiometry":
-        print("Regularising with 3D volume-mole fraction hull")
+        logging.info("Regularising with 3D volume-mole fraction hull")
         if len(isolated_atom_energies) == 0:
             raise ValueError("Need to supply dictionary of isolated energies.")
 
@@ -138,7 +143,7 @@ def set_custom_sigma(
             pass
 
     for group, atoms_group in points.items():
-        print("group:", group)
+        logging.info(f"group: {group}")
 
         for val in atoms_group:
 
@@ -212,17 +217,21 @@ def set_custom_sigma(
 
     for label, data in zip(labels, data_type):
         if len(data) == 0:
-            print("No automatic regularisation performed (no structures requested)")
+            logging.info(
+                "No automatic regularisation performed (no structures requested)"
+            )
             continue
         if label == "E":
             # Report of the regularisation statistics
-            print(f"Automatic regularisation statistics for {len(data)} structures:\n")
-            print(
+            logging.info(
+                f"Automatic regularisation statistics for {len(data)} structures:\n"
+            )
+            logging.info(
                 "{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}".format(
                     "", "Mean", "Std", "Nmin", "Nmax"
                 )
             )
-        print(
+        logging.info(
             f"{label:>20s}"
             f"{data.mean():>20.4f}"
             f"{data.std():>20.4f}"
@@ -313,7 +322,7 @@ def get_e_distance_to_hull(
     atoms: (Atoms)
         Structure to calculate distance to hull
     energy_name: (str)
-        Name of energy key in atoms.info (typically a DFT energy)
+        Name of the energy key in atoms.info (typically a DFT energy)
 
     """
     volume = atoms.get_volume() / len(atoms)
