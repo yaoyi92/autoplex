@@ -357,10 +357,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 mlip_type=ml_model,
                 glue_file_path=self.glue_file_path,
                 use_defaults=self.use_defaults_fitting,
-            ).make(
-                species_list=isoatoms.output["species"],
-                isolated_atom_energies=isoatoms.output["energies"],
-                fit_input=fit_input,
                 split_ratio=self.split_ratio,
                 force_max=self.force_max,
                 pre_xyz_files=self.pre_xyz_files,
@@ -370,6 +366,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 atom_wise_regularization=self.atom_wise_regularization,
                 auto_delta=self.auto_delta,
                 apply_data_preprocessing=self.apply_data_preprocessing,
+            ).make(
+                species_list=isoatoms.output["species"],
+                isolated_atom_energies=isoatoms.output["energies"],
+                fit_input=fit_input,
                 **fit_kwargs,
             )
             flows.append(add_data_fit)
@@ -431,10 +431,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             loop_data_fit = MLIPFitMaker(
                                 mlip_type=ml_model,
                                 glue_file_path=self.glue_file_path,
-                            ).make(
-                                species_list=isoatoms.output["species"],
-                                isolated_atom_energies=isoatoms.output["energies"],
-                                fit_input=fit_input,
                                 split_ratio=self.split_ratio,
                                 force_max=self.force_max,
                                 pre_xyz_files=self.pre_xyz_files,
@@ -442,6 +438,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 atomwise_regularization_parameter=atomwise_reg_parameter,
                                 force_min=self.force_min,
                                 auto_delta=self.auto_delta,
+                            ).make(
+                                species_list=isoatoms.output["species"],
+                                isolated_atom_energies=isoatoms.output["energies"],
+                                fit_input=fit_input,
                                 soap=soap_dict,
                             )
                             flows.append(loop_data_fit)
