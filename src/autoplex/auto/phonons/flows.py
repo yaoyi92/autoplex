@@ -182,6 +182,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Keyword arguments for the benchmark flows
     summary_filename_prefix: str
         Prefix of the result summary file.
+    glue_xml: bool
+        Use the glue.xml core potential instead of fitting 2b terms.
     glue_file_path: str
         Name of the glue.xml file path.
     use_defaults_fitting: bool
@@ -236,6 +238,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     benchmark_kwargs: dict = field(default_factory=dict)
     path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH
     summary_filename_prefix: str = "results_"
+    glue_xml: bool = False
     glue_file_path: str = "glue.xml"
     use_defaults_fitting: bool = True
 
@@ -367,6 +370,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         for ml_model in self.ml_models:
             add_data_fit = MLIPFitMaker(
                 mlip_type=ml_model,
+                glue_xml=self.glue_xml,
                 glue_file_path=self.glue_file_path,
                 use_defaults=self.use_defaults_fitting,
                 split_ratio=self.split_ratio,
@@ -446,6 +450,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             }
                             loop_data_fit = MLIPFitMaker(
                                 mlip_type=ml_model,
+                                glue_xml=self.glue_xml,
                                 glue_file_path=self.glue_file_path,
                                 split_ratio=self.split_ratio,
                                 force_max=self.force_max,
