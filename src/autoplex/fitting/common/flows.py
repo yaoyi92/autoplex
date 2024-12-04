@@ -149,13 +149,13 @@ class MLIPFitMaker(Maker):
                 separated=self.separated,
                 distillation=self.distillation,
                 force_max=self.force_max,
-            ).make(
-                fit_input=fit_input,
                 pre_xyz_files=self.pre_xyz_files,
                 pre_database_dir=self.pre_database_dir,
                 force_min=self.force_min,
                 atomwise_regularization_parameter=self.atomwise_regularization_parameter,
                 atom_wise_regularization=self.atom_wise_regularization,
+            ).make(
+                fit_input=fit_input,
             )
             jobs.append(data_prep_job)
 
