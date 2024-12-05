@@ -1,15 +1,8 @@
 """Flows to create and check training data."""
 
-from __future__ import annotations
-
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from emmet.core.math import Matrix3D
-
 import logging
 import traceback
+from dataclasses import dataclass, field
 
 from atomate2.forcefields.jobs import (
     ForceFieldRelaxMaker,
@@ -21,6 +14,7 @@ from atomate2.vasp.powerups import (
     update_user_potcar_settings,
 )
 from atomate2.vasp.sets.core import StaticSetGenerator
+from emmet.core.math import Matrix3D
 from jobflow import Flow, Maker, Response, job
 from pymatgen.core import Lattice
 from pymatgen.core.structure import Structure
