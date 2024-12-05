@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from jobflow import Flow
 from pymatgen.core.structure import Structure
 from autoplex.auto.phonons.jobs import (

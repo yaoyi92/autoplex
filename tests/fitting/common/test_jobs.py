@@ -1,4 +1,3 @@
-from __future__ import annotations
 from autoplex.fitting.common.flows import MLIPFitMaker
 from pathlib import Path
 from jobflow import run_locally

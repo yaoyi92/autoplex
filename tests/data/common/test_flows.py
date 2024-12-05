@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from autoplex.data.common.flows import GenerateTrainingDataForTesting, DFTStaticLabelling
 from ase.io import read
 from pymatgen.core.structure import Structure
