@@ -1,7 +1,5 @@
 """RSS Jobs include the generation of the initial potential model as well as iterative RSS exploration."""
 
-from __future__ import annotations
-
 import logging
 
 from jobflow import Flow, Response, job
