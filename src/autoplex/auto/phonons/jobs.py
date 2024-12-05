@@ -1,30 +1,22 @@
 """General AutoPLEX automation jobs."""
 
-from __future__ import annotations
-
+from collections.abc import Iterable
 from dataclasses import field
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import numpy as np
-from jobflow import Flow, Response, job
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from atomate2.vasp.jobs.base import BaseVaspMaker
-    from pymatgen.core.structure import Structure
-
-    from autoplex.data.phonons.flows import IsoAtomStaticMaker
-
 from atomate2.vasp.flows.core import DoubleRelaxMaker
+from atomate2.vasp.jobs.base import BaseVaspMaker
 from atomate2.vasp.jobs.core import StaticMaker, TightRelaxMaker
 from atomate2.vasp.sets.core import StaticSetGenerator, TightRelaxSetGenerator
+from jobflow import Flow, Response, job
+from pymatgen.core.structure import Structure
 
 from autoplex.benchmark.phonons.flows import PhononBenchmarkMaker
 from autoplex.data.phonons.flows import (
     DFTPhononMaker,
     IsoAtomMaker,
+    IsoAtomStaticMaker,
     MLPhononMaker,
     RandomStructuresDataGenerator,
     TightDFTStaticMaker,

@@ -2,8 +2,6 @@
 
 import logging
 from dataclasses import dataclass, field
-
-# if TYPE_CHECKING:
 from pathlib import Path
 
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
