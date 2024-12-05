@@ -1,37 +1,24 @@
 """Flows to perform automatic data generation, fitting, and benchmarking of ML potentials."""
 
-from __future__ import annotations
-
 import logging
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
 
+# if TYPE_CHECKING:
+from pathlib import Path
+
+from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from atomate2.vasp.flows.mp import (
     MPGGADoubleRelaxMaker,
     MPGGARelaxMaker,
     MPGGAStaticMaker,
 )
+from atomate2.vasp.jobs.base import BaseVaspMaker
+from jobflow import Flow, Maker
+from pymatgen.core.structure import Structure
 from pymatgen.io.vasp.sets import (
     MPRelaxSet,
     MPStaticSet,
 )
-
-from autoplex.data.phonons.flows import TightDFTStaticMaker
-from autoplex.fitting.common.utils import (
-    MLIP_PHONON_DEFAULTS_FILE_PATH,
-    load_mlip_hyperparameter_defaults,
-)
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from atomate2.common.schemas.phonons import PhononBSDOSDoc
-    from atomate2.vasp.jobs.base import BaseVaspMaker
-    from pymatgen.core.structure import Structure
-
-    from autoplex.data.phonons.flows import IsoAtomStaticMaker
-
-from jobflow import Flow, Maker
 
 from autoplex.auto.phonons.jobs import (
     complete_benchmark,
@@ -42,8 +29,13 @@ from autoplex.auto.phonons.jobs import (
     run_supercells,
 )
 from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
+from autoplex.data.phonons.flows import IsoAtomStaticMaker, TightDFTStaticMaker
 from autoplex.data.phonons.jobs import reduce_supercell_size_job
 from autoplex.fitting.common.flows import MLIPFitMaker
+from autoplex.fitting.common.utils import (
+    MLIP_PHONON_DEFAULTS_FILE_PATH,
+    load_mlip_hyperparameter_defaults,
+)
 
 __all__ = [
     "CompleteDFTvsMLBenchmarkWorkflow",
