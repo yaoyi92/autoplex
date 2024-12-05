@@ -1,25 +1,20 @@
 """Functions for automatic regularization and weighting of training data."""
 
-# adapted from MorrowChem's RSS routines.
-from __future__ import annotations
-
 import ast
 import logging
 import traceback
 from contextlib import suppress
-from typing import TYPE_CHECKING
 
 import numpy as np
+from ase import Atoms
 from scipy.spatial import ConvexHull, Delaunay
-
-if TYPE_CHECKING:
-    from ase import Atoms
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 
+# adapted from MorrowChem's RSS routines.
 def set_custom_sigma(
     atoms: list[Atoms],
     reg_minmax: list[tuple],

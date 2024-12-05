@@ -1,7 +1,5 @@
 """Flows consisting of jobs to fit ML potentials."""
 
-from __future__ import annotations
-
 import logging
 import os
 import shutil

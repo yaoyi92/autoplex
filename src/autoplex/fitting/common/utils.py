@@ -1,26 +1,17 @@
 """Utility functions for fitting jobs."""
 
-from __future__ import annotations
-
 import contextlib
 import json
+import logging
 import os
 import re
 import shutil
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
+from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-from monty.dev import requires
-
-if TYPE_CHECKING:
-    from pymatgen.core import Structure
-
-import logging
-from collections.abc import Iterable
 
 import ase
 import lightning as pl
@@ -40,8 +31,10 @@ from matgl.ext.pymatgen import Structure2Graph, get_element_list
 from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
 from matgl.utils.training import PotentialLightningModule
+from monty.dev import requires
 from nequip.ase import NequIPCalculator
 from numpy import ndarray
+from pymatgen.core import Structure
 from pymatgen.io.ase import AseAtomsAdaptor
 from pytorch_lightning.loggers import CSVLogger
 from scipy.spatial import ConvexHull
