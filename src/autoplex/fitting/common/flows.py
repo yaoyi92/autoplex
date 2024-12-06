@@ -332,42 +332,71 @@ class DataPreprocessing(Maker):
                     "Please provide a train and a test extxyz file (two files in total) for the pre_xyz_files."
                 )
         if self.regularization:
+            base_dir = os.getcwd()
+            folder_name = os.path.join(base_dir, "without_regularization")
+            try:
+                os.makedirs(folder_name, exist_ok=True)
+                logging.info(f"Created/verified folder: {folder_name}")
+            except Exception as e:
+                logging.warning(f"Error creating folder {folder_name}: {e}")
+            train_path = os.path.join(folder_name, "train.extxyz")
             atoms = ase.io.read("train.extxyz", index=":")
-            ase.io.write("train_wo_sigma.extxyz", atoms, format="extxyz")
+            ase.io.write(train_path, atoms, format="extxyz")
+            logging.info(f"Written train file without regularization to: {train_path}")
             atoms_with_sigma = set_custom_sigma(
                 atoms,
                 reg_minmax=[(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)],
             )
             ase.io.write("train.extxyz", atoms_with_sigma, format="extxyz")
         if self.separated:
+            base_dir = os.getcwd()
             atoms_train = ase.io.read("train.extxyz", index=":")
             atoms_test = ase.io.read("test.extxyz", index=":")
             for dt in set(data_types):
                 data_type = dt.removesuffix("_dir")
+                folder_name = os.path.join(base_dir, data_type)
+                try:
+                    os.makedirs(folder_name, exist_ok=True)
+                    logging.info(f"Created/verified folder: {folder_name}")
+                except Exception as e:
+                    logging.warning(
+                        f"Error creating folder {folder_name}: {e}. "
+                        f"\nProceeding without separated dataset"
+                    )
+                    continue
+                vasp_ref_path = os.path.join(folder_name, "vasp_ref.extxyz")
+                train_path = os.path.join(folder_name, "train.extxyz")
+                test_path = os.path.join(folder_name, "test.extxyz")
+
                 if data_type != "iso_atoms":
                     for atoms in atoms_train + atoms_test:
                         if atoms.info["data_type"] == "iso_atoms":
                             ase.io.write(
-                                f"vasp_ref_{data_type}.extxyz",
+                                vasp_ref_path,
                                 atoms,
                                 format="extxyz",
                                 append=True,
                             )
                         if atoms.info["data_type"] == data_type:
                             ase.io.write(
-                                f"vasp_ref_{data_type}.extxyz",
+                                vasp_ref_path,
                                 atoms,
                                 format="extxyz",
                                 append=True,
                             )
-
-                    write_after_distillation_data_split(
-                        distillation=self.distillation,
-                        force_max=self.force_max,
-                        split_ratio=self.split_ratio,
-                        vasp_ref_name=f"vasp_ref_{data_type}.extxyz",
-                        train_name=f"train_{data_type}.extxyz",
-                        test_name=f"test_{data_type}.extxyz",
-                    )
+                    try:
+                        write_after_distillation_data_split(
+                            distillation=self.distillation,
+                            force_max=self.force_max,
+                            split_ratio=self.split_ratio,
+                            vasp_ref_name=vasp_ref_path,
+                            train_name=train_path,
+                            test_name=test_path,
+                        )
+                        logging.info(f"Data split written: {train_path}, {test_path}")
+                    except Exception as e:
+                        logging.warning(
+                            f"Error in write_after_distillation_data_split: {e}"
+                        )
 
         return Path.cwd()
