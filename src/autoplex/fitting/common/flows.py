@@ -343,7 +343,8 @@ class DataPreprocessing(Maker):
             atoms_train = ase.io.read("train.extxyz", index=":")
             atoms_test = ase.io.read("test.extxyz", index=":")
             for dt in set(data_types):
-                data_type = dt.rstrip("_dir")
+                data_type = dt.removesuffix("_dir")
+                print("DATA TYPE", data_type, dt, data_types)
                 if data_type != "iso_atoms":
                     for atoms in atoms_train + atoms_test:
                         if atoms.info["data_type"] == "iso_atoms":
