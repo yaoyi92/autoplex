@@ -78,15 +78,15 @@ def machine_learning_fit(
 
     train_files = [
         "train.extxyz",
-        "train_wo_sigma.extxyz",
-        "train_phonon.extxyz",
-        "train_rattled.extxyz",
+        "without_regularization/train.extxyz",
+        "phonon/train.extxyz",
+        "rattled/train.extxyz",
     ]
     test_files = [
         "test.extxyz",
         "test.extxyz",
-        "test_phonon.extxyz",
-        "test_rattled.extxyz",
+        "phonon/test.extxyz",
+        "rattled/test.extxyz",
     ]
 
     if mlip_type == "GAP":
