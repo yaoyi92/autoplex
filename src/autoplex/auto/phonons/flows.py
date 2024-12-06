@@ -340,7 +340,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 fit_input.update(
                     {
                         mp_id: {
-                            "rand_struc_dir": add_dft_rand.output["rand_struc_dir"],
+                            "rattled_dir": add_dft_rand.output["rattled_dir"],
                             "phonon_dir": add_dft_phon.output["phonon_dir"],
                             "phonon_data": add_dft_phon.output["phonon_data"],
                         }

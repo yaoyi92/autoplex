@@ -21,14 +21,14 @@ def test_generate_randomized_structures_distort_type_0():
         coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
     )
 
-    rand_structs_job = generate_randomized_structures(
+    rattledts_job = generate_randomized_structures(
         structure=structure,
         distort_type=0,
         n_structures=10,
         volume_scale_factor_range=[0.90, 1.10],
         rattle_type=0)
 
-    responses = run_locally(rand_structs_job, create_folders=False, ensure_success=True)
+    responses = run_locally(rattledts_job, create_folders=False, ensure_success=True)
 
     # check if correct number of valid structure objects are generated
     for uuid, response_collection in responses.items():
@@ -48,7 +48,7 @@ def test_generate_randomized_structures_distort_type_1():
         coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
     )
 
-    rand_structs_job = generate_randomized_structures(
+    rattledts_job = generate_randomized_structures(
         structure=structure,
         distort_type=1,
         n_structures=10,
@@ -57,7 +57,7 @@ def test_generate_randomized_structures_distort_type_1():
         angle_max_attempts=1000,
         rattle_type=0)
 
-    responses = run_locally(rand_structs_job, create_folders=False, ensure_success=True)
+    responses = run_locally(rattledts_job, create_folders=False, ensure_success=True)
 
     # check if correct number of valid structure objects are generated
     for uuid, response_collection in responses.items():
@@ -77,7 +77,7 @@ def test_generate_randomized_structures_distort_type_2():
         coords=[[0, 0, 0], [0.25, 0.25, 0.25]],
     )
 
-    rand_structs_job = generate_randomized_structures(
+    rattledts_job = generate_randomized_structures(
         structure=structure,
         distort_type=2,
         n_structures=10,
@@ -87,7 +87,7 @@ def test_generate_randomized_structures_distort_type_2():
         angle_max_attempts=1000,
         rattle_type=0)
 
-    responses = run_locally(rand_structs_job, create_folders=False, ensure_success=True)
+    responses = run_locally(rattledts_job, create_folders=False, ensure_success=True)
 
     # check if correct number of valid structure objects are generated
     for uuid, response_collection in responses.items():

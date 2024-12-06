@@ -113,8 +113,8 @@ def complete_benchmark(  # this function was put here to prevent circular import
     if phonon_displacement_maker is None:
         phonon_displacement_maker = TightDFTStaticMaker(name="dft phonon static")
 
-    for suffix in ["", "_wo_sigma", "_phonon", "_rand_struc"]:
-        # _wo_sigma", "_phonon", "_rand_struc" only available for GAP at the moment
+    for suffix in ["", "_wo_sigma", "_phonon", "_rattled"]:
+        # _wo_sigma", "_phonon", "_rattled" only available for GAP at the moment
         if ml_model == "GAP":
             ml_potential = Path(ml_path) / f"gap_file{suffix}.xml"
         elif ml_model == "J-ACE":
@@ -566,7 +566,7 @@ def dft_random_gen_data(
     )
     jobs.append(random_datagen)
 
-    flow = Flow(jobs, {"rand_struc_dir": random_datagen.output})
+    flow = Flow(jobs, {"rattled_dir": random_datagen.output})
     return Response(replace=flow)
 
 

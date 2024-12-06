@@ -140,15 +140,15 @@ class GenerateTrainingDataForTesting(Maker):
             jobs.append(supercell)
 
             for cell_factor in cell_factor_sequence:
-                rand_struc_job = generate_randomized_structures(
+                rattled_job = generate_randomized_structures(
                     structure=supercell.output,
                     n_structures=n_structures,
                     volume_custom_scale_factors=[cell_factor],
                     rattle_std=rattle_std,
                 )
-                jobs.append(rand_struc_job)
+                jobs.append(rattled_job)
                 static_conv_jobs = self.static_run_and_convert(
-                    rand_struc_job.output,
+                    rattled_job.output,
                     cell_factor,
                     config_type,
                     potential_filename,
@@ -189,12 +189,12 @@ class GenerateTrainingDataForTesting(Maker):
 
         """
         jobs = []
-        for rand_struc in structure_list:
+        for rattled in structure_list:
             if relax_kwargs == {}:
                 relax_kwargs = {
                     "interval": 50000,
                     "fmax": 0.5,
-                    "traj_file": rand_struc.reduced_formula
+                    "traj_file": rattled.reduced_formula
                     + "_"
                     + f"{cell_factor}".replace(".", "")
                     + ".pkl",
@@ -210,11 +210,11 @@ class GenerateTrainingDataForTesting(Maker):
                     relax_kwargs=relax_kwargs,
                     steps=1,
                 )
-            static_run = self.static_energy_maker.make(structure=rand_struc)
+            static_run = self.static_energy_maker.make(structure=rattled)
             jobs.append(static_run)
             conv_job = convert_to_extxyz(
                 static_run.output,
-                rand_struc.reduced_formula
+                rattled.reduced_formula
                 + "_"
                 + f"{cell_factor}".replace(".", "")
                 + ".pkl",

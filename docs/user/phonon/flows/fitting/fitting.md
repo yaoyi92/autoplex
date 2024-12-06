@@ -338,7 +338,7 @@ store.connect()
 
 fit_input_dict = {
         "mp-id": {  # put a mp-id or another kind of data marker here
-            "rand_struc_dir": [[
+            "rattled_dir": [[
                 (
                     "/path/to/randomized/supercell/structure/calculation"
                 ),
@@ -379,6 +379,6 @@ run_locally(mlip_fit, create_folders=True, store=store)
 Additional fit settings can again be passed using `fit_kwargs` or `**{...}`.
 
 > ℹ️ Note that in the current setup of `autoplex`, you need to pass a `fit_input_dict` to the `MLIPFitMaker`
-> containing at least one entry for "rand_struc_dir", "phonon_dir" and "isolated_atom" **VASP** calculations, 
+> containing at least one entry for "rattled_dir", "phonon_dir" and "isolated_atom" **VASP** calculations, 
 > otherwise the code will not finish successfully.
             

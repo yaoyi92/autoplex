@@ -1393,7 +1393,7 @@ def get_list_of_vasp_calc_dirs(flow_output) -> list[str]:
     for output in flow_output.values():
         for output_type, dirs in output.items():
             if output_type != "phonon_data" and isinstance(dirs, list):
-                if output_type == "rand_struc_dir":
+                if output_type == "rattled_dir":
                     flat_dirs = [[item for sublist in dirs for item in sublist]]
                     list_of_vasp_calc_dirs.extend(*flat_dirs)
                 else:

@@ -380,7 +380,7 @@ def test_dft_random_gen_data_manual_supercell_matrix(
         store=memory_jobstore,
     )
 
-    for path in dft_rattled_workflow.output.resolve(store=memory_jobstore)['rand_struc_dir'][0]:
+    for path in dft_rattled_workflow.output.resolve(store=memory_jobstore)['rattled_dir'][0]:
         result_structure = Structure.from_file(Path(strip_hostname(path)).joinpath("POSCAR.gz"))
         assert result_structure.lattice.abc == pytest.approx(structure.lattice.abc, rel=0.05)
         # high rel error because of volume scaling

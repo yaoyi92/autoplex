@@ -6,7 +6,7 @@ from autoplex.fitting.common.flows import MLIPFitMaker
 def fit_input_dict(vasp_test_dir):
     return {
         "mp-22905": {
-            "rand_struc_dir": [
+            "rattled_dir": [
                 [
                     (
                             vasp_test_dir
@@ -75,7 +75,7 @@ def fit_input_dict(vasp_test_dir):
 def fit_input_dict_glue_xml(vasp_test_dir):
     return {
         "mp-149": {
-            "rand_struc_dir": [
+            "rattled_dir": [
                 [
                     (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_1")
                     .absolute()
@@ -422,4 +422,4 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
     # check if gap potential file is generated
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
     assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_phonon.extxyz").exists()
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_rand_struc.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_rattled.extxyz").exists()
