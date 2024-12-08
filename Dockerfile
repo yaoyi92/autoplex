@@ -61,7 +61,7 @@ RUN curl -fsSL https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz -o /opt/airss
 ENV PATH="${PATH}:/opt/airss/bin"
 
 # Install cuda-toolkit for NEP interface via GPUMD+calorine
-RUN micromamba install -c nvidia/label/cuda-12.2.0 cuda-toolkit && micromamba clean --all --yes
+RUN micromamba install -y -n base -c nvidia/label/cuda-12.2.0 cuda-toolkit && micromamba clean --all --yes
 
 # Install GPUMD and add to bin
 RUN git clone https://github.com/brucefan1983/GPUMD.git && \
