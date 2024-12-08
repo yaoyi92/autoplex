@@ -37,16 +37,9 @@ RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
     micromamba install -y -n base -c nvidia/label/cuda-12.2.0 cuda-toolkit &&  \
     micromamba clean --all --yes
 
-# Install autoplex, testing dependencies and clear cache
-RUN python -m pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir uv \
-    && uv pip install pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools \
-    && uv pip install --prerelease=allow .[strict,docs] && uv cache clean && rm -rf /tmp/*
-
 # Install Julia
 RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
     && ln -s /opt/julia-1.9.2/bin/julia /usr/local/bin/julia
-
 
 # Set up Julia environment (ACEpotentials.jl interface)
 RUN julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add(Pkg.PackageSpec(;name="ACEpotentials", version="0.6.7")); Pkg.add("DataFrames"); Pkg.add("CSV")'
@@ -98,3 +91,9 @@ WORKDIR /workspace
 
 # Copy the current directory contents into the container at /workspace
 COPY . /workspace
+
+# Install autoplex, testing dependencies and clear cache
+RUN python -m pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir uv \
+    && uv pip install pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools \
+    && uv pip install --prerelease=allow .[strict,docs] && uv cache clean && rm -rf /tmp/*
