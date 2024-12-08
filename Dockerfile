@@ -32,14 +32,16 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python
+# Install Python, cuda toolkit and clean up tarballs
 RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
+    micromamba install -y -n base -c nvidia/label/cuda-12.2.0 cuda-toolkit &&  \
     micromamba clean --all --yes
 
-# Install testing dependencies
+# Install autoplex, testing dependencies and clear cache
 RUN python -m pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir uv \
-    && uv pip install pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools
+    && uv pip install pre-commit pytest pytest-mock pytest-split pytest-cov types-setuptools \
+    && uv pip install --prerelease=allow .[strict,docs] && uv cache clean && rm -rf /tmp/*
 
 # Install Julia
 RUN curl -fsSL https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.2-linux-x86_64.tar.gz | tar -xz -C /opt \
@@ -60,9 +62,6 @@ RUN curl -fsSL https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz -o /opt/airss
 
 # Add Buildcell to PATH
 ENV PATH="${PATH}:/opt/airss/bin"
-
-# Install cuda-toolkit for NEP interface via GPUMD+calorine
-RUN micromamba install -y -n base -c nvidia/label/cuda-12.2.0 cuda-toolkit && micromamba clean --all --yes
 
 # Install GPUMD and add to bin
 RUN git clone https://github.com/brucefan1983/GPUMD.git && \
@@ -90,15 +89,12 @@ RUN curl -fsSL https://download.lammps.org/tars/lammps-29Aug2024_update1.tar.gz 
      && make install-python \
      && cmake --build . --target clean
 
-# Add LAMMPS to PATH and Shared LAMMPS library to LD_LIBRARY_PATH
+# Add LAMMPS, GPUMD, NEP to PATH and Update LD_LIBRARY_PATH
 ENV PATH="${PATH}:/root/.local/bin"
-ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/root/.local/lib"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/conda/lib"
 
 # Set the working directory
 WORKDIR /workspace
 
 # Copy the current directory contents into the container at /workspace
 COPY . /workspace
-
-# Install autoplex and clear cache
-RUN uv pip install --prerelease=allow .[strict,docs] && uv cache clean && rm -rf /tmp/*
