@@ -60,6 +60,20 @@ RUN curl -fsSL https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz -o /opt/airss
 # Add Buildcell to PATH
 ENV PATH="${PATH}:/opt/airss/bin"
 
+# Install cuda-toolkit for NEP interface via GPUMD+calorine
+RUN micromamba install -c nvidia/label/cuda-12.2.0 cuda-toolkit && micromamba clean --all --yes
+
+# Install GPUMD and add to bin
+RUN git clone https://github.com/brucefan1983/GPUMD.git && \
+  cd GPUMD && \
+  # v3.9.5
+  git checkout v3.9.5 && \
+  cd src && \
+  make CFLAGS="-std=c++14 -O3 -arch=sm_72" -j4 && \
+  mv gpumd nep /root/.local/bin/ && \
+  cd ../.. && \
+  rm -fr GPUMD
+
 # Install LAMMPS (rss)
 RUN curl -fsSL https://download.lammps.org/tars/lammps-29Aug2024_update1.tar.gz -o /opt/lammps.tar.gz \
      && tar -xf /opt/lammps.tar.gz -C /opt \
