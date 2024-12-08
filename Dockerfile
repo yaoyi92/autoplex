@@ -70,9 +70,10 @@ RUN git clone https://github.com/brucefan1983/GPUMD.git && \
   git checkout v3.9.5 && \
   cd src && \
   make CFLAGS="-std=c++14 -O3 -arch=sm_72" -j4 && \
+  mkdir -p /root/.local/bin/ && \
   mv gpumd nep /root/.local/bin/ && \
   cd ../.. && \
-  rm -fr GPUMD
+  rm -rf GPUMD
 
 # Install LAMMPS (rss)
 RUN curl -fsSL https://download.lammps.org/tars/lammps-29Aug2024_update1.tar.gz -o /opt/lammps.tar.gz \
