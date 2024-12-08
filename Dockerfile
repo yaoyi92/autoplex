@@ -7,6 +7,7 @@ FROM mambaorg/micromamba:1.5.10
 # Set environment variables for micromamba
 ENV MAMBA_DOCKERFILE_ACTIVATE=1
 ENV MAMBA_ROOT_PREFIX=/opt/conda
+ENV MAMBA_NO_LOW_SPEED_LIMIT=1
 
 # Switch to root to install all dependencies (using non-root user causes permission issues)
 USER root
