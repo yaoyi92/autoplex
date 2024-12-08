@@ -84,7 +84,7 @@ RUN curl -fsSL https://download.lammps.org/tars/lammps-29Aug2024_update1.tar.gz 
 
 # Add LAMMPS, GPUMD, NEP to PATH and Update LD_LIBRARY_PATH
 ENV PATH="${PATH}:/root/.local/bin"
-ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/conda/lib"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/root/.local/lib:/opt/conda/lib"
 
 # Set the working directory
 WORKDIR /workspace
