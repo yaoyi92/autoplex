@@ -240,6 +240,17 @@ def gap_fitting(
         except ValueError as e:
             logging.warning(f"Skipped fit error metrics plot because of: \n{e}")
 
+    print(
+        "TEEEEST",
+        train_name,
+        {
+            "train_error": train_error,
+            "test_error": test_error,
+            "mlip_path": mlip_path,
+            "mlip_pot": mlip_path.joinpath(gap_file_xml),
+        },
+    )
+
     return {
         "train_error": train_error,
         "test_error": test_error,
@@ -1880,7 +1891,7 @@ def prepare_fit_environment(
             os.path.join(mlip_path, "glue.xml"),
         )
 
-    return Path(os.path.join(mlip_path, train_name.replace("train.extxyz", "")))
+    return mlip_path
 
 
 def convert_xyz_to_structure(
