@@ -225,10 +225,10 @@ def initial_rss(
         apply_data_preprocessing=False,
         auto_delta=auto_delta,
         glue_xml=False,
-        device=device_for_fitting,
     ).make(
         database_dir=do_data_preprocessing.output,
         isolated_atom_energies=do_data_collection.output["isolated_atom_energies"],
+        device=device_for_fitting,
         **fit_kwargs,
     )
 
@@ -594,10 +594,10 @@ def do_rss_iterations(
             apply_data_preprocessing=False,
             auto_delta=auto_delta,
             glue_xml=False,
-            device=device_for_fitting,
         ).make(
             database_dir=do_data_preprocessing.output,
             isolated_atom_energies=input["isolated_atom_energies"],
+            device=device_for_fitting,
             **fit_kwargs,
         )
 
