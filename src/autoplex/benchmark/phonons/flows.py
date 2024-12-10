@@ -60,7 +60,7 @@ class PhononBenchmarkMaker(Maker):
         atomwise_regularization_parameter: float
             Regularization value for the atom-wise force components.
         suffix: str
-            GAP potential file suffix.
+            GAP potential file path suffix.
         soap_dict: dict
             Dictionary containing SOAP parameters.
 
