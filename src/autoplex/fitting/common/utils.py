@@ -112,7 +112,7 @@ def gap_fitting(
     # keep additional pre- and suffixes
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     quip_train_file = train_name.replace("train", "quip_train")
-    quip_test_file = train_name.replace("test", "quip_test")
+    quip_test_file = test_name.replace("test", "quip_test")
     mlip_path: Path = prepare_fit_environment(
         db_dir, Path.cwd(), glue_xml, train_name, test_name, glue_file_path
     )
@@ -223,11 +223,7 @@ def gap_fitting(
     logging.info(f"Training error of MLIP (eV/at.): {round(train_error, 7)}")
 
     # Calculate testing error
-    if "without" not in train_name:
-        # prevent running QUIP twice for with/without regularization as we use the same test files in those cases
-        run_quip(
-            num_processes_fit, test_data_path, gap_file_xml, quip_test_file, glue_xml
-        )
+    run_quip(num_processes_fit, test_data_path, gap_file_xml, quip_test_file, glue_xml)
     test_error = energy_remain(quip_test_file)
     logging.info(f"Testing error of MLIP (eV/at.): {round(test_error, 7)}")
 
