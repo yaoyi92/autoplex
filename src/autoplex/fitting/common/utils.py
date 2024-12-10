@@ -244,7 +244,6 @@ def gap_fitting(
         "train_error": train_error,
         "test_error": test_error,
         "mlip_path": mlip_path,
-        "mlip_pot": mlip_path.joinpath(gap_file_xml),
     }
 
 
@@ -1880,7 +1879,7 @@ def prepare_fit_environment(
             os.path.join(mlip_path, "glue.xml"),
         )
 
-    return mlip_path
+    return Path(os.path.join(mlip_path, train_name.replace("train.extxyz", "")))
 
 
 def convert_xyz_to_structure(
