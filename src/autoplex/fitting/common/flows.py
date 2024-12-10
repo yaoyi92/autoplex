@@ -340,9 +340,17 @@ class DataPreprocessing(Maker):
             except Exception as e:
                 logging.warning(f"Error creating folder {folder_name}: {e}")
             train_path = os.path.join(folder_name, "train.extxyz")
+            test_path = os.path.join(folder_name, "test.extxyz")
             atoms = ase.io.read("train.extxyz", index=":")
             ase.io.write(train_path, atoms, format="extxyz")
             logging.info(f"Written train file without regularization to: {train_path}")
+            try:
+                shutil.copy("test.extxyz", test_path)
+                logging.info(f"Copied test file to: {test_path}")
+            except FileNotFoundError:
+                logging.warning("test.extxyz not found. Skipping copy.")
+            except Exception as e:
+                logging.warning(f"Error copying test.extxyz: {e}")
             atoms_with_sigma = set_custom_sigma(
                 atoms,
                 reg_minmax=[(0.1, 1), (0.001, 0.1), (0.0316, 0.316), (0.0632, 0.632)],
