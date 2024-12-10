@@ -84,7 +84,7 @@ def machine_learning_fit(
     ]
     test_files = [
         "test.extxyz",
-        "test.extxyz",
+        "without_regularization/test.extxyz",
         "phonon/test.extxyz",
         "rattled/test.extxyz",
     ]
