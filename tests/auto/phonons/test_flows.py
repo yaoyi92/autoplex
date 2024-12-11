@@ -936,7 +936,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization_hploop(
     )
 
     # regularization specific test
-    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    reg_specific_file_exists = any(glob.glob("job*/without_regularization/train.extxyz"))
     assert reg_specific_file_exists
 
 
