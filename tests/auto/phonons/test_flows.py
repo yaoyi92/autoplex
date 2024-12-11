@@ -981,7 +981,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     )
 
     # regularization specific test
-    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    reg_specific_file_exists = any(glob.glob("job*/without_regularization/train.extxyz"))
     assert reg_specific_file_exists
 
     # check if soap_default_dict is correctly constructed from n_sparse and delta values in user fit parameter input
@@ -1079,7 +1079,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
     )
 
     # regularization specific test
-    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    reg_specific_file_exists = any(glob.glob("job*/without_regularization/train.extxyz"))
     assert reg_specific_file_exists
 
 
