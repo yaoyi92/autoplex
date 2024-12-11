@@ -142,7 +142,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit
     )
 
     # check if gap fit file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_with_kwargs(
@@ -172,7 +172,7 @@ def test_mlip_fit_maker_with_kwargs(
     )
 
     # check if gap fit file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_with_pre_database_dir(
@@ -196,7 +196,7 @@ def test_mlip_fit_maker_with_pre_database_dir(
     run_locally(gapfit, ensure_success=True, create_folders=True, store=memory_jobstore)
 
     # check if gap potential file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_jace(
@@ -228,7 +228,7 @@ def test_mlip_fit_maker_jace(
     )
 
     # check if julia-ACE potential file is generated
-    assert Path(jacefit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(jacefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_nequip(
@@ -259,7 +259,7 @@ def test_mlip_fit_maker_nequip(
     )
 
     # check if NEQUIP potential file is generated
-    assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(nequipfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_m3gnet(
@@ -298,7 +298,7 @@ def test_mlip_fit_maker_m3gnet(
     )
 
     # check if M3GNET potential file is generated
-    assert Path(m3gnetfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(m3gnetfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_mace(
@@ -337,7 +337,7 @@ def test_mlip_fit_maker_mace(
     )
 
     # check if MACE potential file is generated
-    assert Path(macefit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(macefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_glue_xml(
@@ -366,7 +366,7 @@ def test_mlip_fit_maker_glue_xml(
     )
 
     # check if gap fit file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_glue_xml_with_other_name(
@@ -395,11 +395,11 @@ def test_mlip_fit_maker_glue_xml_with_other_name(
     )
 
     # check if gap fit file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_with_automated_separated_dataset(
-        test_dir, memory_jobstore, vasp_test_dir, clean_dir, fit_input_dict
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, #clean_dir
 ):
     from pathlib import Path
     from jobflow import run_locally
@@ -420,6 +420,6 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
     run_locally(gapfit, ensure_success=True, create_folders=True, store=memory_jobstore)
 
     # check if gap potential file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_phonon.extxyz").exists()
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_rattled.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore) + "/train.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore) + "/test.extxyz").exists()
