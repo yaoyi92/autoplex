@@ -362,20 +362,19 @@ class DataPreprocessing(Maker):
                 data_type = dt.removesuffix("_dir")
                 if data_type != "iso_atoms":
                     folder_name = os.path.join(base_dir, data_type)
-                try:
-                    os.makedirs(folder_name, exist_ok=True)
-                    logging.info(f"Created/verified folder: {folder_name}")
-                except Exception as e:
-                    logging.warning(
-                        f"Error creating folder {folder_name}: {e}. "
-                        f"\nProceeding without separated dataset"
-                    )
-                    continue
-                vasp_ref_path = os.path.join(folder_name, "vasp_ref.extxyz")
-                train_path = os.path.join(folder_name, "train.extxyz")
-                test_path = os.path.join(folder_name, "test.extxyz")
+                    try:
+                        os.makedirs(folder_name, exist_ok=True)
+                        logging.info(f"Created/verified folder: {folder_name}")
+                    except Exception as e:
+                        logging.warning(
+                            f"Error creating folder {folder_name}: {e}. "
+                            f"\nProceeding without separated dataset"
+                        )
+                        continue
+                    vasp_ref_path = os.path.join(folder_name, "vasp_ref.extxyz")
+                    train_path = os.path.join(folder_name, "train.extxyz")
+                    test_path = os.path.join(folder_name, "test.extxyz")
 
-                if data_type != "iso_atoms":
                     for atoms in atoms_train + atoms_test:
                         if atoms.info["data_type"] == "iso_atoms":
                             ase.io.write(
