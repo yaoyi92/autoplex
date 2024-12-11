@@ -615,8 +615,7 @@ class MLPhononMaker(FFPhononMaker):
         ml_model: str
             ML model to be used. Default is GAP.
         potential_file :
-            Complete path to MLIP file(s)
-            Train, test and MLIP files (+ suffixes "", "_wo_sigma", "_phonon", "_rattled").
+            Complete path to MLIP file(s) (train, test and MLIP files)
         calculator_kwargs :
             Keyword arguments for the ASE Calculator.
         supercell_settings:
