@@ -268,14 +268,18 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             mlip_fit_parameter_file_path=self.path_to_default_hyperparameters
         )
 
-        soap_default_params = default_hyperparameters["GAP"]["soap"]
-
-        for fit_kwargs in fit_kwargs_list or []:
-            soap_default_dict = {
-                key: value
-                for key, value in fit_kwargs.get("soap", soap_default_params).items()
-                if key in ["n_sparse", "delta"]
-            }
+        soap_default_dict = next(
+            (
+                {
+                    key: value
+                    for key, value in fit_kwargs["soap"].items()
+                    if key in ["n_sparse", "delta"]
+                }
+                for fit_kwargs in (fit_kwargs_list or [])
+                if "soap" in fit_kwargs
+            ),
+            default_hyperparameters["GAP"]["soap"],
+        )
 
         for structure, mp_id in zip(structure_list, mp_ids):
             self.supercell_settings.setdefault(mp_id, {})
