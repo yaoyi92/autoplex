@@ -21,7 +21,7 @@ def test_gap_fit_maker(test_dir, memory_jobstore, clean_dir):
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
@@ -43,7 +43,7 @@ def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
         jacefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    assert Path(jacefit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(jacefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_nequip_fit_maker(test_dir, memory_jobstore, clean_dir):
@@ -65,7 +65,7 @@ def test_nequip_fit_maker(test_dir, memory_jobstore, clean_dir):
         nequipfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(nequipfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
@@ -95,7 +95,7 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
         nequipfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(nequipfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mace_fit_maker(test_dir, memory_jobstore, clean_dir):
@@ -126,7 +126,7 @@ def test_mace_fit_maker(test_dir, memory_jobstore, clean_dir):
         macefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    assert Path(macefit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(macefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 def test_mace_finetuning_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/finetuning_dataset"
@@ -171,7 +171,7 @@ def test_mace_finetuning_maker(test_dir, memory_jobstore, clean_dir):
         macefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    assert Path(macefit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(macefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mace_finetuning_maker2(test_dir, memory_jobstore, clean_dir):
@@ -216,4 +216,4 @@ def test_mace_finetuning_maker2(test_dir, memory_jobstore, clean_dir):
         macefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    assert Path(macefit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(macefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
