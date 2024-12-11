@@ -360,7 +360,8 @@ class DataPreprocessing(Maker):
             atoms_test = ase.io.read("test.extxyz", index=":")
             for dt in set(data_types):
                 data_type = dt.removesuffix("_dir")
-                folder_name = os.path.join(base_dir, data_type)
+                if data_type != "iso_atoms":
+                    folder_name = os.path.join(base_dir, data_type)
                 try:
                     os.makedirs(folder_name, exist_ok=True)
                     logging.info(f"Created/verified folder: {folder_name}")
