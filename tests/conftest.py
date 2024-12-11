@@ -189,7 +189,7 @@ def mock_rss(input_dir: str = None,
         output={
             'test_error': job6.output['test_error'],
             'pre_database_dir': job5.output,
-            'mlip_path': job6.output['mlip_path'],
+            'mlip_path': job6.output['mlip_path'][0],
             'isolated_atom_energies': job4.output['isolated_atom_energies'],
             'current_iter': 0,
             'kt': kt
