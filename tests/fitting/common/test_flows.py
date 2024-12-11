@@ -399,7 +399,7 @@ def test_mlip_fit_maker_glue_xml_with_other_name(
 
 
 def test_mlip_fit_maker_with_automated_separated_dataset(
-        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, #clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     from pathlib import Path
     from jobflow import run_locally
@@ -421,5 +421,6 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
 
     # check if gap potential file is generated
     assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
-    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore) + "/train.extxyz").exists()
-    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore) + "/test.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"][1].resolve(memory_jobstore) + "/train.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"][2].resolve(memory_jobstore) + "/train.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"][2].resolve(memory_jobstore) + "/energy_forces.png").exists()
