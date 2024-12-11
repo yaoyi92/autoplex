@@ -150,7 +150,7 @@ def test_mock_workflow(test_dir, mock_vasp, memory_jobstore, clean_dir):
         store=memory_jobstore
     )
 
-    assert Path(job1.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(job1.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
     selected_atoms = job2.output.resolve(memory_jobstore)
 
@@ -302,7 +302,7 @@ def test_mock_workflow_multi_node(test_dir, mock_vasp, memory_jobstore, clean_di
         store=memory_jobstore
     )
 
-    assert Path(job1.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(job1.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
     selected_atoms = job2.output.resolve(memory_jobstore)
 
