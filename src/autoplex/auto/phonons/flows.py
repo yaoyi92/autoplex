@@ -239,7 +239,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         dft_references: list[PhononBSDOSDoc] | None = None,
         benchmark_structures: list[Structure] | None = None,
         benchmark_mp_ids: list[str] | None = None,
-        **fit_kwargs,
+        fit_kwargs_list: list | None = None,
     ):
         """
         Make flow for constructing the dataset, fitting the potentials and performing the benchmarks.
@@ -256,7 +256,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             The pymatgen structure for benchmarking.
         benchmark_mp_ids: list[str] | None
             Materials Project ID of the benchmarking structure.
-        fit_kwargs : dict.
+        fit_kwargs_list : list[dict].
             Dict including MLIP fit keyword args.
 
         """
@@ -270,11 +270,12 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         soap_default_params = default_hyperparameters["GAP"]["soap"]
 
-        soap_default_dict = {
-            key: value
-            for key, value in fit_kwargs.get("soap", soap_default_params).items()
-            if key in ["n_sparse", "delta"]
-        }
+        for fit_kwargs in fit_kwargs_list:
+            soap_default_dict = {
+                key: value
+                for key, value in fit_kwargs.get("soap", soap_default_params).items()
+                if key in ["n_sparse", "delta"]
+            }
 
         for structure, mp_id in zip(structure_list, mp_ids):
             self.supercell_settings.setdefault(mp_id, {})
@@ -357,7 +358,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 {"IsolatedAtom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
             )
 
-        for ml_model in self.ml_models:
+        for ml_model, fit_kwargs in zip(self.ml_models, fit_kwargs_list):
             add_data_fit = MLIPFitMaker(
                 mlip_type=ml_model,
                 glue_xml=self.glue_xml,
