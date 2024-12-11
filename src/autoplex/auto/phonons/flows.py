@@ -270,7 +270,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
         soap_default_params = default_hyperparameters["GAP"]["soap"]
 
-        for fit_kwargs in fit_kwargs_list:
+        for fit_kwargs in fit_kwargs_list or []:
             soap_default_dict = {
                 key: value
                 for key, value in fit_kwargs.get("soap", soap_default_params).items()
@@ -358,7 +358,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 {"IsolatedAtom": {"iso_atoms_dir": [isoatoms.output["dirs"]]}}
             )
 
-        for ml_model, fit_kwargs in zip(self.ml_models, fit_kwargs_list):
+        for ml_model, fit_kwargs in zip(self.ml_models, fit_kwargs_list or []):
             add_data_fit = MLIPFitMaker(
                 mlip_type=ml_model,
                 glue_xml=self.glue_xml,
