@@ -547,17 +547,19 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        cutoff=3.0,
-        threebody_cutoff=2.0,
-        batch_size=1,
-        max_epochs=3,
-        include_stresses=True,
-        hidden_dim=8,
-        num_units=8,
-        max_l=4,
-        max_n=4,
-        device="cpu",
-        test_equal_to_val=True,
+        fit_kwargs_list=[{
+            "cutoff": 3.0,
+            "threebody_cutoff": 2.0,
+            "batch_size": 1,
+            "max_epochs": 3,
+            "include_stresses": True,
+            "hidden_dim": 8,
+            "num_units": 8,
+            "max_l": 4,
+            "max_n": 4,
+            "device": "cpu",
+            "test_equal_to_val": True,
+        }]
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -596,18 +598,20 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        model="MACE",
-        config_type_weights='{"Default":1.0}',
-        hidden_irreps="32x0e + 32x1o",
-        r_max=3.0,
-        batch_size=5,
-        max_num_epochs=10,
-        start_swa=5,
-        ema_decay=0.99,
-        correlation=3,
-        loss="huber",
-        default_dtype="float32",
-        device="cpu",
+        fit_kwargs_list=[{
+            "model": "MACE",
+            "config_type_weights": '{"Default":1.0}',
+            "hidden_irreps": "32x0e + 32x1o",
+            "r_max": 3.0,
+            "batch_size": 5,
+            "max_num_epochs": 10,
+            "start_swa": 5,
+            "ema_decay": 0.99,
+            "correlation": 3,
+            "loss": "huber",
+            "default_dtype": "float32",
+            "device": "cpu",
+        }]
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -650,30 +654,32 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning(
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        model="MACE",
-        name="MACE_final",
-        foundation_model="small",
-        multiheads_finetuning=False,
-        r_max=6,
-        loss="huber",
-        energy_weight=1000.0,
-        forces_weight=1000.0,
-        stress_weight=1.0,
-        compute_stress=True,
-        E0s="average",
-        scaling="rms_forces_scaling",
-        batch_size=1,
-        max_num_epochs=1,
-        ema=True,
-        ema_decay=0.99,
-        amsgrad=True,
-        default_dtype="float64",
-        restart_latest=True,
-        lr=0.0001,
-        patience=20,
-        device="cpu",
-        save_cpu=True,
-        seed=3,
+        fit_kwargs_list=[{
+            "model": "MACE",
+            "name": "MACE_final",
+            "foundation_model": "small",
+            "multiheads_finetuning": False,
+            "r_max": 6,
+            "loss": "huber",
+            "energy_weight": 1000.0,
+            "forces_weight": 1000.0,
+            "stress_weight": 1.0,
+            "compute_stress": True,
+            "E0s": "average",
+            "scaling": "rms_forces_scaling",
+            "batch_size": 1,
+            "max_num_epochs": 1,
+            "ema": True,
+            "ema_decay": 0.99,
+            "amsgrad": True,
+            "default_dtype": "float64",
+            "restart_latest": True,
+            "lr": 0.0001,
+            "patience": 20,
+            "device": "cpu",
+            "save_cpu": True,
+            "seed": 3,
+        }]
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -717,30 +723,32 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_mp_settings(
         mp_ids=["test"],
         benchmark_mp_ids=["test"],
         benchmark_structures=[structure],
-        model="MACE",
-        name="MACE_final",
-        foundation_model="small",
-        multiheads_finetuning=False,
-        r_max=6,
-        loss="huber",
-        energy_weight=1000.0,
-        forces_weight=1000.0,
-        stress_weight=1.0,
-        compute_stress=True,
-        E0s="average",
-        scaling="rms_forces_scaling",
-        batch_size=1,
-        max_num_epochs=10,
-        ema=True,
-        ema_decay=0.99,
-        amsgrad=True,
-        default_dtype="float64",
-        restart_latest=True,
-        lr=0.0001,
-        patience=20,
-        device="cpu",
-        save_cpu=True,
-        seed=3,
+        fit_kwargs_list=[{
+            "model": "MACE",
+            "name": "MACE_final",
+            "foundation_model": "small",
+            "multiheads_finetuning": False,
+            "r_max": 6,
+            "loss": "huber",
+            "energy_weight": 1000.0,
+            "forces_weight": 1000.0,
+            "stress_weight": 1.0,
+            "compute_stress": True,
+            "E0s": "average",
+            "scaling": "rms_forces_scaling",
+            "batch_size": 1,
+            "max_num_epochs": 10,
+            "ema": True,
+            "ema_decay": 0.99,
+            "amsgrad": True,
+            "default_dtype": "float64",
+            "restart_latest": True,
+            "lr": 0.0001,
+            "patience": 20,
+            "device": "cpu",
+            "save_cpu": True,
+            "seed": 3,
+        }]
     )
     # automatically use fake VASP and write POTCAR.spec during the test
     mock_vasp(ref_paths5_mpid, fake_run_vasp_kwargs5_mpid)
@@ -781,18 +789,20 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        r_max=4.0,
-        num_layers=4,
-        l_max=2,
-        num_features=32,
-        num_basis=8,
-        invariant_layers=2,
-        invariant_neurons=64,
-        batch_size=1,
-        learning_rate=0.005,
-        max_epochs=1,
-        default_dtype="float32",
-        device="cpu",
+        fit_kwargs_list=[{
+            "r_max": 4.0,
+            "num_layers": 4,
+            "l_max": 2,
+            "num_features": 32,
+            "num_basis": 8,
+            "invariant_layers": 2,
+            "invariant_neurons": 64,
+            "batch_size": 1,
+            "learning_rate": 0.005,
+            "max_epochs": 1,
+            "default_dtype": "float32",
+            "device": "cpu",
+        }]
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -960,7 +970,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        **{"soap": {"delta": 3.0, "l_max": 12, "n_max": 10, "n_sparse": 8000, "f0": 0.0}},
+        fit_kwargs_list=[{"soap": {"delta": 3.0, "l_max": 12, "n_max": 10, "n_sparse": 8000, "f0": 0.0}}],
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -1162,7 +1172,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -1213,7 +1224,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
             dft_references=[dft_reference],
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -1262,7 +1274,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_phonon_false.iterflow():
@@ -1298,7 +1311,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_random_false.iterflow():
@@ -1333,7 +1347,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
@@ -1445,7 +1460,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
         mock_vasp(ref_paths, fake_run_vasp_kwargs)
 
@@ -1479,7 +1495,7 @@ def test_phonon_dft_ml_data_generation_flow(
            mp_ids=mp_ids,
            benchmark_structures=structure_list,
            benchmark_mp_ids=mp_ids,
-           **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+           fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]  # reduce unit test run time
            )
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
@@ -1493,7 +1509,7 @@ def test_phonon_dft_ml_data_generation_flow(
            mp_ids=mp_ids,
            benchmark_structures=structure_list,
            benchmark_mp_ids=mp_ids,
-           **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+           fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]  # reduce unit test run time
            )
     # automatically use fake VASP and write POTCAR.spec during the test
     mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
@@ -1537,7 +1553,7 @@ def test_supercell_test_runs(vasp_test_dir, clean_dir, memory_jobstore, test_dir
 
     autoplex_flow = DFTSupercellSettingsMaker(supercell_settings={"min_length": 10, "min_atoms": 10},
                                               DFT_Maker=ForceFieldStaticMaker(force_field_name="CHGNet")).make(
-        structure_list=structure_list, mp_ids=mp_ids, )
+                                              structure_list=structure_list, mp_ids=mp_ids, )
 
     responses_flow = run_locally(autoplex_flow)
     assert responses_flow[autoplex_flow.jobs[-1].output.uuid][1].replace[0].name == "Force field static"
