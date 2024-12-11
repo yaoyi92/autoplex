@@ -23,6 +23,7 @@ from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.data import chemical_symbols
 from ase.io import read, write
+from ase.io.extxyz import XYZError
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from dgl.data.utils import split_dataset
@@ -237,7 +238,7 @@ def gap_fitting(
                 train_name=train_name,
                 test_name=test_name,
             )
-        except ValueError as e:
+        except (ValueError, XYZError) as e:
             logging.warning(f"Skipped fit error metrics plot because of: \n{e}")
 
     return {
