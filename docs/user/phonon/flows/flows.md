@@ -216,7 +216,7 @@ This will give you feedback of the overall quality of the generated ML potential
 `autoplex` also prints the file `results_LiCl.txt` (here for the example of LiCl) with a summary of the essential 
 results of your workflow setup.
 ```text
-Potential  Structure  MPID        Displacement (Å)  RMSE (THz)  Hyperparameters (atom-wise f, n_sparse, SOAP delta)    imagmodes(pot)  imagmodes(dft)
-GAP        LiCl       mp-22905    0.01              0.57608     {'f=0.1': 'default'}                                   False           False
+Potential  Structure  MPID        Displacement (Å)  RMSE (THz)  imagmodes(pot)  imagmodes(dft)  Database type   (Hyper-)Parameters
+GAP        LiCl       mp-22905    0.01              0.57608     False           False           full            atom-wise f=0.1: n_sparse = 6000, SOAP delta = 0.5
 ```
 
