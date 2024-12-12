@@ -878,7 +878,9 @@ def m3gnet_fitting(
         }
         train_element_types = get_element_list(train_structs)
 
-        logging.info(train_element_types)
+        print(
+            train_element_types
+        )  # this print has to stay as the stdout is written to the file
         train_converter = Structure2Graph(
             element_types=train_element_types, cutoff=cutoff
         )
@@ -1000,19 +1002,19 @@ def m3gnet_fitting(
                 inference_mode=False,
             )
         # Again loggers ...
-        logging.info("Start training...")
-        logging.info(f"Length of train_loader: {len(train_loader)}")
-        logging.info(f"Length of val_loader: {len(val_loader)}")
-        logging.info(f"Length of test_loader: {len(test_loader)}")
+        print("Start training...")
+        print(f"Length of train_loader: {len(train_loader)}")
+        print(f"Length of val_loader: {len(val_loader)}")
+        print(f"Length of test_loader: {len(test_loader)}")
         trainer.fit(
             model=lit_module, train_dataloaders=train_loader, val_dataloaders=val_loader
         )
         # test the model, remember to set inference_mode=False in trainer (see above)
-        logging.info("Train error:")
+        print("Train error:")
         trainer.test(dataloaders=train_loader)
-        logging.info("Valid error:")
+        print("Valid error:")
         trainer.test(dataloaders=val_loader)
-        logging.info("Test error:")
+        print("Test error:")
         trainer.test(dataloaders=test_loader)
 
         # save trained model
