@@ -304,7 +304,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             ] = supercell_matrix_job.output
 
             if self.add_dft_rattled_struct:
-                add_dft_rand = self.add_dft_random(
+                add_dft_ratt = self.add_dft_random(
                     structure=structure,
                     mp_id=mp_id,
                     displacement_maker=self.displacement_maker,
@@ -324,9 +324,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                     w_angle=self.w_angle,
                     supercell_settings=self.supercell_settings,
                 )
-                add_dft_rand.append_name(f"_{mp_id}")
-                flows.append(add_dft_rand)
-                fit_input.update({mp_id: add_dft_rand.output})
+                add_dft_ratt.append_name(f"_{mp_id}")
+                flows.append(add_dft_ratt)
+                fit_input.update({mp_id: add_dft_ratt.output})
             if self.add_dft_phonon_struct:
                 add_dft_phon = self.add_dft_phonons(
                     structure=structure,
@@ -345,7 +345,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 fit_input.update(
                     {
                         mp_id: {
-                            "rattled_dir": add_dft_rand.output["rattled_dir"],
+                            "rattled_dir": add_dft_ratt.output["rattled_dir"],
                             "phonon_dir": add_dft_phon.output["phonon_dir"],
                             "phonon_data": add_dft_phon.output["phonon_data"],
                         }
