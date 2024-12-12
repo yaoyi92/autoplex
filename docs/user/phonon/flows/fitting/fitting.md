@@ -17,7 +17,7 @@ In case of the general settings, you can pass the MLIP model you want to use wit
 You can set the maximum force threshold `force_max` for filtering the data ("distillation") in the MLIP fit preprocess step.
 In principle, the distillation step can be turned off by passing `distillation=False`,
 but it is strongly advised to filter out too high force data points.
-The hyperparameters and further parameters can be passed in the `make` call (see below) or using `fit_kwargs` (or `**{...}`).
+The hyperparameters and further parameters can be passed in the `make` call (see below) using `fit_kwargs_list`.
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     ml_models=["GAP", "MACE"], ..., 
@@ -25,9 +25,11 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     f_max=40.0, split_ratio=0.4,
     num_processes_fit=48,
 ).make(..., 
-    fit_kwargs={
-        "general": {"two_body": True, "three_body": False, "soap": False}
-    },
+    fit_kwargs_list=[
+        {"general": {"two_body": True, "three_body": False, "soap": False}},  # GAP parameters
+        {"model": "MACE", "device": "cuda"}  # MACE parameters  
+        # fit_kwargs_list has to have the same order as in ml_models
+    ],
     ...  # put the other hyperparameter commands here as shown below
 )
 ```
@@ -72,12 +74,12 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     glue_xml=False,
     regularization=False,
     separated=False,
-    **{
+    fit_kwargs_list=[{
      "general": {"default_sigma": "{0.001 0.05 0.05 0.0}", {"two_body": True, "three_body": False,"soap": False},...},
      "twob": {"cutoff": 5.0,...},
      "threeb": {"cutoff": 3.25,...},
      "soap": {"delta": 1.0, "l_max": 12, "n_max": 10,...},
-    }
+    }]
 )
 ```
 `autoplex` provides a JSON dict file containing default GAP fit settings in 
@@ -112,10 +114,12 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    order=3,
-    totaldegree=6,
-    cutoff=2.0,
-    solver="BLR",
+    fit_kwargs_list=[{
+        "order": 3,
+        "totaldegree": 6,
+        "cutoff": 2.0,
+        "solver": "BLR"
+    }],
     ...)
 ```
 The ACE fit hyperparameters can be passed in the `make` call with its distinct commands. 
@@ -134,18 +138,20 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    r_max=4.0,
-    num_layers=4,
-    l_max=2,
-    num_features=32,
-    num_basis=8,
-    invariant_layers=2,
-    invariant_neurons=64,
-    batch_size=5,
-    learning_rate=0.005,
-    max_epochs=10000,  
-    default_dtype="float32",
-    device="cuda",
+    fit_kwargs_list=[{
+        "r_max": 4.0,
+        "num_layers": 4,
+        "l_max": 2,
+        "num_features": 32,
+        "num_basis": 8,
+        "invariant_layers": 2,
+        "invariant_neurons": 64,
+        "batch_size": 5,
+        "learning_rate": 0.005,
+        "max_epochs": 10000,
+        "default_dtype": "float32",
+        "device": "cuda"
+    }],
     ...
 )
 ```
@@ -162,17 +168,19 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    cutoff=5.0,
-    threebody_cutoff=4.0,
-    batch_size=10,
-    max_epochs=1000,
-    include_stresses=True,
-    hidden_dim=128,
-    num_units=128,
-    max_l=4,
-    max_n=4,
-    device="cuda",
-    test_equal_to_val=True,
+    fit_kwargs_list=[{
+        "cutoff": 5.0,
+        "threebody_cutoff": 4.0,
+        "batch_size": 10,
+        "max_epochs": 1000,
+        "include_stresses": True,
+        "hidden_dim": 128,
+        "num_units": 128,
+        "max_l": 4,
+        "max_n": 4,
+        "device": "cuda",
+        "test_equal_to_val": True
+    }],
     ...,
     )
 ```
@@ -189,18 +197,20 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    model="MACE",
-    config_type_weights='{"Default":1.0}',
-    hidden_irreps="128x0e + 128x1o",
-    r_max=5.0,
-    batch_size=10,
-    max_num_epochs=1500,
-    start_swa=1200,
-    ema_decay=0.99,
-    correlation=3,
-    loss="huber",
-    default_dtype="float32",
-    device="cuda",
+    fit_kwargs_list=[{
+        "model": "MACE",
+        "config_type_weights": '{"Default": 1.0}',
+        "hidden_irreps": "128x0e + 128x1o",
+        "r_max": 5.0,
+        "batch_size": 10,
+        "max_num_epochs": 1500,
+        "start_swa": 1200,
+        "ema_decay": 0.99,
+        "correlation": 3,
+        "loss": "huber",
+        "default_dtype": "float32",
+        "device": "cuda"
+    }],
     ...
 )
 ```
@@ -230,30 +240,32 @@ complete_workflow_mace = CompleteDFTvsMLBenchmarkWorkflowMPSettings(
         mp_ids=["mpid"],
         benchmark_mp_ids=["mpid"],
         benchmark_structures=[structure],
-        model="MACE",
-        name="MACE_final",
-        foundation_model="large",
-        multiheads_finetuning=False,
-        r_max=6,
-        loss="huber",
-        energy_weight=1000.0,
-        forces_weight=1000.0,
-        stress_weight=1.0,
-        compute_stress=True,
-        E0s="average",
-        scaling="rms_forces_scaling",
-        batch_size=1,
-        max_num_epochs=200,
-        ema=True,
-        ema_decay=0.99,
-        amsgrad=True,
-        default_dtype="float64",
-        restart_latest=True,
-        lr=0.0001,
-        patience=20,
-        device="cpu",
-        save_cpu=True,
-        seed=3,
+        fit_kwargs_list=[{
+            "model": "MACE",
+            "name": "MACE_final",
+            "foundation_model": "large",
+            "multiheads_finetuning": False,
+            "r_max": 6,
+            "loss": "huber",
+            "energy_weight": 1000.0,
+            "forces_weight": 1000.0,
+            "stress_weight": 1.0,
+            "compute_stress": True,
+            "E0s": "average",
+            "scaling": "rms_forces_scaling",
+            "batch_size": 1,
+            "max_num_epochs": 200,
+            "ema": True,
+            "ema_decay": 0.99,
+            "amsgrad": True,
+            "default_dtype": "float64",
+            "restart_latest": True,
+            "lr": 0.0001,
+            "patience": 20,
+            "device": "cpu",
+            "save_cpu": True,
+            "seed": 3
+        }],
     )
 ```    
 
@@ -296,14 +308,14 @@ autoplex_flow = CompleteDFTvsMLBenchmarkWorkflow(
     separated=True, num_processes_fit=48,).make(
     structure_list=struc_list, mp_ids=mpids, benchmark_structures=benchmark_structure_list,
     benchmark_mp_ids=mpbenchmark,
-    **{"soap": {"delta": 1.0, "l_max": 12, "n_max": 10,
+    fit_kwargs_list=[{"soap": {"delta": 1.0, "l_max": 12, "n_max": 10,
                 "atom_sigma": 0.5, "zeta": 4, "cutoff": 5.0,
                 "cutoff_transition_width": 1.0,
                 "central_weight": 1.0, "n_sparse": 9000, "f0": 0.0,
                 "covariance_type": "dot_product",
                 "sparse_method": "cur_points"},
        "general": {"two_body": False, "three_body": False, "soap": True,
-                   "default_sigma": "{0.001 0.05 0.05 0.0}", "sparse_jitter": 1.0e-8, }}},
+                   "default_sigma": "{0.001 0.05 0.05 0.0}", "sparse_jitter": 1.0e-8, }}}],
 )
 
 autoplex_flow.name = "autoplex_wf"
