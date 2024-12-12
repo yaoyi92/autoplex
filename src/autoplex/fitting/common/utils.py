@@ -878,7 +878,7 @@ def m3gnet_fitting(
         }
         train_element_types = get_element_list(train_structs)
 
-        print(train_element_types)
+        logging.info(train_element_types)
         train_converter = Structure2Graph(
             element_types=train_element_types, cutoff=cutoff
         )
@@ -1000,19 +1000,19 @@ def m3gnet_fitting(
                 inference_mode=False,
             )
         # Again loggers ...
-        print("Start training...")
-        print("Length of train_loader: ", len(train_loader))
-        print("Length of val_loader: ", len(val_loader))
-        print("Length of test_loader: ", len(test_loader))
+        logging.info("Start training...")
+        logging.info(f"Length of train_loader: {len(train_loader)}")
+        logging.info(f"Length of val_loader: {len(val_loader)}")
+        logging.info(f"Length of test_loader: {len(test_loader)}")
         trainer.fit(
             model=lit_module, train_dataloaders=train_loader, val_dataloaders=val_loader
         )
         # test the model, remember to set inference_mode=False in trainer (see above)
-        print("Train error:")
+        logging.info("Train error:")
         trainer.test(dataloaders=train_loader)
-        print("Valid error:")
+        logging.info("Valid error:")
         trainer.test(dataloaders=val_loader)
-        print("Test error:")
+        logging.info("Test error:")
         trainer.test(dataloaders=test_loader)
 
         # save trained model
@@ -1213,9 +1213,9 @@ def mace_fitting(
         elif hyper in boolean_str_hypers:
             hypers.append(f"--{hyper}={mace_hypers[hyper]}")
         elif hyper in ["train_file", "test_file"]:
-            print("Train and test files have default names.")
+            logging.info("Train and test files have default names.")
         elif hyper in ["energy_key", "virial_key", "forces_key", "device"]:
-            print("energy_key, virial_key and forces_key have default names.")
+            logging.info("energy_key, virial_key and forces_key have default names.")
         else:
             hypers.append(f"--{hyper}={mace_hypers[hyper]}")
 
@@ -1933,7 +1933,7 @@ def convert_xyz_to_structure(
         else:
             stresses.append(np.zeros((3, 3)).tolist())
 
-    print(f"Loaded {len(structures)} structures.")
+    logging.info(f"Loaded {len(structures)} structures.")
 
     return structures, energies, forces, stresses
 
