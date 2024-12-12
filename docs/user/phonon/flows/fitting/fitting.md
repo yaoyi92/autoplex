@@ -24,6 +24,7 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     apply_data_preprocessing=True, 
     f_max=40.0, split_ratio=0.4,
     num_processes_fit=48,
+    benchmark_kwargs={"relax_maker_kwargs": {"relax_cell": False, "relax_kwargs": ...}, "calculator_kwargs": {"device": "cpu"}}
 ).make(..., 
     fit_kwargs_list=[
         {"general": {"two_body": True, "three_body": False, "soap": False}},  # GAP parameters
@@ -35,7 +36,7 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
 ```
 
 The MLIP model specific settings and hyperparameters setup varies from model to model and is demonstrated in the next 
-sections. 
+sections. Also, [`atomate2`-based MLPhononMaker](https://materialsproject.github.io/atomate2/reference/atomate2.forcefields.jobs.html#module-atomate2.forcefields.jobs) settings can be changed via `benchmark_kwargs` as shown in the code snippet.
 > ℹ️ Note that `autoplex` provides the most comprehensive features for **GAP**, and more features for the other models will 
 follow in future versions.  
 
