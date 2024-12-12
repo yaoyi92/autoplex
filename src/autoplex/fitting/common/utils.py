@@ -59,7 +59,7 @@ logging.basicConfig(
 def gap_fitting(
     db_dir: Path,
     species_list: list | None = None,
-    path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
@@ -80,8 +80,8 @@ def gap_fitting(
         Path to database directory.
     species_list: list
         List of element names (strings)
-    path_to_default_hyperparameters : str or Path.
-        Path to gap-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the GAP hyperparameters.
     num_processes_fit: int
         Number of processes used for gap_fit
     auto_delta: bool
@@ -123,7 +123,7 @@ def gap_fitting(
     test_data_path = os.path.join(db_dir, test_name)
 
     default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+        mlip_fit_parameter_file_path=path_to_hyperparameters
     )
 
     gap_default_hyperparameters = default_hyperparameters["GAP"]
@@ -267,7 +267,7 @@ def gap_fitting(
 )
 def jace_fitting(
     db_dir: str | Path,
-    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     isolated_atom_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -286,8 +286,8 @@ def jace_fitting(
     ----------
     db_dir: str or Path
         directory containing the training and testing data files.
-    path_to_default_hyperparameters : str or Path.
-        Path to mlip-rss-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the J-ACE hyperparameters.
     isolated_atom_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -356,7 +356,7 @@ def jace_fitting(
     ase.io.write("train_ace.extxyz", train_ace, format="extxyz")
 
     default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+        mlip_fit_parameter_file_path=path_to_hyperparameters
     )
     jace_hypers = default_hyperparameters["J-ACE"]
 
@@ -449,7 +449,7 @@ export2lammps("acemodel.yace", model)
 
 def nequip_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     isolated_atom_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -468,8 +468,8 @@ def nequip_fitting(
     ----------
     db_dir: Path
         directory containing the training and testing data files.
-    path_to_default_hyperparameters : str or Path.
-        Path to mlip-rss-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the NwquIP hyperparameters.
     isolated_atom_energies: dict
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -540,7 +540,7 @@ def nequip_fitting(
         raise ValueError("isolated_atom_energies is empty or not defined!")
 
     default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+        mlip_fit_parameter_file_path=path_to_hyperparameters
     )
 
     nequip_hypers = default_hyperparameters["NEQUIP"]
@@ -728,7 +728,7 @@ per_species_rescale_scales: dataset_forces_rms
 
 def m3gnet_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -742,8 +742,8 @@ def m3gnet_fitting(
     ----------
     db_dir: Path
         Directory containing the training and testing data files.
-    path_to_default_hyperparameters : str or Path.
-        Path to mlip-rss-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the M3GNet hyperparameters.
     device: str
         Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
     ref_energy_name : str, optional
@@ -799,7 +799,7 @@ def m3gnet_fitting(
     *    License: BSD 3-Clause License
     """
     default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+        mlip_fit_parameter_file_path=path_to_hyperparameters
     )
 
     m3gnet_hypers = default_hyperparameters["M3GNET"]
@@ -1098,7 +1098,7 @@ def m3gnet_fitting(
 
 def mace_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -1117,8 +1117,8 @@ def mace_fitting(
     ----------
     db_dir: Path
         directory containing the training and testing data files.
-    path_to_default_hyperparameters : str or Path.
-        Path to mlip-rss-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the MACE hyperparameters.
     device: str
         specify device to use cuda or cpu.
     ref_energy_name : str, optional
@@ -1167,7 +1167,7 @@ def mace_fitting(
 
     if use_defaults:
         default_hyperparameters = load_mlip_hyperparameter_defaults(
-            mlip_fit_parameter_file_path=path_to_default_hyperparameters
+            mlip_fit_parameter_file_path=path_to_hyperparameters
         )
 
         mace_hypers = default_hyperparameters["MACE"]
