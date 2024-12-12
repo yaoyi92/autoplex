@@ -764,7 +764,7 @@ class CompleteDFTvsMLBenchmarkWorkflowMPSettings(CompleteDFTvsMLBenchmarkWorkflo
     auto_delta: bool
         Automatically determines delta for 2b, 3b and soap terms.
     hyper_para_loop: bool
-        Making it easier to loop through several hyperparameter sets.
+        If true, performs several fits using the provided hyperparameter sets.
     atomwise_regularization_list: list
         List of atom-wise regularization parameters that are checked.
     soap_delta_list: list
