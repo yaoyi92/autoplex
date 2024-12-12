@@ -170,6 +170,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Settings for supercell generation
     benchmark_kwargs: dict
         Keyword arguments for the benchmark flows
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the MLIP hyperparameters.
     summary_filename_prefix: str
         Prefix of the result summary file.
     glue_xml: bool
@@ -226,7 +228,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         default_factory=lambda: {"min_length": 15, "max_length": 20}
     )
     benchmark_kwargs: dict = field(default_factory=dict)
-    path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH
+    path_to_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH
     summary_filename_prefix: str = "results_"
     glue_xml: bool = False
     glue_file_path: str = "glue.xml"
@@ -265,7 +267,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         bm_outputs = []
 
         default_hyperparameters = load_mlip_hyperparameter_defaults(
-            mlip_fit_parameter_file_path=self.path_to_default_hyperparameters
+            mlip_fit_parameter_file_path=self.path_to_hyperparameters
         )
 
         soap_default_dict = next(
@@ -304,7 +306,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             ] = supercell_matrix_job.output
 
             if self.add_dft_rattled_struct:
-                add_dft_ratt = self.add_dft_random(
+                add_dft_ratt = self.add_dft_rattled(
                     structure=structure,
                     mp_id=mp_id,
                     displacement_maker=self.displacement_maker,
@@ -372,6 +374,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 force_max=self.force_max,
                 pre_xyz_files=self.pre_xyz_files,
                 pre_database_dir=self.pre_database_dir,
+                path_to_hyperparameters=self.path_to_hyperparameters,
                 atomwise_regularization_parameter=self.atomwise_regularization_parameter,
                 force_min=self.force_min,
                 atom_wise_regularization=self.atom_wise_regularization,
@@ -451,6 +454,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                                 force_max=self.force_max,
                                 pre_xyz_files=self.pre_xyz_files,
                                 pre_database_dir=self.pre_database_dir,
+                                path_to_hyperparameters=self.path_to_hyperparameters,
                                 atomwise_regularization_parameter=atomwise_reg_parameter,
                                 force_min=self.force_min,
                                 auto_delta=self.auto_delta,
@@ -558,7 +562,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         return dft_phonons
 
     @staticmethod
-    def add_dft_random(
+    def add_dft_rattled(
         structure: Structure,
         mp_id: str,
         rattled_bulk_relax_maker: BaseVaspMaker,

@@ -21,6 +21,7 @@ GAP_DEFAULTS_FILE_PATH = current_dir / "mlip-phonon-defaults.json"
 def machine_learning_fit(
     database_dir: str | Path,
     species_list: list,
+    path_to_hyperparameters: Path | str | None = None,
     isolated_atom_energies: dict | None = None,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
@@ -44,6 +45,8 @@ def machine_learning_fit(
         Path to the directory containing the database.
     species_list: list
         List of element names (strings) involved in the training dataset
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the MLIP hyperparameters.
     isolated_atom_energies: dict
         Dictionary of isolated atoms energies.
     num_processes_fit: int
@@ -98,6 +101,7 @@ def machine_learning_fit(
             ).exists():
                 train_test_error = gap_fitting(
                     db_dir=database_dir,
+                    path_to_hyperparameters=path_to_hyperparameters,
                     species_list=species_list,
                     num_processes_fit=num_processes_fit,
                     auto_delta=auto_delta,
@@ -115,6 +119,7 @@ def machine_learning_fit(
     elif mlip_type == "J-ACE":
         train_test_error = jace_fitting(
             db_dir=database_dir,
+            path_to_hyperparameters=path_to_hyperparameters,
             isolated_atom_energies=isolated_atom_energies,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
@@ -127,6 +132,7 @@ def machine_learning_fit(
     elif mlip_type == "NEQUIP":
         train_test_error = nequip_fitting(
             db_dir=database_dir,
+            path_to_hyperparameters=path_to_hyperparameters,
             isolated_atom_energies=isolated_atom_energies,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
@@ -139,6 +145,7 @@ def machine_learning_fit(
     elif mlip_type == "M3GNET":
         train_test_error = m3gnet_fitting(
             db_dir=database_dir,
+            path_to_hyperparameters=path_to_hyperparameters,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
@@ -150,6 +157,7 @@ def machine_learning_fit(
     elif mlip_type == "MACE":
         train_test_error = mace_fitting(
             db_dir=database_dir,
+            path_to_hyperparameters=path_to_hyperparameters,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,

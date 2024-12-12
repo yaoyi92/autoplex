@@ -110,6 +110,8 @@ def gap_fitting(
         A dictionary with train_error, test_error, path_to_mlip
 
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_PHONON_DEFAULTS_FILE_PATH
     # keep additional pre- and suffixes
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     quip_train_file = train_name.replace("train", "quip_train")
@@ -323,6 +325,8 @@ def jace_fitting(
     ------
     - ValueError: If the `isolated_atom_energies` dictionary is empty or not provided when required.
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
     train_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     source_file_path = os.path.join(db_dir, "test.extxyz")
     shutil.copy(source_file_path, ".")
@@ -519,6 +523,8 @@ def nequip_fitting(
     """
     [TODO] train Nequip on virials
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
     train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     train_nequip = [
         at for at in train_data if "IsolatedAtom" not in at.info["config_type"]
@@ -798,6 +804,8 @@ def m3gnet_fitting(
     *    Availability: https://matgl.ai/tutorials%2FTraining%20a%20M3GNet%20Potential%20with%20PyTorch%20Lightning.html
     *    License: BSD 3-Clause License
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
     default_hyperparameters = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=path_to_hyperparameters
     )
@@ -1161,6 +1169,8 @@ def mace_fitting(
         A dictionary containing train_error, test_error, and the path to the fitted MLIP.
 
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
     if ref_virial_name is not None:
         atoms = read(f"{db_dir}/train.extxyz", index=":")
         mace_virial_format_conversion(
