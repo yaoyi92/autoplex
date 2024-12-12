@@ -65,8 +65,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Name of the flow produced by this maker.
     add_dft_phonon_struct: bool.
         If True, will add displaced supercells via phonopy for DFT calculation.
-    add_dft_random_struct: bool.
-        If True, will add randomly distorted structures for DFT calculation.
+    add_dft_rattled_struct: bool.
+        If True, will add rattled structures for DFT calculation.
     add_rss_struct: bool.
         If True, will add RSS generated structures for DFT calculation.
     n_structures: int.
@@ -182,7 +182,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
 
     name: str = "add_data"
     add_dft_phonon_struct: bool = True
-    add_dft_random_struct: bool = True
+    add_dft_rattled_struct: bool = True
     add_rss_struct: bool = False
     displacement_maker: BaseVaspMaker = None
     phonon_bulk_relax_maker: BaseVaspMaker = None
@@ -303,7 +303,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 "supercell_matrix"
             ] = supercell_matrix_job.output
 
-            if self.add_dft_random_struct:
+            if self.add_dft_rattled_struct:
                 add_dft_rand = self.add_dft_random(
                     structure=structure,
                     mp_id=mp_id,
@@ -341,7 +341,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 flows.append(add_dft_phon)
                 add_dft_phon.append_name(f"_{mp_id}")
                 fit_input.update({mp_id: add_dft_phon.output})
-            if self.add_dft_random_struct and self.add_dft_phonon_struct:
+            if self.add_dft_rattled_struct and self.add_dft_phonon_struct:
                 fit_input.update(
                     {
                         mp_id: {
@@ -678,7 +678,7 @@ class CompleteDFTvsMLBenchmarkWorkflowMPSettings(CompleteDFTvsMLBenchmarkWorkflo
         Name of the flow produced by this maker.
     add_dft_phonon_struct: bool.
         If True, will add displaced supercells via phonopy for DFT calculation.
-    add_dft_random_struct: bool.
+    add_dft_rattled_struct: bool.
         If True, will add randomly distorted structures for DFT calculation.
     add_rss_struct: bool.
         If True, will add RSS generated structures for DFT calculation.

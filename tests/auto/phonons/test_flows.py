@@ -714,7 +714,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_mp_settings(
         symprec=1e-3, supercell_settings={"min_length": 6, "max_length": 10, "min_atoms": 10, "max_atoms": 300, },
         displacements=[0.01],
         benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}},
-        add_dft_random_struct=True,
+        add_dft_rattled_struct=True,
         apply_data_preprocessing=True,
         use_defaults_fitting=False,
         split_ratio=0.3,
@@ -1300,7 +1300,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             symprec=1e-2,
             supercell_settings={"min_length": 8, "min_atoms": 20},
             displacements=[0.01],
-            add_dft_random_struct=False,
+            add_dft_rattled_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
             pre_xyz_files=["vasp_ref.extxyz"],
             pre_database_dir=test_dir / "fitting" / "ref_files",
@@ -1500,7 +1500,7 @@ def test_phonon_dft_ml_data_generation_flow(
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, supercell_settings={"min_length": 10, "min_atoms": 20}, symprec=1e-2,
-        add_dft_random_struct=False,
+        add_dft_rattled_struct=False,
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
         pre_xyz_files=["vasp_ref.extxyz"],
         pre_database_dir=test_dir / "fitting" / "ref_files",
