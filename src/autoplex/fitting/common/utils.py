@@ -1,26 +1,17 @@
 """Utility functions for fitting jobs."""
 
-from __future__ import annotations
-
 import contextlib
 import json
+import logging
 import os
 import re
 import shutil
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
+from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-from monty.dev import requires
-
-if TYPE_CHECKING:
-    from pymatgen.core import Structure
-
-import logging
-from collections.abc import Iterable
 
 import ase
 import lightning as pl
@@ -32,6 +23,7 @@ from ase.atoms import Atoms
 from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.data import chemical_symbols
 from ase.io import read, write
+from ase.io.extxyz import XYZError
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from dgl.data.utils import split_dataset
@@ -40,8 +32,10 @@ from matgl.ext.pymatgen import Structure2Graph, get_element_list
 from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
 from matgl.utils.training import PotentialLightningModule
+from monty.dev import requires
 from nequip.ase import NequIPCalculator
 from numpy import ndarray
+from pymatgen.core import Structure
 from pymatgen.io.ase import AseAtomsAdaptor
 from pytorch_lightning.loggers import CSVLogger
 from scipy.spatial import ConvexHull
@@ -65,7 +59,7 @@ logging.basicConfig(
 def gap_fitting(
     db_dir: Path,
     species_list: list | None = None,
-    path_to_default_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
@@ -86,8 +80,8 @@ def gap_fitting(
         Path to database directory.
     species_list: list
         List of element names (strings)
-    path_to_default_hyperparameters : str or Path.
-        Path to gap-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the GAP hyperparameters.
     num_processes_fit: int
         Number of processes used for gap_fit
     auto_delta: bool
@@ -116,8 +110,12 @@ def gap_fitting(
         A dictionary with train_error, test_error, path_to_mlip
 
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_PHONON_DEFAULTS_FILE_PATH
     # keep additional pre- and suffixes
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
+    quip_train_file = train_name.replace("train", "quip_train")
+    quip_test_file = test_name.replace("test", "quip_test")
     mlip_path: Path = prepare_fit_environment(
         db_dir, Path.cwd(), glue_xml, train_name, test_name, glue_file_path
     )
@@ -127,7 +125,7 @@ def gap_fitting(
     test_data_path = os.path.join(db_dir, test_name)
 
     default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+        mlip_fit_parameter_file_path=path_to_hyperparameters
     )
 
     gap_default_hyperparameters = default_hyperparameters["GAP"]
@@ -159,12 +157,12 @@ def gap_fitting(
         )
 
         run_gap(num_processes_fit, fit_parameters_list)
-        run_quip(num_processes_fit, train_data_path, gap_file_xml, "quip_" + train_name)
+        run_quip(num_processes_fit, train_data_path, gap_file_xml, quip_train_file)
 
     if include_three_body:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
         if auto_delta:
-            delta_3b = energy_remain("quip_" + train_name)
+            delta_3b = energy_remain(quip_train_file)
             delta_3b = delta_3b / num_triplet
             gap_default_hyperparameters["threeb"].update({"delta": delta_3b})
 
@@ -175,7 +173,7 @@ def gap_fitting(
         )
 
         run_gap(num_processes_fit, fit_parameters_list)
-        run_quip(num_processes_fit, train_data_path, gap_file_xml, "quip_" + train_name)
+        run_quip(num_processes_fit, train_data_path, gap_file_xml, quip_train_file)
 
     if glue_xml:
         gap_default_hyperparameters["general"].update({"at_file": train_data_path})
@@ -193,13 +191,13 @@ def gap_fitting(
             num_processes_fit,
             train_data_path,
             gap_file_xml,
-            "quip_" + train_name,
+            quip_train_file,
             glue_xml,
         )
 
     if include_soap:
         delta_soap = (
-            energy_remain("quip_" + train_name)
+            energy_remain(quip_train_file)
             if include_two_body or include_three_body
             else 1
         )
@@ -219,19 +217,17 @@ def gap_fitting(
             num_processes_fit,
             train_data_path,
             gap_file_xml,
-            "quip_" + train_name,
+            quip_train_file,
             glue_xml,
         )
 
     # Calculate training error
-    train_error = energy_remain("quip_" + train_name)
+    train_error = energy_remain(quip_train_file)
     logging.info(f"Training error of MLIP (eV/at.): {round(train_error, 7)}")
 
     # Calculate testing error
-    run_quip(
-        num_processes_fit, test_data_path, gap_file_xml, "quip_" + test_name, glue_xml
-    )
-    test_error = energy_remain("quip_" + test_name)
+    run_quip(num_processes_fit, test_data_path, gap_file_xml, quip_test_file, glue_xml)
+    test_error = energy_remain(quip_test_file)
     logging.info(f"Testing error of MLIP (eV/at.): {round(test_error, 7)}")
 
     if not glue_xml and species_list:
@@ -244,14 +240,13 @@ def gap_fitting(
                 train_name=train_name,
                 test_name=test_name,
             )
-        except ValueError as e:
+        except (ValueError, XYZError) as e:
             logging.warning(f"Skipped fit error metrics plot because of: \n{e}")
 
     return {
         "train_error": train_error,
         "test_error": test_error,
         "mlip_path": mlip_path,
-        "mlip_pot": mlip_path.joinpath(gap_file_xml),
     }
 
 
@@ -274,7 +269,7 @@ def gap_fitting(
 )
 def jace_fitting(
     db_dir: str | Path,
-    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     isolated_atom_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -293,8 +288,8 @@ def jace_fitting(
     ----------
     db_dir: str or Path
         directory containing the training and testing data files.
-    path_to_default_hyperparameters : str or Path.
-        Path to mlip-rss-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the J-ACE hyperparameters.
     isolated_atom_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -330,6 +325,8 @@ def jace_fitting(
     ------
     - ValueError: If the `isolated_atom_energies` dictionary is empty or not provided when required.
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
     train_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     source_file_path = os.path.join(db_dir, "test.extxyz")
     shutil.copy(source_file_path, ".")
@@ -363,7 +360,7 @@ def jace_fitting(
     ase.io.write("train_ace.extxyz", train_ace, format="extxyz")
 
     default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+        mlip_fit_parameter_file_path=path_to_hyperparameters
     )
     jace_hypers = default_hyperparameters["J-ACE"]
 
@@ -456,7 +453,7 @@ export2lammps("acemodel.yace", model)
 
 def nequip_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     isolated_atom_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -475,8 +472,8 @@ def nequip_fitting(
     ----------
     db_dir: Path
         directory containing the training and testing data files.
-    path_to_default_hyperparameters : str or Path.
-        Path to mlip-rss-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the NwquIP hyperparameters.
     isolated_atom_energies: dict
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -526,6 +523,8 @@ def nequip_fitting(
     """
     [TODO] train Nequip on virials
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
     train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     train_nequip = [
         at for at in train_data if "IsolatedAtom" not in at.info["config_type"]
@@ -547,7 +546,7 @@ def nequip_fitting(
         raise ValueError("isolated_atom_energies is empty or not defined!")
 
     default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+        mlip_fit_parameter_file_path=path_to_hyperparameters
     )
 
     nequip_hypers = default_hyperparameters["NEQUIP"]
@@ -735,7 +734,7 @@ per_species_rescale_scales: dataset_forces_rms
 
 def m3gnet_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -749,8 +748,8 @@ def m3gnet_fitting(
     ----------
     db_dir: Path
         Directory containing the training and testing data files.
-    path_to_default_hyperparameters : str or Path.
-        Path to mlip-rss-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the M3GNet hyperparameters.
     device: str
         Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
     ref_energy_name : str, optional
@@ -805,8 +804,10 @@ def m3gnet_fitting(
     *    Availability: https://matgl.ai/tutorials%2FTraining%20a%20M3GNet%20Potential%20with%20PyTorch%20Lightning.html
     *    License: BSD 3-Clause License
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
     default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_default_hyperparameters
+        mlip_fit_parameter_file_path=path_to_hyperparameters
     )
 
     m3gnet_hypers = default_hyperparameters["M3GNET"]
@@ -885,7 +886,9 @@ def m3gnet_fitting(
         }
         train_element_types = get_element_list(train_structs)
 
-        print(train_element_types)
+        print(
+            train_element_types
+        )  # this print has to stay as the stdout is written to the file
         train_converter = Structure2Graph(
             element_types=train_element_types, cutoff=cutoff
         )
@@ -1008,9 +1011,9 @@ def m3gnet_fitting(
             )
         # Again loggers ...
         print("Start training...")
-        print("Length of train_loader: ", len(train_loader))
-        print("Length of val_loader: ", len(val_loader))
-        print("Length of test_loader: ", len(test_loader))
+        print(f"Length of train_loader: {len(train_loader)}")
+        print(f"Length of val_loader: {len(val_loader)}")
+        print(f"Length of test_loader: {len(test_loader)}")
         trainer.fit(
             model=lit_module, train_dataloaders=train_loader, val_dataloaders=val_loader
         )
@@ -1105,7 +1108,7 @@ def m3gnet_fitting(
 
 def mace_fitting(
     db_dir: Path,
-    path_to_default_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -1124,8 +1127,8 @@ def mace_fitting(
     ----------
     db_dir: Path
         directory containing the training and testing data files.
-    path_to_default_hyperparameters : str or Path.
-        Path to mlip-rss-defaults.json.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the MACE hyperparameters.
     device: str
         specify device to use cuda or cpu.
     ref_energy_name : str, optional
@@ -1166,6 +1169,8 @@ def mace_fitting(
         A dictionary containing train_error, test_error, and the path to the fitted MLIP.
 
     """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
     if ref_virial_name is not None:
         atoms = read(f"{db_dir}/train.extxyz", index=":")
         mace_virial_format_conversion(
@@ -1174,7 +1179,7 @@ def mace_fitting(
 
     if use_defaults:
         default_hyperparameters = load_mlip_hyperparameter_defaults(
-            mlip_fit_parameter_file_path=path_to_default_hyperparameters
+            mlip_fit_parameter_file_path=path_to_hyperparameters
         )
 
         mace_hypers = default_hyperparameters["MACE"]
@@ -1220,9 +1225,9 @@ def mace_fitting(
         elif hyper in boolean_str_hypers:
             hypers.append(f"--{hyper}={mace_hypers[hyper]}")
         elif hyper in ["train_file", "test_file"]:
-            print("Train and test files have default names.")
+            logging.info("Train and test files have default names.")
         elif hyper in ["energy_key", "virial_key", "forces_key", "device"]:
-            print("energy_key, virial_key and forces_key have default names.")
+            logging.info("energy_key, virial_key and forces_key have default names.")
         else:
             hypers.append(f"--{hyper}={mace_hypers[hyper]}")
 
@@ -1400,7 +1405,7 @@ def get_list_of_vasp_calc_dirs(flow_output) -> list[str]:
     for output in flow_output.values():
         for output_type, dirs in output.items():
             if output_type != "phonon_data" and isinstance(dirs, list):
-                if output_type == "rand_struc_dir":
+                if output_type == "rattled_dir":
                     flat_dirs = [[item for sublist in dirs for item in sublist]]
                     list_of_vasp_calc_dirs.extend(*flat_dirs)
                 else:
@@ -1870,6 +1875,9 @@ def prepare_fit_environment(
     -------
     the MLIP file path.
     """
+    os.makedirs(
+        os.path.join(mlip_path, train_name.replace("train.extxyz", "")), exist_ok=True
+    )
     shutil.copy(
         os.path.join(database_dir, test_name),
         os.path.join(mlip_path, test_name),
@@ -1884,7 +1892,7 @@ def prepare_fit_environment(
             os.path.join(mlip_path, "glue.xml"),
         )
 
-    return mlip_path
+    return Path(os.path.join(mlip_path, train_name.replace("train.extxyz", "")))
 
 
 def convert_xyz_to_structure(
@@ -1937,7 +1945,7 @@ def convert_xyz_to_structure(
         else:
             stresses.append(np.zeros((3, 3)).tolist())
 
-    print(f"Loaded {len(structures)} structures.")
+    logging.info(f"Loaded {len(structures)} structures.")
 
     return structures, energies, forces, stresses
 

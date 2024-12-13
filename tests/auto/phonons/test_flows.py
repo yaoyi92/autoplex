@@ -1,20 +1,12 @@
-from __future__ import annotations
 import os
-
-os.environ["OMP_NUM_THREADS"] = "1"
 import pytest
 from monty.serialization import loadfn
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from pymatgen.core.structure import Structure
 from autoplex.auto.phonons.flows import CompleteDFTvsMLBenchmarkWorkflow, CompleteDFTvsMLBenchmarkWorkflowMPSettings
-from jobflow import Response, job
-from autoplex.data.rss.jobs import do_rss_single_node, do_rss_multi_node
-from autoplex.data.common.jobs import sample_data, collect_dft_data, preprocess_data
-from autoplex.data.common.flows import DFTStaticLabelling
-from autoplex.fitting.common.flows import MLIPFitMaker
-from typing import Optional, Dict, Any
-from pathlib import Path
-from jobflow import run_locally, Flow
+from jobflow import run_locally
+
+os.environ["OMP_NUM_THREADS"] = "1"
 
 
 @pytest.fixture(scope="class")
@@ -501,12 +493,13 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
     complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(
         symprec=1e-2, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        supercell_settings={"min_length": 8, "min_atoms": 20}).make(
+        supercell_settings={"min_length": 8, "min_atoms": 20},
+        apply_data_preprocessing=True,
+    ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        apply_data_preprocessing=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -546,25 +539,27 @@ def test_complete_dft_vs_ml_benchmark_workflow_m3gnet(
         ml_models=["M3GNET"],
         symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms": 20}, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        pre_xyz_files=["vasp_ref.extxyz"],
+        pre_database_dir=test_dir / "fitting" / "ref_files",
+        apply_data_preprocessing=True,
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        pre_xyz_files=["vasp_ref.extxyz"],
-        pre_database_dir=test_dir / "fitting" / "ref_files",
-        apply_data_preprocessing=True,
-        cutoff=3.0,
-        threebody_cutoff=2.0,
-        batch_size=1,
-        max_epochs=3,
-        include_stresses=True,
-        hidden_dim=8,
-        num_units=8,
-        max_l=4,
-        max_n=4,
-        device="cpu",
-        test_equal_to_val=True,
+        fit_kwargs_list=[{
+            "cutoff": 3.0,
+            "threebody_cutoff": 2.0,
+            "batch_size": 1,
+            "max_epochs": 3,
+            "include_stresses": True,
+            "hidden_dim": 8,
+            "num_units": 8,
+            "max_l": 4,
+            "max_n": 4,
+            "device": "cpu",
+            "test_equal_to_val": True,
+        }]
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -594,27 +589,29 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace(
         ml_models=["MACE"],
         symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms": 20}, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}}
+        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}},
+        pre_xyz_files=["vasp_ref.extxyz"],
+        pre_database_dir=test_dir / "fitting" / "ref_files",
+        apply_data_preprocessing=True,
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        pre_xyz_files=["vasp_ref.extxyz"],
-        pre_database_dir=test_dir / "fitting" / "ref_files",
-        apply_data_preprocessing=True,
-        model="MACE",
-        config_type_weights='{"Default":1.0}',
-        hidden_irreps="32x0e + 32x1o",
-        r_max=3.0,
-        batch_size=5,
-        max_num_epochs=10,
-        start_swa=5,
-        ema_decay=0.99,
-        correlation=3,
-        loss="huber",
-        default_dtype="float32",
-        device="cpu",
+        fit_kwargs_list=[{
+            "model": "MACE",
+            "config_type_weights": '{"Default":1.0}',
+            "hidden_irreps": "32x0e + 32x1o",
+            "r_max": 3.0,
+            "batch_size": 5,
+            "max_num_epochs": 10,
+            "start_swa": 5,
+            "ema_decay": 0.99,
+            "correlation": 3,
+            "loss": "huber",
+            "default_dtype": "float32",
+            "device": "cpu",
+        }]
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -647,40 +644,42 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning(
         ml_models=["MACE"],
         symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms": 20}, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}}
+        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}},
+        pre_xyz_files=["vasp_ref.extxyz"],
+        pre_database_dir=test_dir / "fitting" / "ref_files",
+        apply_data_preprocessing=True,
+        use_defaults_fitting=False,
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        pre_xyz_files=["vasp_ref.extxyz"],
-        pre_database_dir=test_dir / "fitting" / "ref_files",
-        apply_data_preprocessing=True,
-        use_defaults_fitting=False,
-        model="MACE",
-        name="MACE_final",
-        foundation_model="small",
-        multiheads_finetuning=False,
-        r_max=6,
-        loss="huber",
-        energy_weight=1000.0,
-        forces_weight=1000.0,
-        stress_weight=1.0,
-        compute_stress=True,
-        E0s="average",
-        scaling="rms_forces_scaling",
-        batch_size=1,
-        max_num_epochs=1,
-        ema=True,
-        ema_decay=0.99,
-        amsgrad=True,
-        default_dtype="float64",
-        restart_latest=True,
-        lr=0.0001,
-        patience=20,
-        device="cpu",
-        save_cpu=True,
-        seed=3,
+        fit_kwargs_list=[{
+            "model": "MACE",
+            "name": "MACE_final",
+            "foundation_model": "small",
+            "multiheads_finetuning": False,
+            "r_max": 6,
+            "loss": "huber",
+            "energy_weight": 1000.0,
+            "forces_weight": 1000.0,
+            "stress_weight": 1.0,
+            "compute_stress": True,
+            "E0s": "average",
+            "scaling": "rms_forces_scaling",
+            "batch_size": 1,
+            "max_num_epochs": 1,
+            "ema": True,
+            "ema_decay": 0.99,
+            "amsgrad": True,
+            "default_dtype": "float64",
+            "restart_latest": True,
+            "lr": 0.0001,
+            "patience": 20,
+            "device": "cpu",
+            "save_cpu": True,
+            "seed": 3,
+        }]
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -715,39 +714,41 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_mp_settings(
         symprec=1e-3, supercell_settings={"min_length": 6, "max_length": 10, "min_atoms": 10, "max_atoms": 300, },
         displacements=[0.01],
         benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}},
-        add_dft_random_struct=True,
+        add_dft_rattled_struct=True,
+        apply_data_preprocessing=True,
+        use_defaults_fitting=False,
+        split_ratio=0.3,
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["test"],
         benchmark_structures=[structure],
-        apply_data_preprocessing=True,
-        use_defaults_fitting=False,
-        split_ratio=0.3,
-        model="MACE",
-        name="MACE_final",
-        foundation_model="small",
-        multiheads_finetuning=False,
-        r_max=6,
-        loss="huber",
-        energy_weight=1000.0,
-        forces_weight=1000.0,
-        stress_weight=1.0,
-        compute_stress=True,
-        E0s="average",
-        scaling="rms_forces_scaling",
-        batch_size=1,
-        max_num_epochs=10,
-        ema=True,
-        ema_decay=0.99,
-        amsgrad=True,
-        default_dtype="float64",
-        restart_latest=True,
-        lr=0.0001,
-        patience=20,
-        device="cpu",
-        save_cpu=True,
-        seed=3,
+        fit_kwargs_list=[{
+            "model": "MACE",
+            "name": "MACE_final",
+            "foundation_model": "small",
+            "multiheads_finetuning": False,
+            "r_max": 6,
+            "loss": "huber",
+            "energy_weight": 1000.0,
+            "forces_weight": 1000.0,
+            "stress_weight": 1.0,
+            "compute_stress": True,
+            "E0s": "average",
+            "scaling": "rms_forces_scaling",
+            "batch_size": 1,
+            "max_num_epochs": 10,
+            "ema": True,
+            "ema_decay": 0.99,
+            "amsgrad": True,
+            "default_dtype": "float64",
+            "restart_latest": True,
+            "lr": 0.0001,
+            "patience": 20,
+            "device": "cpu",
+            "save_cpu": True,
+            "seed": 3,
+        }]
     )
     # automatically use fake VASP and write POTCAR.spec during the test
     mock_vasp(ref_paths5_mpid, fake_run_vasp_kwargs5_mpid)
@@ -779,27 +780,29 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
         ml_models=["NEQUIP"],
         symprec=1e-2, supercell_settings={"min_length": 8, "min_atoms": 20}, displacements=[0.01],
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}}
+        benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}},
+        pre_xyz_files=["vasp_ref.extxyz"],
+        pre_database_dir=test_dir / "fitting" / "ref_files",
+        apply_data_preprocessing=True,
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        pre_xyz_files=["vasp_ref.extxyz"],
-        pre_database_dir=test_dir / "fitting" / "ref_files",
-        apply_data_preprocessing=True,
-        r_max=4.0,
-        num_layers=4,
-        l_max=2,
-        num_features=32,
-        num_basis=8,
-        invariant_layers=2,
-        invariant_neurons=64,
-        batch_size=1,
-        learning_rate=0.005,
-        max_epochs=1,
-        default_dtype="float32",
-        device="cpu",
+        fit_kwargs_list=[{
+            "r_max": 4.0,
+            "num_layers": 4,
+            "l_max": 2,
+            "num_features": 32,
+            "num_basis": 8,
+            "invariant_layers": 2,
+            "invariant_neurons": 64,
+            "batch_size": 1,
+            "learning_rate": 0.005,
+            "max_epochs": 1,
+            "default_dtype": "float32",
+            "device": "cpu",
+        }]
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -832,12 +835,13 @@ def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
                                                                   supercell_settings={"min_length": 8, "min_atoms": 20},
                                                                   displacements=[0.01],
                                                                   volume_custom_scale_factors=[0.975, 1.0, 1.025,
-                                                                                               1.05], ).make(
+                                                                                               1.05],
+                                                                  apply_data_preprocessing=True,
+                                                                  ).make(
         structure_list=[structure, structure],
         mp_ids=["test", "test2"],
         benchmark_mp_ids=["mp-22905", "test3"],
         benchmark_structures=[structure, structure],
-        apply_data_preprocessing=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -871,12 +875,13 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_hploop(
                                                                 hyper_para_loop=True,
                                                                 atomwise_regularization_list=[0.01],
                                                                 n_sparse_list=[3000, 5000],
-                                                                soap_delta_list=[1.0], ).make(
+                                                                soap_delta_list=[1.0],
+                                                                apply_data_preprocessing=True,
+                                                                ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        apply_data_preprocessing=True,
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -913,13 +918,14 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization_hploop(
                                                                       hyper_para_loop=True,
                                                                       atomwise_regularization_list=[0.01],
                                                                       n_sparse_list=[3000, 5000],
-                                                                      soap_delta_list=[1.0], ).make(
+                                                                      soap_delta_list=[1.0],
+                                                                      apply_data_preprocessing=True,
+                                                                      regularization=True,
+                                                                      ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        apply_data_preprocessing=True,
-        **{"regularization": True},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -940,7 +946,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization_hploop(
     )
 
     # regularization specific test
-    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    reg_specific_file_exists = any(glob.glob("job*/without_regularization/train.extxyz"))
     assert reg_specific_file_exists
 
 
@@ -956,14 +962,15 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
                                                                supercell_settings={"min_length": 8, "min_atoms": 20},
                                                                displacements=[0.01],
                                                                volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
-                                                               summary_filename_prefix="test_results_", ).make(
+                                                               summary_filename_prefix="test_results_",
+                                                               apply_data_preprocessing=True,
+                                                               regularization=True,
+                                                               ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        apply_data_preprocessing=True,
-        **{"regularization": True,
-           "soap": {"delta": 3.0, "l_max": 12, "n_max": 10, "n_sparse": 8000, "f0": 0.0}},
+        fit_kwargs_list=[{"soap": {"delta": 3.0, "l_max": 12, "n_max": 10, "n_sparse": 8000, "f0": 0.0}}],
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -984,7 +991,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_with_sigma_regularization(
     )
 
     # regularization specific test
-    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    reg_specific_file_exists = any(glob.glob("job*/without_regularization/train.extxyz"))
     assert reg_specific_file_exists
 
     # check if soap_default_dict is correctly constructed from n_sparse and delta values in user fit parameter input
@@ -1007,15 +1014,16 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
                                                              supercell_settings={"min_length": 8, "min_atoms": 20},
                                                              displacements=[0.01],
                                                              volume_custom_scale_factors=[0.975, 1.0, 1.025,
-                                                                                          1.05], ).make(
+                                                                                          1.05],
+                                                             pre_xyz_files=["vasp_ref.extxyz"],
+                                                             pre_database_dir=test_dir / "fitting" / "ref_files",
+                                                             apply_data_preprocessing=True,
+                                                             separated=True,
+                                                             ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        pre_xyz_files=["vasp_ref.extxyz"],
-        pre_database_dir=test_dir / "fitting" / "ref_files",
-        apply_data_preprocessing=True,
-        **{"separated": True},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -1051,15 +1059,17 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
                                                                hyper_para_loop=True,
                                                                atomwise_regularization_list=[0.01],
                                                                n_sparse_list=[3000, 5000],
-                                                               soap_delta_list=[1.0], ).make(
+                                                               soap_delta_list=[1.0],
+                                                               pre_xyz_files=["vasp_ref.extxyz"],
+                                                               pre_database_dir=test_dir / "fitting" / "ref_files",
+                                                               apply_data_preprocessing=True,
+                                                               regularization=True,
+                                                               separated=True,
+                                                               ).make(
         structure_list=[structure, structure, structure],
         mp_ids=["test", "test2", "test3"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        pre_xyz_files=["vasp_ref.extxyz"],
-        pre_database_dir=test_dir / "fitting" / "ref_files",
-        apply_data_preprocessing=True,
-        **{"regularization": True, "separated": True},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -1079,7 +1089,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop_three_
     )
 
     # regularization specific test
-    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    reg_specific_file_exists = any(glob.glob("job*/without_regularization/train.extxyz"))
     assert reg_specific_file_exists
 
 
@@ -1096,15 +1106,17 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
                                                              displacements=[0.01],
                                                              volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
                                                              hyper_para_loop=True, atomwise_regularization_list=[0.01],
-                                                             n_sparse_list=[3000, 5000], soap_delta_list=[1.0], ).make(
+                                                             n_sparse_list=[3000, 5000], soap_delta_list=[1.0],
+                                                             pre_xyz_files=["vasp_ref.extxyz"],
+                                                             pre_database_dir=test_dir / "fitting" / "ref_files",
+                                                             apply_data_preprocessing=True,
+                                                             regularization=True,
+                                                             separated=True,
+                                                             ).make(
         structure_list=[structure],
         mp_ids=["test"],
         benchmark_mp_ids=["mp-22905"],
         benchmark_structures=[structure],
-        pre_xyz_files=["vasp_ref.extxyz"],
-        pre_database_dir=test_dir / "fitting" / "ref_files",
-        apply_data_preprocessing=True,
-        **{"regularization": True, "separated": True},
     )
 
     # automatically use fake VASP and write POTCAR.spec during the test
@@ -1125,7 +1137,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated_sigma_reg_hploop(
     )
 
     # regularization specific test
-    reg_specific_file_exists = any(glob.glob("job*/train_wo_sigma.extxyz"))
+    reg_specific_file_exists = any(glob.glob("job*/without_regularization/train.extxyz"))
     assert reg_specific_file_exists
 
 
@@ -1151,16 +1163,17 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             supercell_settings={"min_length": 8, "min_atoms": 20},
             displacements=[0.01],
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
+            apply_data_preprocessing=True,
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            pre_xyz_files=["vasp_ref.extxyz"],
-            pre_database_dir=test_dir / "fitting" / "ref_files",
-            apply_data_preprocessing=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -1202,16 +1215,17 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_phonon_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
+            apply_data_preprocessing=True,
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            pre_xyz_files=["vasp_ref.extxyz"],
-            pre_database_dir=test_dir / "fitting" / "ref_files",
-            apply_data_preprocessing=True,
             dft_references=[dft_reference],
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         # automatically use fake VASP and write POTCAR.spec during the test
@@ -1251,16 +1265,17 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             displacements=[0.01],
             add_dft_phonon_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
+            apply_data_preprocessing=True,
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            pre_xyz_files=["vasp_ref.extxyz"],
-            pre_database_dir=test_dir / "fitting" / "ref_files",
-            apply_data_preprocessing=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_phonon_false.iterflow():
@@ -1285,18 +1300,19 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             symprec=1e-2,
             supercell_settings={"min_length": 8, "min_atoms": 20},
             displacements=[0.01],
-            add_dft_random_struct=False,
+            add_dft_rattled_struct=False,
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
+            apply_data_preprocessing=True,
         ).make(
             structure_list=[structure],
             mp_ids=["test"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            pre_xyz_files=["vasp_ref.extxyz"],
-            pre_database_dir=test_dir / "fitting" / "ref_files",
-            apply_data_preprocessing=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_add_random_false.iterflow():
@@ -1322,16 +1338,17 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             supercell_settings={"min_length": 8, "min_atoms": 20},
             displacements=[0.01],
             volume_custom_scale_factors=[0.975, 0.975, 0.975, 1.0, 1.0, 1.0, 1.025, 1.025, 1.025, 1.05, 1.05, 1.05],
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
+            apply_data_preprocessing=True,
         ).make(
             structure_list=[structure],
             mp_ids=["mp-22905"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            pre_xyz_files=["vasp_ref.extxyz"],
-            pre_database_dir=test_dir / "fitting" / "ref_files",
-            apply_data_preprocessing=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
 
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
@@ -1434,16 +1451,17 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             phonon_static_energy_maker=test_phonon_static_energy_maker,
             rattled_bulk_relax_maker=test_rattled_bulk_relax_maker,
             isolated_atom_maker=test_static_iso_atom_maker,
+            pre_xyz_files=["vasp_ref.extxyz"],
+            pre_database_dir=test_dir / "fitting" / "ref_files",
+            apply_data_preprocessing=True,
         ).make(
             structure_list=[structure],
             mp_ids=["mp-22905"],
             benchmark_mp_ids=["mp-22905"],
             benchmark_structures=[structure],
-            pre_xyz_files=["vasp_ref.extxyz"],
-            pre_database_dir=test_dir / "fitting" / "ref_files",
-            apply_data_preprocessing=True,
             dft_references=None,
-            **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+            fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]
+            # reduce unit test run time
         )
         mock_vasp(ref_paths, fake_run_vasp_kwargs)
 
@@ -1470,28 +1488,28 @@ def test_phonon_dft_ml_data_generation_flow(
     flow_data_generation = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, supercell_settings={"min_length": 10, "min_atoms": 20}, symprec=1e-2,
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        pre_xyz_files=["vasp_ref.extxyz"],
+        pre_database_dir=test_dir / "fitting" / "ref_files",
+        apply_data_preprocessing=True,
     ).make(structure_list=structure_list,
            mp_ids=mp_ids,
            benchmark_structures=structure_list,
            benchmark_mp_ids=mp_ids,
-           pre_xyz_files=["vasp_ref.extxyz"],
-           pre_database_dir=test_dir / "fitting" / "ref_files",
-           apply_data_preprocessing=True,
-           **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+           fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]  # reduce unit test run time
            )
 
     flow_data_generation_without_rattled_structures = CompleteDFTvsMLBenchmarkWorkflow(
         n_structures=3, supercell_settings={"min_length": 10, "min_atoms": 20}, symprec=1e-2,
-        add_dft_random_struct=False,
+        add_dft_rattled_struct=False,
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        pre_xyz_files=["vasp_ref.extxyz"],
+        pre_database_dir=test_dir / "fitting" / "ref_files",
+        apply_data_preprocessing=True,
     ).make(structure_list=structure_list,
            mp_ids=mp_ids,
            benchmark_structures=structure_list,
            benchmark_mp_ids=mp_ids,
-           pre_xyz_files=["vasp_ref.extxyz"],
-           pre_database_dir=test_dir / "fitting" / "ref_files",
-           apply_data_preprocessing=True,
-           **{"general": {"two_body": True, "three_body": False, "soap": False}}  # reduce unit test run time
+           fit_kwargs_list=[{"general": {"two_body": True, "three_body": False, "soap": False}}]  # reduce unit test run time
            )
     # automatically use fake VASP and write POTCAR.spec during the test
     mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
@@ -1523,9 +1541,8 @@ def test_phonon_dft_ml_data_generation_flow(
 # TODO testing cell_factor_sequence
 
 
-def test_supercell_test_runs(vasp_test_dir, clean_dir, memory_jobstore, test_dir
-                             ):
-    from atomate2.forcefields.jobs import CHGNetStaticMaker
+def test_supercell_test_runs(vasp_test_dir, clean_dir, memory_jobstore, test_dir):
+    from atomate2.forcefields.jobs import ForceFieldStaticMaker
     from autoplex.auto.phonons.flows import DFTSupercellSettingsMaker
 
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
@@ -1535,536 +1552,10 @@ def test_supercell_test_runs(vasp_test_dir, clean_dir, memory_jobstore, test_dir
     mp_ids = ["mp-22905"]
 
     autoplex_flow = DFTSupercellSettingsMaker(supercell_settings={"min_length": 10, "min_atoms": 10},
-                                              DFT_Maker=CHGNetStaticMaker()).make(
-        structure_list=structure_list, mp_ids=mp_ids, )
+                                              DFT_Maker=ForceFieldStaticMaker(force_field_name="CHGNet")).make(
+                                              structure_list=structure_list, mp_ids=mp_ids, )
 
     responses_flow = run_locally(autoplex_flow)
-    assert responses_flow[autoplex_flow.jobs[-1].output.uuid][1].replace[0].name == "MLFF.CHGNet static"
+    assert responses_flow[autoplex_flow.jobs[-1].output.uuid][1].replace[0].name == "Force field static"
+    # seems that the current atomate2 implementation doesn't distinguish in the FF flow names
 
-
-@job
-def mock_rss(input_dir: str = None,
-             selection_method: str = 'cur',
-             num_of_selection: int = 3,
-             bcur_params: Optional[str] = None,
-             random_seed: int = None,
-             e0_spin: bool = False,
-             isolated_atom: bool = True,
-             dimer: bool = True,
-             dimer_range: list = None,
-             dimer_num: int = None,
-             custom_incar: Optional[str] = None,
-             vasp_ref_file: str = 'vasp_ref.extxyz',
-             rss_group: str = 'initial',
-             test_ratio: float = 0.1,
-             regularization: bool = True,
-             distillation: bool = True,
-             f_max: float = 200,
-             pre_database_dir: Optional[str] = None,
-             mlip_type: str = 'GAP',
-             ref_energy_name: str = "REF_energy",
-             ref_force_name: str = "REF_forces",
-             ref_virial_name: str = "REF_virial",
-             num_processes_fit: int = None,
-             kt: float = None,
-             **fit_kwargs, ):
-    job2 = sample_data(selection_method=selection_method,
-                       num_of_selection=num_of_selection,
-                       bcur_params=bcur_params,
-                       dir=input_dir,
-                       random_seed=random_seed)
-    job3 = DFTStaticLabelling(e0_spin=e0_spin,
-                              isolated_atom=isolated_atom,
-                              dimer=dimer,
-                              dimer_range=dimer_range,
-                              dimer_num=dimer_num,
-                              custom_incar=custom_incar,
-                              ).make(structures=job2.output)
-    job4 = collect_dft_data(vasp_ref_file=vasp_ref_file,
-                            rss_group=rss_group,
-                            vasp_dirs=job3.output)
-    job5 = preprocess_data(test_ratio=test_ratio,
-                           regularization=regularization,
-                           distillation=distillation,
-                           force_max=f_max,
-                           vasp_ref_dir=job4.output['vasp_ref_dir'], pre_database_dir=pre_database_dir)
-    job6 = MLIPFitMaker(mlip_type=mlip_type,
-                        ref_energy_name=ref_energy_name,
-                        ref_force_name=ref_force_name,
-                        ref_virial_name=ref_virial_name,
-                        ).make(database_dir=job5.output,
-                               isolated_atom_energies=job4.output['isolated_atom_energies'],
-                               num_processes_fit=num_processes_fit,
-                               apply_data_preprocessing=False,
-                               **fit_kwargs)
-    job_list = [job2, job3, job4, job5, job6]
-
-    return Response(
-        replace=Flow(job_list),
-        output={
-            'test_error': job6.output['test_error'],
-            'pre_database_dir': job5.output,
-            'mlip_path': job6.output['mlip_path'],
-            'isolated_atom_energies': job4.output['isolated_atom_energies'],
-            'current_iter': 0,
-            'kt': kt
-        },
-    )
-
-
-@job
-def mock_do_rss_iterations(input: Dict[str, Optional[Any]] = {'test_error': None,
-                                                              'pre_database_dir': None,
-                                                              'mlip_path': None,
-                                                              'isolated_atom_energies': None,
-                                                              'current_iter': None,
-                                                              'kt': 0.6},
-                           input_dir: str = None,
-                           selection_method1: str = 'cur',
-                           selection_method2: str = 'bcur1s',
-                           num_of_selection1: int = 3,
-                           num_of_selection2: int = 5,
-                           bcur_params: Optional[str] = None,
-                           random_seed: int = None,
-                           mlip_type: str = 'GAP',
-                           scalar_pressure_method: str = 'exp',
-                           scalar_exp_pressure: float = 100,
-                           scalar_pressure_exponential_width: float = 0.2,
-                           scalar_pressure_low: float = 0,
-                           scalar_pressure_high: float = 50,
-                           max_steps: int = 10,
-                           force_tol: float = 0.1,
-                           stress_tol: float = 0.1,
-                           Hookean_repul: bool = False,
-                           write_traj: bool = True,
-                           num_processes_rss: int = 4,
-                           device: str = "cpu",
-                           stop_criterion: float = 0.01,
-                           max_iteration_number: int = 9,
-                           **fit_kwargs, ):
-    if input['test_error'] is not None and input['test_error'] > stop_criterion and input[
-        'current_iter'] < max_iteration_number:
-        if input['kt'] > 0.15:
-            kt = input['kt'] - 0.1
-        else:
-            kt = 0.1
-        print('kt:', kt)
-        current_iter = input['current_iter'] + 1
-        print('Current iter index:', current_iter)
-        print(f'The error of {current_iter}th iteration:', input['test_error'])
-
-        bcur_params['kt'] = kt
-
-        job2 = sample_data(selection_method=selection_method1,
-                           num_of_selection=num_of_selection1,
-                           bcur_params=bcur_params,
-                           dir=input_dir,
-                           random_seed=random_seed)
-        job3 = do_rss_single_node(mlip_type=mlip_type,
-                                  iteration_index=f'{current_iter}th',
-                                  mlip_path=input['mlip_path'],
-                                  structures=job2.output,
-                                  scalar_pressure_method=scalar_pressure_method,
-                                  scalar_exp_pressure=scalar_exp_pressure,
-                                  scalar_pressure_exponential_width=scalar_pressure_exponential_width,
-                                  scalar_pressure_low=scalar_pressure_low,
-                                  scalar_pressure_high=scalar_pressure_high,
-                                  max_steps=max_steps,
-                                  force_tol=force_tol,
-                                  stress_tol=stress_tol,
-                                  hookean_repul=Hookean_repul,
-                                  write_traj=write_traj,
-                                  num_processes_rss=num_processes_rss,
-                                  device=device)
-        job4 = sample_data(selection_method=selection_method2,
-                           num_of_selection=num_of_selection2,
-                           bcur_params=bcur_params,
-                           traj_path=job3.output,
-                           random_seed=random_seed,
-                           isolated_atom_energies=input["isolated_atom_energies"])
-
-        job_list = [job2, job3, job4]
-
-        return Response(detour=job_list, output=job4.output)
-
-
-@job
-def mock_do_rss_iterations_multi_jobs(input: Dict[str, Optional[Any]] = {'test_error': None,
-                                                                         'pre_database_dir': None,
-                                                                         'mlip_path': None,
-                                                                         'isolated_atom_energies': None,
-                                                                         'current_iter': None,
-                                                                         'kt': 0.6},
-                                      input_dir: str = None,
-                                      selection_method1: str = 'cur',
-                                      selection_method2: str = 'bcur1s',
-                                      num_of_selection1: int = 3,
-                                      num_of_selection2: int = 5,
-                                      bcur_params: Optional[str] = None,
-                                      random_seed: int = None,
-                                      mlip_type: str = 'GAP',
-                                      scalar_pressure_method: str = 'exp',
-                                      scalar_exp_pressure: float = 100,
-                                      scalar_pressure_exponential_width: float = 0.2,
-                                      scalar_pressure_low: float = 0,
-                                      scalar_pressure_high: float = 50,
-                                      max_steps: int = 10,
-                                      force_tol: float = 0.1,
-                                      stress_tol: float = 0.1,
-                                      Hookean_repul: bool = False,
-                                      write_traj: bool = True,
-                                      num_processes_rss: int = 4,
-                                      device: str = "cpu",
-                                      stop_criterion: float = 0.01,
-                                      max_iteration_number: int = 9,
-                                      num_groups: int = 2,
-                                      remove_traj_files: bool = True,
-                                      **fit_kwargs, ):
-    if input['test_error'] is not None and input['test_error'] > stop_criterion and input[
-        'current_iter'] < max_iteration_number:
-        if input['kt'] > 0.15:
-            kt = input['kt'] - 0.1
-        else:
-            kt = 0.1
-        print('kt:', kt)
-        current_iter = input['current_iter'] + 1
-        print('Current iter index:', current_iter)
-        print(f'The error of {current_iter}th iteration:', input['test_error'])
-
-        bcur_params['kT'] = kt
-
-        job2 = sample_data(selection_method=selection_method1,
-                           num_of_selection=num_of_selection1,
-                           bcur_params=bcur_params,
-                           dir=input_dir,
-                           random_seed=random_seed)
-        job3 = do_rss_multi_node(mlip_type=mlip_type,
-                                 iteration_index=f'{current_iter}th',
-                                 mlip_path=input['mlip_path'],
-                                 structure=job2.output,
-                                 scalar_pressure_method=scalar_pressure_method,
-                                 scalar_exp_pressure=scalar_exp_pressure,
-                                 scalar_pressure_exponential_width=scalar_pressure_exponential_width,
-                                 scalar_pressure_low=scalar_pressure_low,
-                                 scalar_pressure_high=scalar_pressure_high,
-                                 max_steps=max_steps,
-                                 force_tol=force_tol,
-                                 stress_tol=stress_tol,
-                                 hookean_repul=Hookean_repul,
-                                 write_traj=write_traj,
-                                 num_processes_rss=num_processes_rss,
-                                 device=device,
-                                 num_groups=num_groups, )
-        job4 = sample_data(selection_method=selection_method2,
-                           num_of_selection=num_of_selection2,
-                           bcur_params=bcur_params,
-                           traj_path=job3.output,
-                           random_seed=random_seed,
-                           isolated_atom_energies=input["isolated_atom_energies"],
-                           remove_traj_files=remove_traj_files)
-
-        job_list = [job2, job3, job4]
-
-        return Response(detour=job_list, output=job4.output)
-
-
-def test_mock_workflow(test_dir, mock_vasp, memory_jobstore, clean_dir):
-    test_files_dir = test_dir / "data/rss.extxyz"
-    # atoms = read(test_files_dir, index=':')
-    # structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
-
-    ref_paths = {
-        **{f"static_bulk_{i}": f"rss/Si_bulk_{i + 1}/" for i in range(18)},
-        "static_isolated_0": "rss/Si_isolated_1/",
-        "static_dimer_0": "rss/Si_dimer_1/",
-        "static_dimer_1": "rss/Si_dimer_2/",
-        "static_dimer_2": "rss/Si_dimer_3/",
-    }
-
-    fake_run_vasp_kwargs = {
-        "static_isolated_0": {"incar_settings": {"ISPIN": 2, "KSPACINGS": 2.0}},
-        "static_dimer_0": {"incar_settings": {"ISPIN": 2, "KSPACINGS": 2.0}},
-        "static_dimer_1": {"incar_settings": {"ISPIN": 2, "KSPACINGS": 2.0}},
-        "static_dimer_2": {"incar_settings": {"ISPIN": 2, "KSPACINGS": 2.0}},
-    }
-
-    mock_vasp(ref_paths, fake_run_vasp_kwargs)
-
-    job1 = mock_rss(input_dir=test_files_dir,
-                    selection_method='cur',
-                    num_of_selection=18,
-                    bcur_params={'soap_paras': {'l_max': 3,
-                                                'n_max': 3,
-                                                'atom_sigma': 0.5,
-                                                'cutoff': 4.0,
-                                                'cutoff_transition_width': 1.0,
-                                                'zeta': 4.0,
-                                                'average': True,
-                                                'species': True,
-                                                },
-                                 },
-                    random_seed=42,
-                    e0_spin=True,
-                    isolated_atom=True,
-                    dimer=False,
-                    dimer_range=None,
-                    dimer_num=None,
-                    custom_incar={
-                        "ADDGRID": None,
-                        "ENCUT": 200,
-                        "EDIFF": 1E-04,
-                        "ISMEAR": 0,
-                        "SIGMA": 0.05,
-                        "PREC": "Normal",
-                        "ISYM": None,
-                        "KSPACING": 0.3,
-                        "NPAR": 8,
-                        "LWAVE": "False",
-                        "LCHARG": "False",
-                        "ENAUG": None,
-                        "GGA": None,
-                        "ISPIN": None,
-                        "LAECHG": None,
-                        "LELF": None,
-                        "LORBIT": None,
-                        "LVTOT": None,
-                        "NSW": None,
-                        "SYMPREC": None,
-                        "NELM": 50,
-                        "LMAXMIX": None,
-                        "LASPH": None,
-                        "AMIN": None,
-                    },
-                    vasp_ref_file='vasp_ref.extxyz',
-                    gap_rss_group='initial',
-                    test_ratio=0.1,
-                    regularization=True,
-                    distillation=True,
-                    f_max=0.7,
-                    pre_database_dir=None,
-                    mlip_type='GAP',
-                    ref_energy_name="REF_energy",
-                    ref_force_name="REF_forces",
-                    ref_virial_name="REF_virial",
-                    num_processes_fit=4,
-                    kt=0.6
-                    )
-
-    job2 = mock_do_rss_iterations(input=job1.output,
-                                  input_dir=test_files_dir,
-                                  selection_method1='cur',
-                                  selection_method2='bcur1s',
-                                  num_of_selection1=5,
-                                  num_of_selection2=3,
-                                  bcur_params={'soap_paras': {'l_max': 3,
-                                                              'n_max': 3,
-                                                              'atom_sigma': 0.5,
-                                                              'cutoff': 4.0,
-                                                              'cutoff_transition_width': 1.0,
-                                                              'zeta': 4.0,
-                                                              'average': True,
-                                                              'species': True,
-                                                              },
-                                               'frac_of_bcur': 0.8,
-                                               'bolt_max_num': 3000,
-                                               'kernel_exp': 4.0,
-                                               'energy_label': 'energy'},
-                                  random_seed=None,
-                                  e0_spin=False,
-                                  isolated_atom=False,
-                                  dimer=False,
-                                  dimer_range=None,
-                                  dimer_num=None,
-                                  custom_incar=None,
-                                  vasp_ref_file='vasp_ref.extxyz',
-                                  rss_group='initial',
-                                  test_ratio=0.1,
-                                  regularization=True,
-                                  distillation=True,
-                                  f_max=200,
-                                  pre_database_dir=None,
-                                  mlip_type='GAP',
-                                  ref_energy_name="REF_energy",
-                                  ref_force_name="REF_forces",
-                                  ref_virial_name="REF_virial",
-                                  num_processes_fit=None,
-                                  scalar_pressure_method='exp',
-                                  scalar_exp_pressure=100,
-                                  scalar_pressure_exponential_width=0.2,
-                                  scalar_pressure_low=0,
-                                  scalar_pressure_high=50,
-                                  max_steps=100,
-                                  force_tol=0.6,
-                                  stress_tol=0.6,
-                                  Hookean_repul=False,
-                                  write_traj=True,
-                                  num_processes_rss=4,
-                                  device="cpu",
-                                  stop_criterion=0.01,
-                                  max_iteration_number=9
-                                  )
-
-    response = run_locally(
-        Flow([job1, job2]),
-        create_folders=True,
-        ensure_success=True,
-        store=memory_jobstore
-    )
-
-    assert Path(job1.output["mlip_path"].resolve(memory_jobstore)).exists()
-
-    selected_atoms = job2.output.resolve(memory_jobstore)
-
-    assert len(selected_atoms) == 3
-
-
-def test_mock_workflow_multi_node(test_dir, mock_vasp, memory_jobstore, clean_dir):
-    test_files_dir = test_dir / "data/rss.extxyz"
-    # atoms = read(test_files_dir, index=':')
-    # structures = [AseAtomsAdaptor.get_structure(atom) for atom in atoms]
-
-    ref_paths = {
-        **{f"static_bulk_{i}": f"rss/Si_bulk_{i + 1}/" for i in range(18)},
-        "static_isolated_0": "rss/Si_isolated_1/",
-        "static_dimer_0": "rss/Si_dimer_1/",
-        "static_dimer_1": "rss/Si_dimer_2/",
-        "static_dimer_2": "rss/Si_dimer_3/",
-    }
-
-    fake_run_vasp_kwargs = {
-        "static_isolated_0": {"incar_settings": {"ISPIN": 2, "KSPACINGS": 2.0}},
-        "static_dimer_0": {"incar_settings": {"ISPIN": 2, "KSPACINGS": 2.0}},
-        "static_dimer_1": {"incar_settings": {"ISPIN": 2, "KSPACINGS": 2.0}},
-        "static_dimer_2": {"incar_settings": {"ISPIN": 2, "KSPACINGS": 2.0}},
-    }
-
-    mock_vasp(ref_paths, fake_run_vasp_kwargs)
-
-    job1 = mock_rss(input_dir=test_files_dir,
-                    selection_method='cur',
-                    num_of_selection=18,
-                    bcur_params={'soap_paras': {'l_max': 3,
-                                                'n_max': 3,
-                                                'atom_sigma': 0.5,
-                                                'cutoff': 4.0,
-                                                'cutoff_transition_width': 1.0,
-                                                'zeta': 4.0,
-                                                'average': True,
-                                                'species': True,
-                                                },
-                                 },
-                    random_seed=42,
-                    e0_spin=True,
-                    isolated_atom=True,
-                    dimer=False,
-                    dimer_range=None,
-                    dimer_num=None,
-                    custom_incar={
-                        "ADDGRID": None,
-                        "ENCUT": 200,
-                        "EDIFF": 1E-04,
-                        "ISMEAR": 0,
-                        "SIGMA": 0.05,
-                        "PREC": "Normal",
-                        "ISYM": None,
-                        "KSPACING": 0.3,
-                        "NPAR": 8,
-                        "LWAVE": "False",
-                        "LCHARG": "False",
-                        "ENAUG": None,
-                        "GGA": None,
-                        "ISPIN": None,
-                        "LAECHG": None,
-                        "LELF": None,
-                        "LORBIT": None,
-                        "LVTOT": None,
-                        "NSW": None,
-                        "SYMPREC": None,
-                        "NELM": 50,
-                        "LMAXMIX": None,
-                        "LASPH": None,
-                        "AMIN": None,
-                    },
-                    vasp_ref_file='vasp_ref.extxyz',
-                    gap_rss_group='initial',
-                    test_ratio=0.1,
-                    regularization=True,
-                    distillation=True,
-                    f_max=0.7,
-                    pre_database_dir=None,
-                    mlip_type='GAP',
-                    ref_energy_name="REF_energy",
-                    ref_force_name="REF_forces",
-                    ref_virial_name="REF_virial",
-                    num_processes_fit=4,
-                    kt=0.6
-                    )
-
-    job2 = mock_do_rss_iterations_multi_jobs(input=job1.output,
-                                             input_dir=test_files_dir,
-                                             selection_method1='cur',
-                                             selection_method2='bcur1s',
-                                             num_of_selection1=5,
-                                             num_of_selection2=3,
-                                             bcur_params={'soap_paras': {'l_max': 3,
-                                                                         'n_max': 3,
-                                                                         'atom_sigma': 0.5,
-                                                                         'cutoff': 4.0,
-                                                                         'cutoff_transition_width': 1.0,
-                                                                         'zeta': 4.0,
-                                                                         'average': True,
-                                                                         'species': True,
-                                                                         },
-                                                          'frac_of_bcur': 0.8,
-                                                          'bolt_max_num': 3000,
-                                                          'kernel_exp': 4.0,
-                                                          'energy_label': 'energy'},
-                                             random_seed=None,
-                                             e0_spin=False,
-                                             isolated_atom=True,
-                                             dimer=False,
-                                             dimer_range=None,
-                                             dimer_num=None,
-                                             custom_incar=None,
-                                             vasp_ref_file='vasp_ref.extxyz',
-                                             rss_group='initial',
-                                             test_ratio=0.1,
-                                             regularization=True,
-                                             distillation=True,
-                                             f_max=200,
-                                             pre_database_dir=None,
-                                             mlip_type='GAP',
-                                             ref_energy_name="REF_energy",
-                                             ref_force_name="REF_forces",
-                                             ref_virial_name="REF_virial",
-                                             num_processes_fit=None,
-                                             scalar_pressure_method='exp',
-                                             scalar_exp_pressure=100,
-                                             scalar_pressure_exponential_width=0.2,
-                                             scalar_pressure_low=0,
-                                             scalar_pressure_high=50,
-                                             max_steps=100,
-                                             force_tol=0.6,
-                                             stress_tol=0.6,
-                                             Hookean_repul=False,
-                                             write_traj=True,
-                                             num_processes_rss=4,
-                                             device="cpu",
-                                             stop_criterion=0.01,
-                                             max_iteration_number=9,
-                                             num_groups=2,
-                                             remove_traj_files=True,
-                                             )
-
-    response = run_locally(
-        Flow([job1, job2]),
-        create_folders=True,
-        ensure_success=True,
-        store=memory_jobstore
-    )
-
-    assert Path(job1.output["mlip_path"].resolve(memory_jobstore)).exists()
-
-    selected_atoms = job2.output.resolve(memory_jobstore)
-
-    assert len(selected_atoms) == 3

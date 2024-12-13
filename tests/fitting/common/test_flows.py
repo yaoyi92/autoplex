@@ -1,4 +1,3 @@
-from __future__ import annotations
 import pytest
 from autoplex.fitting.common.flows import MLIPFitMaker
 
@@ -7,7 +6,7 @@ from autoplex.fitting.common.flows import MLIPFitMaker
 def fit_input_dict(vasp_test_dir):
     return {
         "mp-22905": {
-            "rand_struc_dir": [
+            "rattled_dir": [
                 [
                     (
                             vasp_test_dir
@@ -76,7 +75,7 @@ def fit_input_dict(vasp_test_dir):
 def fit_input_dict_glue_xml(vasp_test_dir):
     return {
         "mp-149": {
-            "rand_struc_dir": [
+            "rattled_dir": [
                 [
                     (vasp_test_dir / "Si_glue_xml_fit" / "rattled_supercell_1")
                     .absolute()
@@ -133,11 +132,9 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit
     from jobflow import run_locally
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. two_body and soap is True)
-    print(fit_input_dict)
-    gapfit = MLIPFitMaker().make(
+    gapfit = MLIPFitMaker(apply_data_preprocessing=True).make(
         species_list=["Li", "Cl"],
         fit_input=fit_input_dict,
-        apply_data_preprocessing=True
     )
 
     responses = run_locally(
@@ -145,7 +142,7 @@ def test_mlip_fit_maker(test_dir, clean_dir, memory_jobstore, vasp_test_dir, fit
     )
 
     # check if gap fit file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_with_kwargs(
@@ -155,18 +152,19 @@ def test_mlip_fit_maker_with_kwargs(
     from jobflow import run_locally
 
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
-    gapfit = MLIPFitMaker().make(
-        species_list=["Li", "Cl"],
-        fit_input=fit_input_dict,
+    gapfit = MLIPFitMaker(
         auto_delta=False,
         glue_xml=False,
         apply_data_preprocessing=True,
-        twob={"delta": 2.0, "cutoff": 8},
-        threeb={"n_sparse": 100},
         split_ratio=0.4,
         regularization=False,
         distillation=True,
         force_max=40,
+    ).make(
+        species_list=["Li", "Cl"],
+        fit_input=fit_input_dict,
+        twob={"delta": 2.0, "cutoff": 8},
+        threeb={"n_sparse": 100},
     )
 
     responses = run_locally(
@@ -174,7 +172,7 @@ def test_mlip_fit_maker_with_kwargs(
     )
 
     # check if gap fit file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_with_pre_database_dir(
@@ -186,18 +184,19 @@ def test_mlip_fit_maker_with_pre_database_dir(
     test_files_dir = Path(test_dir / "fitting").resolve()
 
     # Test if gap fit runs with pre_database_dir
-    gapfit = MLIPFitMaker().make(
-        species_list=["Li", "Cl"],
-        fit_input=fit_input_dict,
+    gapfit = MLIPFitMaker(
         pre_database_dir=str(test_files_dir),
         apply_data_preprocessing=True,
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
+    ).make(
+        species_list=["Li", "Cl"],
+        fit_input=fit_input_dict,
     )
 
     run_locally(gapfit, ensure_success=True, create_folders=True, store=memory_jobstore)
 
     # check if gap potential file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_jace(
@@ -211,13 +210,13 @@ def test_mlip_fit_maker_jace(
     # Test julia-ACE fit runs with pre_database_dir
     jacefit = MLIPFitMaker(
         mlip_type="J-ACE",
-    ).make(
-        isolated_atom_energies={3: -0.28649227, 17: -0.25638457},
-        fit_input=fit_input_dict,
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
         apply_data_preprocessing=True,
         num_processes_fit=4,
+    ).make(
+        isolated_atom_energies={3: -0.28649227, 17: -0.25638457},
+        fit_input=fit_input_dict,
         order=3,
         totaldegree=6,
         cutoff=2.0,
@@ -229,7 +228,7 @@ def test_mlip_fit_maker_jace(
     )
 
     # check if julia-ACE potential file is generated
-    assert Path(jacefit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(jacefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_nequip(
@@ -243,13 +242,13 @@ def test_mlip_fit_maker_nequip(
     # Test NEQUIP fit runs with pre_database_dir
     nequipfit = MLIPFitMaker(
         mlip_type="NEQUIP",
-    ).make(
-        fit_input=fit_input_dict,
-        isolated_atom_energies={3: -0.28649227, 17: -0.25638457},
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
         num_processes_fit=1,
         apply_data_preprocessing=True,
+    ).make(
+        fit_input=fit_input_dict,
+        isolated_atom_energies={3: -0.28649227, 17: -0.25638457},
         r_max=3.14,
         max_epochs=10,
         device="cpu",
@@ -260,7 +259,7 @@ def test_mlip_fit_maker_nequip(
     )
 
     # check if NEQUIP potential file is generated
-    assert Path(nequipfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(nequipfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_m3gnet(
@@ -274,13 +273,13 @@ def test_mlip_fit_maker_m3gnet(
     # Test if M3GNET fit runs with pre_database_dir
     m3gnetfit = MLIPFitMaker(
         mlip_type="M3GNET",
-    ).make(
-        fit_input=fit_input_dict,
-        isolated_atom_energies={3: -0.28649227, 17: -0.25638457},
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
         num_processes_fit=1,
         apply_data_preprocessing=True,
+    ).make(
+        fit_input=fit_input_dict,
+        isolated_atom_energies={3: -0.28649227, 17: -0.25638457},
         cutoff=3.0,
         threebody_cutoff=2.0,
         batch_size=1,
@@ -299,7 +298,7 @@ def test_mlip_fit_maker_m3gnet(
     )
 
     # check if M3GNET potential file is generated
-    assert Path(m3gnetfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(m3gnetfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_mace(
@@ -313,12 +312,12 @@ def test_mlip_fit_maker_mace(
     # Test if MACE fit runs with pre_database_dir
     macefit = MLIPFitMaker(
         mlip_type="MACE",
-    ).make(
-        fit_input=fit_input_dict,
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
         num_processes_fit=1,
         apply_data_preprocessing=True,
+    ).make(
+        fit_input=fit_input_dict,
         model="MACE",
         config_type_weights='{"Default":1.0}',
         hidden_irreps="32x0e + 32x1o",
@@ -338,7 +337,7 @@ def test_mlip_fit_maker_mace(
     )
 
     # check if MACE potential file is generated
-    assert Path(macefit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(macefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_glue_xml(
@@ -352,13 +351,13 @@ def test_mlip_fit_maker_glue_xml(
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
     gapfit = MLIPFitMaker(
         mlip_type="GAP",
-        glue_file_path=glue_file
-    ).make(
-        species_list=["Si"],
+        glue_file_path=glue_file,
         apply_data_preprocessing=True,
-        fit_input=fit_input_dict_glue_xml,
         auto_delta=False,
         glue_xml=True,
+    ).make(
+        species_list=["Si"],
+        fit_input=fit_input_dict_glue_xml,
         general={"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"},
     )
 
@@ -367,7 +366,7 @@ def test_mlip_fit_maker_glue_xml(
     )
 
     # check if gap fit file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_glue_xml_with_other_name(
@@ -381,14 +380,14 @@ def test_mlip_fit_maker_glue_xml_with_other_name(
     # Test to check if gap fit runs with default hyperparameter sets (i.e. include_two_body and include_soap is True)
     gapfit = MLIPFitMaker(
         mlip_type="GAP",
-        glue_file_path=glue_file
+        glue_file_path=glue_file,
+        auto_delta=False,
+        glue_xml=True,
+        apply_data_preprocessing=True,
     ).make(
         species_list=["Si"],
         fit_input=fit_input_dict_glue_xml,
-        auto_delta=False,
-        glue_xml=True,
         general={"core_param_file": "glue.xml", "core_ip_args": "{IP Glue}"},
-        apply_data_preprocessing=True,
     )
 
     responses = run_locally(
@@ -396,11 +395,11 @@ def test_mlip_fit_maker_glue_xml_with_other_name(
     )
 
     # check if gap fit file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mlip_fit_maker_with_automated_separated_dataset(
-        test_dir, memory_jobstore, vasp_test_dir, clean_dir, fit_input_dict
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     from pathlib import Path
     from jobflow import run_locally
@@ -408,18 +407,20 @@ def test_mlip_fit_maker_with_automated_separated_dataset(
     test_files_dir = Path(test_dir / "fitting").resolve()
 
     # Test if gap fit runs with pre_database_dir
-    gapfit = MLIPFitMaker().make(
-        species_list=["Li", "Cl"],
-        fit_input=fit_input_dict,
+    gapfit = MLIPFitMaker(
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train_more_data.extxyz", "pre_xyz_test_more_data.extxyz"],
         apply_data_preprocessing=True,
-        **{"separated": True}
+        separated=True
+    ).make(
+        species_list=["Li", "Cl"],
+        fit_input=fit_input_dict,
     )
 
     run_locally(gapfit, ensure_success=True, create_folders=True, store=memory_jobstore)
 
     # check if gap potential file is generated
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore)).exists()
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_phonon.extxyz").exists()
-    assert Path(gapfit.output["mlip_path"].resolve(memory_jobstore) + "/train_rand_struc.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
+    assert Path(gapfit.output["mlip_path"][1].resolve(memory_jobstore) + "/train.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"][2].resolve(memory_jobstore) + "/train.extxyz").exists()
+    assert Path(gapfit.output["mlip_path"][2].resolve(memory_jobstore) + "/energy_forces.png").exists()

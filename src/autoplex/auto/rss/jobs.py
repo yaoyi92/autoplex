@@ -1,7 +1,5 @@
 """RSS Jobs include the generation of the initial potential model as well as iterative RSS exploration."""
 
-from __future__ import annotations
-
 import logging
 
 from jobflow import Flow, Response, job
@@ -223,13 +221,13 @@ def initial_rss(
         ref_energy_name=ref_energy_name,
         ref_force_name=ref_force_name,
         ref_virial_name=ref_virial_name,
-    ).make(
-        database_dir=do_data_preprocessing.output,
-        isolated_atom_energies=do_data_collection.output["isolated_atom_energies"],
         num_processes_fit=num_processes_fit,
         apply_data_preprocessing=False,
         auto_delta=auto_delta,
         glue_xml=False,
+    ).make(
+        database_dir=do_data_preprocessing.output,
+        isolated_atom_energies=do_data_collection.output["isolated_atom_energies"],
         device=device_for_fitting,
         **fit_kwargs,
     )
@@ -242,12 +240,14 @@ def initial_rss(
         do_mlip_fit,
     ]
 
+    (mlip_path,) = do_mlip_fit.output["mlip_path"]
+
     return Response(
         replace=Flow(job_list),
         output={
             "test_error": do_mlip_fit.output["test_error"],
             "pre_database_dir": do_data_preprocessing.output,
-            "mlip_path": do_mlip_fit.output["mlip_path"],
+            "mlip_path": mlip_path,
             "isolated_atom_energies": do_data_collection.output[
                 "isolated_atom_energies"
             ],
@@ -592,13 +592,13 @@ def do_rss_iterations(
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
-        ).make(
-            database_dir=do_data_preprocessing.output,
-            isolated_atom_energies=input["isolated_atom_energies"],
             num_processes_fit=num_processes_fit,
             apply_data_preprocessing=False,
             auto_delta=auto_delta,
             glue_xml=False,
+        ).make(
+            database_dir=do_data_preprocessing.output,
+            isolated_atom_energies=input["isolated_atom_energies"],
             device=device_for_fitting,
             **fit_kwargs,
         )
@@ -610,11 +610,13 @@ def do_rss_iterations(
         if include_dimer:
             include_dimer = False
 
+        (mlip_path,) = do_mlip_fit.output["mlip_path"]
+
         do_iteration = do_rss_iterations(
             input={
                 "test_error": do_mlip_fit.output["test_error"],
                 "pre_database_dir": do_data_preprocessing.output,
-                "mlip_path": do_mlip_fit.output["mlip_path"],
+                "mlip_path": mlip_path,
                 "isolated_atom_energies": input["isolated_atom_energies"],
                 "current_iter": current_iter,
                 "kt": kt,
