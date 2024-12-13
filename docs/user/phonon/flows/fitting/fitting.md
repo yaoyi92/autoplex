@@ -14,27 +14,29 @@ that will affect the fit regardless of the chosen MLIP method, and e.g. changes 
 like e.g. the choice of hyperparameters.
 
 In case of the general settings, you can pass the MLIP model you want to use with the `ml_models` parameter list.
-You can set the maximum force threshold `f_max` for filtering the data ("distillation") in the MLIP fit preprocess step.
-In principle, the distillation step can be turned off by passing `"distillation": False` in the `fit_kwargs` keyword arguments,
+You can set the maximum force threshold `force_max` for filtering the data ("distillation") in the MLIP fit preprocess step.
+In principle, the distillation step can be turned off by passing `distillation=False`,
 but it is strongly advised to filter out too high force data points.
-The hyperparameters and further parameters can be passed in the `make` call (see below) or using `fit_kwargs` (or `**{...}`),
-like e.g. you can set the `split_ratio` to split the database up into a training and a test set,
-or adjust the number of processes `num_processes_fit`.
+The hyperparameters and further parameters can be passed in the `make` call (see below) using `fit_kwargs_list`.
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    ml_models=["GAP", "MACE"], ...,
-).make(..., preprocessing_data=True,
-    f_max=40.0,
-    fit_kwargs={
-        "split_ratio": 0.4,
-        "num_processes_fit": 48,
-    },
+    ml_models=["GAP", "MACE"], ..., 
+    apply_data_preprocessing=True, 
+    f_max=40.0, split_ratio=0.4,
+    num_processes_fit=48,
+    benchmark_kwargs={"relax_maker_kwargs": {"relax_cell": False, "relax_kwargs": ...}, "calculator_kwargs": {"device": "cpu"}}
+).make(..., 
+    fit_kwargs_list=[
+        {"general": {"two_body": True, "three_body": False, "soap": False}},  # GAP parameters
+        {"model": "MACE", "device": "cuda"}  # MACE parameters  
+        # fit_kwargs_list has to have the same order as in ml_models
+    ],
     ...  # put the other hyperparameter commands here as shown below
 )
 ```
 
 The MLIP model specific settings and hyperparameters setup varies from model to model and is demonstrated in the next 
-sections. 
+sections. Also, [`atomate2`-based MLPhononMaker](https://materialsproject.github.io/atomate2/reference/atomate2.forcefields.jobs.html#module-atomate2.forcefields.jobs) settings can be changed via `benchmark_kwargs` as shown in the code snippet.
 > ℹ️ Note that `autoplex` provides the most comprehensive features for **GAP**, and more features for the other models will 
 follow in future versions.  
 
@@ -49,13 +51,18 @@ The other keywords to change `autoplex`'s mode are `glue_xml` (use glue.xml core
 `regularization` (use a sigma regularization) and `separated` (repeat the GAP fit for the combined database and each 
 separated subset).
 The parameter `atom_wise_regularization` can turn the atom-wise regularization on and off, 
-`atomwise_regularization_parameter` is the value that shall be set and `f_min` is the lower bound cutoff of forces 
+`atomwise_regularization_parameter` is the value that shall be set and `force_min` is the lower bound cutoff of forces 
 taken into account for the atom-wise regularization or otherwise be replaced by the f_min value.
 `auto_delta` let's you decide if you want to pass a fixed delta value for the 2b, 3b and SOAP terms or let `autoplex` 
 automatically determine a suitable delta value based on the database's energies.
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     ml_models=["GAP"], ...,
+    apply_data_preprocessing=True,
+    atom_wise_regularization=True, 
+    atomwise_regularization_parameter=0.1, 
+    force_min=0.01, 
+    auto_delta=False,
     hyper_para_loop=True, 
     atomwise_regularization_list=[0.01, 0.1], 
     soap_delta_list=[0.5, 1.0, 1.5], 
@@ -65,21 +72,15 @@ complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    preprocessing_data=True,
-    atom_wise_regularization=True, 
-    atomwise_regularization_parameter=0.1, 
-    f_min=0.01, 
-    auto_delta=False,
-    ...,
-    **{...,
-     "glue_xml": False,
-     "regularization": False,
-     "separated": False,
+    glue_xml=False,
+    regularization=False,
+    separated=False,
+    fit_kwargs_list=[{
      "general": {"default_sigma": "{0.001 0.05 0.05 0.0}", {"two_body": True, "three_body": False,"soap": False},...},
      "twob": {"cutoff": 5.0,...},
      "threeb": {"cutoff": 3.25,...},
      "soap": {"delta": 1.0, "l_max": 12, "n_max": 10,...},
-    }
+    }]
 )
 ```
 `autoplex` provides a JSON dict file containing default GAP fit settings in 
@@ -108,17 +109,18 @@ For fitting and validating ACE potentials, one needs to install **julia** as `au
 
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    ml_models=["J-ACE"], ...,
+    ml_models=["J-ACE"], ..., apply_data_preprocessing=True,
 ).make(..., 
     structure_list=[structure],
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    preprocessing_data=True,
-    order=3,
-    totaldegree=6,
-    cutoff=2.0,
-    solver="BLR",
+    fit_kwargs_list=[{
+        "order": 3,
+        "totaldegree": 6,
+        "cutoff": 2.0,
+        "solver": "BLR"
+    }],
     ...)
 ```
 The ACE fit hyperparameters can be passed in the `make` call with its distinct commands. 
@@ -131,25 +133,26 @@ The Nequip fit procedure can be controlled by fit hyperparameters in the `make` 
 
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    ml_models=["Nequip"], ...,
+    ml_models=["Nequip"], ..., apply_data_preprocessing=True,
 ).make(...,
     structure_list=[structure],
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    preprocessing_data=True,
-    r_max=4.0,
-    num_layers=4,
-    l_max=2,
-    num_features=32,
-    num_basis=8,
-    invariant_layers=2,
-    invariant_neurons=64,
-    batch_size=5,
-    learning_rate=0.005,
-    max_epochs=10000,  
-    default_dtype="float32",
-    device="cuda",
+    fit_kwargs_list=[{
+        "r_max": 4.0,
+        "num_layers": 4,
+        "l_max": 2,
+        "num_features": 32,
+        "num_basis": 8,
+        "invariant_layers": 2,
+        "invariant_neurons": 64,
+        "batch_size": 5,
+        "learning_rate": 0.005,
+        "max_epochs": 10000,
+        "default_dtype": "float32",
+        "device": "cuda"
+    }],
     ...
 )
 ```
@@ -160,24 +163,25 @@ In a similar way, the M3GNet fit hyperparameters can be passed using `make` as w
 
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    ml_models=["M3GNet"], ...,
+    ml_models=["M3GNet"], ..., apply_data_preprocessing=True,
 ).make(...,
     structure_list=[structure],
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    preprocessing_data=True,
-    cutoff=5.0,
-    threebody_cutoff=4.0,
-    batch_size=10,
-    max_epochs=1000,
-    include_stresses=True,
-    hidden_dim=128,
-    num_units=128,
-    max_l=4,
-    max_n=4,
-    device="cuda",
-    test_equal_to_val=True,
+    fit_kwargs_list=[{
+        "cutoff": 5.0,
+        "threebody_cutoff": 4.0,
+        "batch_size": 10,
+        "max_epochs": 1000,
+        "include_stresses": True,
+        "hidden_dim": 128,
+        "num_units": 128,
+        "max_l": 4,
+        "max_n": 4,
+        "device": "cuda",
+        "test_equal_to_val": True
+    }],
     ...,
     )
 ```
@@ -188,25 +192,26 @@ Here again, you can pass the MACE fit hyperparameters to `make`.
 
 ```python
 complete_flow = CompleteDFTvsMLBenchmarkWorkflow(
-    ml_models=["MACE"], ...,
+    ml_models=["MACE"], ..., apply_data_preprocessing=True,
 ).make(...,
     structure_list=[structure],
     mp_ids=["mpid"],
     benchmark_mp_ids=["mpid"],
     benchmark_structures=[structure],
-    preprocessing_data=True,
-    model="MACE",
-    config_type_weights='{"Default":1.0}',
-    hidden_irreps="128x0e + 128x1o",
-    r_max=5.0,
-    batch_size=10,
-    max_num_epochs=1500,
-    start_swa=1200,
-    ema_decay=0.99,
-    correlation=3,
-    loss="huber",
-    default_dtype="float32",
-    device="cuda",
+    fit_kwargs_list=[{
+        "model": "MACE",
+        "config_type_weights": '{"Default": 1.0}',
+        "hidden_irreps": "128x0e + 128x1o",
+        "r_max": 5.0,
+        "batch_size": 10,
+        "max_num_epochs": 1500,
+        "start_swa": 1200,
+        "ema_decay": 0.99,
+        "correlation": 3,
+        "loss": "huber",
+        "default_dtype": "float32",
+        "device": "cuda"
+    }],
     ...
 )
 ```
@@ -229,38 +234,39 @@ It can also be used without finetuning option. To finetune optimally, please ada
 complete_workflow_mace = CompleteDFTvsMLBenchmarkWorkflowMPSettings(
         ml_models=["MACE"],
         volume_custom_scale_factors=[0.95,1.00,1.05], rattle_type=0, distort_type=0,
+        apply_data_preprocessing=True, use_defaults_fitting=False,
         ...
     ).make(
         structure_list=[structure],
         mp_ids=["mpid"],
         benchmark_mp_ids=["mpid"],
         benchmark_structures=[structure],
-        preprocessing_data=True,
-        use_defaults_fitting=False,
-        model="MACE",
-        name="MACE_final",
-        foundation_model="large",
-        multiheads_finetuning=False,
-        r_max=6,
-        loss="huber",
-        energy_weight=1000.0,
-        forces_weight=1000.0,
-        stress_weight=1.0,
-        compute_stress=True,
-        E0s="average",
-        scaling="rms_forces_scaling",
-        batch_size=1,
-        max_num_epochs=200,
-        ema=True,
-        ema_decay=0.99,
-        amsgrad=True,
-        default_dtype="float64",
-        restart_latest=True,
-        lr=0.0001,
-        patience=20,
-        device="cpu",
-        save_cpu=True,
-        seed=3,
+        fit_kwargs_list=[{
+            "model": "MACE",
+            "name": "MACE_final",
+            "foundation_model": "large",
+            "multiheads_finetuning": False,
+            "r_max": 6,
+            "loss": "huber",
+            "energy_weight": 1000.0,
+            "forces_weight": 1000.0,
+            "stress_weight": 1.0,
+            "compute_stress": True,
+            "E0s": "average",
+            "scaling": "rms_forces_scaling",
+            "batch_size": 1,
+            "max_num_epochs": 200,
+            "ema": True,
+            "ema_decay": 0.99,
+            "amsgrad": True,
+            "default_dtype": "float64",
+            "restart_latest": True,
+            "lr": 0.0001,
+            "patience": 20,
+            "device": "cpu",
+            "save_cpu": True,
+            "seed": 3
+        }],
     )
 ```    
 
@@ -297,22 +303,20 @@ autoplex_flow = CompleteDFTvsMLBenchmarkWorkflow(
     n_structures=50, symprec=0.1,
     volume_scale_factor_range=[0.95, 1.05], rattle_type=0, distort_type=0,
     hyper_para_loop=True, atomwise_regularization_list=[0.1, 0.01],
-    soap_delta_list=[0.5], n_sparse_list=[7000, 8000, 9000]).make(
+    apply_data_preprocessing=True,
+    soap_delta_list=[0.5], n_sparse_list=[7000, 8000, 9000],
+    split_ratio=0.33, regularization=False,
+    separated=True, num_processes_fit=48,).make(
     structure_list=struc_list, mp_ids=mpids, benchmark_structures=benchmark_structure_list,
-    benchmark_mp_ids=mpbenchmark, preprocessing_data=True,
-    **{
-        "split_ratio": 0.33,
-        "regularization": False,
-        "separated": True,
-        "num_processes_fit": 48,
-        "GAP": {"soap": {"delta": 1.0, "l_max": 12, "n_max": 10,
-                         "atom_sigma": 0.5, "zeta": 4, "cutoff": 5.0,
-                         "cutoff_transition_width": 1.0,
-                         "central_weight": 1.0, "n_sparse": 9000, "f0": 0.0,
-                         "covariance_type": "dot_product",
-                         "sparse_method": "cur_points"},
-                "general": {"two_body": False, "three_body": False, "soap": True,
-                            "default_sigma": "{0.001 0.05 0.05 0.0}", "sparse_jitter": 1.0e-8, }}},
+    benchmark_mp_ids=mpbenchmark,
+    fit_kwargs_list=[{"soap": {"delta": 1.0, "l_max": 12, "n_max": 10,
+                "atom_sigma": 0.5, "zeta": 4, "cutoff": 5.0,
+                "cutoff_transition_width": 1.0,
+                "central_weight": 1.0, "n_sparse": 9000, "f0": 0.0,
+                "covariance_type": "dot_product",
+                "sparse_method": "cur_points"},
+       "general": {"two_body": False, "three_body": False, "soap": True,
+                   "default_sigma": "{0.001 0.05 0.05 0.0}", "sparse_jitter": 1.0e-8, }}}],
 )
 
 autoplex_flow.name = "autoplex_wf"
@@ -347,7 +351,7 @@ store.connect()
 
 fit_input_dict = {
         "mp-id": {  # put a mp-id or another kind of data marker here
-            "rand_struc_dir": [[
+            "rattled_dir": [[
                 (
                     "/path/to/randomized/supercell/structure/calculation"
                 ),
@@ -371,13 +375,15 @@ fit_input_dict = {
     }
     
     
-mlip_fit = MLIPFitMaker(mlip_type="GAP", ...,).make(
+mlip_fit = MLIPFitMaker(
+    mlip_type="GAP", ...,
+    pre_xyz_files=["vasp_ref.extxyz"],
+    pre_database_dir="/path/to/pre_database",
+    auto_delta = True,
+    glue_xml = False,
+).make(
         species_list=["Li", "Cl"],
         fit_input=fit_input_dict,
-        pre_xyz_files=["vasp_ref.extxyz"],
-        pre_database_dir="/path/to/pre_database",
-        auto_delta = True,
-        glue_xml = False,
         **{...}       
         )
 
@@ -386,6 +392,6 @@ run_locally(mlip_fit, create_folders=True, store=store)
 Additional fit settings can again be passed using `fit_kwargs` or `**{...}`.
 
 > ℹ️ Note that in the current setup of `autoplex`, you need to pass a `fit_input_dict` to the `MLIPFitMaker`
-> containing at least one entry for "rand_struc_dir", "phonon_dir" and "isolated_atom" **VASP** calculations, 
+> containing at least one entry for "rattled_dir", "phonon_dir" and "isolated_atom" **VASP** calculations, 
 > otherwise the code will not finish successfully.
             
