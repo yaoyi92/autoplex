@@ -34,7 +34,6 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python, cuda toolkit and clean up tarballs
 RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
-    micromamba install -y -n base -c nvidia/label/cuda-12.2.0 cuda-toolkit &&  \
     micromamba clean --all --yes
 
 # Install Julia
@@ -56,18 +55,6 @@ RUN curl -fsSL https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz -o /opt/airss
 # Add Buildcell to PATH
 ENV PATH="${PATH}:/opt/airss/bin"
 
-# Install GPUMD and add to bin
-RUN git clone https://github.com/brucefan1983/GPUMD.git && \
-  cd GPUMD && \
-  # v3.9.5
-  git checkout v3.9.5 && \
-  cd src && \
-  make CFLAGS="-std=c++14 -O3 -arch=sm_72" -j4 && \
-  mkdir -p /root/.local/bin/ && \
-  mv gpumd nep /root/.local/bin/ && \
-  cd ../.. && \
-  rm -rf GPUMD
-
 # Install LAMMPS (rss)
 RUN curl -fsSL https://download.lammps.org/tars/lammps-29Aug2024_update1.tar.gz -o /opt/lammps.tar.gz \
      && tar -xf /opt/lammps.tar.gz -C /opt \
@@ -82,7 +69,7 @@ RUN curl -fsSL https://download.lammps.org/tars/lammps-29Aug2024_update1.tar.gz 
      && make install-python \
      && cmake --build . --target clean
 
-# Add LAMMPS, GPUMD, NEP to PATH and Update LD_LIBRARY_PATH
+# Add LAMMPS to PATH and Update LD_LIBRARY_PATH
 ENV PATH="${PATH}:/root/.local/bin"
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/root/.local/lib:/opt/conda/lib"
 
