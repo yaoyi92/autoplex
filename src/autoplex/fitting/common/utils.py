@@ -1418,6 +1418,9 @@ def vaspoutput_2_extended_xyz(
     path_to_vasp_static_calcs: list,
     config_types: list[str] | None = None,
     data_types: list[str] | None = None,
+    ref_energy_name: str = "REF_energy",
+    ref_force_name: str = "REF_forces",
+    ref_virial_name: str = "REF_virial",
     regularization: float = 0.1,
     f_min: float = 0.01,  # unit: eV Å-1
     atom_wise_regularization: bool = True,
@@ -1436,6 +1439,12 @@ def vaspoutput_2_extended_xyz(
             list of config_types.
     data_types: list[str] or None
             track the data type (phonon or random).
+    ref_energy_name : str
+        Reference energy name in xyz file.
+    ref_force_name : str
+        Reference force name in xyz file.
+    ref_virial_name : str
+        Reference virial name in xyz file.
     regularization: float
         regularization value for the atom-wise force components.
     f_min: float
@@ -1461,11 +1470,11 @@ def vaspoutput_2_extended_xyz(
                 virial_list = (
                     -voigt_6_to_full_3x3_stress(i.get_stress()) * i.get_volume()
                 )
-                i.info["REF_virial"] = " ".join(map(str, virial_list.flatten()))
+                i.info[ref_virial_name] = " ".join(map(str, virial_list.flatten()))
                 del i.calc.results["stress"]
-                i.arrays["REF_forces"] = i.calc.results["forces"]
+                i.arrays[ref_force_name] = i.calc.results["forces"]
                 if atom_wise_regularization and (data_type == "phonon_dir"):
-                    atom_forces = np.array(i.arrays["REF_forces"])
+                    atom_forces = np.array(i.arrays[ref_force_name])
                     atom_wise_force = np.array(
                         [
                             force if force > f_min else f_min
@@ -1474,7 +1483,7 @@ def vaspoutput_2_extended_xyz(
                     )
                     i.arrays["force_atom_sigma"] = regularization * atom_wise_force
                 del i.calc.results["forces"]
-                i.info["REF_energy"] = i.calc.results["free_energy"]
+                i.info[ref_energy_name] = i.calc.results["free_energy"]
                 del i.calc.results["energy"]
                 del i.calc.results["free_energy"]
                 i.info["config_type"] = config_type
@@ -1958,6 +1967,7 @@ def write_after_distillation_data_split(
     train_name: str = "train.extxyz",
     test_name: str = "test.extxyz",
     force_label: str = "REF_forces",
+    energy_label: str = "REF_energy",
 ) -> None:
     """
     Write train.extxyz and test.extxyz after data distillation and split.
@@ -1981,6 +1991,8 @@ def write_after_distillation_data_split(
         name of the test data file.
     force_label: str
         label of the force entries.
+    energy_label: str
+        label of the energy entries.
     """
     # reject structures with large force components
     atoms = (
@@ -1990,7 +2002,9 @@ def write_after_distillation_data_split(
     )
 
     # split dataset into training and test datasets
-    (train_structures, test_structures) = stratified_dataset_split(atoms, split_ratio)
+    (train_structures, test_structures) = stratified_dataset_split(
+        atoms=atoms, split_ratio=split_ratio, energy_label=energy_label
+    )
 
     ase.io.write(train_name, train_structures, format="extxyz", append=True)
     ase.io.write(test_name, test_structures, format="extxyz", append=True)
