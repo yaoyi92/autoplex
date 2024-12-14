@@ -366,7 +366,7 @@ class DataPreprocessing(Maker):
                 logging.warning(f"Error creating folder {folder_name}: {e}")
             train_path = os.path.join(folder_name, self.train_data_file)
             test_path = os.path.join(folder_name, self.test_data_file)
-            atoms = ase.io.read(self.test_data_file, index=":")
+            atoms = ase.io.read(self.train_data_file, index=":")
             ase.io.write(train_path, atoms, format="extxyz")
             logging.info(f"Written train file without regularization to: {train_path}")
             try:
