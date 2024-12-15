@@ -20,13 +20,14 @@ import numpy as np
 import pandas as pd
 import torch
 from ase.atoms import Atoms
+from ase.calculators.singlepoint import SinglePointCalculator
 from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.data import chemical_symbols
 from ase.io import read, write
 from ase.io.extxyz import XYZError
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
-from calorine.nep import read_loss, write_nepfile
+from calorine.nep import read_loss, write_nepfile, write_structures
 from dgl.data.utils import split_dataset
 from matgl.apps.pes import Potential
 from matgl.ext.pymatgen import Structure2Graph, get_element_list
@@ -455,9 +456,9 @@ export2lammps("acemodel.yace", model)
 def nep_fitting(
     db_dir: str | Path,
     path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
-    ref_energy_name: str = "energy",
-    ref_force_name: str = "force",
-    ref_virial_name: str = "virial",
+    ref_energy_name: str = "REF_energy",
+    ref_force_name: str = "REF_forces",
+    ref_virial_name: str = "REF_virial",
     species_list: list | None = None,
     gpu_identifier_indices: list[int] = list[0],
     fit_kwargs: dict | None = None,
@@ -563,8 +564,28 @@ def nep_fitting(
         train_nep = train_data
         test_nep = test_data
 
-    ase.io.write("train.xyz", train_nep, format="extxyz")
-    ase.io.write("test.xyz", test_nep, format="extxyz")
+    # Use the SinglePointCalculator to set the energy, forces, and virial
+    # Step required to generate NEP compatible xyz file using write_structures from calorine
+    for at in train_data:
+        at.calc = SinglePointCalculator(
+            at, energy=at.info[ref_energy_name], forces=at.arrays[ref_force_name]
+        )
+        at.info["virial"] = at.info[ref_virial_name]
+        del at.info[ref_energy_name]
+        del at.info[ref_virial_name]
+        del at.arrays[ref_force_name]
+
+    for at in test_data:
+        at.calc = SinglePointCalculator(
+            at, energy=at.info[ref_energy_name], forces=at.arrays[ref_force_name]
+        )
+        at.info["virial"] = at.info[ref_virial_name]
+        del at.info[ref_energy_name]
+        del at.info[ref_virial_name]
+        del at.arrays[ref_force_name]
+
+    write_structures(outfile="train.xyz", structures=train_nep)
+    write_structures(outfile="test.xyz", structures=test_nep)
 
     default_hyperparameters = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=path_to_hyperparameters
@@ -573,6 +594,7 @@ def nep_fitting(
     nep_hypers = default_hyperparameters["NEP"]
 
     nep_hypers["type"] = [len(species_list), *species_list]
+    nep_hypers["type_weight"] = [1.0] * len(species_list)
 
     if fit_kwargs:
         for parameter in nep_hypers:
