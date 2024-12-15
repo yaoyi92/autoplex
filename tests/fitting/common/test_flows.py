@@ -232,7 +232,7 @@ def test_mlip_fit_maker_jace(
 
 @pytest.mark.skip(reason="We can enable this after mock_nep fixture is added")
 def test_mlip_fit_maker_nep(
-        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict,
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
 ):
     from pathlib import Path
     from jobflow import run_locally
@@ -244,9 +244,6 @@ def test_mlip_fit_maker_nep(
         mlip_type="NEP",
         pre_database_dir=str(test_files_dir),
         pre_xyz_files=["pre_xyz_train.extxyz", "pre_xyz_test.extxyz"],
-        ref_energy_name= "energy",
-        ref_force_name= "force",
-        ref_virial_name= "virial",
         num_processes_fit=1,
         apply_data_preprocessing=True,
     ).make(
@@ -255,7 +252,7 @@ def test_mlip_fit_maker_nep(
         **{"generation": 100, "batch": 100},
     )
 
-    run_locally(
+    _ = run_locally(
         nepfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 

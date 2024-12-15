@@ -48,23 +48,20 @@ def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
 
 
 @pytest.mark.skip(reason="We can enable this after mock_nep fixture is added")
-def test_nep_fit_maker(test_dir, memory_jobstore):
-    database_dir = test_dir / "fitting/NEP/"
+def test_nep_fit_maker(test_dir, memory_jobstore, clean_dir):
+    database_dir = test_dir / "fitting/ref_files/"
 
     nepfit = MLIPFitMaker(
         mlip_type="NEP",
         num_processes_fit=1,
         apply_data_preprocessing=False,
-        ref_force_name="forces",
-        ref_energy_name="energy",
-        ref_virial_name="virial",
         database_dir=database_dir,
     ).make(
-        species_list=["Al"],
-        **{"generation": 100, "batch": 100},
+        species_list=["Li", "Cl"],
+        **{"generation": 100, "batch": 100, "type_weight":[0.5, 1.0]},
     )
 
-    responses = run_locally(
+    _ = run_locally(
         nepfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
