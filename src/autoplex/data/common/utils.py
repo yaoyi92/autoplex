@@ -1529,7 +1529,15 @@ def stratified_dataset_split(
     if len(atoms) != len(atom_bulk):
         atoms = atom_bulk
 
-    average_energies = np.array([atom.info[energy_label] / len(atom) for atom in atoms])
+    # Need this try except block because the energy label is not present as info
+    try:
+        average_energies = np.array(
+            [atom.info[energy_label] / len(atom) for atom in atoms]
+        )
+    except KeyError:
+        average_energies = np.array(
+            [atom.get_potential_energy() / len(atom) for atom in atoms]
+        )
     # sort by energy
     sorted_indices = np.argsort(average_energies)
     atoms = [atoms[i] for i in sorted_indices]

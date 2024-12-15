@@ -157,6 +157,9 @@ class MLIPFitMaker(Maker):
                 pre_xyz_files=self.pre_xyz_files,
                 pre_database_dir=self.pre_database_dir,
                 force_min=self.force_min,
+                ref_virial_name=self.ref_virial_name,
+                ref_force_name=self.ref_force_name,
+                ref_energy_name=self.ref_energy_name,
                 atomwise_regularization_parameter=self.atomwise_regularization_parameter,
                 atom_wise_regularization=self.atom_wise_regularization,
             ).make(
@@ -334,6 +337,7 @@ class DataPreprocessing(Maker):
             force_max=self.force_max,
             split_ratio=self.split_ratio,
             force_label=self.ref_force_name,
+            energy_label=self.ref_energy_name,
             train_name=self.train_data_file,
             test_name=self.test_data_file,
         )

@@ -26,7 +26,7 @@ from ase.io import read, write
 from ase.io.extxyz import XYZError
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
-from calorine.nep import read_loss, write_nepfile, write_structures
+from calorine.nep import read_loss, write_nepfile
 from dgl.data.utils import split_dataset
 from matgl.apps.pes import Potential
 from matgl.ext.pymatgen import Structure2Graph, get_element_list
@@ -456,7 +456,7 @@ def nep_fitting(
     db_dir: str | Path,
     path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
     ref_energy_name: str = "energy",
-    ref_force_name: str = "forces",
+    ref_force_name: str = "force",
     ref_virial_name: str = "virial",
     species_list: list | None = None,
     gpu_identifier_indices: list[int] = list[0],
@@ -549,8 +549,8 @@ def nep_fitting(
     if path_to_hyperparameters is None:
         path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
 
-    train_data = ase.io.read(os.path.join(db_dir, "train.xyz"), index=":")
-    test_data = ase.io.read(os.path.join(db_dir, "test.xyz"), index=":")
+    train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
+    test_data = ase.io.read(os.path.join(db_dir, "test.extxyz"), index=":")
 
     try:
         train_nep = [
@@ -563,8 +563,8 @@ def nep_fitting(
         train_nep = train_data
         test_nep = test_data
 
-    write_structures(outfile="train.xyz", structures=train_nep)
-    write_structures(outfile="test.xyz", structures=test_nep)
+    ase.io.write("train.xyz", train_nep, format="extxyz")
+    ase.io.write("test.xyz", test_nep, format="extxyz")
 
     default_hyperparameters = load_mlip_hyperparameter_defaults(
         mlip_fit_parameter_file_path=path_to_hyperparameters
