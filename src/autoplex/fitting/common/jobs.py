@@ -143,6 +143,7 @@ def machine_learning_fit(
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
+            species_list=species_list,
             gpu_identifier_indices=gpu_identifier_indices,
             fit_kwargs=fit_kwargs,
         )
