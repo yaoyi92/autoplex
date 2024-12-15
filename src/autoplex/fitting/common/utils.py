@@ -26,6 +26,7 @@ from ase.io import read, write
 from ase.io.extxyz import XYZError
 from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
+from calorine.nep import read_loss, write_nepfile, write_structures
 from dgl.data.utils import split_dataset
 from matgl.apps.pes import Potential
 from matgl.ext.pymatgen import Structure2Graph, get_element_list
@@ -447,6 +448,141 @@ export2lammps("acemodel.yace", model)
     return {
         "train_error": train_error,
         "test_error": test_error,
+        "mlip_path": Path.cwd(),
+    }
+
+
+def nep_fitting(
+    db_dir: str | Path,
+    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    ref_energy_name: str = "energy",
+    ref_force_name: str = "forces",
+    ref_virial_name: str = "virial",
+    gpu_identifier_indices: list[int] = list[0],
+    fit_kwargs: dict | None = None,
+) -> dict:
+    """
+    Perform the NEP (Neural evolution Potential) model fitting.
+
+    Parameters
+    ----------
+    db_dir: Path
+        Directory containing the training and testing data files.
+    path_to_hyperparameters : str or Path.
+        Path to JSON file containing the M3GNet hyperparameters.
+    ref_energy_name : str, optional
+        Reference energy name.
+    ref_force_name : str, optional
+        Reference force name.
+    ref_virial_name : str, optional
+        Reference virial name.
+    gpu_identifier_indices: list[int]
+        Indices that identifies the GPU that NEP should be run with
+    fit_kwargs: dict.
+        optional dictionary with parameters for NEP fitting with keys same as
+        mlip-rss-defaults.json.
+
+    Keyword Arguments
+    -----------------
+    version: int
+        NEP model version to train can be 3 or 4. Default is 4.
+    type_weight: float
+        Weights for different chemical species. Default is 1.0
+    model_type: int
+        Type of model that is being trained. Can be 0 (potential),
+        1 (dipole), 2 (polarizability). Default is 0.
+    prediction: int
+        Mode of NEP run. Set 0 for training and 1 for inference.
+        Default is 0.
+    cutoff: list[int, int]
+        Radial and angular cutoff. First element is for radial cutoff and
+        second element is for angular cutoff. Default is [8, 4].
+    n_max: list[int, int]
+        Number of radial and angular descriptors. First element is for radial
+        and second element is for angular. Default is [4, 4].
+    basis_size: list[int, int]
+        Number of basis functions that are used to build the radial and angular
+        descriptor. First element is for radial descriptor and
+        second element is for angular descriptor. Default is [8, 8].
+    l_max: list[int, int, int]
+       The maximum expansion order for the angular terms. First element is for
+       three-body, second element is for four-body and third element is for five-body.
+       Default is [4, 2, 0].
+    neuron: int
+        Number of neurons in the hidden layer. Default is 30.
+    lambda_e: float
+        Weight for energy loss. Default is 1.
+    lambda_f: float
+        Weight for force loss. Default is 1.
+    lambda_v: float
+        Weight for virial loss. Default is 0.1.
+    force_delta: float
+        Sets bias the on the loss function to put more emphasis on obtaining
+        accurate predictions for smaller forces. Default is 0.
+    batch: int
+        Batch size for training. Default is 1000.
+    population: int
+        Size of the population used by the SNES algorithm. Default is 50.
+    generation: bool
+        Sets the max number of generations for SNES algorithm.
+
+    References
+    ----------
+    * GPUMD & NEP: https://doi.org/10.1063/5.0106617.
+    * SNES : https://doi.org/10.1145/2001576.2001692.
+
+    Returns
+    -------
+    dict[str, float]
+        A dictionary mapping 'train_error', 'test_error', and 'mlip_path'.
+    """
+    if path_to_hyperparameters is None:
+        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
+
+    train_data = ase.io.read(os.path.join(db_dir, "train.xyz"), index=":")
+    test_data = ase.io.read(os.path.join(db_dir, "test.xyz"), index=":")
+
+    try:
+        for at in train_data:
+            for label in (ref_energy_name, ref_force_name, ref_virial_name):
+                at.info[label]
+    except KeyError as err:
+        raise KeyError(
+            f"Label '{ref_energy_name}' is mandatory training NEP potential and is not found "
+            f"in the current training data."
+        ) from err
+
+    train_nep = [
+        at for at in train_data if "IsolatedAtom" not in at.info["config_type"]
+    ]
+    test_nep = [at for at in test_data if "IsolatedAtom" not in at.info["config_type"]]
+
+    write_structures(outfile="train.xyz", structures=train_nep)
+    write_structures(outfile="test.xyz", structures=test_nep)
+
+    default_hyperparameters = load_mlip_hyperparameter_defaults(
+        mlip_fit_parameter_file_path=path_to_hyperparameters
+    )
+
+    nep_hypers = default_hyperparameters["NEP"]
+
+    if fit_kwargs:
+        for parameter in nep_hypers:
+            if parameter in fit_kwargs:
+                if isinstance(fit_kwargs[parameter], type(nep_hypers[parameter])):
+                    nep_hypers[parameter] = fit_kwargs[parameter]
+                else:
+                    raise TypeError(
+                        f"The type of {parameter} should be {type(nep_hypers[parameter])}!"
+                    )
+    write_nepfile(parameters=nep_hypers, dirname=".")
+    run_nep(gpu_identifier_indices=gpu_identifier_indices)
+
+    metrics_df = read_loss("loss.out")
+
+    return {
+        "train_error": metrics_df.RMSE_E_train,
+        "test_error": metrics_df.RMSE_E_test,
         "mlip_path": Path.cwd(),
     }
 
@@ -1816,6 +1952,25 @@ def run_quip(
         open("std_quip_err.log", "w", encoding="utf-8") as file_err,
     ):
         subprocess.call(command, stdout=file_std, stderr=file_err, shell=True)
+
+
+def run_nep(gpu_identifier_indices: list[int]) -> None:
+    """
+    NEP runner.
+
+    Parameters
+    ----------
+    gpu_identifier_indices: list[int]
+        Indices that identifies the GPU that NEP should be run with
+    """
+    env = os.environ.copy()
+    env["CUDA_VISIBLE_DEVICES"] = ",".join(map(str, gpu_identifier_indices))
+
+    with (
+        open("std_nep_out.log", "w", encoding="utf-8") as file_out,
+        open("std_nep_err.log", "w", encoding="utf-8") as file_err,
+    ):
+        subprocess.call("nep", stdout=file_out, stderr=file_err, env=env)
 
 
 def run_nequip(command: str, log_prefix: str) -> None:
