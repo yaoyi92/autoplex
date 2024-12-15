@@ -259,7 +259,7 @@ def test_mlip_fit_maker_nep(
         nepfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    # check if NEQUIP potential file is generated
+    # check if NEP potential file is generated
     assert Path(nepfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 def test_mlip_fit_maker_nequip(
