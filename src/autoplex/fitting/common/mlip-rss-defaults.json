@@ -59,6 +59,7 @@
   },
   "NEP": {
     "version": 4,
+    "type": [1, "X"],
     "type_weight": 1.0,
     "model_type ": 0,
     "prediction": 0,

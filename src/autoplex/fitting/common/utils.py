@@ -458,6 +458,7 @@ def nep_fitting(
     ref_energy_name: str = "energy",
     ref_force_name: str = "forces",
     ref_virial_name: str = "virial",
+    species_list: list | None = None,
     gpu_identifier_indices: list[int] = list[0],
     fit_kwargs: dict | None = None,
 ) -> dict:
@@ -476,6 +477,8 @@ def nep_fitting(
         Reference force name.
     ref_virial_name : str, optional
         Reference virial name.
+    species_list: list
+        List of element names (strings)
     gpu_identifier_indices: list[int]
         Indices that identifies the GPU that NEP should be run with
     fit_kwargs: dict.
@@ -486,6 +489,13 @@ def nep_fitting(
     -----------------
     version: int
         NEP model version to train can be 3 or 4. Default is 4.
+    type: list[int, str]
+        Number of atom types and list of chemical species. Number
+        of atom types must be an integer, followed by chemical
+        symbols of species as in periodic table for which model
+        needs to be trained, separated by comma.
+        Default is [1, "X"] as a placeholder. Example:
+        [2, "Pb", "Te"].
     type_weight: float
         Weights for different chemical species. Default is 1.0
     model_type: int
@@ -543,19 +553,15 @@ def nep_fitting(
     test_data = ase.io.read(os.path.join(db_dir, "test.xyz"), index=":")
 
     try:
-        for at in train_data:
-            for label in (ref_energy_name, ref_force_name, ref_virial_name):
-                at.info[label]
-    except KeyError as err:
-        raise KeyError(
-            f"Label '{ref_energy_name}' is mandatory training NEP potential and is not found "
-            f"in the current training data."
-        ) from err
-
-    train_nep = [
-        at for at in train_data if "IsolatedAtom" not in at.info["config_type"]
-    ]
-    test_nep = [at for at in test_data if "IsolatedAtom" not in at.info["config_type"]]
+        train_nep = [
+            at for at in train_data if "IsolatedAtom" not in at.info["config_type"]
+        ]
+        test_nep = [
+            at for at in test_data if "IsolatedAtom" not in at.info["config_type"]
+        ]
+    except KeyError:
+        train_nep = train_data
+        test_nep = test_data
 
     write_structures(outfile="train.xyz", structures=train_nep)
     write_structures(outfile="test.xyz", structures=test_nep)
@@ -566,6 +572,8 @@ def nep_fitting(
 
     nep_hypers = default_hyperparameters["NEP"]
 
+    nep_hypers["type"] = [len(species_list), *species_list]
+
     if fit_kwargs:
         for parameter in nep_hypers:
             if parameter in fit_kwargs:
@@ -575,6 +583,7 @@ def nep_fitting(
                     raise TypeError(
                         f"The type of {parameter} should be {type(nep_hypers[parameter])}!"
                     )
+
     write_nepfile(parameters=nep_hypers, dirname=".")
     run_nep(gpu_identifier_indices=gpu_identifier_indices)
 
