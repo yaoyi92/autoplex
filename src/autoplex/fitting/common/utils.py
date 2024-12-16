@@ -612,8 +612,8 @@ def nep_fitting(
     metrics_df = read_loss("loss.out")
 
     return {
-        "train_error": metrics_df.RMSE_E_train.values.mean(),
-        "test_error": metrics_df.RMSE_E_test.values.mean(),
+        "train_error": metrics_df.RMSE_E_train.values[-1],
+        "test_error": metrics_df.RMSE_E_test.values[-1],
         "mlip_path": Path.cwd(),
     }
 
