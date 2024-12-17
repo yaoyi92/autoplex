@@ -507,7 +507,7 @@ def nep_fitting(
         Default is 0.
     cutoff: list[int, int]
         Radial and angular cutoff. First element is for radial cutoff and
-        second element is for angular cutoff. Default is [8, 4].
+        second element is for angular cutoff. Default is [6, 5].
     n_max: list[int, int]
         Number of radial and angular descriptors. First element is for radial
         and second element is for angular. Default is [4, 4].
@@ -518,9 +518,11 @@ def nep_fitting(
     l_max: list[int, int, int]
        The maximum expansion order for the angular terms. First element is for
        three-body, second element is for four-body and third element is for five-body.
-       Default is [4, 2, 0].
+       Default is [4, 2, 1].
     neuron: int
-        Number of neurons in the hidden layer. Default is 30.
+        Number of neurons in the hidden layer. Default is 80.
+    lambda_1: float
+        Weight for L1 regularization. Default is 0.
     lambda_e: float
         Weight for energy loss. Default is 1.
     lambda_f: float
@@ -536,11 +538,15 @@ def nep_fitting(
         Size of the population used by the SNES algorithm. Default is 50.
     generation: bool
         Sets the max number of generations for SNES algorithm.
+    zbl : float
+        Cutoff to use in universal ZBL potential at short distances.
+        Acceptable values are in range 1 to 2.5. Default is 2.
 
     References
     ----------
     * GPUMD & NEP: https://doi.org/10.1063/5.0106617.
     * SNES : https://doi.org/10.1145/2001576.2001692.
+    * Parameter defaults taken from SI: https://doi.org/10.1038/s41467-024-54554-x.
 
     Returns
     -------
