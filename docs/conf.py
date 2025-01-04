@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 warnings.filterwarnings(
     "ignore",
-    message=".*This function should have been removed.*",
+    message="This function should have been removed on 2025-01-01.",
     category=DeprecationWarning,
 )
 
