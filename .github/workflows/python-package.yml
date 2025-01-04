@@ -156,5 +156,6 @@ jobs:
             micromamba activate autoplex_docs
             uv pip install --upgrade pip
             uv pip install --prerelease=allow .[docs,strict]
+            uv pip install --upgrade monty
       - name: Build
         run: micromamba run -n autoplex_docs sphinx-build -W docs _build
