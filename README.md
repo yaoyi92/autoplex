@@ -19,10 +19,28 @@
 
 `autoplex` is an evolving project and **contributions are very welcome**! To ensure that the code remains of high quality, please raise a pull request for any contributions, which will be reviewed before integration into the main branch of the code. Initially, [@JaGeo](https://github.com/JaGeo) will handle the reviews.
 
-# Documentation
+# Workflow overview
+
+We currently have two different types of automation workflows available:
+
+* Workflow to use random-structure searches for the systematic construction of interatomic potentials: [arXiv: 10.48550/arXiv.2412.16736](https://arxiv.org/abs/2412.16736).
+  The implementation automates ideas from the following articles: [*Phys. Rev. Lett.* **120**, 156001 (2018)](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.120.156001) and [*npj Comput. Mater.* **5**, 99 (2019)](https://www.nature.com/articles/s41524-019-0236-6).
+* Workflow to train accurate interatomic potentials for harmonic phonon properties. The implementation automates the ideas from the following article: [*J. Chem. Phys.* **153**, 044104 (2020)](https://pubs.aip.org/aip/jcp/article/153/4/044104/1056348/Combining-phonon-accuracy-with-high).
+
+
+## Documentation
 
 You can find the `autoplex` documentation [here](https://autoatml.github.io/autoplex/index.html)!
 The documentation also contains tutorials that teach you how to use `autoplex` for different use cases for the RSS and phonon workflows and individual modules therein.
+
+## What to cite?
+
+Please cite our preprint on the random-structure searches (RSS) performed with `autoplex`:
+
+[Y. Liu, J. D. Morrow, C. Ertural, N. L. Fragapane, J. L. A. Gardner, A. A. Naik, Y. Zhou, J. George, V. L. Deringer, 2024, DOI 10.48550/arXiv.2412.16736](https://arxiv.org/abs/2412.16736).
+
+
+Please additionally cite all relevant software we rely on within `autoplex` and specific workflows. Please take a look below and check out the corresponding links.
 
 # Before you start using `autoplex`
 
@@ -35,9 +53,9 @@ This involves the following software packages:
 - [jobflow-remote](https://github.com/Matgenix/jobflow-remote) or [FireWorks](https://github.com/materialsproject/fireworks) for workflow and database (MongoDB) management,
 - [MongoDB](https://www.mongodb.com/) as the database (we recommend installing the MongoDB community edition). More help regarding the MongoDB installation can be found [here](https://materialsproject.github.io/fireworks/installation.html#install-mongodb).
 
-All of these software tools provide documentation and tutorials. Please take your time and check everything out!
+All of these software tools provide documentation and tutorials. Please take your time and check everything out! Please also cite the software packages if you are using them!
 
-# Setup
+## Setup
 
 To set up the mandatory prerequisites for using `autoplex,` please follow the [installation guide of atomate2](https://materialsproject.github.io/atomate2/user/install.html).
 
@@ -46,11 +64,11 @@ Set a number that is a divisor of the number of tasks you use for the VASP calcu
 
 # Installation
 
-### Python version
+## Python version
 
 Before the installation, please make sure that you are using one of the supported Python versions (see [pyproject.toml](https://github.com/autoatml/autoplex/blob/main/pyproject.toml))
 
-### Standard installation
+## Standard installation
 
 Please install `autoplex` using
 ```
@@ -73,7 +91,7 @@ Once installed in the terminal, run the following commands to get Julia ACEpoten
 julia -e 'using Pkg; Pkg.Registry.add("General"); Pkg.Registry.add(Pkg.Registry.RegistrySpec(url="https://github.com/ACEsuit/ACEregistry")); Pkg.add(Pkg.PackageSpec(;name="ACEpotentials", version="0.6.7")); Pkg.add("DataFrames"); Pkg.add("CSV")'
 ```
 
-### Enabling RSS workflows
+## Enabling RSS workflows
 
 Additionally, `buildcell` as a part of `AIRSS` needs to be installed if one wants to use the RSS functionality:
 
@@ -81,7 +99,9 @@ Additionally, `buildcell` as a part of `AIRSS` needs to be installed if one want
 curl -O https://www.mtg.msm.cam.ac.uk/files/airss-0.9.3.tgz; tar -xf airss-0.9.3.tgz; rm airss-0.9.3.tgz; cd airss; make ; make install ; make neat; cd ..
 ```
 
-### LAMMPS installation
+Please find out about licenses and citation requirements here: [https://airss-docs.github.io/](https://airss-docs.github.io/)
+
+## LAMMPS installation
 
 You only need to install LAMMPS, if you want to use J-ACE as your MLIP.
 Recipe for compiling lammps-ace including the download of the `libpace.tar.gz` file:
@@ -108,7 +128,7 @@ make install-python
 $LAMMPS_INSTALL is the conda environment for installing the lammps-python interface.
 Use `BUILD_MPI=yes` to enable MPI for parallelization.
 
-After the installation is completed, enter the following commands in the Python environment.
+After the installation, enter the following commands in the Python environment.
 If you get the same output, it means the installation was successful.
 
 ```python
@@ -123,13 +143,8 @@ OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98
 It is very important to have it compiled with Python (`-D PKG_PYTHON=on`) and
 LIB PACE flags (`-D PACELIB_MD5=$(md5sum libpace.tar.gz | awk '{print $1}')`).
 
-### Contributing guidelines / Developer's installation
+Please find out about licenses and citation requirements here: [https://www.lammps.org/](https://www.lammps.org/)
+
+# Contributing guidelines / Developer's installation
 
 A short guide to contributing to autoplex can be found [here](https://autoatml.github.io/autoplex/dev/contributing.html). Additional information for developers can be found [here](https://autoatml.github.io/autoplex/dev/dev_install.html).
-
-# Workflow overview
-
-We currently have two different types of automation workflows available:
-
-* Workflow to use random-structure searches for the systematic construction of interatomic potentials. The implementation automates ideas from the following articles: [*Phys. Rev. Lett.* **120**, 156001 (2018)](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.120.156001) and [*npj Comput. Mater.* **5**, 99 (2019)](https://www.nature.com/articles/s41524-019-0236-6).
-* Workflow to train accurate interatomic potentials for harmonic phonon properties. The implementation automates the ideas from the following article: [*J. Chem. Phys.* **153**, 044104 (2020)](https://pubs.aip.org/aip/jcp/article/153/4/044104/1056348/Combining-phonon-accuracy-with-high).
