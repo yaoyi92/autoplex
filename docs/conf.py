@@ -143,8 +143,6 @@ autodoc_pydantic_settings_member_order = "bysource"
 autodoc_pydantic_field_list_validators = False
 autodoc_pydantic_field_show_constraints = False
 
-# suppress warnings
-autodoc_warningiserror = False
 
 # -- Options for HTML output -------------------------------------------------
 
