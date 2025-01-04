@@ -157,4 +157,6 @@ jobs:
             uv pip install --upgrade pip
             uv pip install --prerelease=allow .[docs,strict]
       - name: Build
+        env:
+          PYTHONWARNINGS: "ignore::DeprecationWarning"  # temp Suppress all DeprecationWarnings
         run: micromamba run -n autoplex_docs sphinx-build -W docs _build
