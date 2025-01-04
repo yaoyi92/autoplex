@@ -10,10 +10,17 @@
 
 import os
 import sys
+import warnings
 
-from atomate2 import __version__
+from autoplex import __version__
 
 sys.path.insert(0, os.path.abspath("../../"))
+
+warnings.filterwarnings(
+    "ignore",
+    message=".*This function should have been removed.*",
+    category=DeprecationWarning,
+)
 
 # -- Project information -----------------------------------------------------
 
