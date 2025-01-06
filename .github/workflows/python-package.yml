@@ -88,6 +88,8 @@ jobs:
           micromamba activate autoplex_tests
           uv pip install --upgrade pip
           uv pip install --prerelease=allow .[tests,strict]
+          uv pip install --upgrade monty
+          uv pip install numpy==1.26.4
           
     - name: Download test duration artifacts
       uses: actions/download-artifact@v4
