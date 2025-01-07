@@ -5,9 +5,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from jobflow import Flow, Maker, Response, job
-from ruamel.yaml import YAML
+from monty.serialization import loadfn
 
 from autoplex.auto.rss.jobs import do_rss_iterations, initial_rss
+
+MODULE_DIR = Path(os.path.dirname(__file__))
 
 
 @dataclass
@@ -19,36 +21,25 @@ class RssMaker(Maker):
     ----------
     name: str
         Name of the flow.
-    path_to_default_config_parameters: Path | str | None
-        Path to the default RSS configuration file 'rss_default_configuration.yaml'.
-        If None, the default path will be used.
     config_file: Path | str | None
         Path to the configuration file that defines the setup parameters for the whole RSS workflow.
         If not provided, the default file 'rss_default_configuration.yaml' will be used.
     """
 
     name: str = "ml-driven rss"
-    path_to_default_config_parameters: Path | str | None = None
     config_file: Path | str | None = None
+    CONFIG = loadfn(MODULE_DIR / "rss_default_configuration.yaml")
 
     def __post_init__(self) -> None:
         """Ensure that custom configuration parameters are loaded when the maker is initialized."""
-        rss_default_config_path = (
-            self.path_to_default_config_parameters
-            or Path(__file__).absolute().parent / "rss_default_configuration.yaml"
-        )
-
-        yaml = YAML(typ="safe", pure=True)
-
-        with open(rss_default_config_path) as f:
-            config = yaml.load(f)
-
         if self.config_file and os.path.exists(self.config_file):
-            with open(self.config_file) as f:
-                new_config = yaml.load(f)
-                config.update(new_config)
+            new_config = loadfn(self.config_file)
 
-        self.config = config
+            for key, value in new_config.items():
+                if key in self.CONFIG and isinstance(value, self.CONFIG[key]):
+                    self.CONFIG[key] = value
+                else:
+                    raise ValueError(f"Invalid key '{key}' in the configuration file.")
 
     @job
     def make(self, **kwargs):
@@ -255,10 +246,10 @@ class RssMaker(Maker):
             - 'current_iter': int, The current iteration index.
             - 'kb_temp': float, The temperature (in eV) for Boltzmann sampling.
         """
-        self.config.update(kwargs)
-        self._process_hookean_paras(self.config)
+        self.CONFIG.update(kwargs)
+        self._process_hookean_paras(self.CONFIG)
 
-        config_params = self.config.copy()
+        config_params = self.CONFIG.copy()
 
         if "train_from_scratch" not in config_params:
             raise ValueError(
