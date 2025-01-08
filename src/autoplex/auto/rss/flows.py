@@ -22,7 +22,7 @@ class RssMaker(Maker):
     name: str
         Name of the flow.
     config_file: Path | str | None
-        Path to the configuration file that defines the setup parameters for the whole RSS workflow.
+        Path to the custom configuration file that defines the setup parameters for the whole RSS workflow.
         If not provided, the default file 'rss_default_configuration.yaml' will be used.
     """
 
@@ -36,10 +36,9 @@ class RssMaker(Maker):
             new_config = loadfn(self.config_file)
 
             for key, value in new_config.items():
-                if key in self.CONFIG and isinstance(value, self.CONFIG[key]):
+                # TODO: Need better defaults in default file or we move to pydantic models
+                if key in self.CONFIG and isinstance(value, type(self.CONFIG[key])):
                     self.CONFIG[key] = value
-                else:
-                    raise ValueError(f"Invalid key '{key}' in the configuration file.")
 
     @job
     def make(self, **kwargs):

@@ -1,8 +1,8 @@
 import os
-import pytest
 from pathlib import Path
 from jobflow import run_locally, Flow
 from tests.conftest import mock_rss, mock_do_rss_iterations, mock_do_rss_iterations_multi_jobs
+from autoplex.auto.rss.flows import RssMaker
 
 os.environ["OMP_NUM_THREADS"] = "1"
 
@@ -307,3 +307,20 @@ def test_mock_workflow_multi_node(test_dir, mock_vasp, memory_jobstore, clean_di
     selected_atoms = job2.output.resolve(memory_jobstore)
 
     assert len(selected_atoms) == 3
+
+def test_rssmaker_custom_config(test_dir):
+
+    # For now only test if __post_init is working and updating defaults
+    rss = RssMaker(config_file= test_dir / "rss" / "rss_config.yaml")
+
+    # TODO: test needs to be more robust after updating default config files
+    assert rss.CONFIG["tag"] == "test"
+    assert rss.CONFIG["generated_struct_numbers"] == [9000, 1000]
+    assert rss.CONFIG["num_processes_buildcell"] == 64
+    assert rss.CONFIG["num_processes_fit"] == 64
+    assert rss.CONFIG["device_for_rss"] == "gpu"
+    assert rss.CONFIG["isolatedatom_box"] == [10, 10, 10]
+    assert rss.CONFIG["dimer_box"] == [10, 10, 10]
+
+
+
