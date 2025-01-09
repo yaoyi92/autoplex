@@ -1,5 +1,6 @@
 """General fitting jobs using several MLIPs available."""
 
+import os
 from pathlib import Path
 
 from jobflow import job
@@ -13,8 +14,8 @@ from autoplex.fitting.common.utils import (
     nequip_fitting,
 )
 
-current_dir = Path(__file__).absolute().parent
-GAP_DEFAULTS_FILE_PATH = current_dir / "mlip-phonon-defaults.json"
+MODULE_DIR = Path(os.path.dirname(__file__))
+GAP_DEFAULTS_FILE_PATH = MODULE_DIR / "mlip-phonon-defaults.json"
 
 
 @job
