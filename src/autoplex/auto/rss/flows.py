@@ -32,8 +32,9 @@ class RssMaker(Maker):
 
     def __post_init__(self) -> None:
         """Ensure that custom configuration parameters are loaded when the maker is initialized."""
-        if self.config_file and os.path.exists(self.config_file):
-            new_config = loadfn(self.config_file)
+        if self.config_file and Path(self.config_file).resolve(strict=True):
+            print(Path(self.config_file).resolve())
+            new_config = loadfn(Path(self.config_file).resolve())
 
             for key, value in new_config.items():
                 # TODO: Need better defaults in default file or we move to pydantic models
