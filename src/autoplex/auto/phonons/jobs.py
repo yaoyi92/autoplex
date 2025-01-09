@@ -275,7 +275,6 @@ def complete_benchmark(  # this function was put here to prevent circular import
 
     for path in ml_path:
         suffix = Path(path).name
-        print(suffix)
         if suffix == "without_regularization":
             suffix = "without_reg"
         if suffix not in ["phonon", "rattled"]:
@@ -541,6 +540,7 @@ def dft_phonopy_gen_data(
     if phonon_bulk_relax_maker is None:
         phonon_bulk_relax_maker = DoubleRelaxMaker.from_relax_maker(
             TightRelaxMaker(
+                name="dft tight relax",
                 run_vasp_kwargs={"handlers": {}},
                 input_set_generator=TightRelaxSetGenerator(
                     user_incar_settings={
@@ -567,6 +567,7 @@ def dft_phonopy_gen_data(
 
     if phonon_static_energy_maker is None:
         phonon_static_energy_maker = StaticMaker(
+            name="dft static",
             input_set_generator=StaticSetGenerator(
                 auto_ispin=False,
                 user_incar_settings={
@@ -584,13 +585,17 @@ def dft_phonopy_gen_data(
                     # to be removed
                     "NPAR": 4,
                 },
-            )
+            ),
         )
 
     # always set autoplex default as job name
     phonon_displacement_maker.name = "dft phonon static"
-    phonon_bulk_relax_maker.name = "tight relax"
-    phonon_static_energy_maker.name = "static"
+    phonon_static_energy_maker.name = "dft static"
+    try:
+        phonon_bulk_relax_maker.relax_maker1.name = "dft tight relax"
+        phonon_bulk_relax_maker.relax_maker2.name = "dft tight relax"
+    except AttributeError:
+        phonon_bulk_relax_maker.name = "dft tight relax"
 
     for displacement in displacements:
         dft_phonons = DFTPhononMaker(
@@ -725,7 +730,7 @@ def dft_random_gen_data(
 
     # always set autoplex default as job name
     displacement_maker.name = "dft rattle static"
-    rattled_bulk_relax_maker.name = "tight relax"
+    rattled_bulk_relax_maker.name = "dft tight relax"
 
     # TODO: decide if we should remove the additional response here as well
     # looks like only the output is changing

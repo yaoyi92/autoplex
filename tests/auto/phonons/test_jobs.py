@@ -21,6 +21,7 @@ from pytest import approx
 def relax_maker():
     return DoubleRelaxMaker.from_relax_maker(
         TightRelaxMaker(
+            name="dft tight relax",
             run_vasp_kwargs={"handlers": {}},
             input_set_generator=TightRelaxSetGenerator(
                 user_incar_settings={
@@ -48,33 +49,33 @@ def relax_maker():
 @pytest.fixture(scope="class")
 def static_energy_maker():
     return StaticMaker(
-        input_set_generator=StaticSetGenerator(
-            auto_ispin=False,
-            user_incar_settings={
-                "ALGO": "Normal",
-                "ISPIN": 1,
-                "LAECHG": False,
-                "ISMEAR": 0,
-                "ENCUT": 700,
-                "SIGMA": 0.05,
-                "LCHARG": False,  # Do not write the CHGCAR file
-                "LWAVE": False,  # Do not write the WAVECAR file
-                "LVTOT": False,  # Do not write LOCPOT file
-                "LORBIT": None,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
-                "LOPTICS": False,  # No PCDAT file
-                # to be removed
-                "NPAR": 4,
-            },
+            input_set_generator=StaticSetGenerator(
+                auto_ispin=False,
+                user_incar_settings={
+                    "ALGO": "Normal",
+                    "ISPIN": 1,
+                    "LAECHG": False,
+                    "ISMEAR": 0,
+                    "ENCUT": 700,
+                    "SIGMA": 0.05,
+                    "LCHARG": False,  # Do not write the CHGCAR file
+                    "LWAVE": False,  # Do not write the WAVECAR file
+                    "LVTOT": False,  # Do not write LOCPOT file
+                    "LORBIT": None,  # No output of projected or partial DOS in EIGENVAL, PROCAR and DOSCAR
+                    "LOPTICS": False,  # No PCDAT file
+                    # to be removed
+                    "NPAR": 4,
+                },
+            )
         )
-    )
 
 
 @pytest.fixture(scope="class")
 def ref_paths():
     return {
-        "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
-        "static": "dft_ml_data_generation/static/",
+        "dft tight relax 1": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 2": "dft_ml_data_generation/tight_relax_2/",
+        "dft static": "dft_ml_data_generation/static/",
         "dft phonon static 1/2": "dft_ml_data_generation/phonon_static_1/",
         "dft phonon static 2/2": "dft_ml_data_generation/phonon_static_2/",
         "dft rattle static 1/3": "dft_ml_data_generation/rand_static_1/",
@@ -86,9 +87,9 @@ def ref_paths():
 @pytest.fixture(scope="class")
 def ref_paths_check_sc_mat():
     return {
-        "tight relax 1": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2": "dft_ml_data_generation/tight_relax_2/",
-        "static": "dft_ml_data_generation/static/",
+        "dft tight relax 1": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 2": "dft_ml_data_generation/tight_relax_2/",
+        "dft static": "dft_ml_data_generation/static/",
         "dft phonon static 1/2": "dft_ml_data_generation/phonon_static_1_sc_mat/",
         "dft phonon static 2/2": "dft_ml_data_generation/phonon_static_2_sc_mat/",
         "dft rattle static 1/3": "dft_ml_data_generation/rand_static_1_sc_mat/",
@@ -100,8 +101,8 @@ def ref_paths_check_sc_mat():
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs():
     return {
-        "tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 1/2": {"incar_settings": ["NSW"]},
         "dft phonon static 2/2": {"incar_settings": ["NSW"]},
         "dft rattle static 1/3": {
