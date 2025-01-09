@@ -28,14 +28,19 @@ Parameters can be specified either through a YAML configuration file or as direc
 
 > **Recommendation**: This is currently our recommended approach for setting up and managing RSS workflows.
 
-The RSS workflow can be initiated using a custom YAML configuration file. A comprehensive list of parameters, including default settings and modifiable options, is available in `autoplex/auto/rss/rss_default_configuration.yaml`. When creating a new YAML file, any specified keys will override the corresponding default values. To start a new workflow, pass the path to your YAML file as the `config_file` argument in the `make` method.
+The RSS workflow can be initiated using a custom YAML configuration file. 
+A comprehensive list of parameters, including default settings and modifiable options, is available in `autoplex/auto/rss/rss_default_configuration.yaml`. 
+When initializing the flow with a YAML file, any specified keys will override the corresponding default values. 
+To start a new workflow, pass the path to your YAML file as the `config_file` argument in the `RssMaker`.
+
+> ℹ️ Note that, if you are using `RssMaker` as part of another job or flow and executing jobs on a different system (e.g. using remote submission via jobflow-remote), then the configuration file has to be placed on the remote cluster and the file path has to reflect this as (i.e., it is valid a path on the remote cluster).
 
 ```python
 from autoplex.auto.rss.flows import RssMaker
 from fireworks import LaunchPad
 from jobflow.managers.fireworks import flow_to_workflow
 
-rss_job = RssMaker(name="your workflow name").make(config_file='path/to/your/name.yaml')
+rss_job = RssMaker(name="your workflow name", config_file='path/to/your/config.yaml').make()
 wf = flow_to_workflow(rss_job) 
 lpad = LaunchPad.auto_load()
 lpad.add_wf(wf)
@@ -48,7 +53,7 @@ The above code is based on [`FireWorks`](https://materialsproject.github.io/fire
 from autoplex.auto.rss.flows import RssMaker
 from jobflow_remote import submit_flow
 
-rss_job = RssMaker(name="your workflow name").make(config_file='path/to/your/name.yaml')
+rss_job = RssMaker(name="your workflow name", config_file='path/to/your/name.yaml').make()
 resources = {"nodes": N, "partition": "name", "qos": "name", "time": "8:00:00", "mail_user": "your_email", "mail_type": "ALL", "account": "your account"}
 print(submit_flow(rss_job, worker="your worker", resources=resources, project="your project name"))
 ```
