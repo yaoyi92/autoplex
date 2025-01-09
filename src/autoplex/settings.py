@@ -7,11 +7,331 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
+class GeneralSettings(BaseModel):
+    """Model describing general hyperparameters for the GAP."""
+
+    at_file: str = Field(
+        default="train.extxyz", description="Name of the training file"
+    )
+    default_sigma: str = Field(
+        default="{0.0001 0.05 0.05 0}", description="Default sigma values"
+    )
+    energy_parameter_name: str = Field(
+        default="REF_energy", description="Name of the energy parameter"
+    )
+    force_parameter_name: str = Field(
+        default="REF_forces", description="Name of the force parameter"
+    )
+    virial_parameter_name: str = Field(
+        default="REF_virial", description="Name of the virial parameter"
+    )
+    sparse_jitter: float = Field(default=1.0e-8, description="Sparse jitter")
+    do_copy_at_file: str = Field(default="F", description="Copy the training file to")
+    openmp_chunk_size: int = Field(default=10000, description="OpenMP chunk size")
+    gp_file: str = Field(default="gap_file.xml", description="Name of the GAP file")
+    e0_offset: float = Field(default=0.0, description="E0 offset")
+    two_body: bool = Field(
+        default=False, description="Whether to include two-body terms"
+    )
+    three_body: bool = Field(
+        default=False, description="Whether to include three-body terms"
+    )
+    soap: bool = Field(default=True, description="Whether to include SOAP terms")
+
+
+class TwobSettings(BaseModel):
+    """Model describing two body hyperparameters for the GAP."""
+
+    distance_Nb_order: int = Field(
+        default=2, description="Distance_Nb order for two-body"
+    )
+    f0: float = Field(default=0.0, description="F0 value for two-body")
+    add_species: str = Field(
+        default="T", description="Whether to add species information"
+    )
+    cutoff: float = Field(default=5.0, description="Radial cutoff distance")
+    n_sparse: int = Field(default=15, description="Number of sparse points")
+    covariance_type: str = Field(
+        default="ard_se", description="Covariance type for two-body"
+    )
+    delta: float = Field(default=2.00, description="Delta value for two-body")
+    theta_uniform: float = Field(
+        default=0.5, description="Width of the uniform distribution for theta"
+    )
+    sparse_method: str = Field(
+        default="uniform", description="Sparse method for two-body"
+    )
+    compact_clusters: str = Field(
+        default="T", description="Whether to compact clusters"
+    )
+
+
+class ThreebSettings(BaseModel):
+    """Model describing threebody hyperparameters for the GAP."""
+
+    distance_Nb_order: int = Field(
+        default=3, description="Distance_Nb order for three-body"
+    )
+    f0: float = Field(default=0.0, description="F0 value for three-body")
+    add_species: str = Field(
+        default="T", description="Whether to add species information"
+    )
+    cutoff: float = Field(default=3.25, description="Radial cutoff distance")
+    n_sparse: int = Field(default=100, description="Number of sparse points")
+    covariance_type: str = Field(
+        default="ard_se", description="Covariance type for three-body"
+    )
+    delta: float = Field(default=2.00, description="Delta value for three-body")
+    theta_uniform: float = Field(
+        default=1.0, description="Width of the uniform distribution for theta"
+    )
+    sparse_method: str = Field(
+        default="uniform", description="Sparse method for three-body"
+    )
+    compact_clusters: str = Field(
+        default="T", description="Whether to compact clusters"
+    )
+
+
+class SoapSettings(BaseModel):
+    """Model describing soap hyperparameters for the GAP."""
+
+    add_species: str = Field(
+        default="T", description="Whether to add species information"
+    )
+    l_max: int = Field(default=10, description="Maximum degree of spherical harmonics")
+    n_max: int = Field(
+        default=12, description="Maximum number of radial basis functions"
+    )
+    atom_sigma: float = Field(default=0.5, description="Width of Gaussian smearing")
+    zeta: int = Field(default=4, description="Exponent for dot-product SOAP kernel")
+    cutoff: float = Field(default=5.0, description="Radial cutoff distance")
+    cutoff_transition_width: float = Field(
+        default=1.0, description="Width of the transition region for the cutoff"
+    )
+    central_weight: float = Field(default=1.0, description="Weight for central atom")
+    n_sparse: int = Field(default=6000, description="Number of sparse points")
+    delta: float = Field(default=1.00, description="Delta value for SOAP")
+    f0: float = Field(default=0.0, description="F0 value for SOAP")
+    covariance_type: str = Field(
+        default="dot_product", description="Covariance type for SOAP"
+    )
+    sparse_method: str = Field(
+        default="cur_points", description="Sparse method for SOAP"
+    )
+
+
+class GAPSettings(BaseModel):
+    """Model describing the hyperparameters for the GAP fits for Phonons."""
+
+    general: GeneralSettings = Field(
+        default_factory=GeneralSettings,
+        description="General hyperparameters for the GAP fits",
+    )
+    twob: TwobSettings = Field(
+        default_factory=TwobSettings,
+        description="Two body hyperparameters for the GAP fits",
+    )
+    threeb: ThreebSettings = Field(
+        default_factory=ThreebSettings,
+        description="Three body hyperparameters for the GAP fits",
+    )
+    soap: SoapSettings = Field(
+        default_factory=SoapSettings,
+        description="Soap hyperparameters for the GAP fits",
+    )
+
+
+class JACESettings(BaseModel):
+    """Model describing the hyperparameters for the J-ACE fits."""
+
+    order: int = Field(default=3, description="Order of the J-ACE model")
+    totaldegree: int = Field(default=6, description="Total degree of the J-ACE model")
+    cutoff: float = Field(default=2.0, description="Radial cutoff distance")
+    solver: str = Field(default="BLR", description="Solver for the J-ACE model")
+
+
+class NEQUIPSettings(BaseModel):
+    """Model describing the hyperparameters for the NEQUIP fits."""
+
+    r_max: float = Field(default=4.0, description="Radial cutoff distance")
+    num_layers: int = Field(default=4, description="Number of layers")
+    l_max: int = Field(default=2, description="Maximum degree of spherical harmonics")
+    num_features: int = Field(default=32, description="Number of features")
+    num_basis: int = Field(default=8, description="Number of basis functions")
+    invariant_layers: int = Field(default=2, description="Number of invariant layers")
+    invariant_neurons: int = Field(
+        default=64, description="Number of invariant neurons"
+    )
+    batch_size: int = Field(default=5, description="Batch size")
+    learning_rate: float = Field(default=0.005, description="Learning rate")
+    max_epochs: int = Field(default=10000, description="Maximum number of epochs")
+    default_dtype: str = Field(default="float32", description="Default data type")
+
+
+class M3GNETSettings(BaseModel):
+    """Model describing the hyperparameters for the M3GNET fits."""
+
+    exp_name: str = Field(default="training", description="Name of the experiment")
+    results_dir: str = Field(
+        default="m3gnet_results", description="Directory to save the results"
+    )
+    cutoff: float = Field(default=5.0, description="Radial cutoff distance")
+    threebody_cutoff: float = Field(
+        default=4.0, description="Three-body cutoff distance"
+    )
+    batch_size: int = Field(default=10, description="Batch size")
+    max_epochs: int = Field(default=1000, description="Maximum number of epochs")
+    include_stresses: bool = Field(
+        default=True, description="Whether to include stresses"
+    )
+    hidden_dim: int = Field(default=128, description="Hidden dimension")
+    num_units: int = Field(default=128, description="Number of units")
+    max_l: int = Field(default=4, description="Maximum degree of spherical harmonics")
+    max_n: int = Field(
+        default=4, description="Maximum number of radial basis functions"
+    )
+    test_equal_to_val: bool = Field(
+        default=True, description="Whether the test set is equal to the validation set"
+    )
+
+
+class MACESettings(BaseModel):
+    """Model describing the hyperparameters for the MACE fits."""
+
+    model: str = Field(default="MACE", description="type of the model")
+    name: str = Field(default="MACE_model", description="Name of the model")
+    config_type_weights: str = Field(
+        default="{'Default':1.0}", description="Weights for the configuration types"
+    )
+    hidden_irreps: str = Field(default="128x0e + 128x1o", description="Hidden irreps")
+    r_max: float = Field(default=5.0, description="Radial cutoff distance")
+    batch_size: int = Field(default=10, description="Batch size")
+    max_num_epochs: int = Field(default=1500, description="Maximum number of epochs")
+    start_swa: int = Field(default=1200, description="Start of the SWA")
+    ema_decay: float = Field(
+        default=0.99, description="Exponential moving average decay"
+    )
+    correlation: int = Field(default=3, description="Correlation")
+    loss: str = Field(default="huber", description="Loss function")
+    default_dtype: str = Field(default="float32", description="Default data type")
+    swa: bool = Field(default=True, description="Whether to use SWA")
+    ema: bool = Field(default=True, description="Whether to use EMA")
+    amsgrad: bool = Field(default=True, description="Whether to use AMSGrad")
+    restart_latest: bool = Field(
+        default=True, description="Whether to restart the latest model"
+    )
+    seed: int = Field(default=123, description="Seed for the random number generator")
+    device: Literal["cpu", "cuda"] = Field(
+        default="cpu", description="Device to be used for model fitting"
+    )
+
+
+class NEPSettings(BaseModel):
+    """Model describing the hyperparameters for the NEP fits."""
+
+    version: int = Field(default=4, description="Version of the NEP model")
+    type: list[int | str] = Field(
+        default_factory=lambda: [1, "X"],
+        description="Mandatory Parameter. Number of atom types and list of "
+        "chemical species. Number of atom types must be an integer, followed by "
+        "chemical symbols of species as in periodic table "
+        "for which model needs to be trained, separated by comma. "
+        "Default is [1, 'X'] as a placeholder. Example: [2, 'Pb', 'Te']",
+    )
+    type_weight: float = Field(
+        default=1.0, description="Weights for different chemical species"
+    )
+    model_type: int = Field(
+        default=0,
+        description="Type of model that is being trained. "
+        "Can be 0 (potential), 1 (dipole), "
+        "2 (polarizability)",
+    )
+    prediction: int = Field(
+        default=0, description="Mode of NEP run. Set 0 for training and 1 for inference"
+    )
+    cutoff: list[int, int] = Field(
+        default_factory=lambda: [6, 5],
+        description="Radial and angular cutoff. First element is for radial cutoff "
+        "and second element is for angular cutoff",
+    )
+    n_max: list[int, int] = Field(
+        default_factory=lambda: [4, 4],
+        description="Number of radial and angular descriptors. First element "
+        "is for radial and second element is for angular.",
+    )
+    basis_size: list[int, int] = Field(
+        default_factory=lambda: [8, 8],
+        description="Number of basis functions that are used to build the radial and angular descriptor. "
+        "First element is for radial descriptor and second element is for angular descriptor",
+    )
+    l_max: list[int] = Field(
+        default_factory=lambda: [4, 2, 1],
+        description="The maximum expansion order for the angular terms. "
+        "First element is for three-body, second element is for four-body and third element is for five-body",
+    )
+    neuron: int = Field(
+        default=80, description="Number of neurons in the hidden layer."
+    )
+    lambda_1: float = Field(
+        default=0.0, description="Weight for the L1 regularization term."
+    )
+    lambda_e: float = Field(default=1.0, description="Weight for the energy loss term.")
+    lambda_f: float = Field(default=1.0, description="Weight for the force loss term.")
+    lambda_v: float = Field(default=0.1, description="Weight for the virial loss term.")
+    force_delta: int = Field(
+        default=0,
+        description=" Sets bias the on the loss function to put more emphasis "
+        "on obtaining accurate predictions for smaller forces.",
+    )
+    batch: int = Field(default=1000, description="Batch size for training.")
+    population: int = Field(
+        default=60, description="Size of the population used by the SNES algorithm."
+    )
+    generation: int = Field(
+        default=100000, description="Number of generations used by the SNES algorithm."
+    )
+    zbl: int = Field(
+        default=2,
+        description="Cutoff to use in universal ZBL potential at short distances. "
+        "Acceptable values are in range 1 to 2.5.",
+    )
+
+
+class MLIPHypers(BaseModel):
+    """Model containing the hyperparameter defaults for supported MLIPs in autoplex."""
+
+    GAP: GAPSettings = Field(
+        default_factory=GAPSettings, description="Hyperparameters for the GAP model"
+    )
+    J_ACE: JACESettings = Field(
+        default_factory=JACESettings, description="Hyperparameters for the J-ACE model"
+    )
+    NEQUIP: NEQUIPSettings = Field(
+        default_factory=NEQUIPSettings,
+        description="Hyperparameters for the NEQUIP model",
+    )
+    M3GNET: M3GNETSettings = Field(
+        default_factory=M3GNETSettings,
+        description="Hyperparameters for the M3GNET model",
+    )
+    MACE: MACESettings = Field(
+        default_factory=MACESettings, description="Hyperparameters for the MACE model"
+    )
+    NEP: NEPSettings = Field(
+        default_factory=NEPSettings, description="Hyperparameters for the NEP model"
+    )
+
+
+# RSS Configuration
+
+
 class ResumeFromPreviousState(BaseModel):
     """
     A model describing the state information.
 
-    It is required to resume a previously interrupted or saved RSS workflow.
+    Useful to resume a previously interrupted or saved RSS workflow.
     When 'train_from_scratch' is set to False, this parameter is mandatory
     for the workflow to pick up from a saved state.
     """
