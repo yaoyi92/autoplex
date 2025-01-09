@@ -33,7 +33,6 @@ class RssMaker(Maker):
     def __post_init__(self) -> None:
         """Ensure that custom configuration parameters are loaded when the maker is initialized."""
         if self.config_file and Path(self.config_file).resolve(strict=True):
-            print(Path(self.config_file).resolve())
             new_config = loadfn(Path(self.config_file).resolve())
 
             for key, value in new_config.items():
