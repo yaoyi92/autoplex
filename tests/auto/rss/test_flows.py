@@ -1,7 +1,10 @@
 import os
 from pathlib import Path
-from jobflow import run_locally, Flow
+from jobflow import run_locally, Flow, job
+from mace.tools.model_script_utils import configure_model
+
 from tests.conftest import mock_rss, mock_do_rss_iterations, mock_do_rss_iterations_multi_jobs
+from autoplex.settings import RssConfig
 from autoplex.auto.rss.flows import RssMaker
 
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -310,17 +313,20 @@ def test_mock_workflow_multi_node(test_dir, mock_vasp, memory_jobstore, clean_di
 
 def test_rssmaker_custom_config(test_dir):
 
-    # For now only test if __post_init is working and updating defaults
-    rss = RssMaker(config_file= test_dir / "rss" / "rss_config.yaml")
+    from monty.serialization import loadfn
 
-    # TODO: test needs to be more robust after updating default config files
-    assert rss.CONFIG["tag"] == "test"
-    assert rss.CONFIG["generated_struct_numbers"] == [9000, 1000]
-    assert rss.CONFIG["num_processes_buildcell"] == 64
-    assert rss.CONFIG["num_processes_fit"] == 64
-    assert rss.CONFIG["device_for_rss"] == "gpu"
-    assert rss.CONFIG["isolatedatom_box"] == [10, 10, 10]
-    assert rss.CONFIG["dimer_box"] == [10, 10, 10]
+    rss_config = loadfn(test_dir / "rss" / "rss_config.yaml")
 
+    config_model = RssConfig(**rss_config)
 
+    # Test if config is updated as expected
+    rss = RssMaker(config=config_model)
+
+    assert rss.config.tag == "test"
+    assert rss.config.generated_struct_numbers == [9000, 1000]
+    assert rss.config.num_processes_buildcell == 64
+    assert rss.config.num_processes_fit == 64
+    assert rss.config.device_for_rss == "cuda"
+    assert rss.config.isolatedatom_box == [10, 10, 10]
+    assert rss.config.dimer_box == [10, 10, 10]
 
