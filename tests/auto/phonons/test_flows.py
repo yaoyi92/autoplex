@@ -15,10 +15,10 @@ os.environ["OMP_NUM_THREADS"] = "1"
 @pytest.fixture(scope="class")
 def ref_paths():
     return {
-        "tight relax_test": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1_test": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2_test": "dft_ml_data_generation/tight_relax_2/",
-        "static_test": "dft_ml_data_generation/static/",
+        "dft tight relax_test": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 1_test": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 2_test": "dft_ml_data_generation/tight_relax_2/",
+        "dft static_test": "dft_ml_data_generation/static/",
         "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
         "Li-stat_iso_atom": "Li_iso_atoms/Li-statisoatom/",
         "dft phonon static 1/2_test": "dft_ml_data_generation/phonon_static_1/",
@@ -35,10 +35,10 @@ def ref_paths():
         "dft rattle static 10/12_test": "dft_ml_data_generation/rand_static_10/",
         "dft rattle static 11/12_test": "dft_ml_data_generation/rand_static_11/",
         "dft rattle static 12/12_test": "dft_ml_data_generation/rand_static_12/",
-        "tight relax_mp-22905": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1_mp-22905": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2_mp-22905": "dft_ml_data_generation/tight_relax_2/",
-        "static_mp-22905": "dft_ml_data_generation/static/",
+        "dft tight relax_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 1_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 2_mp-22905": "dft_ml_data_generation/tight_relax_2/",
+        "dft static_mp-22905": "dft_ml_data_generation/static/",
         "dft phonon static 1/2_mp-22905": "dft_ml_data_generation/phonon_static_1/",
         "dft phonon static 2/2_mp-22905": "dft_ml_data_generation/phonon_static_2/",
         "dft rattle static 1/12_mp-22905": "dft_ml_data_generation/rand_static_1/",
@@ -60,10 +60,10 @@ def ref_paths():
 @pytest.fixture(scope="class")
 def ref_paths_mpid():
     return {
-        "tight relax_mp-22905": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1_mp-22905": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2_mp-22905": "dft_ml_data_generation/tight_relax_2/",
-        "static_mp-22905": "dft_ml_data_generation/static/",
+        "dft tight relax_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 1_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 2_mp-22905": "dft_ml_data_generation/tight_relax_2/",
+        "dft static_mp-22905": "dft_ml_data_generation/static/",
         "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
         "Li-stat_iso_atom": "Li_iso_atoms/Li-statisoatom/",
         "dft phonon static 1/2_mp-22905": "dft_ml_data_generation/phonon_static_1/",
@@ -86,9 +86,9 @@ def ref_paths_mpid():
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs():
     return {
-        "tight relax_test": {"incar_settings": ["NSW"]},
-        "tight relax 1_test": {"incar_settings": ["NSW"]},
-        "tight relax 2_test": {"incar_settings": ["NSW"]},
+        "dft tight relax_test": {"incar_settings": ["NSW"]},
+        "dft tight relax 1_test": {"incar_settings": ["NSW"]},
+        "dft tight relax 2_test": {"incar_settings": ["NSW"]},
         "dft phonon static 1/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 2/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft rattle static 1/12_test": {
@@ -139,9 +139,9 @@ def fake_run_vasp_kwargs():
             "incar_settings": ["NSW", "ISMEAR"],
             "check_inputs": ["incar", "potcar"],
         },
-        "tight relax_mp-22905": {"incar_settings": ["NSW"]},
-        "tight relax 1_mp-22905": {"incar_settings": ["NSW"]},
-        "tight relax 2_mp-22905": {"incar_settings": ["NSW"]},
+        "dft tight relax_mp-22905": {"incar_settings": ["NSW"]},
+        "dft tight relax 1_mp-22905": {"incar_settings": ["NSW"]},
+        "dft tight relax 2_mp-22905": {"incar_settings": ["NSW"]},
         "dft phonon static 1/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 2/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft rattle static 1/12_mp-22905": {
@@ -198,9 +198,9 @@ def fake_run_vasp_kwargs():
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs_mpid():
     return {
-        "tight relax_mp-22905": {"incar_settings": ["NSW"]},
-        "tight relax 1_mp-22905": {"incar_settings": ["NSW"]},
-        "tight relax 2_mp-22905": {"incar_settings": ["NSW"]},
+        "dft tight relax_mp-22905": {"incar_settings": ["NSW"]},
+        "dft tight relax 1_mp-22905": {"incar_settings": ["NSW"]},
+        "dft tight relax 2_mp-22905": {"incar_settings": ["NSW"]},
         "dft phonon static 1/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 2/2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft rattle static 1/12_mp-22905": {
@@ -257,10 +257,10 @@ def fake_run_vasp_kwargs_mpid():
 @pytest.fixture(scope="class")
 def ref_paths4():
     return {
-        "tight relax_test": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1_test": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2_test": "dft_ml_data_generation/tight_relax_2/",
-        "static_test": "dft_ml_data_generation/static/",
+        "dft tight relax_test": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 1_test": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 2_test": "dft_ml_data_generation/tight_relax_2/",
+        "dft static_test": "dft_ml_data_generation/static/",
         "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
         "Li-stat_iso_atom": "Li_iso_atoms/Li-statisoatom/",
         "dft phonon static 1/2_test": "dft_ml_data_generation/phonon_static_1/",
@@ -275,9 +275,9 @@ def ref_paths4():
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs5():
     return {
-        "tight relax_test": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 1/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 2/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
 
@@ -303,9 +303,9 @@ def fake_run_vasp_kwargs5():
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs4():
     return {
-        "tight relax_test": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 1/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 2/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
 
@@ -331,37 +331,37 @@ def fake_run_vasp_kwargs4():
 @pytest.fixture(scope="class")
 def ref_paths4_mpid():
     return {
-        "tight relax_test": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax_test_0": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax_test_1": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax_mp-22905": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax_test2": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax_test3": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1_test": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1_test_0": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1_test_1": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2_test": "dft_ml_data_generation/tight_relax_2/",
-        "tight relax 2_test_0": "dft_ml_data_generation/tight_relax_2/",
-        "tight relax 2_test_1": "dft_ml_data_generation/tight_relax_2/",
-        "tight relax 1_test2": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1_test3": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2_test2": "dft_ml_data_generation/tight_relax_2/",
-        "tight relax 2_test3": "dft_ml_data_generation/tight_relax_2/",
-        "static_test": "dft_ml_data_generation/static/",
-        "static_test_0": "dft_ml_data_generation/static/",
-        "static_test_1": "dft_ml_data_generation/static/",
-        "static_test2": "dft_ml_data_generation/static/",
-        "static_test2_0": "dft_ml_data_generation/static/",
-        "static_test2_1": "dft_ml_data_generation/static/",
-        "static_test3": "dft_ml_data_generation/static/",
-        "static_test3_0": "dft_ml_data_generation/static/",
-        "static_test3_1": "dft_ml_data_generation/static/",
-        "tight relax 1_mp-22905": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 1_mp-22905_0": "dft_ml_data_generation/tight_relax_1/",
-        "tight relax 2_mp-22905": "dft_ml_data_generation/tight_relax_2/",
-        "tight relax 2_mp-22905_0": "dft_ml_data_generation/tight_relax_2/",
-        "static_mp-22905": "dft_ml_data_generation/static/",
-        "static_mp-22905_0": "dft_ml_data_generation/static/",
+        "dft tight relax_test": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax_test_0": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax_test_1": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax_test2": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax_test3": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 1_test": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 1_test_0": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 1_test_1": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 2_test": "dft_ml_data_generation/tight_relax_2/",
+        "dft tight relax 2_test_0": "dft_ml_data_generation/tight_relax_2/",
+        "dft tight relax 2_test_1": "dft_ml_data_generation/tight_relax_2/",
+        "dft tight relax 1_test2": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 1_test3": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 2_test2": "dft_ml_data_generation/tight_relax_2/",
+        "dft tight relax 2_test3": "dft_ml_data_generation/tight_relax_2/",
+        "dft static_test": "dft_ml_data_generation/static/",
+        "dft static_test_0": "dft_ml_data_generation/static/",
+        "dft static_test_1": "dft_ml_data_generation/static/",
+        "dft static_test2": "dft_ml_data_generation/static/",
+        "dft static_test2_0": "dft_ml_data_generation/static/",
+        "dft static_test2_1": "dft_ml_data_generation/static/",
+        "dft static_test3": "dft_ml_data_generation/static/",
+        "dft static_test3_0": "dft_ml_data_generation/static/",
+        "dft static_test3_1": "dft_ml_data_generation/static/",
+        "dft tight relax 1_mp-22905": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 1_mp-22905_0": "dft_ml_data_generation/tight_relax_1/",
+        "dft tight relax 2_mp-22905": "dft_ml_data_generation/tight_relax_2/",
+        "dft tight relax 2_mp-22905_0": "dft_ml_data_generation/tight_relax_2/",
+        "dft static_mp-22905": "dft_ml_data_generation/static/",
+        "dft static_mp-22905_0": "dft_ml_data_generation/static/",
         "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
         "Cl-stat_iso_atom_0": "Cl_iso_atoms/Cl-statisoatom/",
         "Cl-stat_iso_atom_1": "Cl_iso_atoms/Cl-statisoatom/",
@@ -419,27 +419,26 @@ def ref_paths4_mpid():
         "dft rattle static 4/4_test3": "dft_ml_data_generation/rand_static_10/",
     }
 
-
 @pytest.fixture(scope="class")
 def ref_paths4_mpid_new():
     return {
-        "tight relax_test": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax_test2": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax_test3": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax_mp-22905": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 1_test": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 2_test": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
-        "tight relax 1_test2": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 2_test2": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
-        "tight relax 1_test3": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 2_test3": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
-        "tight relax 1_mp-22905": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 2_mp-22905": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
-        "static_test": "dft_ml_data_generation/static/",
-        "static_test2": "dft_ml_data_generation/static/",
-        "static_mp-22905": "dft_ml_data_generation/static/",
-        "static_test3": "dft_ml_data_generation/static/",
-        "static_test_mp-22905": "dft_ml_data_generation/static/",
+        "dft tight relax_test": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax_test2": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax_test3": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax_mp-22905": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 1_test": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 2_test": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
+        "dft tight relax 1_test2": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 2_test2": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
+        "dft tight relax 1_test3": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 2_test3": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
+        "dft tight relax 1_mp-22905": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 2_mp-22905": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
+        "dft static_test": "dft_ml_data_generation/static/",
+        "dft static_test2": "dft_ml_data_generation/static/",
+        "dft static_mp-22905": "dft_ml_data_generation/static/",
+        "dft static_test3": "dft_ml_data_generation/static/",
+        "dft static_test_mp-22905": "dft_ml_data_generation/static/",
         "Cl-stat_iso_atom": "Cl_iso_atoms/Cl-statisoatom/",
         "Li-stat_iso_atom": "Li_iso_atoms/Li-statisoatom/",
         "dft phonon static 1/2_test": "dft_ml_data_generation/strict_test/phonon_static_1/",
@@ -460,25 +459,24 @@ def ref_paths4_mpid_new():
         "dft rattle static 4/4_test2": "dft_ml_data_generation/strict_test/rand_static_8/",
     }
 
-
 @pytest.fixture(scope="class")
 def ref_paths4_mpid_new2():
     return {
-        "tight relax_test_0": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax_test_1": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax_test_2": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 1_test_0": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 1_test_1": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 1_test_2": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 1_test_3": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
-        "tight relax 2_test_0": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
-        "tight relax 2_test_1": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
-        "tight relax 2_test_2": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
-        "tight relax 2_test_3": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
-        "static_test_0": "dft_ml_data_generation/static/",
-        "static_test_1": "dft_ml_data_generation/static/",
-        "static_test_2": "dft_ml_data_generation/static/",
-        "static_test_3": "dft_ml_data_generation/static/",
+        "dft tight relax_test_0": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax_test_1": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax_test_2": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 1_test_0": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 1_test_1": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 1_test_2": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 1_test_3": "dft_ml_data_generation/strict_test/tight_relax_1_test/",
+        "dft tight relax 2_test_0": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
+        "dft tight relax 2_test_1": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
+        "dft tight relax 2_test_2": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
+        "dft tight relax 2_test_3": "dft_ml_data_generation/strict_test/tight_relax_2_test/",
+        "dft static_test_0": "dft_ml_data_generation/static/",
+        "dft static_test_1": "dft_ml_data_generation/static/",
+        "dft static_test_2": "dft_ml_data_generation/static/",
+        "dft static_test_3": "dft_ml_data_generation/static/",
         "Cl-stat_iso_atom_0": "Cl_iso_atoms/Cl-statisoatom/",
         "Cl-stat_iso_atom_1": "Cl_iso_atoms/Cl-statisoatom/",
         "Cl-stat_iso_atom_2": "Cl_iso_atoms/Cl-statisoatom/",
@@ -498,16 +496,16 @@ def ref_paths4_mpid_new2():
         "dft rattle static 2/4_test_0": "dft_ml_data_generation/strict_test/rand_static_2/",
         "dft rattle static 3/4_test_0": "dft_ml_data_generation/strict_test/rand_static_3/",
         "dft rattle static 4/4_test_0": "dft_ml_data_generation/strict_test/rand_static_4/",
-    }
+        }
 
 
 @pytest.fixture(scope="class")
 def ref_paths5_mpid():
     return {
-        "MP GGA relax 1_test": "MP_finetuning/tight_relax_1/",
-        "MP GGA relax 2_test": "MP_finetuning/tight_relax_2/",
+        "dft tight relax 1_test": "MP_finetuning/tight_relax_1/",
+        "dft tight relax 2_test": "MP_finetuning/tight_relax_2/",
         "Sn-stat_iso_atom": "MP_finetuning/Sn-stat_iso_atom/",
-        "static_test": "MP_finetuning/static_test/",
+        "dft static_test": "MP_finetuning/static_test/",
         "dft phonon static 1/1_test": "MP_finetuning/phonon_static_1/",
         "dft rattle static 1/3_test": "MP_finetuning/rand_static_1/",
         "dft rattle static 2/3_test": "MP_finetuning/rand_static_2/",
@@ -524,32 +522,32 @@ def fake_run_vasp_kwargs5_mpid():
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs4_mpid():
     return {
-        "tight relax_test": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax_test_0": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax_test_1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax_test2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test_0": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test_0": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test_1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test2_0": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test2_1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test3": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test3_0": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_test3_1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test2": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test2_0": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test2_1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test3": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test3_0": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_test3_1": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 1_mp-22905_0": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
-        "tight relax 2_mp-22905_0": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax_test_0": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax_test_1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax_test2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test_0": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test_0": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test_1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test2_0": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test2_1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test3": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test3_0": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_test3_1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test2": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test2_0": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test2_1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test3": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test3_0": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_test3_1": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 1_mp-22905_0": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_mp-22905": {"incar_settings": ["NSW", "ISMEAR"]},
+        "dft tight relax 2_mp-22905_0": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 1/2_test": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 1/2_test_0": {"incar_settings": ["NSW", "ISMEAR"]},
         "dft phonon static 1/2_test_1": {"incar_settings": ["NSW", "ISMEAR"]},
@@ -671,11 +669,9 @@ def fake_run_vasp_kwargs4_mpid():
         },
     }
 
-
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs4_mpid_new():
     return {}
-
 
 @pytest.fixture(scope="class")
 def fake_run_vasp_kwargs4_mpid_new2():
@@ -731,10 +727,57 @@ def test_iterative_complete_dft_vs_ml_benchmark_workflow_gap(vasp_test_dir, mock
         ensure_success=True,
         store=memory_jobstore,
     )
-    vasp_xyz = read(Path(complete_workflow.output.resolve(memory_jobstore)["pre_database_dir"]) / "vasp_ref.extxyz",
-                    ":")
+    vasp_xyz = read(Path(complete_workflow.output.resolve(memory_jobstore)["pre_database_dir"]) / "vasp_ref.extxyz",":")
     assert len(vasp_xyz) == 10
     assert isinstance(complete_workflow.output.resolve(memory_jobstore)["dft_references"], list)
+
+
+def test_iterative_complete_dft_vs_ml_benchmark_workflow_gap_add_phonon_false(vasp_test_dir, mock_vasp, test_dir, memory_jobstore,  ref_paths4_mpid_new2, fake_run_vasp_kwargs4_mpid_new2, clean_dir):
+    # first test with just one iteration (more tests need to be added)
+    from ase.io import read
+    from pathlib import Path
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    complete_workflow = IterativeCompleteDFTvsMLBenchmarkWorkflow(
+        rms_max=0.2,
+        max_iterations=3,
+        complete_dft_vs_ml_benchmark_workflow_0=CompleteDFTvsMLBenchmarkWorkflow( symprec=1e-2, displacements=[0.01],
+                                                                                  split_ratio=0.33,
+                                                                                  add_dft_phonon_struct=False,
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        supercell_settings={"min_length": 8, "min_atoms": 20},
+        apply_data_preprocessing=True),
+        complete_dft_vs_ml_benchmark_workflow_1=CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2, displacements=[0.01],
+                                                                                 split_ratio=0.33,
+                                                                                 volume_custom_scale_factors=[0.975],
+                                                                                 supercell_settings={"min_length": 8,
+                                                                                                     "min_atoms": 20},
+                                                                                 apply_data_preprocessing=True,
+                                                                                 add_dft_phonon_struct=False,
+                                                                                 num_processes_fit=4,
+                                                                                 ),
+
+
+    ).make(
+        structure_list=[structure],
+        mp_ids=["test"],
+        benchmark_mp_ids=["test"],
+        benchmark_structures=[structure],
+        rattle_seed=42,
+    )
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths4_mpid_new2, fake_run_vasp_kwargs4_mpid_new2)
+
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(
+        complete_workflow,
+        create_folders=True,
+        ensure_success=True,
+        store=memory_jobstore,
+    )
+    vasp_xyz = read(Path(complete_workflow.output.resolve(memory_jobstore)["pre_database_dir"])/"vasp_ref.extxyz",":")
+    assert len(vasp_xyz) == 8
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_gap(
@@ -769,9 +812,57 @@ def test_complete_dft_vs_ml_benchmark_workflow_gap(
     )
 
     assert complete_workflow.jobs[5].name == "complete_benchmark_mp-22905"
-
     assert responses[complete_workflow.jobs[-1].output.uuid][1].output["metrics"][0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
+        2.502641337594289, abs=1.5  # it's kinda fluctuating because of the little data
+    )
+
+    # check if soap_default_dict is correctly constructed from
+    # n_sparse and delta values in mlip_phonon_default json file
+    expected_soap_dict = "atom-wise f=0.1: n_sparse = 6000, SOAP delta = 1.0"
+    results_files = glob.glob('job*/results_LiCl.txt')
+
+    for file_path in results_files:
+        with open(file_path, 'r') as file:
+            results_file = file.read().strip()
+            assert expected_soap_dict in results_file, f"Expected soap_dict not found in {file_path}"
+
+
+def test_complete_dft_vs_gap_benchmark_workflow_database(
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid, fake_run_vasp_kwargs4_mpid, clean_dir
+):
+    import glob
+
+    path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
+    structure = Structure.from_file(path_to_struct)
+
+    complete_workflow = CompleteDFTvsMLBenchmarkWorkflow(
+        symprec=1e-2, displacements=[0.01],
+        volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
+        supercell_settings={"min_length": 8, "min_atoms": 20},
+        apply_data_preprocessing=True,
+        run_fits_on_different_cluster=True,
+    ).make(
+        structure_list=[structure],
+        mp_ids=["test"],
+        benchmark_mp_ids=["mp-22905"],
+        benchmark_structures=[structure],
+    )
+
+    # automatically use fake VASP and write POTCAR.spec during the test
+    mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
+
+    # run the flow or job and ensure that it finished running successfully
+    responses = run_locally(
+        complete_workflow,
+        create_folders=True,
+        ensure_success=True,
+        store=memory_jobstore,
+    )
+
+    assert complete_workflow.jobs[5].name == "complete_benchmark_mp-22905"
+
+    assert responses[complete_workflow.jobs[-1].output.uuid][1].output["metrics"][0][0]["benchmark_phonon_rmse"] == pytest.approx(
         2.502641337594289, abs=1.5  # it's kinda fluctuating because of the little data
     )
 
@@ -1083,8 +1174,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
 
 
 def test_complete_dft_vs_ml_benchmark_workflow_two_mpids(
-        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid_new, fake_run_vasp_kwargs4_mpid_new,
-        clean_dir
+        vasp_test_dir, mock_vasp, test_dir, memory_jobstore, ref_paths4_mpid_new, fake_run_vasp_kwargs4_mpid_new, clean_dir
 ):
     path_to_struct = vasp_test_dir / "dft_ml_data_generation" / "POSCAR"
     structure = Structure.from_file(path_to_struct)
@@ -1269,6 +1359,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_separated(
     structure = Structure.from_file(path_to_struct)
 
     complete_workflow_sep = CompleteDFTvsMLBenchmarkWorkflow(symprec=1e-2,
+                                                             run_fits_on_different_cluster=True,
                                                              supercell_settings={"min_length": 8, "min_atoms": 20},
                                                              displacements=[0.01],
                                                              volume_custom_scale_factors=[0.975, 1.0, 1.025,
@@ -1504,7 +1595,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
             assert job.name != "dft_phonopy_gen_data_mp-22905"
 
         for job, uuid in add_data_workflow_with_dft_reference.iterflow():
-            assert job.name != "tight relax 1_mp-22905"
+            assert job.name != "dft tight relax 1_mp-22905"
 
     def test_add_data_workflow_add_phonon_false(
             self,
@@ -1614,7 +1705,7 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         )
 
         for job, uuid in add_data_workflow_with_same_mpid.iterflow():
-            assert job.name != "tight relax 1_mp-22905"
+            assert job.name != "dft tight relax 1_mp-22905"
 
     def test_workflow_with_different_makers(
             self,
@@ -1630,9 +1721,9 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         from atomate2.vasp.sets.core import StaticSetGenerator
 
         ref_paths = {
-            "tight relax_mp-22905": "dft_ml_data_generation/tight_relax_ISPIN2/",
+            "dft tight relax_mp-22905": "dft_ml_data_generation/tight_relax_ISPIN2/",
             # it's not a DoubleRelaxMaker in the test
-            "static_mp-22905": "dft_ml_data_generation/tight_relax_ISPIN2/",
+            "dft static_mp-22905": "dft_ml_data_generation/tight_relax_ISPIN2/",
             "Cl-stat_iso_atom": "Cl_iso_atoms_ISMEAR1/Cl-statisoatom/",
             "Li-stat_iso_atom": "Li_iso_atoms_ISMEAR1/Li-statisoatom/",
             "dft phonon static 1/2_mp-22905": "dft_ml_data_generation/phonon_static_1_ISPIN2/",
@@ -1652,8 +1743,8 @@ class TestCompleteDFTvsMLBenchmarkWorkflow:
         }
 
         fake_run_vasp_kwargs = {
-            "tight relax_mp-22905": {"incar_settings": ["ISPIN"]},
-            "static_mp-22905": {"incar_settings": ["ISPIN"]},
+            "dft tight relax_mp-22905": {"incar_settings": ["ISPIN"]},
+            "dft static_mp-22905": {"incar_settings": ["ISPIN"]},
             "Cl-stat_iso_atom": {"incar_settings": ["ISMEAR"]},
             "Li-stat_iso_atom": {"incar_settings": ["ISMEAR"]},
             "dft phonon static 1/2_mp-22905": {"incar_settings": ["ISPIN"]},
