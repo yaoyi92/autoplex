@@ -277,10 +277,9 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         fit_input = {}
         bm_outputs = []
 
-        # default_hyperparameters = load_mlip_hyperparameter_defaults(
-        #    mlip_fit_parameter_file_path=self.path_to_hyperparameters
-        # )
-        default_hyperparameters = MLIP_HYPERS.model_dump(by_alias=True)
+        hyper_parameters = MLIP_HYPERS.model_copy(deep=True)
+        default_hyperparameters = hyper_parameters.model_dump(by_alias=True)
+        # default_hyperparameters = MLIP_HYPERS.model_copy(deep=True).model_dump(by_alias=True)
 
         soap_default_dict = next(
             (

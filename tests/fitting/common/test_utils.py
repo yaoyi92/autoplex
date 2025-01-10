@@ -22,7 +22,8 @@ def test_stratified_split(test_dir):
 
 def test_gap_hyperparameter_constructor():
 
-    gap_hyper_parameter_dict = MLIP_HYPERS.GAP.model_dump(by_alias=True)
+    gap_hyper_parameter = MLIP_HYPERS.GAP.model_copy(deep=True)
+    gap_hyper_parameter_dict = gap_hyper_parameter.model_dump(by_alias=True)
 
     gap_input_list = gap_hyperparameter_constructor(
         gap_parameter_dict=gap_hyper_parameter_dict,
@@ -54,7 +55,8 @@ def test_gap_hyperparameter_constructor():
 
     assert ref_list == gap_input_list
 
-    gap_hyper_parameter_dict = MLIP_HYPERS.GAP.model_dump(by_alias=True)
+    gap_hyper_parameter = MLIP_HYPERS.GAP.model_copy(deep=True)
+    gap_hyper_parameter_dict = gap_hyper_parameter.model_dump(by_alias=True)
 
     gap_input_list = gap_hyperparameter_constructor(
         gap_parameter_dict=gap_hyper_parameter_dict,
@@ -124,8 +126,8 @@ def test_gap_hyperparameter_constructor():
 
     # check disable three_body and two_body
 
-
-    gap_hyper_parameter_dict = MLIP_HYPERS.GAP.model_dump(by_alias=True)
+    gap_hyper_parameter = MLIP_HYPERS.GAP.model_copy(deep=True)
+    gap_hyper_parameter_dict = gap_hyper_parameter.model_dump(by_alias=True)
 
     # three_body_disable
 
@@ -187,7 +189,8 @@ def test_gap_hyperparameter_constructor():
 
     assert ref_list == gap_input_list
 
-    gap_hyper_parameter_dict = MLIP_HYPERS.GAP.model_dump(by_alias=True)
+    gap_hyper_parameter = MLIP_HYPERS.GAP.model_copy(deep=True)
+    gap_hyper_parameter_dict = gap_hyper_parameter.model_dump(by_alias=True)
 
     # check with only soap enabled
 

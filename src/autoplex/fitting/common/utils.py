@@ -110,8 +110,7 @@ def gap_fitting(
         A dictionary with train_error, test_error, path_to_mlip
 
     """
-    if hyperparameters is None:
-        hyperparameters = MLIP_HYPERS.GAP.model_copy(deep=True)
+    hyperparameters = hyperparameters.model_copy(deep=True)
     # keep additional pre- and suffixes
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     quip_train_file = train_name.replace("train", "quip_train")
@@ -327,8 +326,7 @@ def jace_fitting(
     ------
     - ValueError: If the `isolated_atom_energies` dictionary is empty or not provided when required.
     """
-    if hyperparameters is None:
-        hyperparameters = MLIP_HYPERS.J_ACE.model_copy(deep=True)
+    hyperparameters = hyperparameters.model_copy(deep=True)
     train_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     source_file_path = os.path.join(db_dir, "test.extxyz")
     shutil.copy(source_file_path, ".")
