@@ -128,7 +128,6 @@ def machine_learning_fit(
             ).exists():
                 train_test_error = gap_fitting(
                     db_dir=database_dir,
-                    path_to_hyperparameters=path_to_hyperparameters,
                     species_list=species_list,
                     num_processes_fit=num_processes_fit,
                     auto_delta=auto_delta,
@@ -146,7 +145,6 @@ def machine_learning_fit(
     elif mlip_type == "J-ACE":
         train_test_error = jace_fitting(
             db_dir=database_dir,
-            path_to_hyperparameters=path_to_hyperparameters,
             isolated_atom_energies=isolated_atom_energies,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
