@@ -28,10 +28,10 @@ class UpdateBaseModel(BaseModel):
                 else:
                     # Update field value
                     setattr(self, key, value)
-            else:
-                raise ValueError(
-                    f"Field {key} does not exist in {self.__class__.__name__}."
-                )
+            # else:
+            #    raise ValueError(
+            #        f"Field {key} does not exist in {self.__class__.__name__}."
+            #    )
 
 
 class GeneralSettings(UpdateBaseModel):
