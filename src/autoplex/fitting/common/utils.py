@@ -1,7 +1,6 @@
 """Utility functions for fitting jobs."""
 
 import contextlib
-import json
 import logging
 import os
 import re
@@ -41,6 +40,7 @@ from pytorch_lightning.loggers import CSVLogger
 from scipy.spatial import ConvexHull
 from scipy.special import comb
 
+from autoplex import MLIP_HYPERS
 from autoplex.data.common.utils import (
     data_distillation,
     plot_energy_forces,
@@ -59,7 +59,7 @@ logging.basicConfig(
 def gap_fitting(
     db_dir: Path,
     species_list: list | None = None,
-    path_to_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH,
+    hyperparameters: MLIP_HYPERS.GAP = MLIP_HYPERS.GAP,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
@@ -80,8 +80,8 @@ def gap_fitting(
         Path to database directory.
     species_list: list
         List of element names (strings)
-    path_to_hyperparameters : str or Path.
-        Path to JSON file containing the GAP hyperparameters.
+    hyperparameters: MLIP_HYPERS.GAP
+        fit hyperparameters.
     num_processes_fit: int
         Number of processes used for gap_fit
     auto_delta: bool
@@ -110,8 +110,8 @@ def gap_fitting(
         A dictionary with train_error, test_error, path_to_mlip
 
     """
-    if path_to_hyperparameters is None:
-        path_to_hyperparameters = MLIP_PHONON_DEFAULTS_FILE_PATH
+    if hyperparameters is None:
+        hyperparameters = MLIP_HYPERS.GAP.model_copy(deep=True)
     # keep additional pre- and suffixes
     gap_file_xml = train_name.replace("train", "gap_file").replace(".extxyz", ".xml")
     quip_train_file = train_name.replace("train", "quip_train")
@@ -124,22 +124,22 @@ def gap_fitting(
     train_data_path = os.path.join(db_dir, train_name)
 
     test_data_path = os.path.join(db_dir, test_name)
-    default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_hyperparameters
+
+    hyperparameters.update_fields(
+        {
+            "general": {
+                "gp_file": gap_file_xml,
+                "energy_parameter_name": ref_energy_name,
+                "force_parameter_name": ref_force_name,
+                "virial_parameter_name": ref_virial_name,
+            }
+        }
     )
 
-    gap_default_hyperparameters = default_hyperparameters["GAP"]
+    if fit_kwargs:
+        hyperparameters.update_fields(fit_kwargs)
 
-    gap_default_hyperparameters["general"].update({"gp_file": gap_file_xml})
-    gap_default_hyperparameters["general"]["energy_parameter_name"] = ref_energy_name
-    gap_default_hyperparameters["general"]["force_parameter_name"] = ref_force_name
-    gap_default_hyperparameters["general"]["virial_parameter_name"] = ref_virial_name
-
-    for parameter in gap_default_hyperparameters:
-        if fit_kwargs:
-            for arg in fit_kwargs:
-                if parameter == arg:
-                    gap_default_hyperparameters[parameter].update(fit_kwargs[arg])
+    gap_default_hyperparameters = hyperparameters.model_dump(by_alias=True)
 
     include_two_body = gap_default_hyperparameters["general"]["two_body"]
     include_three_body = gap_default_hyperparameters["general"]["three_body"]
@@ -271,7 +271,7 @@ def gap_fitting(
 )
 def jace_fitting(
     db_dir: str | Path,
-    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    hyperparameters: MLIP_HYPERS.J_ACE = MLIP_HYPERS.J_ACE,
     isolated_atom_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -290,8 +290,8 @@ def jace_fitting(
     ----------
     db_dir: str or Path
         directory containing the training and testing data files.
-    path_to_hyperparameters : str or Path.
-        Path to JSON file containing the J-ACE hyperparameters.
+    hyperparameters: MLIP_HYPERS.J_ACE
+        J-ACE hyperparameters.
     isolated_atom_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -327,8 +327,8 @@ def jace_fitting(
     ------
     - ValueError: If the `isolated_atom_energies` dictionary is empty or not provided when required.
     """
-    if path_to_hyperparameters is None:
-        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
+    if hyperparameters is None:
+        hyperparameters = MLIP_HYPERS.J_ACE.model_copy(deep=True)
     train_atoms = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     source_file_path = os.path.join(db_dir, "test.extxyz")
     shutil.copy(source_file_path, ".")
@@ -361,20 +361,10 @@ def jace_fitting(
     ]
     ase.io.write("train_ace.extxyz", train_ace, format="extxyz")
 
-    default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_hyperparameters
-    )
-    jace_hypers = default_hyperparameters["J-ACE"]
-
     if fit_kwargs:
-        for parameter in jace_hypers:
-            if parameter in fit_kwargs:
-                if isinstance(fit_kwargs[parameter], type(jace_hypers[parameter])):
-                    jace_hypers[parameter] = fit_kwargs[parameter]
-                else:
-                    raise TypeError(
-                        f"The type of {parameter} should be {type(jace_hypers[parameter])}!"
-                    )
+        hyperparameters.update_fields(fit_kwargs)
+
+    jace_hypers = hyperparameters.model_dump(by_alias=True)
 
     order = jace_hypers["order"]
     totaldegree = jace_hypers["totaldegree"]
@@ -547,11 +537,7 @@ def nequip_fitting(
     else:
         raise ValueError("isolated_atom_energies is empty or not defined!")
 
-    default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_hyperparameters
-    )
-
-    nequip_hypers = default_hyperparameters["NEQUIP"]
+    nequip_hypers = MLIP_HYPERS.NEQUIP.model_dump(by_alias=True)
 
     if fit_kwargs:
         for parameter in nequip_hypers:
@@ -808,11 +794,8 @@ def m3gnet_fitting(
     """
     if path_to_hyperparameters is None:
         path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
-    default_hyperparameters = load_mlip_hyperparameter_defaults(
-        mlip_fit_parameter_file_path=path_to_hyperparameters
-    )
 
-    m3gnet_hypers = default_hyperparameters["M3GNET"]
+    m3gnet_hypers = MLIP_HYPERS.M3GNET.model_dump(by_alias=True)
 
     if fit_kwargs:
         for parameter in m3gnet_hypers:
@@ -1179,14 +1162,7 @@ def mace_fitting(
             atoms=atoms, ref_virial_name=ref_virial_name, out_file_name="train.extxyz"
         )
 
-    if use_defaults:
-        default_hyperparameters = load_mlip_hyperparameter_defaults(
-            mlip_fit_parameter_file_path=path_to_hyperparameters
-        )
-
-        mace_hypers = default_hyperparameters["MACE"]
-    else:
-        mace_hypers = {}
+    mace_hypers = MLIP_HYPERS.MACE.model_dump(by_alias=True) if use_defaults else {}
 
     # TODO: should we do a type check? not sure
     #  as it will be a lot of work to keep it updated
@@ -1305,24 +1281,6 @@ def check_convergence(test_error: float) -> bool:
         convergence = True
 
     return convergence
-
-
-def load_mlip_hyperparameter_defaults(mlip_fit_parameter_file_path: str | Path) -> dict:
-    """
-    Load gap fit default parameters from the json file.
-
-    Parameters
-    ----------
-    mlip_fit_parameter_file_path : str or Path.
-        Path to MLIP default parameter JSON files.
-
-    Returns
-    -------
-    dict
-       gap fit default parameters.
-    """
-    with open(mlip_fit_parameter_file_path, encoding="utf-8") as f:
-        return json.load(f)
 
 
 def gap_hyperparameter_constructor(
