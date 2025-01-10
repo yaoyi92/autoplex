@@ -8,3 +8,7 @@ DFT-labelled data.
 """
 
 from autoplex._version import __version__
+from autoplex.settings import MLIPHypers, RssConfig
+
+MLIP_HYPERS = MLIPHypers()
+RSS_CONFIG = RssConfig()

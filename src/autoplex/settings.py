@@ -2,13 +2,40 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class GeneralSettings(BaseModel):
-    """Model describing general hyperparameters for the GAP."""
+class UpdateBaseModel(BaseModel):
+    """Base class for all models in autoplex."""
+
+    model_config = ConfigDict(validate_assignment=True, protected_namespaces=())
+
+    def update_fields(self, updates: dict[str, Any]):
+        """
+        Update the fields of the model, including nested fields.
+
+        Args:
+            updates (Dict[str, Any]): A dictionary containing the fields to update.
+        """
+        for key, value in updates.items():
+            if hasattr(self, key):
+                field_value = getattr(self, key)
+                if isinstance(field_value, UpdateBaseModel) and isinstance(value, dict):
+                    # Update nested model
+                    field_value.update_fields(value)  # Recursively call update_fields
+                else:
+                    # Update field value
+                    setattr(self, key, value)
+            else:
+                raise ValueError(
+                    f"Field {key} does not exist in {self.__class__.__name__}."
+                )
+
+
+class GeneralSettings(UpdateBaseModel):
+    """Model describing general hyperparameters for the GAP fits."""
 
     at_file: str = Field(
         default="train.extxyz", description="Name of the training file"
@@ -39,17 +66,19 @@ class GeneralSettings(BaseModel):
     soap: bool = Field(default=True, description="Whether to include SOAP terms")
 
 
-class TwobSettings(BaseModel):
-    """Model describing two body hyperparameters for the GAP."""
+class TwobSettings(UpdateBaseModel):
+    """Model describing two body hyperparameters for the GAP fits."""
 
     distance_Nb_order: int = Field(
-        default=2, description="Distance_Nb order for two-body"
+        default=2,
+        description="Distance_Nb order for two-body",
+        alias="distance_Nb order",
     )
     f0: float = Field(default=0.0, description="F0 value for two-body")
     add_species: str = Field(
         default="T", description="Whether to add species information"
     )
-    cutoff: float = Field(default=5.0, description="Radial cutoff distance")
+    cutoff: float | int = Field(default=5.0, description="Radial cutoff distance")
     n_sparse: int = Field(default=15, description="Number of sparse points")
     covariance_type: str = Field(
         default="ard_se", description="Covariance type for two-body"
@@ -66,17 +95,19 @@ class TwobSettings(BaseModel):
     )
 
 
-class ThreebSettings(BaseModel):
-    """Model describing threebody hyperparameters for the GAP."""
+class ThreebSettings(UpdateBaseModel):
+    """Model describing threebody hyperparameters for the GAP fits."""
 
     distance_Nb_order: int = Field(
-        default=3, description="Distance_Nb order for three-body"
+        default=3,
+        description="Distance_Nb order for three-body",
+        alias="distance_Nb order",
     )
     f0: float = Field(default=0.0, description="F0 value for three-body")
     add_species: str = Field(
         default="T", description="Whether to add species information"
     )
-    cutoff: float = Field(default=3.25, description="Radial cutoff distance")
+    cutoff: float | int = Field(default=3.25, description="Radial cutoff distance")
     n_sparse: int = Field(default=100, description="Number of sparse points")
     covariance_type: str = Field(
         default="ard_se", description="Covariance type for three-body"
@@ -93,8 +124,8 @@ class ThreebSettings(BaseModel):
     )
 
 
-class SoapSettings(BaseModel):
-    """Model describing soap hyperparameters for the GAP."""
+class SoapSettings(UpdateBaseModel):
+    """Model describing soap hyperparameters for the GAP fits."""
 
     add_species: str = Field(
         default="T", description="Whether to add species information"
@@ -121,7 +152,7 @@ class SoapSettings(BaseModel):
     )
 
 
-class GAPSettings(BaseModel):
+class GAPSettings(UpdateBaseModel):
     """Model describing the hyperparameters for the GAP fits for Phonons."""
 
     general: GeneralSettings = Field(
@@ -142,7 +173,7 @@ class GAPSettings(BaseModel):
     )
 
 
-class JACESettings(BaseModel):
+class JACESettings(UpdateBaseModel):
     """Model describing the hyperparameters for the J-ACE fits."""
 
     order: int = Field(default=3, description="Order of the J-ACE model")
@@ -151,7 +182,7 @@ class JACESettings(BaseModel):
     solver: str = Field(default="BLR", description="Solver for the J-ACE model")
 
 
-class NEQUIPSettings(BaseModel):
+class NEQUIPSettings(UpdateBaseModel):
     """Model describing the hyperparameters for the NEQUIP fits."""
 
     r_max: float = Field(default=4.0, description="Radial cutoff distance")
@@ -169,7 +200,7 @@ class NEQUIPSettings(BaseModel):
     default_dtype: str = Field(default="float32", description="Default data type")
 
 
-class M3GNETSettings(BaseModel):
+class M3GNETSettings(UpdateBaseModel):
     """Model describing the hyperparameters for the M3GNET fits."""
 
     exp_name: str = Field(default="training", description="Name of the experiment")
@@ -196,7 +227,7 @@ class M3GNETSettings(BaseModel):
     )
 
 
-class MACESettings(BaseModel):
+class MACESettings(UpdateBaseModel):
     """Model describing the hyperparameters for the MACE fits."""
 
     model: str = Field(default="MACE", description="type of the model")
@@ -227,7 +258,7 @@ class MACESettings(BaseModel):
     )
 
 
-class NEPSettings(BaseModel):
+class NEPSettings(UpdateBaseModel):
     """Model describing the hyperparameters for the NEP fits."""
 
     version: int = Field(default=4, description="Version of the NEP model")
@@ -299,7 +330,7 @@ class NEPSettings(BaseModel):
     )
 
 
-class MLIPHypers(BaseModel):
+class MLIPHypers(UpdateBaseModel):
     """Model containing the hyperparameter defaults for supported MLIPs in autoplex."""
 
     GAP: GAPSettings = Field(
@@ -327,7 +358,7 @@ class MLIPHypers(BaseModel):
 # RSS Configuration
 
 
-class ResumeFromPreviousState(BaseModel):
+class ResumeFromPreviousState(UpdateBaseModel):
     """
     A model describing the state information.
 
@@ -353,7 +384,7 @@ class ResumeFromPreviousState(BaseModel):
     )
 
 
-class SoapParas(BaseModel):
+class SoapParas(UpdateBaseModel):
     """A model describing the SOAP parameters."""
 
     l_max: int = Field(default=12, description="Maximum degree of spherical harmonics")
@@ -374,7 +405,7 @@ class SoapParas(BaseModel):
     )
 
 
-class BcurParams(BaseModel):
+class BcurParams(UpdateBaseModel):
     """A model describing the parameters for the BCUR method."""
 
     soap_paras: SoapParas = Field(default_factory=SoapParas)
@@ -386,7 +417,7 @@ class BcurParams(BaseModel):
     )
 
 
-class BuildcellOptions(BaseModel):
+class BuildcellOptions(UpdateBaseModel):
     """A model describing the parameters for buildcell."""
 
     NFORM: str | None = Field(default=None, description="The number of formula units")
@@ -396,7 +427,7 @@ class BuildcellOptions(BaseModel):
     MINSEP: str | None = Field(default=None, description="The minimum separation")
 
 
-class CustomIncar(BaseModel):
+class CustomIncar(UpdateBaseModel):
     """A model describing the INCAR parameters."""
 
     ISMEAR: int = 0
@@ -420,7 +451,7 @@ class CustomIncar(BaseModel):
     LPLANE: str = ".FALSE."
 
 
-class Twob(BaseModel):
+class Twob(UpdateBaseModel):
     """A model describing the two-body GAP parameters."""
 
     cutoff: float = Field(default=5.0, description="Radial cutoff distance")
@@ -430,13 +461,13 @@ class Twob(BaseModel):
     )
 
 
-class Threeb(BaseModel):
+class Threeb(UpdateBaseModel):
     """A model describing the three-body GAP parameters."""
 
     cutoff: float = Field(default=3.0, description="Radial cutoff distance")
 
 
-class Soap(BaseModel):
+class Soap(UpdateBaseModel):
     """A model describing the SOAP GAP parameters."""
 
     l_max: int = Field(default=10, description="Maximum degree of spherical harmonics")
@@ -448,7 +479,7 @@ class Soap(BaseModel):
     cutoff: float = Field(default=5.0, description="Radial cutoff distance")
 
 
-class General(BaseModel):
+class General(UpdateBaseModel):
     """A model describing the general GAP parameters."""
 
     three_body: bool = Field(
@@ -456,7 +487,7 @@ class General(BaseModel):
     )
 
 
-class RssConfig(BaseModel):
+class RssConfig(UpdateBaseModel):
     """A model describing the complete RSS configuration."""
 
     tag: str | None = Field(
