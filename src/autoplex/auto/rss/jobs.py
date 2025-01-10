@@ -221,8 +221,8 @@ def initial_rss(
         apply_data_preprocessing=False,
         auto_delta=auto_delta,
         glue_xml=False,
-    ).make(
         database_dir=do_data_preprocessing.output,
+    ).make(
         isolated_atom_energies=do_data_collection.output["isolated_atom_energies"],
         device=device_for_fitting,
         **fit_kwargs,
@@ -236,14 +236,12 @@ def initial_rss(
         do_mlip_fit,
     ]
 
-    (mlip_path,) = do_mlip_fit.output["mlip_path"]
-
     return Response(
         replace=Flow(job_list),
         output={
             "test_error": do_mlip_fit.output["test_error"],
             "pre_database_dir": do_data_preprocessing.output,
-            "mlip_path": mlip_path,
+            "mlip_path": do_mlip_fit.output["mlip_path"],
             "isolated_atom_energies": do_data_collection.output[
                 "isolated_atom_energies"
             ],
