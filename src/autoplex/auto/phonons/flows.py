@@ -19,6 +19,7 @@ from pymatgen.io.vasp.sets import (
     MPStaticSet,
 )
 
+from autoplex import MLIP_HYPERS
 from autoplex.auto.phonons.jobs import (
     complete_benchmark,
     dft_phonopy_gen_data,
@@ -33,10 +34,7 @@ from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.data.phonons.flows import IsoAtomStaticMaker, TightDFTStaticMaker
 from autoplex.data.phonons.jobs import reduce_supercell_size_job
 from autoplex.fitting.common.flows import MLIPFitMaker
-from autoplex.fitting.common.utils import (
-    MLIP_PHONON_DEFAULTS_FILE_PATH,
-    load_mlip_hyperparameter_defaults,
-)
+from autoplex.fitting.common.utils import MLIP_PHONON_DEFAULTS_FILE_PATH
 
 __all__ = [
     "CompleteDFTvsMLBenchmarkWorkflow",
@@ -279,9 +277,10 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         fit_input = {}
         bm_outputs = []
 
-        default_hyperparameters = load_mlip_hyperparameter_defaults(
-            mlip_fit_parameter_file_path=self.path_to_hyperparameters
-        )
+        # default_hyperparameters = load_mlip_hyperparameter_defaults(
+        #    mlip_fit_parameter_file_path=self.path_to_hyperparameters
+        # )
+        default_hyperparameters = MLIP_HYPERS.model_dump(by_alias=True)
 
         soap_default_dict = next(
             (
