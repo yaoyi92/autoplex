@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from monty.serialization import loadfn
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -12,26 +13,40 @@ class UpdateBaseModel(BaseModel):
 
     model_config = ConfigDict(validate_assignment=True, protected_namespaces=())
 
-    def update_fields(self, updates: dict[str, Any]):
+    def update_parameters(self, updates: dict[str, Any]):
         """
-        Update the fields of the model, including nested fields.
+        Update the default parameters of the model instance, including nested fields.
 
         Args:
-            updates (Dict[str, Any]): A dictionary containing the fields to update.
+            updates (Dict[str, Any]): A dictionary containing the fields as keys to update.
         """
         for key, value in updates.items():
             if hasattr(self, key):
                 field_value = getattr(self, key)
-                if isinstance(field_value, UpdateBaseModel) and isinstance(value, dict):
+                if isinstance(field_value, self.__class__) and isinstance(value, dict):
                     # Update nested model
-                    field_value.update_fields(value)  # Recursively call update_fields
+                    field_value.update_parameters(
+                        value
+                    )  # Recursively call update_fields
                 else:
                     # Update field value
                     setattr(self, key, value)
+
             # else:
             #    raise ValueError(
             #        f"Field {key} does not exist in {self.__class__.__name__}."
             #    )
+
+    @classmethod
+    def from_file(cls, filename: str):
+        """
+        Load the parameters from a file.
+
+        Args:
+            filename (str): The name of the file to load the parameters from.
+        """
+        custom_params = loadfn(filename)
+        return cls(**custom_params)
 
 
 class GeneralSettings(UpdateBaseModel):
