@@ -6,7 +6,6 @@ from autoplex.fitting.common.utils import (
     check_convergence,
     data_distillation,
     prepare_fit_environment,
-    MLIP_PHONON_DEFAULTS_FILE_PATH
 )
 
 def test_stratified_split(test_dir):
