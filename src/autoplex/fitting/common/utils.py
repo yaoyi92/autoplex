@@ -81,7 +81,7 @@ def gap_fitting(
     species_list: list
         List of element names (strings)
     hyperparameters: MLIP_HYPERS.GAP
-        fit hyperparameters.
+        Fit hyperparameters.
     num_processes_fit: int
         Number of processes used for gap_fit
     auto_delta: bool
@@ -124,7 +124,7 @@ def gap_fitting(
 
     test_data_path = os.path.join(db_dir, test_name)
 
-    hyperparameters.update_fields(
+    hyperparameters.update_parameters(
         {
             "general": {
                 "gp_file": gap_file_xml,
@@ -136,7 +136,7 @@ def gap_fitting(
     )
 
     if fit_kwargs:
-        hyperparameters.update_fields(fit_kwargs)
+        hyperparameters.update_parameters(fit_kwargs)
 
     gap_default_hyperparameters = hyperparameters.model_dump(by_alias=True)
 
@@ -290,7 +290,7 @@ def jace_fitting(
     db_dir: str or Path
         directory containing the training and testing data files.
     hyperparameters: MLIP_HYPERS.J_ACE
-        J-ACE hyperparameters.
+        Fit hyperparameters.
     isolated_atom_energies: dict:
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -360,7 +360,7 @@ def jace_fitting(
     ase.io.write("train_ace.extxyz", train_ace, format="extxyz")
 
     if fit_kwargs:
-        hyperparameters.update_fields(fit_kwargs)
+        hyperparameters.update_parameters(fit_kwargs)
 
     jace_hypers = hyperparameters.model_dump(by_alias=True)
 
@@ -443,7 +443,7 @@ export2lammps("acemodel.yace", model)
 
 def nequip_fitting(
     db_dir: Path,
-    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    hyperparameters: MLIP_HYPERS.NEQUIP = MLIP_HYPERS.NEQUIP,
     isolated_atom_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -462,8 +462,8 @@ def nequip_fitting(
     ----------
     db_dir: Path
         directory containing the training and testing data files.
-    path_to_hyperparameters : str or Path.
-        Path to JSON file containing the NwquIP hyperparameters.
+    hyperparameters: MLIP_HYPERS.NEQUIP
+        Fit hyperparameters.
     isolated_atom_energies: dict
         mandatory dictionary mapping element numbers to isolated energies.
     ref_energy_name : str, optional
@@ -513,8 +513,8 @@ def nequip_fitting(
     """
     [TODO] train Nequip on virials
     """
-    if path_to_hyperparameters is None:
-        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
+    hyperparameters = hyperparameters.model_copy(deep=True)
+
     train_data = ase.io.read(os.path.join(db_dir, "train.extxyz"), index=":")
     train_nequip = [
         at for at in train_data if "IsolatedAtom" not in at.info["config_type"]
@@ -535,17 +535,10 @@ def nequip_fitting(
     else:
         raise ValueError("isolated_atom_energies is empty or not defined!")
 
-    nequip_hypers = MLIP_HYPERS.NEQUIP.model_dump(by_alias=True)
-
     if fit_kwargs:
-        for parameter in nequip_hypers:
-            if parameter in fit_kwargs:
-                if isinstance(fit_kwargs[parameter], type(nequip_hypers[parameter])):
-                    nequip_hypers[parameter] = fit_kwargs[parameter]
-                else:
-                    raise TypeError(
-                        f"The type of {parameter} should be {type(nequip_hypers[parameter])}!"
-                    )
+        hyperparameters.update_parameters(fit_kwargs)
+
+    nequip_hypers = hyperparameters.model_dump(by_alias=True)
 
     r_max = nequip_hypers["r_max"]
     num_layers = nequip_hypers["num_layers"]
@@ -720,7 +713,7 @@ per_species_rescale_scales: dataset_forces_rms
 
 def m3gnet_fitting(
     db_dir: Path,
-    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    hyperparameters: MLIP_HYPERS.M3GNET = MLIP_HYPERS.M3GNET,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -734,8 +727,8 @@ def m3gnet_fitting(
     ----------
     db_dir: Path
         Directory containing the training and testing data files.
-    path_to_hyperparameters : str or Path.
-        Path to JSON file containing the M3GNet hyperparameters.
+    hyperparameters: MLIP_HYPERS.M3GNET
+        Fit hyperparameters.
     device: str
         Device on which the model will be trained, e.g., 'cuda' or 'cpu'.
     ref_energy_name : str, optional
@@ -790,20 +783,12 @@ def m3gnet_fitting(
     *    Availability: https://matgl.ai/tutorials%2FTraining%20a%20M3GNet%20Potential%20with%20PyTorch%20Lightning.html
     *    License: BSD 3-Clause License
     """
-    if path_to_hyperparameters is None:
-        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
-
-    m3gnet_hypers = MLIP_HYPERS.M3GNET.model_dump(by_alias=True)
+    hyperparameters = hyperparameters.model_copy(deep=True)
 
     if fit_kwargs:
-        for parameter in m3gnet_hypers:
-            if parameter in fit_kwargs:
-                if isinstance(fit_kwargs[parameter], type(m3gnet_hypers[parameter])):
-                    m3gnet_hypers[parameter] = fit_kwargs[parameter]
-                else:
-                    raise TypeError(
-                        f"The type of {parameter} should be {type(m3gnet_hypers[parameter])}!"
-                    )
+        hyperparameters.update_parameters(fit_kwargs)
+
+    m3gnet_hypers = hyperparameters.model_dump(by_alias=True)
 
     exp_name = m3gnet_hypers["exp_name"]
     results_dir = m3gnet_hypers["results_dir"]
@@ -1091,7 +1076,7 @@ def m3gnet_fitting(
 
 def mace_fitting(
     db_dir: Path,
-    path_to_hyperparameters: Path | str = MLIP_RSS_DEFAULTS_FILE_PATH,
+    hyperparameters: MLIP_HYPERS.MACE = MLIP_HYPERS.MACE,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -1110,8 +1095,8 @@ def mace_fitting(
     ----------
     db_dir: Path
         directory containing the training and testing data files.
-    path_to_hyperparameters : str or Path.
-        Path to JSON file containing the MACE hyperparameters.
+    hyperparameters: MLIP_HYPERS.MACE
+        Fit hyperparameters.
     device: str
         specify device to use cuda or cpu.
     ref_energy_name : str, optional
@@ -1152,15 +1137,15 @@ def mace_fitting(
         A dictionary containing train_error, test_error, and the path to the fitted MLIP.
 
     """
-    if path_to_hyperparameters is None:
-        path_to_hyperparameters = MLIP_RSS_DEFAULTS_FILE_PATH
+    hyperparameters = hyperparameters.model_copy(deep=True)
+
     if ref_virial_name is not None:
         atoms = read(f"{db_dir}/train.extxyz", index=":")
         mace_virial_format_conversion(
             atoms=atoms, ref_virial_name=ref_virial_name, out_file_name="train.extxyz"
         )
 
-    mace_hypers = MLIP_HYPERS.MACE.model_dump(by_alias=True) if use_defaults else {}
+    mace_hypers = hyperparameters.model_dump(by_alias=True) if use_defaults else {}
 
     # TODO: should we do a type check? not sure
     #  as it will be a lot of work to keep it updated

@@ -234,7 +234,8 @@ class RssMaker(Maker):
             - 'current_iter': int, The current iteration index.
             - 'kb_temp': float, The temperature (in eV) for Boltzmann sampling.
         """
-        updated_config = self.config.model_copy(update=kwargs)
+        default_config = self.config.model_copy(deep=True)
+        updated_config = default_config.update_parameters(kwargs)
         config_params = updated_config.model_dump()
 
         self._process_hookean_paras(config_params)
@@ -336,7 +337,7 @@ class RssMaker(Maker):
 
     @staticmethod
     def _process_hookean_paras(config):
-        if "hookean_paras" in config:
+        if "hookean_paras" in config and config["hookean_paras"] is not None:
             config["hookean_paras"] = {
                 tuple(map(int, k.strip("()").split(", "))): tuple(v)
                 for k, v in config["hookean_paras"].items()

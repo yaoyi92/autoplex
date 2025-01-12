@@ -9,6 +9,7 @@ from pathlib import Path
 import ase.io
 from jobflow import Flow, Maker, job
 
+from autoplex import MLIP_HYPERS
 from autoplex.fitting.common.jobs import machine_learning_fit
 from autoplex.fitting.common.regularization import set_custom_sigma
 from autoplex.fitting.common.utils import (
@@ -70,8 +71,6 @@ class MLIPFitMaker(Maker):
         Names of the pre-database train xyz file and test xyz file.
     pre_database_dir: str or None
         The pre-database directory.
-    path_to_hyperparameters : str or Path.
-        Path to JSON file containing the MLIP hyperparameters.
     atomwise_regularization_parameter: float
         Regularization value for the atom-wise force components.
     atom_wise_regularization: bool
@@ -106,7 +105,6 @@ class MLIPFitMaker(Maker):
     separated: bool = False
     pre_xyz_files: list[str] | None = None
     pre_database_dir: str | None = None
-    path_to_hyperparameters: Path | str | None = None
     regularization: bool = False  # This is only used for GAP.
     atomwise_regularization_parameter: float = 0.1  # This is only used for GAP.
     atom_wise_regularization: bool = True  # This is only used for GAP.
@@ -121,6 +119,7 @@ class MLIPFitMaker(Maker):
     def make(
         self,
         fit_input: dict | None = None,  # This is specific to phonon workflow
+        hyperparameters: MLIP_HYPERS = MLIP_HYPERS,
         species_list: list | None = None,
         isolated_atom_energies: dict | None = None,
         device: str = "cpu",
@@ -133,6 +132,8 @@ class MLIPFitMaker(Maker):
         ----------
         fit_input: dict
             Output from the CompletePhononDFTMLDataGenerationFlow process.
+        hyperparameters: MLIP_HYPERS
+            Hyperparameters for the MLIP.
         species_list: list
             List of element names (strings) involved in the training dataset
         isolated_atom_energies: dict
