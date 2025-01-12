@@ -87,7 +87,7 @@ def test_gap_hyperparameter_constructor():
 
     # test if returned string is changed if passed in dict is updated
     gap_hyper_parameter = MLIP_HYPERS.GAP.model_copy(deep=True)
-    gap_hyper_parameter.update_fields({"twob": {"cutoff": 8},
+    gap_hyper_parameter.update_parameters({"twob": {"cutoff": 8},
                                                                  "threeb": {"cutoff": 8.0,
                                                                             "n_sparse": 100},
                                                                  "soap": {"delta": 1.5,
