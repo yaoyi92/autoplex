@@ -11,10 +11,10 @@ def test_gap_fit_maker(test_dir, memory_jobstore, clean_dir):
         auto_delta=False,
         glue_xml=False,
         apply_data_preprocessing=False,
-        database_dir=database_dir
     ).make(
         twob={"delta": 2.0, "cutoff": 4},
         threeb={"n_sparse": 10},
+        database_dir=database_dir
         )
 
     responses = run_locally(
@@ -32,8 +32,8 @@ def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
         mlip_type="J-ACE",
         num_processes_fit=4,
         apply_data_preprocessing=False,
-        database_dir=database_dir,
     ).make(
+        database_dir=database_dir,
         isolated_atom_energies={14: -0.84696938},
         order=2,
         totaldegree=4,
@@ -53,8 +53,8 @@ def test_nequip_fit_maker(test_dir, memory_jobstore, clean_dir):
         mlip_type="NEQUIP",
         num_processes_fit=1,
         apply_data_preprocessing=False,
-        database_dir=database_dir,
     ).make(
+        database_dir=database_dir,
         isolated_atom_energies={14: -0.84696938},
         r_max=3.14,
         max_epochs=10,
@@ -75,8 +75,8 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
         mlip_type="M3GNET",
         num_processes_fit=1,
         apply_data_preprocessing=False,
-        database_dir=database_dir,
     ).make(
+        database_dir=database_dir,
         isolated_atom_energies={14: -0.84696938},
         cutoff=3.0,
         threebody_cutoff=2.0,
@@ -105,8 +105,8 @@ def test_mace_fit_maker(test_dir, memory_jobstore, clean_dir):
         mlip_type="MACE",
         num_processes_fit=1,
         apply_data_preprocessing=False,
-        database_dir=database_dir,
     ).make(
+        database_dir=database_dir,
         isolated_atom_energies={14: -0.84696938},
         model="MACE",
         config_type_weights='{"Default":1.0}',
@@ -140,8 +140,8 @@ def test_mace_finetuning_maker(test_dir, memory_jobstore, clean_dir):
         use_defaults=False,
         num_processes_fit=1,
         apply_data_preprocessing=False,
-        database_dir=database_dir,
     ).make(
+        database_dir=database_dir,
         name="MACE_final",
         foundation_model="small",
         multiheads_finetuning=False,
@@ -185,8 +185,8 @@ def test_mace_finetuning_maker2(test_dir, memory_jobstore, clean_dir):
         use_defaults=False,
         num_processes_fit=1,
         apply_data_preprocessing=False,
-        database_dir=database_dir,
     ).make(
+        database_dir=database_dir,
         name="MACE_final",
         foundation_model="small",
         multiheads_finetuning=False,
