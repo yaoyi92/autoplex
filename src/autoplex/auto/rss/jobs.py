@@ -221,9 +221,9 @@ def initial_rss(
         apply_data_preprocessing=False,
         auto_delta=auto_delta,
         glue_xml=False,
-        database_dir=do_data_preprocessing.output,
     ).make(
         isolated_atom_energies=do_data_collection.output["isolated_atom_energies"],
+        database_dir=do_data_preprocessing.output,
         device=device_for_fitting,
         **fit_kwargs,
     )
