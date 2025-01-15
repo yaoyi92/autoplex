@@ -1105,6 +1105,8 @@ def mace_fitting(
         Reference force name.
     ref_virial_name : str, optional
         Reference virial name.
+    use_defaults: bool
+        if True, use the default hyperparameters.
     fit_kwargs: dict.
         optional dictionary with parameters for mace fitting with keys same as
         mlip-rss-defaults.json.
@@ -1145,11 +1147,13 @@ def mace_fitting(
             atoms=atoms, ref_virial_name=ref_virial_name, out_file_name="train.extxyz"
         )
 
-    mace_hypers = hyperparameters.model_dump(by_alias=True) if use_defaults else {}
+    hyperparameters.update_parameters(fit_kwargs)
 
-    # TODO: should we do a type check? not sure
-    #  as it will be a lot of work to keep it updated
-    mace_hypers.update(fit_kwargs)
+    mace_hypers = (
+        hyperparameters.model_dump(by_alias=True, exclude_none=True)
+        if use_defaults
+        else {}
+    )
 
     boolean_hypers = [
         "distributed",
