@@ -29,7 +29,6 @@ def machine_learning_fit(
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
-    use_defaults: bool = True,
     device: str = "cuda",
     database_dict: dict | None = None,
     hyperpara_opt: bool = False,
@@ -65,8 +64,6 @@ def machine_learning_fit(
         Reference force name.
     ref_virial_name: str
         Reference virial name.
-    use_defaults: bool
-        If True, use default fitting parameters
     device: str
         Device to be used for model fitting, either "cpu" or "cuda".
     database_dict: dict
@@ -179,7 +176,6 @@ def machine_learning_fit(
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
-            use_defaults=use_defaults,
             device=device,
             fit_kwargs=fit_kwargs,
         )

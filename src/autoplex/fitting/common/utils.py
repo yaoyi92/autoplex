@@ -1081,7 +1081,6 @@ def mace_fitting(
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
-    use_defaults=True,
     fit_kwargs: dict | None = None,
 ) -> dict:
     """
@@ -1105,8 +1104,6 @@ def mace_fitting(
         Reference force name.
     ref_virial_name : str, optional
         Reference virial name.
-    use_defaults: bool
-        if True, use the default hyperparameters.
     fit_kwargs: dict.
         optional dictionary with parameters for mace fitting with keys same as
         mlip-rss-defaults.json.
@@ -1149,11 +1146,7 @@ def mace_fitting(
 
     hyperparameters.update_parameters(fit_kwargs)
 
-    mace_hypers = (
-        hyperparameters.model_dump(by_alias=True, exclude_none=True)
-        if use_defaults
-        else {}
-    )
+    mace_hypers = hyperparameters.model_dump(by_alias=True, exclude_none=True)
 
     boolean_hypers = [
         "distributed",

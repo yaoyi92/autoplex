@@ -83,8 +83,6 @@ class MLIPFitMaker(Maker):
         Number of processes for fitting.
     apply_data_preprocessing: bool
         Determine whether to preprocess the data.
-    use_defaults: bool
-        If true, uses default fit parameters
     run_fits_on_different_cluster: bool
         If true, run fits on different clusters.
     """
@@ -110,7 +108,6 @@ class MLIPFitMaker(Maker):
     glue_xml: bool = False  # This is only used for GAP.
     num_processes_fit: int | None = None
     apply_data_preprocessing: bool = True
-    use_defaults: bool = True
     run_fits_on_different_cluster: bool = False
 
     def make(
@@ -181,7 +178,6 @@ class MLIPFitMaker(Maker):
                 ref_energy_name=self.ref_energy_name,
                 ref_force_name=self.ref_force_name,
                 ref_virial_name=self.ref_virial_name,
-                use_defaults=self.use_defaults,
                 device=device,
                 species_list=species_list,
                 database_dict=data_prep_job.output["database_dict"],

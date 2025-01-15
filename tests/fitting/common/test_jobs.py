@@ -137,7 +137,6 @@ def test_mace_finetuning_maker(test_dir, memory_jobstore, clean_dir):
         ref_energy_name=None,
         ref_force_name=None,
         ref_virial_name=None,
-        use_defaults=False,
         num_processes_fit=1,
         apply_data_preprocessing=False,
     ).make(
@@ -182,7 +181,6 @@ def test_mace_finetuning_maker2(test_dir, memory_jobstore, clean_dir):
         ref_energy_name=None,
         ref_force_name=None,
         ref_virial_name=None,
-        use_defaults=False,
         num_processes_fit=1,
         apply_data_preprocessing=False,
     ).make(

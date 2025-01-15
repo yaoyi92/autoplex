@@ -172,8 +172,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Use the glue.xml core potential instead of fitting 2b terms.
     glue_file_path: str
         Name of the glue.xml file path.
-    use_defaults_fitting: bool
-        Use the fit defaults.
     run_fits_on_different_cluster: bool
         Allows you to run fits on a different cluster than DFT (will transfer
         fit database via MongoDB, might be slow).
@@ -226,7 +224,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
     summary_filename_prefix: str = "results_"
     glue_xml: bool = False
     glue_file_path: str = "glue.xml"
-    use_defaults_fitting: bool = True
     run_fits_on_different_cluster: bool = False
 
     def make(
@@ -387,7 +384,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                 mlip_type=ml_model,
                 glue_xml=self.glue_xml,
                 glue_file_path=self.glue_file_path,
-                use_defaults=self.use_defaults_fitting,
                 split_ratio=self.split_ratio,
                 force_max=self.force_max,
                 pre_xyz_files=pre_xyz_files,
@@ -820,8 +816,6 @@ class CompleteDFTvsMLBenchmarkWorkflowMPSettings(CompleteDFTvsMLBenchmarkWorkflo
         Prefix of the result summary file.
     glue_file_path: str
         Name of the glue.xml file path.
-    use_defaults_fitting: bool
-        Use the fit defaults.
     """
 
     phonon_bulk_relax_maker: BaseVaspMaker = field(

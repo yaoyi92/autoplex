@@ -994,7 +994,6 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning(
         volume_custom_scale_factors=[0.975, 1.0, 1.025, 1.05],
         benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}},
         apply_data_preprocessing=True,
-        use_defaults_fitting=True,
     ).make(
         structure_list=[structure],
         mp_ids=["test"],
@@ -1064,7 +1063,6 @@ def test_complete_dft_vs_ml_benchmark_workflow_mace_finetuning_mp_settings(
         benchmark_kwargs={"calculator_kwargs": {"device": "cpu"}},
         add_dft_rattled_struct=True,
         apply_data_preprocessing=True,
-        use_defaults_fitting=True,
         split_ratio=0.3,
     ).make(
         structure_list=[structure],
