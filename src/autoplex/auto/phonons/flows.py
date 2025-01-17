@@ -3,7 +3,6 @@
 import logging
 import warnings
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from atomate2.common.schemas.phonons import PhononBSDOSDoc
 from atomate2.vasp.flows.mp import (
@@ -34,7 +33,6 @@ from autoplex.benchmark.phonons.jobs import write_benchmark_metrics
 from autoplex.data.phonons.flows import IsoAtomStaticMaker, TightDFTStaticMaker
 from autoplex.data.phonons.jobs import reduce_supercell_size_job
 from autoplex.fitting.common.flows import MLIPFitMaker
-from autoplex.fitting.common.utils import MLIP_PHONON_DEFAULTS_FILE_PATH
 
 __all__ = [
     "CompleteDFTvsMLBenchmarkWorkflow",
@@ -164,8 +162,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         Settings for supercell generation
     benchmark_kwargs: dict
         Keyword arguments for the benchmark flows
-    path_to_hyperparameters : str or Path.
-        Path to JSON file containing the MLIP hyperparameters.
     summary_filename_prefix: str
         Prefix of the result summary file.
     glue_xml: bool
@@ -220,7 +216,6 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         default_factory=lambda: {"min_length": 15, "max_length": 20}
     )
     benchmark_kwargs: dict = field(default_factory=dict)
-    path_to_hyperparameters: Path | str = MLIP_PHONON_DEFAULTS_FILE_PATH
     summary_filename_prefix: str = "results_"
     glue_xml: bool = False
     glue_file_path: str = "glue.xml"
@@ -230,6 +225,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         self,
         structure_list: list[Structure],
         mp_ids,
+        hyperparameters: MLIP_HYPERS = MLIP_HYPERS,
         dft_references: list[PhononBSDOSDoc] | None = None,
         benchmark_structures: list[Structure] | None = None,
         benchmark_mp_ids: list[str] | None = None,
@@ -247,6 +243,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             List of pymatgen structures.
         mp_ids:
             Materials Project IDs.
+        hyperparameters: MLIP_HYPERS
+            Hyperparameters for the MLIP models.
         dft_references: list[PhononBSDOSDoc] | None
             List of DFT reference files containing the PhononBSDOCDoc object.
             Reference files have to refer to a finite displacement of 0.01.
@@ -274,9 +272,8 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
         fit_input = {}
         bm_outputs = []
 
-        hyper_parameters = MLIP_HYPERS.model_copy(deep=True)
-        default_hyperparameters = hyper_parameters.model_dump(by_alias=True)
-        # default_hyperparameters = MLIP_HYPERS.model_copy(deep=True).model_dump(by_alias=True)
+        hyperparameters = hyperparameters.model_copy(deep=True)
+        default_hyperparameters = hyperparameters.model_dump(by_alias=True)
 
         soap_default_dict = next(
             (
@@ -401,6 +398,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
             ).make(
                 species_list=isoatoms.output["species"],
                 isolated_atom_energies=isoatoms.output["energies"],
+                hyperparameters=hyperparameters,
                 fit_input=fit_input,
                 **fit_kwargs,
             )
@@ -482,6 +480,7 @@ class CompleteDFTvsMLBenchmarkWorkflow(Maker):
                             ).make(
                                 species_list=isoatoms.output["species"],
                                 isolated_atom_energies=isoatoms.output["energies"],
+                                hyperparameters=hyperparameters,
                                 fit_input=fit_input,
                                 soap=soap_dict,
                             )

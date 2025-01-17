@@ -1,15 +1,11 @@
 """RSS (random structure searching) flow for exploring and learning potential energy surfaces from scratch."""
 
-import os
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from jobflow import Flow, Maker, Response, job
 
+from autoplex import RSS_CONFIG
 from autoplex.auto.rss.jobs import do_rss_iterations, initial_rss
-from autoplex.settings import RssConfig
-
-MODULE_DIR = Path(os.path.dirname(__file__))
 
 
 @dataclass
@@ -21,13 +17,13 @@ class RssMaker(Maker):
     ----------
     name: str
         Name of the flow.
-    config: RssConfig | None
+    config: RSS_CONFIG
         Pydantic model that defines the setup parameters for the whole RSS workflow.
-        If not provided, the defaults from 'autoplex.settings.RssConfig' will be used.
+        If not explicitly set, the defaults from 'autoplex.settings.RssConfig' will be used.
     """
 
     name: str = "ml-driven rss"
-    config: RssConfig | None = field(default_factory=lambda: RssConfig())
+    config: RSS_CONFIG = field(default_factory=lambda: RSS_CONFIG)
 
     @job
     def make(self, **kwargs):

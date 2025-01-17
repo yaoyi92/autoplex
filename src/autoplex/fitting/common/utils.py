@@ -50,9 +50,6 @@ from autoplex.data.common.utils import (
     stratified_dataset_split,
 )
 
-current_dir = Path(__file__).absolute().parent
-MLIP_PHONON_DEFAULTS_FILE_PATH = current_dir / "mlip-phonon-defaults.json"
-MLIP_RSS_DEFAULTS_FILE_PATH = current_dir / "mlip-rss-defaults.json"
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
