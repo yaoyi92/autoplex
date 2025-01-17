@@ -311,13 +311,9 @@ def test_mock_workflow_multi_node(test_dir, mock_vasp, memory_jobstore, clean_di
 
     assert len(selected_atoms) == 3
 
-def test_rssmaker_custom_config(test_dir):
+def test_rssmaker_custom_config_file(test_dir):
 
-    from monty.serialization import loadfn
-
-    rss_config = loadfn(test_dir / "rss" / "rss_config.yaml")
-
-    config_model = RssConfig(**rss_config)
+    config_model = RssConfig.from_file(test_dir / "rss" / "rss_config.yaml")
 
     # Test if config is updated as expected
     rss = RssMaker(config=config_model)

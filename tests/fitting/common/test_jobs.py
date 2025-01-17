@@ -17,7 +17,7 @@ def test_gap_fit_maker(test_dir, memory_jobstore, clean_dir):
         database_dir=database_dir
         )
 
-    responses = run_locally(
+    _ = run_locally(
         gapfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
@@ -39,7 +39,7 @@ def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
         totaldegree=4,
     )
 
-    responses = run_locally(
+    _ = run_locally(
         jacefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
@@ -61,7 +61,7 @@ def test_nequip_fit_maker(test_dir, memory_jobstore, clean_dir):
         device="cpu",
     )
 
-    responses = run_locally(
+    _ = run_locally(
         nequipfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
@@ -91,7 +91,7 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
         test_equal_to_val=True,
     )
 
-    responses = run_locally(
+    _ = run_locally(
         nequipfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
@@ -122,7 +122,7 @@ def test_mace_fit_maker(test_dir, memory_jobstore, clean_dir):
         device="cpu",
     )
 
-    responses = run_locally(
+    _ = run_locally(
         macefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
@@ -166,7 +166,7 @@ def test_mace_finetuning_maker(test_dir, memory_jobstore, clean_dir):
         seed = 3,
     )
 
-    responses = run_locally(
+    _ = run_locally(
         macefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
@@ -210,7 +210,7 @@ def test_mace_finetuning_maker2(test_dir, memory_jobstore, clean_dir):
         seed = 3,
     )
 
-    responses = run_locally(
+    _ = run_locally(
         macefit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
