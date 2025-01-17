@@ -71,7 +71,7 @@ def test_nequip_fit_maker(test_dir, memory_jobstore, clean_dir):
 def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
 
-    nequipfit = MLIPFitMaker(
+    m3gnetfit = MLIPFitMaker(
         mlip_type="M3GNET",
         num_processes_fit=1,
         apply_data_preprocessing=False,
@@ -83,8 +83,8 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
         batch_size=1,
         max_epochs=3,
         include_stresses=True,
-        hidden_dim=8,
-        num_units=8,
+        dim_node_embedding=8,
+        units=8,
         max_l=4,
         max_n=4,
         device="cpu",
@@ -92,10 +92,10 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
     )
 
     _ = run_locally(
-        nequipfit, ensure_success=True, create_folders=True, store=memory_jobstore
+        m3gnetfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
-    assert Path(nequipfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
+    assert Path(m3gnetfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
 def test_mace_fit_maker(test_dir, memory_jobstore, clean_dir):

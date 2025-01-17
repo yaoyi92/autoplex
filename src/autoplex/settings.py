@@ -456,24 +456,39 @@ class M3GNETSettings(AutoplexBaseModel):
     results_dir: str = Field(
         default="m3gnet_results", description="Directory to save the results"
     )
-    cutoff: float = Field(default=5.0, description="Radial cutoff distance")
+    pretrained_model: (
+        Literal["M3GNet-MP-2021.2.8-PES", "M3GNet-MP-2021.2.8-DIRECT-PES"] | None
+    ) = Field(default=None, description="Pretrained model")
+    cutoff: float = Field(default=5.0, description="Cutoff radius of the graph")
     threebody_cutoff: float = Field(
-        default=4.0, description="Three-body cutoff distance"
+        default=4.0, description="Cutoff radius for 3 body interactions"
     )
     batch_size: int = Field(default=10, description="Batch size")
     max_epochs: int = Field(default=1000, description="Maximum number of epochs")
     include_stresses: bool = Field(
         default=True, description="Whether to include stresses"
     )
-    hidden_dim: int = Field(default=128, description="Hidden dimension")
-    num_units: int = Field(default=128, description="Number of units")
+    dim_node_embedding: int = Field(
+        default=128, description="Dimension of node embedding"
+    )
+    dim_edge_embedding: int = Field(
+        default=128, description="Dimension of edge embedding"
+    )
+    dim_state_embedding: int = Field(
+        default=0, description="Dimension of state embedding"
+    )
     max_l: int = Field(default=4, description="Maximum degree of spherical harmonics")
     max_n: int = Field(
         default=4, description="Maximum number of radial basis functions"
     )
-    test_equal_to_val: bool = Field(
-        default=True, description="Whether the test set is equal to the validation set"
+    nblocks: int = Field(default=3, description="Number of blocks")
+    rbf_type: Literal["Gaussian", "SphericalBessel"] = Field(
+        default="Gaussian", description="Type of radial basis function"
     )
+    is_intensive: bool = Field(
+        default=False, description="Whether the prediction is intensive"
+    )
+    units: int = Field(default=128, description="Number of neurons in each MLP layer")
 
 
 class MACESettings(AutoplexBaseModel):

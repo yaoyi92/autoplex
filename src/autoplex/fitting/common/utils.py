@@ -14,6 +14,7 @@ from pathlib import Path
 
 import ase
 import lightning as pl
+import matgl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -609,6 +610,7 @@ def m3gnet_fitting(
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
     ref_virial_name: str = "REF_virial",
+    test_equal_to_val: bool = True,
     fit_kwargs: dict | None = None,
 ) -> dict:
     """
@@ -628,9 +630,10 @@ def m3gnet_fitting(
         Reference force name.
     ref_virial_name : str, optional
         Reference virial name.
+    test_equal_to_val: bool
+        If True, the testing dataset will be the same as the validation dataset.
     fit_kwargs: dict.
-        optional dictionary with parameters for m3gnet fitting with keys same as
-        mlip-rss-defaults.json.
+        optional dictionary with parameters for M3GNET fitting.
 
     Keyword Arguments
     -----------------
@@ -656,8 +659,6 @@ def m3gnet_fitting(
         Maximum degree of spherical harmonics.
     max_n: int
         Maximum radial function degree.
-    test_equal_to_val: bool
-        If True, the testing dataset will be the same as the validation dataset.
 
     Returns
     -------
@@ -683,16 +684,6 @@ def m3gnet_fitting(
 
     exp_name = m3gnet_hypers["exp_name"]
     results_dir = m3gnet_hypers["results_dir"]
-    cutoff = m3gnet_hypers["cutoff"]
-    threebody_cutoff = m3gnet_hypers["threebody_cutoff"]
-    batch_size = m3gnet_hypers["batch_size"]
-    max_epochs = m3gnet_hypers["max_epochs"]
-    include_stresses = m3gnet_hypers["include_stresses"]
-    hidden_dim = m3gnet_hypers["hidden_dim"]
-    num_units = m3gnet_hypers["num_units"]
-    max_l = m3gnet_hypers["max_l"]
-    max_n = m3gnet_hypers["max_n"]
-    test_equal_to_val = m3gnet_hypers["test_equal_to_val"]
 
     os.makedirs(os.path.join(results_dir, exp_name), exist_ok=True)
 
@@ -732,7 +723,7 @@ def m3gnet_fitting(
         ) = convert_xyz_to_structure(
             train_m3gnet,
             include_forces=True,
-            include_stresses=include_stresses,
+            include_stresses=m3gnet_hypers.get("include_stresses"),
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
@@ -749,10 +740,10 @@ def m3gnet_fitting(
             train_element_types
         )  # this print has to stay as the stdout is written to the file
         train_converter = Structure2Graph(
-            element_types=train_element_types, cutoff=cutoff
+            element_types=train_element_types, cutoff=m3gnet_hypers.get("cutoff")
         )
         train_datasets = MGLDataset(
-            threebody_cutoff=threebody_cutoff,
+            threebody_cutoff=m3gnet_hypers.get("threebody_cutoff"),
             structures=train_structs,
             converter=train_converter,
             labels=train_labels,
@@ -776,7 +767,7 @@ def m3gnet_fitting(
             ) = convert_xyz_to_structure(
                 test_data,
                 include_forces=True,
-                include_stresses=include_stresses,
+                include_stresses=m3gnet_hypers.get("include_stresses"),
                 ref_energy_name=ref_energy_name,
                 ref_force_name=ref_force_name,
                 ref_virial_name=ref_virial_name,
@@ -789,10 +780,10 @@ def m3gnet_fitting(
             }
             test_element_types = get_element_list(test_structs)
             test_converter = Structure2Graph(
-                element_types=test_element_types, cutoff=cutoff
+                element_types=test_element_types, cutoff=m3gnet_hypers.get("cutoff")
             )
             test_dataset = MGLDataset(
-                threebody_cutoff=threebody_cutoff,
+                threebody_cutoff=m3gnet_hypers.get("threebody_cutoff"),
                 structures=test_structs,
                 converter=test_converter,
                 labels=test_labels,
@@ -832,21 +823,38 @@ def m3gnet_fitting(
             val_data=val_dataset,
             test_data=test_dataset,
             collate_fn=my_collate_fn,
-            batch_size=batch_size,
+            batch_size=m3gnet_hypers.get("batch_size"),
             num_workers=1,
         )
-        model = M3GNet(
-            element_types=train_element_types,
-            is_intensive=False,
-            cutoff=cutoff,
-            threebody_cutoff=threebody_cutoff,
-            dim_node_embedding=hidden_dim,
-            dim_edge_embedding=hidden_dim,
-            units=num_units,
-            max_l=max_l,
-            max_n=max_n,
-        )
-        lit_module = PotentialLightningModule(model=model, include_line_graph=True)
+        # train from scratch
+        if not m3gnet_hypers["pretrained_model"]:  # train from scratch
+            model = M3GNet(
+                element_types=train_element_types,
+                is_intensive=m3gnet_hypers.get("is_intensive"),
+                cutoff=m3gnet_hypers.get("cutoff"),
+                threebody_cutoff=m3gnet_hypers.get("threebody_cutoff"),
+                dim_node_embedding=m3gnet_hypers.get("dim_node_embedding"),
+                dim_edge_embedding=m3gnet_hypers.get("dim_edge_embedding"),
+                units=m3gnet_hypers.get("units"),
+                max_l=m3gnet_hypers.get("max_l"),
+                max_n=m3gnet_hypers.get("max_n"),
+                nblocks=m3gnet_hypers.get("nblocks"),
+            )
+            lit_module = PotentialLightningModule(model=model, include_line_graph=True)
+        else:  # finetune pretrained model
+            logging.info(
+                f"Finetuning pretrained model: {m3gnet_hypers['pretrained_model']}"
+            )
+            m3gnet_nnp = matgl.load_model(m3gnet_hypers["pretrained_model"])
+            model = m3gnet_nnp.model
+            property_offset = m3gnet_nnp.element_refs.property_offset
+            lit_module = PotentialLightningModule(
+                model=model,
+                element_refs=property_offset,
+                lr=1e-4,
+                include_line_graph=True,
+            )
+
         logger = CSVLogger(name=exp_name, save_dir=os.path.join(results_dir, "logs"))
         # Inference mode = False is required for calculating forces, stress in test mode and prediction mode
         if device == "cuda":
@@ -854,7 +862,7 @@ def m3gnet_fitting(
                 gpu_id = os.environ.get("CUDA_VISIBLE_DEVICES", "0")
                 torch.cuda.set_device(torch.device(f"cuda:{gpu_id}"))
                 trainer = pl.Trainer(
-                    max_epochs=max_epochs,
+                    max_epochs=m3gnet_hypers.get("max_epochs"),
                     accelerator="gpu",
                     logger=logger,
                     inference_mode=False,
@@ -863,7 +871,7 @@ def m3gnet_fitting(
                 raise ValueError("CUDA is not available.")
         else:
             trainer = pl.Trainer(
-                max_epochs=max_epochs,
+                max_epochs=m3gnet_hypers.get("max_epochs"),
                 accelerator="cpu",
                 logger=logger,
                 inference_mode=False,
