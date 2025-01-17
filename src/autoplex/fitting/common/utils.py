@@ -32,6 +32,7 @@ from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
 from matgl.models import M3GNet
 from matgl.utils.training import PotentialLightningModule
 from monty.dev import requires
+from monty.serialization import dumpfn
 from nequip.ase import NequIPCalculator
 from numpy import ndarray
 from pymatgen.core import Structure
@@ -40,7 +41,7 @@ from pytorch_lightning.loggers import CSVLogger
 from scipy.spatial import ConvexHull
 from scipy.special import comb
 
-from autoplex import MLIP_HYPERS
+from autoplex import GAP_HYPERS, JACE_HYPERS, M3GNET_HYPERS, MACE_HYPERS, NEQUIP_HYPERS
 from autoplex.data.common.utils import (
     data_distillation,
     plot_energy_forces,
@@ -59,7 +60,7 @@ logging.basicConfig(
 def gap_fitting(
     db_dir: Path,
     species_list: list | None = None,
-    hyperparameters: MLIP_HYPERS.GAP = MLIP_HYPERS.GAP,
+    hyperparameters: GAP_HYPERS = GAP_HYPERS,
     num_processes_fit: int = 32,
     auto_delta: bool = True,
     glue_xml: bool = False,
@@ -270,7 +271,7 @@ def gap_fitting(
 )
 def jace_fitting(
     db_dir: str | Path,
-    hyperparameters: MLIP_HYPERS.J_ACE = MLIP_HYPERS.J_ACE,
+    hyperparameters: JACE_HYPERS = JACE_HYPERS,
     isolated_atom_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -443,7 +444,7 @@ export2lammps("acemodel.yace", model)
 
 def nequip_fitting(
     db_dir: Path,
-    hyperparameters: MLIP_HYPERS.NEQUIP = MLIP_HYPERS.NEQUIP,
+    hyperparameters: NEQUIP_HYPERS = NEQUIP_HYPERS,
     isolated_atom_energies: dict | None = None,
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -535,139 +536,29 @@ def nequip_fitting(
     else:
         raise ValueError("isolated_atom_energies is empty or not defined!")
 
+    nequip_config_updates = {
+        "dataset_key_mapping": {
+            f"{ref_energy_name}": "total_energy",
+            f"{ref_force_name}": "forces",
+        },
+        "validation_dataset_key_mapping": {
+            f"{ref_energy_name}": "total_energy",
+            f"{ref_force_name}": "forces",
+        },
+        "chemical_symbols": ele_syms,
+        "dataset_file_name": "./train_nequip.extxyz",
+        "validation_dataset_file_name": f"{db_dir}/test.extxyz",
+        "n_train": num_of_train,
+        "n_val": num_of_val,
+    }
+    hyperparameters.update_parameters(nequip_config_updates)
+
     if fit_kwargs:
         hyperparameters.update_parameters(fit_kwargs)
 
     nequip_hypers = hyperparameters.model_dump(by_alias=True)
 
-    r_max = nequip_hypers["r_max"]
-    num_layers = nequip_hypers["num_layers"]
-    l_max = nequip_hypers["l_max"]
-    num_features = nequip_hypers["num_features"]
-    num_basis = nequip_hypers["num_basis"]
-    invariant_layers = nequip_hypers["invariant_layers"]
-    invariant_neurons = nequip_hypers["invariant_neurons"]
-    batch_size = nequip_hypers["batch_size"]
-    learning_rate = nequip_hypers["learning_rate"]
-    max_epochs = nequip_hypers["max_epochs"]
-    default_dtype = nequip_hypers["default_dtype"]
-
-    nequip_text = f"""root: results
-run_name: autoplex
-seed: 123
-dataset_seed: 456
-append: true
-default_dtype: {default_dtype}
-
-# network
-r_max: {r_max}
-num_layers: {num_layers}
-l_max: {l_max}
-parity: true
-num_features: {num_features}
-nonlinearity_type: gate
-
-nonlinearity_scalars:
-  e: silu
-  o: tanh
-
-nonlinearity_gates:
-  e: silu
-  o: tanh
-
-num_basis: {num_basis}
-BesselBasis_trainable: true
-PolynomialCutoff_p: 6
-
-invariant_layers: {invariant_layers}
-invariant_neurons: {invariant_neurons}
-avg_num_neighbors: auto
-
-use_sc: true
-dataset: ase
-validation_dataset: ase
-dataset_file_name: ./train_nequip.extxyz
-validation_dataset_file_name: {db_dir}/test.extxyz
-
-ase_args:
-  format: extxyz
-dataset_key_mapping:
-  {ref_energy_name}: total_energy
-  {ref_force_name}: forces
-validation_dataset_key_mapping:
-  {ref_energy_name}: total_energy
-  {ref_force_name}: forces
-
-chemical_symbols:
-{isolated_atom_energies_update}
-wandb: False
-
-verbose: info
-log_batch_freq: 10
-log_epoch_freq: 1
-save_checkpoint_freq: -1
-save_ema_checkpoint_freq: -1
-
-n_train: {num_of_train}
-n_val: {num_of_val}
-learning_rate: {learning_rate}
-batch_size: {batch_size}
-validation_batch_size: 10
-max_epochs: {max_epochs}
-shuffle: true
-metrics_key: validation_loss
-use_ema: true
-ema_decay: 0.99
-ema_use_num_updates: true
-report_init_validation: true
-
-early_stopping_patiences:
-  validation_loss: 50
-
-early_stopping_lower_bounds:
-  LR: 1.0e-5
-
-loss_coeffs:
-  forces: 1
-  total_energy:
-    - 1
-    - PerAtomMSELoss
-
-metrics_components:
-  - - forces
-    - mae
-  - - forces
-    - rmse
-  - - forces
-    - mae
-    - PerSpecies: True
-      report_per_component: False
-  - - forces
-    - rmse
-    - PerSpecies: True
-      report_per_component: False
-  - - total_energy
-    - mae
-  - - total_energy
-    - mae
-    - PerAtom: True
-
-optimizer_name: Adam
-optimizer_amsgrad: true
-
-lr_scheduler_name: ReduceLROnPlateau
-lr_scheduler_patience: 100
-lr_scheduler_factor: 0.5
-
-per_species_rescale_shifts_trainable: false
-per_species_rescale_scales_trainable: false
-
-per_species_rescale_shifts: dataset_per_atom_total_energy_mean
-per_species_rescale_scales: dataset_forces_rms
-    """
-
-    with open("nequip.yaml", "w") as file:
-        file.write(nequip_text)
+    dumpfn(nequip_hypers, "nequip.yaml")
 
     run_nequip("nequip-train nequip.yaml", "nequip_train")
     run_nequip(
@@ -713,7 +604,7 @@ per_species_rescale_scales: dataset_forces_rms
 
 def m3gnet_fitting(
     db_dir: Path,
-    hyperparameters: MLIP_HYPERS.M3GNET = MLIP_HYPERS.M3GNET,
+    hyperparameters: M3GNET_HYPERS = M3GNET_HYPERS,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",
@@ -1076,7 +967,7 @@ def m3gnet_fitting(
 
 def mace_fitting(
     db_dir: Path,
-    hyperparameters: MLIP_HYPERS.MACE = MLIP_HYPERS.MACE,
+    hyperparameters: MACE_HYPERS = MACE_HYPERS,
     device: str = "cuda",
     ref_energy_name: str = "REF_energy",
     ref_force_name: str = "REF_forces",

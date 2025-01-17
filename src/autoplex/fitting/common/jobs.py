@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from jobflow import job
 
+from autoplex import MLIP_HYPERS
 from autoplex.fitting.common.utils import (
     check_convergence,
     gap_fitting,
@@ -32,6 +33,7 @@ def machine_learning_fit(
     device: str = "cuda",
     database_dict: dict | None = None,
     hyperpara_opt: bool = False,
+    hyperparameters: MLIP_HYPERS = MLIP_HYPERS,
     **fit_kwargs,
 ):
     """
@@ -71,6 +73,8 @@ def machine_learning_fit(
     hyperpara_opt: bool
         Perform hyperparameter optimization using XPOT
         (XPOT: https://pubs.aip.org/aip/jcp/article/159/2/024803/2901815)
+    hyperparameters: MLIP_HYPERS
+        Hyperparameters for MLIP fitting.
     run_fits_on_different_cluster: bool
         Indicates if fits are to be run on a different cluster.
         If True, the fitting data (train.extxyz, test.extxyz) is stored in the database.
@@ -121,6 +125,7 @@ def machine_learning_fit(
             ).exists():
                 train_test_error = gap_fitting(
                     db_dir=database_dir,
+                    hyperparameters=hyperparameters.GAP,
                     species_list=species_list,
                     num_processes_fit=num_processes_fit,
                     auto_delta=auto_delta,
@@ -138,6 +143,7 @@ def machine_learning_fit(
     elif mlip_type == "J-ACE":
         train_test_error = jace_fitting(
             db_dir=database_dir,
+            hyperparameters=hyperparameters.J_ACE,
             isolated_atom_energies=isolated_atom_energies,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
@@ -150,6 +156,7 @@ def machine_learning_fit(
     elif mlip_type == "NEQUIP":
         train_test_error = nequip_fitting(
             db_dir=database_dir,
+            hyperparameters=hyperparameters.NEQUIP,
             isolated_atom_energies=isolated_atom_energies,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
@@ -162,6 +169,7 @@ def machine_learning_fit(
     elif mlip_type == "M3GNET":
         train_test_error = m3gnet_fitting(
             db_dir=database_dir,
+            hyperparameters=hyperparameters.M3GNET,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
@@ -173,6 +181,7 @@ def machine_learning_fit(
     elif mlip_type == "MACE":
         train_test_error = mace_fitting(
             db_dir=database_dir,
+            hyperparameters=hyperparameters.MACE,
             ref_energy_name=ref_energy_name,
             ref_force_name=ref_force_name,
             ref_virial_name=ref_virial_name,
