@@ -24,23 +24,24 @@ The `RssMaker` class in `autoplex` is the core interface for creating ML-RSS pot
 
 Parameters can be specified either through a YAML configuration file or as direct arguments in the `make` method.
 
-## Running the workflow with a YAML configuration file
+## Running the workflow with a RSSConfig object
 
 > **Recommendation**: This is currently our recommended approach for setting up and managing RSS workflows.
 
-The RSS workflow can be initiated using a custom YAML configuration file. 
-A comprehensive list of parameters, including default settings and modifiable options, is available in `autoplex/auto/rss/rss_default_configuration.yaml`. 
-When initializing the flow with a YAML file, any specified keys will override the corresponding default values. 
-To start a new workflow, pass the path to your YAML file as the `config_file` argument in the `RssMaker`.
-
-> ℹ️ Note that, if you are using `RssMaker` as part of another job or flow and executing jobs on a different system (e.g. using remote submission via jobflow-remote), then the configuration file has to be placed on the remote cluster and the file path has to reflect this as (i.e., it is valid a path on the remote cluster).
+The RSSConfig object can be instantiated using a custom YAML configuration file, as illustrated in previous section. 
+A comprehensive list of parameters, including default settings and modifiable options, is available in `autoplex.settings.RssConfig` pydantic model. 
+To start a new workflow, create an `RssConfig` object using the YAML file and pass it to the `RSSMaker` class.
+When initializing the RssConfig object with a YAML file, any specified keys will override the corresponding default values.
 
 ```python
+from autoplex.settings import RssConfig
 from autoplex.auto.rss.flows import RssMaker
 from fireworks import LaunchPad
 from jobflow.managers.fireworks import flow_to_workflow
 
-rss_job = RssMaker(name="your workflow name", config_file='path/to/your/config.yaml').make()
+config = RssConfig.from_file('path/to/your/config.yaml')
+
+rss_job = RssMaker(name="your workflow name", config=config).make()
 wf = flow_to_workflow(rss_job) 
 lpad = LaunchPad.auto_load()
 lpad.add_wf(wf)
@@ -62,7 +63,8 @@ For details on setting up `FireWorks`, see [FireWorks setup](../../../mongodb.md
 
 ## Running the workflow with direct parameter specification
 
-As an alternative to using a YAML configuration file, the RSS workflow can be initiated by directly specifying parameters in the `make` method. This approach is ideal for cases where only a few parameters need to be customized. You can override the default settings by passing them as keyword arguments, offering a more flexible and lightweight way to set up the workflow.
+As an alternative to using a RssConfig object, the RSS workflow can be initiated by directly specifying parameters in the `make` method. This approach is ideal for cases where only a few parameters need to be customized. 
+You can override the default settings by passing them as keyword arguments, offering a more flexible and lightweight way to set up the workflow.
 
 ```python
 rss_job = RssMaker(name="your workflow name").make(tag='Si',
@@ -81,13 +83,21 @@ If you choose to use the direct parameter specification method, at a minimum, yo
 
 > **Recommendation**: We strongly recommend enabling `hookean_repul`, as it applies a strong repulsive force when the distance between two atoms falls below a certain threshold. This ensures that the generated structures are physically reasonable.
 
-> **Note**: If both a YAML file and direct parameter specifications are provided, any overlapping parameters will be overridden by the directly specified values.
+> **Note**: If both a custom RssConfig object and direct parameter specifications are provided, any overlapping parameters will be overridden by the directly specified values.
 
 ## Building RSS models with various ML potentials
 
-Currently, `RssMaker` supports GAP (Gaussian Approximation Potential), ACE (Atomic Cluster Expansion), and three graph-based network models including NequIP, M3GNet, and MACE. You can specify the desired model using the `mlip_type` argument and adjust relevant hyperparameters within the `make` method. Default and adjustable hyperparameters are available in `autoplex/fitting/common/mlip-rss-defaults.json`.
+Currently, `RssMaker` supports GAP (Gaussian Approximation Potential), ACE (Atomic Cluster Expansion), and three graph-based network models including NequIP, M3GNet, and MACE. 
+You can specify the desired model using the `mlip_type` argument and adjust relevant hyperparameters within the `make` method. 
+Overview of default and adjustable hyperparameters for each model can be accessed using `MLIP_HYPERS` pydantic model of autoplex.
 
 ```python
+from autoplex import MLIP_HYPERS
+from autoplex.auto.rss.flows import RssMaker
+
+print(MLIP_HYPERS.MACE) # Eg:- access MACE hyperparameters
+
+# Intialize the workflow with the desired MLIP model
 rss_job = RssMaker(name="your workflow name").make(tag='SiO2',
                                                    ... # Other parameters here
                                                    mlip_type='MACE',

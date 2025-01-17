@@ -166,9 +166,10 @@ pre_database_dir: null
 
 Regularization is currently only applicable to GAP potentials and is adjusted using the `scheme` parameter. Common schemes include `'linear-hull'` and `'volume-stoichiometry'`. For systems with fixed stoichiometry, `'linear-hull'` is recommended. For systems with varying stoichiometries, `'volume-stoichiometry'` is more appropriate.
 
-## MLIP Parameters
+## MLIP parameters
 
-The section defines the settings for training machine learning potentials. Currently supported architectures include GAP, ACE(Julia), NequIP, M3GNet, and MACE. You can specify the desired model using the `mlip_type` argument and tune hyperparameters flexibly by adding key-value pairs. Default and adjustable hyperparameters are available in `autoplex/autoplex/fitting/common/mlip-rss-defaults.json`.
+The section defines the settings for training machine learning potentials. Currently supported architectures include GAP, ACE(Julia), NequIP, M3GNet, and MACE. 
+You can specify the desired model using the `mlip_type` argument and tune hyperparameters flexibly by adding key-value pairs. 
 
 ```yaml
 # MLIP Parameters
