@@ -443,7 +443,7 @@ class NEQUIPSettings(AutoplexBaseModel):
             "dataset_per_species_forces_rms",
         ]
     ) = Field(
-        default="dataset_forces_rms",
+        default="dataset_per_species_forces_rms",
         description="The value can be a constant float value, an array for each species, or a string. "
         "If float values are prpvided , they must be in the same energy units as the training data",
     )
