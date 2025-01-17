@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Literal
 
 from monty.serialization import loadfn
 from pydantic import BaseModel, ConfigDict, Field
 
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
-class UpdateBaseModel(BaseModel):
+
+class AutoplexBaseModel(BaseModel):
     """Base class for all models in autoplex."""
 
-    model_config = ConfigDict(validate_assignment=True, protected_namespaces=())
+    model_config = ConfigDict(
+        validate_assignment=True, protected_namespaces=(), extra="allow"
+    )
 
     def update_parameters(self, updates: dict[str, Any]):
         """
@@ -27,15 +34,17 @@ class UpdateBaseModel(BaseModel):
                     # Update nested model
                     field_value.update_parameters(
                         value
-                    )  # Recursively call update_fields
+                    )  # Recursively call update_parameters
                 else:
                     # Update field value
                     setattr(self, key, value)
 
-            # else:
-            #    raise ValueError(
-            #        f"Field {key} does not exist in {self.__class__.__name__}."
-            #    )
+            else:
+                logging.warning(
+                    f"Field {key} not found in default {self.__class__.__name__} model."
+                    f"New field has been added. Please ensure the added field contains correct datatype."
+                )
+                setattr(self, key, value)
 
     @classmethod
     def from_file(cls, filename: str):
@@ -49,7 +58,7 @@ class UpdateBaseModel(BaseModel):
         return cls(**custom_params)
 
 
-class GeneralSettings(UpdateBaseModel):
+class GeneralSettings(AutoplexBaseModel):
     """Model describing general hyperparameters for the GAP fits."""
 
     at_file: str = Field(
@@ -81,7 +90,7 @@ class GeneralSettings(UpdateBaseModel):
     soap: bool = Field(default=True, description="Whether to include SOAP terms")
 
 
-class TwobSettings(UpdateBaseModel):
+class TwobSettings(AutoplexBaseModel):
     """Model describing two body hyperparameters for the GAP fits."""
 
     distance_Nb_order: int = Field(
@@ -110,7 +119,7 @@ class TwobSettings(UpdateBaseModel):
     )
 
 
-class ThreebSettings(UpdateBaseModel):
+class ThreebSettings(AutoplexBaseModel):
     """Model describing threebody hyperparameters for the GAP fits."""
 
     distance_Nb_order: int = Field(
@@ -139,7 +148,7 @@ class ThreebSettings(UpdateBaseModel):
     )
 
 
-class SoapSettings(UpdateBaseModel):
+class SoapSettings(AutoplexBaseModel):
     """Model describing soap hyperparameters for the GAP fits."""
 
     add_species: str = Field(
@@ -167,7 +176,7 @@ class SoapSettings(UpdateBaseModel):
     )
 
 
-class GAPSettings(UpdateBaseModel):
+class GAPSettings(AutoplexBaseModel):
     """Model describing the hyperparameters for the GAP fits for Phonons."""
 
     general: GeneralSettings = Field(
@@ -188,7 +197,7 @@ class GAPSettings(UpdateBaseModel):
     )
 
 
-class JACESettings(UpdateBaseModel):
+class JACESettings(AutoplexBaseModel):
     """Model describing the hyperparameters for the J-ACE fits."""
 
     order: int = Field(default=3, description="Order of the J-ACE model")
@@ -197,25 +206,250 @@ class JACESettings(UpdateBaseModel):
     solver: str = Field(default="BLR", description="Solver for the J-ACE model")
 
 
-class NEQUIPSettings(UpdateBaseModel):
-    """Model describing the hyperparameters for the NEQUIP fits."""
+class Nonlinearity(AutoplexBaseModel):
+    """Model describing the nonlinearity to be used for the NEQUIP fits."""
 
+    e: Literal["silu", "ssp", "tanh", "abs"] = Field(
+        default="silu", description="Even nonlinearity"
+    )
+    o: Literal["silu", "ssp", "tanh", "abs"] = Field(
+        default="tanh", description="Odd nonlinearity"
+    )
+
+
+class LossCoeff(BaseModel):
+    """Model describing different weights to use in a weighted loss functions."""
+
+    forces: int | list[int | str] = Field(
+        default=1, description="Forces loss coefficient"
+    )
+    total_energy: int | list[int | str] = Field(
+        default=[1, "PerAtomMSELoss"], description="Total energy loss coefficient"
+    )
+
+
+class NEQUIPSettings(AutoplexBaseModel):
+    """Model describing the hyperparameters for the NEQUIP fits.
+
+    References
+    ----------
+        * Defaults taken from https://github.com/mir-group/nequip/blob/main/configs/
+    """
+
+    root: str = Field(default="results", description="Root directory")
+    run_name: str = Field(default="autoplex", description="Name of the run")
+    seed: int = Field(default=123, description="Model seed")
+    dataset_seed: int = Field(default=123, description="Dataset seed")
+    append: bool = Field(
+        default=False,
+        description="When true a restarted run will append to the previous log file",
+    )
+    default_dtype: str = Field(default="float32", description="Default data type")
+    model_dtype: str = Field(default="float32", description="Model data type")
+    allow_tf32: bool = Field(
+        default=True,
+        description="Consider setting to false if you plan to mix "
+        "training/inference over any devices that are "
+        "not NVIDIA Ampere or later",
+    )
     r_max: float = Field(default=4.0, description="Radial cutoff distance")
     num_layers: int = Field(default=4, description="Number of layers")
     l_max: int = Field(default=2, description="Maximum degree of spherical harmonics")
-    num_features: int = Field(default=32, description="Number of features")
-    num_basis: int = Field(default=8, description="Number of basis functions")
-    invariant_layers: int = Field(default=2, description="Number of invariant layers")
-    invariant_neurons: int = Field(
-        default=64, description="Number of invariant neurons"
+    parity: bool = Field(
+        default=True,
+        description="Whether to include features with odd mirror parity; "
+        "often turning parity off gives equally good results but faster networks",
     )
-    batch_size: int = Field(default=5, description="Batch size")
+    num_features: int = Field(default=32, description="Number of features")
+    nonlinearity_type: Literal["gate", "norm"] = Field(
+        default="gate", description="Type of nonlinearity, 'gate' is recommended"
+    )
+    nonlinearity_scalars: Nonlinearity = Field(
+        default_factory=Nonlinearity, description="Nonlinearity scalars"
+    )
+    nonlinearity_gates: Nonlinearity = Field(
+        default_factory=Nonlinearity, description="Nonlinearity gates"
+    )
+    num_basis: int = Field(
+        default=8, description="Number of basis functions used in the radial basis"
+    )
+    besselbasis_trainable: bool = Field(
+        default=True,
+        description="If true, train the bessel weights",
+        alias="BesselBasis_trainable",
+    )
+    polynomialcutoff_p: int = Field(
+        default=5,
+        description="p-exponent used in polynomial cutoff function, "
+        "smaller p corresponds to stronger decay with distance",
+        alias="PolynomialCutoff_p",
+    )
+
+    invariant_layers: int = Field(
+        default=2, description="Number of radial layers, smaller is faster"
+    )
+    invariant_neurons: int = Field(
+        default=64,
+        description="Number of hidden neurons in radial function, smaller is faster",
+    )
+    avg_num_neighbors: None | Literal["auto"] = Field(
+        default="auto",
+        description="Number of neighbors to divide by, "
+        "None => no normalization, "
+        "auto computes it based on dataset",
+    )
+    use_sc: bool = Field(
+        default=True,
+        description="Use self-connection or not, usually gives big improvement",
+    )
+    dataset: Literal["ase"] = Field(
+        default="ase",
+        description="Type of data set, can be npz or ase."
+        "Note that autoplex only supports ase at this point",
+    )
+    validation_dataset: Literal["ase"] = Field(
+        default="ase",
+        description="Type of validation data set, can be npz or ase."
+        "Note that autoplex only supports ase at this point",
+    )
+    dataset_file_name: str = Field(
+        default="./train_nequip.extxyz", description="Name of the dataset file"
+    )
+    validation_dataset_file_name: str = Field(
+        default="./test.extxyz", description="Name of the validation dataset file"
+    )
+    ase_args: dict = Field(
+        default={"format": "extxyz"}, description="Any arguments needed by ase.io.read"
+    )
+    dataset_key_mapping: dict = Field(
+        default={"forces": "forces", "energy": "total_energy"},
+        description="Mapping of keys in the dataset to the expected keys",
+    )
+    validation_dataset_key_mapping: dict = Field(
+        default={"forces": "forces", "energy": "total_energy"},
+        description="Mapping of keys in the validation dataset to the expected keys",
+    )
+    chemical_symbols: list[str] = Field(
+        default=[], description="List of chemical symbols"
+    )
+    wandb: bool = Field(default=False, description="Use wandb for logging")
+    verbose: Literal["debug", "info", "warning", "error", "critical"] = Field(
+        default="info", description="Verbosity level"
+    )
+    log_batch_freq: int = Field(
+        default=10,
+        description="Batch frequency, how often to print training errors within the same epoch",
+    )
+    log_epoch_freq: int = Field(
+        default=1, description="Epoch frequency, how often to print training errors"
+    )
+    save_checkpoint_freq: int = Field(
+        default=-1,
+        description="Frequency to save the intermediate checkpoint. "
+        "No saving of intermediate checkpoints when the value is not positive.",
+    )
+    save_ema_checkpoint_freq: int = Field(
+        default=-1,
+        description="Frequency to save the intermediate EMA checkpoint. "
+        "No saving of intermediate EMA checkpoints when the value is not positive.",
+    )
+    n_train: int = Field(default=1000, description="Number of training samples")
+    n_val: int = Field(default=1000, description="Number of validation samples")
     learning_rate: float = Field(default=0.005, description="Learning rate")
+    batch_size: int = Field(default=5, description="Batch size")
+    validation_batch_size: int = Field(default=10, description="Validation batch size")
     max_epochs: int = Field(default=10000, description="Maximum number of epochs")
-    default_dtype: str = Field(default="float32", description="Default data type")
+    shuffle: bool = Field(default=True, description="Shuffle the dataset")
+    metrics_key: str = Field(
+        default="validation_loss",
+        description="Metrics used for scheduling and saving best model",
+    )
+    use_ema: bool = Field(
+        default=True,
+        description="Use exponential moving average on weights for val/test",
+    )
+    ema_decay: float = Field(
+        default=0.99, description="Exponential moving average decay"
+    )
+    ema_use_num_updates: bool = Field(
+        default=True, description="Use number of updates for EMA decay"
+    )
+    report_init_validation: bool = Field(
+        default=True,
+        description="Report the validation error for just initialized model",
+    )
+    early_stopping_patiences: dict = Field(
+        default={"validation_loss": 50},
+        description="Stop early if a metric value stopped decreasing for n epochs",
+    )
+    early_stopping_lower_bounds: dict = Field(
+        default={"LR": 1.0e-5},
+        description="Stop early if a metric value is lower than the given value",
+    )
+    loss_coeffs: LossCoeff = Field(
+        default_factory=LossCoeff, description="Loss coefficients"
+    )
+    metrics_components: list = Field(
+        default_factory=lambda: [
+            ["forces", "mae"],
+            ["forces", "rmse"],
+            ["forces", "mae", {"PerSpecies": True, "report_per_component": False}],
+            ["forces", "rmse", {"PerSpecies": True, "report_per_component": False}],
+            ["total_energy", "mae"],
+            ["total_energy", "mae", {"PerAtom": True}],
+        ],
+        description="Metrics components",
+    )
+    optimizer_name: str = Field(default="Adam", description="Optimizer name")
+    optimizer_amsgrad: bool = Field(
+        default=True, description="Use AMSGrad variant of Adam"
+    )
+    lr_scheduler_name: str = Field(
+        default="ReduceLROnPlateau", description="Learning rate scheduler name"
+    )
+    lr_scheduler_patience: int = Field(
+        default=100, description="Patience for learning rate scheduler"
+    )
+    lr_scheduler_factor: float = Field(
+        default=0.5, description="Factor for learning rate scheduler"
+    )
+    per_species_rescale_shifts_trainable: bool = Field(
+        default=False,
+        description="Whether the shifts are trainable. Defaults to False.",
+    )
+    per_species_rescale_scales_trainable: bool = Field(
+        default=False,
+        description="Whether the scales are trainable. Defaults to False.",
+    )
+    per_species_rescale_shifts: (
+        float
+        | list[float]
+        | Literal[
+            "dataset_per_atom_total_energy_mean",
+            "dataset_per_species_total_energy_mean",
+        ]
+    ) = Field(
+        default="dataset_per_atom_total_energy_mean",
+        description="The value can be a constant float value, an array for each species, or a string. "
+        "If float values are prpvided , they must be in the same energy units as the training data",
+    )
+    per_species_rescale_scales: (
+        float
+        | list[float]
+        | Literal[
+            "dataset_forces_absmax",
+            "dataset_per_atom_total_energy_std",
+            "dataset_per_species_total_energy_std",
+            "dataset_per_species_forces_rms",
+        ]
+    ) = Field(
+        default="dataset_forces_rms",
+        description="The value can be a constant float value, an array for each species, or a string. "
+        "If float values are prpvided , they must be in the same energy units as the training data",
+    )
 
 
-class M3GNETSettings(UpdateBaseModel):
+class M3GNETSettings(AutoplexBaseModel):
     """Model describing the hyperparameters for the M3GNET fits."""
 
     exp_name: str = Field(default="training", description="Name of the experiment")
@@ -242,7 +476,7 @@ class M3GNETSettings(UpdateBaseModel):
     )
 
 
-class MACESettings(UpdateBaseModel):
+class MACESettings(AutoplexBaseModel):
     """Model describing the hyperparameters for the MACE fits."""
 
     model: Literal[
@@ -360,7 +594,7 @@ class MACESettings(UpdateBaseModel):
     wandb: bool = Field(default=False, description="Use Weights and Biases for logging")
 
 
-class NEPSettings(UpdateBaseModel):
+class NEPSettings(AutoplexBaseModel):
     """Model describing the hyperparameters for the NEP fits."""
 
     version: int = Field(default=4, description="Version of the NEP model")
@@ -432,7 +666,7 @@ class NEPSettings(UpdateBaseModel):
     )
 
 
-class MLIPHypers(UpdateBaseModel):
+class MLIPHypers(AutoplexBaseModel):
     """Model containing the hyperparameter defaults for supported MLIPs in autoplex."""
 
     GAP: GAPSettings = Field(
@@ -460,7 +694,7 @@ class MLIPHypers(UpdateBaseModel):
 # RSS Configuration
 
 
-class ResumeFromPreviousState(UpdateBaseModel):
+class ResumeFromPreviousState(AutoplexBaseModel):
     """
     A model describing the state information.
 
@@ -486,7 +720,7 @@ class ResumeFromPreviousState(UpdateBaseModel):
     )
 
 
-class SoapParas(UpdateBaseModel):
+class SoapParas(AutoplexBaseModel):
     """A model describing the SOAP parameters."""
 
     l_max: int = Field(default=12, description="Maximum degree of spherical harmonics")
@@ -507,7 +741,7 @@ class SoapParas(UpdateBaseModel):
     )
 
 
-class BcurParams(UpdateBaseModel):
+class BcurParams(AutoplexBaseModel):
     """A model describing the parameters for the BCUR method."""
 
     soap_paras: SoapParas = Field(default_factory=SoapParas)
@@ -519,7 +753,7 @@ class BcurParams(UpdateBaseModel):
     )
 
 
-class BuildcellOptions(UpdateBaseModel):
+class BuildcellOptions(AutoplexBaseModel):
     """A model describing the parameters for buildcell."""
 
     NFORM: str | None = Field(default=None, description="The number of formula units")
@@ -529,7 +763,7 @@ class BuildcellOptions(UpdateBaseModel):
     MINSEP: str | None = Field(default=None, description="The minimum separation")
 
 
-class CustomIncar(UpdateBaseModel):
+class CustomIncar(AutoplexBaseModel):
     """A model describing the INCAR parameters."""
 
     ISMEAR: int = 0
@@ -553,7 +787,7 @@ class CustomIncar(UpdateBaseModel):
     LPLANE: str = ".FALSE."
 
 
-class Twob(UpdateBaseModel):
+class Twob(AutoplexBaseModel):
     """A model describing the two-body GAP parameters."""
 
     cutoff: float = Field(default=5.0, description="Radial cutoff distance")
@@ -563,13 +797,13 @@ class Twob(UpdateBaseModel):
     )
 
 
-class Threeb(UpdateBaseModel):
+class Threeb(AutoplexBaseModel):
     """A model describing the three-body GAP parameters."""
 
     cutoff: float = Field(default=3.0, description="Radial cutoff distance")
 
 
-class Soap(UpdateBaseModel):
+class Soap(AutoplexBaseModel):
     """A model describing the SOAP GAP parameters."""
 
     l_max: int = Field(default=10, description="Maximum degree of spherical harmonics")
@@ -581,7 +815,7 @@ class Soap(UpdateBaseModel):
     cutoff: float = Field(default=5.0, description="Radial cutoff distance")
 
 
-class General(UpdateBaseModel):
+class General(AutoplexBaseModel):
     """A model describing the general GAP parameters."""
 
     three_body: bool = Field(
@@ -589,7 +823,7 @@ class General(UpdateBaseModel):
     )
 
 
-class RssConfig(UpdateBaseModel):
+class RssConfig(AutoplexBaseModel):
     """A model describing the complete RSS configuration."""
 
     tag: str | None = Field(
