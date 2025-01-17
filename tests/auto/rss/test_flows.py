@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
-from jobflow import run_locally, Flow, job
-from mace.tools.model_script_utils import configure_model
+from jobflow import run_locally, Flow
 
 from tests.conftest import mock_rss, mock_do_rss_iterations, mock_do_rss_iterations_multi_jobs
 from autoplex.settings import RssConfig
