@@ -3,6 +3,8 @@ from autoplex.fitting.common.flows import MLIPFitMaker
 from pathlib import Path
 from jobflow import run_locally
 
+from tests.auto.phonons.test_jobs import fake_run_vasp_kwargs
+
 
 def test_gap_fit_maker(test_dir, memory_jobstore, clean_dir):
 
@@ -47,8 +49,7 @@ def test_jace_fit_maker(test_dir, memory_jobstore, clean_dir):
     assert Path(jacefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
 
-@pytest.mark.skip(reason="We can enable this after mock_nep fixture is added")
-def test_nep_fit_maker(test_dir, memory_jobstore, clean_dir):
+def test_nep_fit_maker(test_dir, memory_jobstore, clean_dir, mock_nep):
     database_dir = test_dir / "fitting/ref_files/"
 
     nepfit = MLIPFitMaker(
@@ -61,11 +62,18 @@ def test_nep_fit_maker(test_dir, memory_jobstore, clean_dir):
         **{"generation": 100, "batch": 100, "type_weight":[0.5, 1.0]},
     )
 
+    ref_paths_nep = {"machine_learning_fit": "LiCl"}
+    fake_run_nep_kwargs = {"machine_learning_fit": {"nep_settings": ["generation"], "check_nep_inputs": True}}
+    mock_nep(ref_paths_nep, fake_run_nep_kwargs)
+
     _ = run_locally(
         nepfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
     assert Path(nepfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
+    assert nepfit.output["test_error"].resolve(memory_jobstore) == pytest.approx(0.00798)
+    assert nepfit.output["train_error"].resolve(memory_jobstore) == pytest.approx(0.00551)
+    assert nepfit.output["convergence"].resolve(memory_jobstore)
 
 def test_nequip_fit_maker(test_dir, memory_jobstore, clean_dir):
     database_dir = test_dir / "fitting/rss_training_dataset/"
