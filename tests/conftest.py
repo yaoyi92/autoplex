@@ -38,7 +38,6 @@ _REF_PATHS: Dict[str, Union[str, Path]] = {}
 _NEP_REF_PATHS: Dict[str, str] = {}
 _FAKE_RUN_NEP_KWARGS: Dict[str, dict] = {}
 _FAKE_RUN_VASP_KWARGS: Dict[str, dict] = {}
-_NEP_INPUTS: Sequence[str] = ("nep.in", "KPOINTS", "POSCAR", "POTCAR", "lobsterin")
 
 @pytest.fixture(scope="session")
 def test_dir():
