@@ -89,6 +89,8 @@ class MLIPFitMaker(Maker):
         Path to the directory containing the database.
     use_defaults: bool
         If true, uses default fit parameters
+    run_fits_on_different_cluster: bool
+        If true, run fits on different clusters.
     """
 
     name: str = "MLpotentialFit"
@@ -115,6 +117,7 @@ class MLIPFitMaker(Maker):
     apply_data_preprocessing: bool = True
     database_dir: Path | str | None = None
     use_defaults: bool = True
+    run_fits_on_different_cluster: bool = False
 
     def make(
         self,
@@ -162,13 +165,15 @@ class MLIPFitMaker(Maker):
                 ref_energy_name=self.ref_energy_name,
                 atomwise_regularization_parameter=self.atomwise_regularization_parameter,
                 atom_wise_regularization=self.atom_wise_regularization,
+                run_fits_on_different_cluster=self.run_fits_on_different_cluster,
             ).make(
                 fit_input=fit_input,
             )
             jobs.append(data_prep_job)
 
             mlip_fit_job = machine_learning_fit(
-                database_dir=data_prep_job.output,
+                database_dir=data_prep_job.output["database_dir"],
+                run_fits_on_different_cluster=self.run_fits_on_different_cluster,
                 isolated_atom_energies=isolated_atom_energies,
                 num_processes_fit=self.num_processes_fit,
                 auto_delta=self.auto_delta,
@@ -182,13 +187,22 @@ class MLIPFitMaker(Maker):
                 use_defaults=self.use_defaults,
                 device=device,
                 species_list=species_list,
+                database_dict=data_prep_job.output["database_dict"],
                 **fit_kwargs,
             )
             jobs.append(mlip_fit_job)
+            output = {
+                "mlip_path": mlip_fit_job.output["mlip_path"],
+                "train_error": mlip_fit_job.output["train_error"],
+                "test_error": mlip_fit_job.output["test_error"],
+                "convergence": mlip_fit_job.output["convergence"],
+                "database_dir": data_prep_job.output["database_dir"],
+            }
+            return Flow(jobs=jobs, output=output, name=self.name)
 
-            return Flow(jobs=jobs, output=mlip_fit_job.output, name=self.name)
         # this will only run if train.extxyz and test.extxyz files are present in the database_dir
-
+        # TODO: shouldn't this be the exception rather then the default run?!
+        # TODO: I assume we always want to use data from before?
         if isinstance(self.database_dir, str):
             self.database_dir = Path(self.database_dir)
 
@@ -209,7 +223,15 @@ class MLIPFitMaker(Maker):
             **fit_kwargs,
         )
 
-        return Flow(jobs=mlip_fit_job, output=mlip_fit_job.output, name=self.name)
+        output = {
+            "mlip_path": mlip_fit_job.output["mlip_path"],
+            "train_error": mlip_fit_job.output["train_error"],
+            "test_error": mlip_fit_job.output["test_error"],
+            "convergence": mlip_fit_job.output["convergence"],
+            "database_dir": self.pre_database_dir,
+        }
+
+        return Flow(jobs=mlip_fit_job, output=output, name=self.name)
 
 
 @dataclass
@@ -252,6 +274,8 @@ class DataPreprocessing(Maker):
         Name of the training xyz data file.
     test_data_file: str
         Name of the test xyz data file.
+    run_fits_on_different_cluster: bool
+        If True, will copy the fitting database to the MongoDB
 
     """
 
@@ -271,8 +295,9 @@ class DataPreprocessing(Maker):
     atom_wise_regularization: bool = True
     train_data_file: str = "train.extxyz"
     test_data_file: str = "test.extxyz"
+    run_fits_on_different_cluster: bool = False
 
-    @job
+    @job(data=["database_dict"])
     def make(
         self,
         fit_input: dict,
@@ -319,6 +344,33 @@ class DataPreprocessing(Maker):
                     logging.info(
                         f"File {file_name} has been copied to {destination_file_path}"
                     )
+            if len(self.pre_xyz_files) == 2:
+                # join to one file and then split again afterwards
+                # otherwise, split percentage will not be true
+                destination_file_path = os.path.join(
+                    current_working_directory, "vasp_ref.extxyz"
+                )
+                for file_name in self.pre_xyz_files:
+                    # TODO: if it makes sense to remove isolated atoms from other files as well
+                    atoms_list = ase.io.read(
+                        os.path.join(self.pre_database_dir, file_name), index=":"
+                    )
+                    new_atoms_list = [
+                        atoms
+                        for atoms in atoms_list
+                        if atoms.info["config_type"] != "IsolatedAtom"
+                    ]
+
+                    ase.io.write(destination_file_path, new_atoms_list, append=True)
+
+                    logging.info(
+                        f"File {self.pre_xyz_files[0]} has been copied to {destination_file_path}"
+                    )
+
+            elif len(self.pre_xyz_files) > 2:
+                raise ValueError(
+                    "Please provide a train and a test extxyz file (two files in total) for the pre_xyz_files."
+                )
 
         vaspoutput_2_extended_xyz(
             path_to_vasp_static_calcs=list_of_vasp_calc_dirs,
@@ -343,23 +395,7 @@ class DataPreprocessing(Maker):
         )
 
         # Merging database
-        if self.pre_database_dir and os.path.exists(self.pre_database_dir):
-            if len(self.pre_xyz_files) == 2:
-                files_new = [self.train_data_file, self.test_data_file]
-                for file_name, file_new in zip(self.pre_xyz_files, files_new):
-                    with (
-                        open(
-                            os.path.join(self.pre_database_dir, file_name)
-                        ) as pre_xyz_file,
-                        open(file_new, "a") as xyz_file,
-                    ):
-                        xyz_file.write(pre_xyz_file.read())
-                    logging.info(f"File {file_name} has been copied to {file_new}")
-
-            elif len(self.pre_xyz_files) > 2:
-                raise ValueError(
-                    "Please provide a train and a test extxyz file (two files in total) for the pre_xyz_files."
-                )
+        # TODO: does a merge happen here?
         if self.regularization:
             base_dir = os.getcwd()
             folder_name = os.path.join(base_dir, "without_regularization")
@@ -437,4 +473,46 @@ class DataPreprocessing(Maker):
                             f"Error in write_after_distillation_data_split: {e}"
                         )
 
-        return Path.cwd()
+        # TODO: add a database to MongoDB besides just the path
+        if self.run_fits_on_different_cluster:
+            from pymatgen.io.ase import AseAtomsAdaptor
+
+            adapter = AseAtomsAdaptor()
+
+            # must always exist
+            required_paths = ["train.extxyz", "test.extxyz"]
+
+            optional_paths = [
+                "phonon/train.extxyz",
+                "phonon/test.extxyz",
+                "rattled/train.extxyz",
+                "rattled/test.extxyz",
+                "without_regularization/train.extxyz",
+                "without_regularization/test.extxyz",
+            ]
+
+            database_dict = {
+                path: [
+                    adapter.get_structure(atoms)
+                    for atoms in ase.io.read(Path.cwd() / path, ":")
+                ]
+                for path in required_paths
+            }
+
+            database_dict.update(
+                {
+                    path: (
+                        [
+                            adapter.get_structure(atoms)
+                            for atoms in ase.io.read(Path.cwd() / path, ":")
+                        ]
+                        if (Path.cwd() / path).exists()
+                        else None
+                    )
+                    for path in optional_paths
+                }
+            )
+
+            return {"database_dir": Path.cwd(), "database_dict": database_dict}
+
+        return {"database_dir": Path.cwd(), "database_dict": None}
