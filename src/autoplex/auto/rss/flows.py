@@ -132,13 +132,16 @@ class RssMaker(Maker):
             Reference file for VASP data. Default is 'vasp_ref.extxyz'.
         config_types: list[str]
             Configuration types for the VASP calculations. Default is None.
-        rss_group: list[str]
+        rss_group: list[str] | str
             Group name for RSS to setting up regularization.
         test_ratio: float
             The proportion of the test set after splitting the data. The value is allowed to be set to 0;
             in this case, the testing error would not be meaningful anymore.
         regularization: bool
             If True, apply regularization. This only works for GAP to date. Default is False.
+        retain_existing_sigma: bool
+            Whether to keep the current sigma values for specific configuration types.
+            If set to True, existing sigma values for specific configurations will remain unchanged.
         scheme: str
             Method to use for regularization. Options are
 
@@ -232,7 +235,7 @@ class RssMaker(Maker):
         """
         default_config = self.config.model_copy(deep=True)
         updated_config = default_config.update_parameters(kwargs)
-        config_params = updated_config.model_dump()
+        config_params = updated_config.model_dump(by_alias=True, exclude_none=True)
 
         self._process_hookean_paras(config_params)
 
