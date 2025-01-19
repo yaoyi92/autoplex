@@ -771,9 +771,25 @@ class BcurParams(AutoplexBaseModel):
 class BuildcellOptions(AutoplexBaseModel):
     """A model describing the parameters for buildcell."""
 
+    ABFIX: bool = Field(default=False, description="Whether to fix the lattice vectors")
     NFORM: str | None = Field(default=None, description="The number of formula units")
-    SYMMOPS: str | None = Field(default=None, description="The symmetry operations")
+    SYMMOPS: str | None = Field(
+        default=None,
+        description="	Build structures having a specified "
+        "number of symmetry operations. For crystals, "
+        "the allowed values are (1,2,3,4,6,8,12,16,24,48). "
+        "For clusters (indicated with #CLUSTER), the allowed "
+        "values are (1,2,3,5,4,6,7,8,9,10,11,12,24). "
+        "Ranges are allowed (e.g., #SYMMOPS=1-4).",
+    )
+    SYSTEM: None | Literal["Rhom", "Tric", "Mono", "Cubi", "Hexa", "Orth", "Tetra"] = (
+        Field(default=None, description="Enforce a crystal system")
+    )
     SLACK: float | None = Field(default=None, description="The slack factor")
+    OCTET: bool = Field(
+        default=False,
+        description="Check number of valence electrons is a multiple of eight",
+    )
     OVERLAP: float | None = Field(default=None, description="The overlap factor")
     MINSEP: str | None = Field(default=None, description="The minimum separation")
 
@@ -945,7 +961,7 @@ class RssConfig(AutoplexBaseModel):
         default_factory=lambda: ["initial", "traj_early", "traj"],
         description="Configuration types for the VASP calculations",
     )
-    rss_group: list[str] = Field(
+    rss_group: list[str] | str = Field(
         default_factory=lambda: ["traj"],
         description="Group of configurations for the RSS calculations",
     )
@@ -956,6 +972,11 @@ class RssConfig(AutoplexBaseModel):
     regularization: bool = Field(
         default=True,
         description="Whether to apply regularization. This only works for GAP to date.",
+    )
+    retain_existing_sigma: bool = Field(
+        default=False,
+        description="Whether to retain the existing sigma values for specific configuration types."
+        "If True, existing sigma values for specific configurations will remain unchanged",
     )
     scheme: Literal["linear-hull", "volume-stoichiometry", None] = Field(
         default="linear-hull", description="Method to use for regularization"
