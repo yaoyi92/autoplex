@@ -84,6 +84,7 @@ def test_m3gnet_fit_maker(test_dir, memory_jobstore, clean_dir):
         max_epochs=3,
         include_stresses=True,
         dim_node_embedding=8,
+        dim_edge_embedding=8,
         units=8,
         max_l=4,
         max_n=4,
