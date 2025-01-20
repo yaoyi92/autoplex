@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 from monty.serialization import loadfn
 from pydantic import BaseModel, ConfigDict, Field
-
-if TYPE_CHECKING:
-    from torch.optim import Optimizer
-    from torch.optim.lr_scheduler import LRScheduler
+from torch.optim import Optimizer  # noqa: TC002
+from torch.optim.lr_scheduler import LRScheduler  # noqa: TC002
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
