@@ -181,10 +181,7 @@ def mock_nep(monkeypatch, nep_test_dir):
         ref_path = nep_test_dir / _NEP_REF_PATHS[name]
         fake_run_nep(ref_path, **_FAKE_RUN_NEP_KWARGS.get(name, {}))
 
-        return subprocess.CompletedProcess(args="nep", returncode=0, stdout="Mocked NEP output", stderr="")
-
     monkeypatch.setattr(autoplex.fitting.common.utils, "run_nep", mock_nep_call)
-    monkeypatch.setattr(autoplex.fitting.common.utils, "nep_fitting", mock_nep_call)
 
     def _run(ref_paths, fake_run_nep_kwargs):
         _NEP_REF_PATHS.update(ref_paths)
@@ -264,7 +261,8 @@ def copy_nep_outputs(ref_path: str | Path):
     """Copy the reference nep output files to the current working directory."""
     output_path = ref_path / "outputs"
     for output_file in output_path.iterdir():
-        if output_file.is_file():
+        # Copy all files except the input files
+        if output_file.is_file() and output_file.suffix != ".in" and output_file.suffix != ".xyz":
             shutil.copy(output_file, ".")
 
 @job
