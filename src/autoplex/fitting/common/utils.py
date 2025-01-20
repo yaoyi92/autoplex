@@ -648,9 +648,11 @@ def m3gnet_fitting(
         Maximum number of training epochs.
     include_stresses: bool
         If True, includes stress tensors in the model predictions and training process.
-    hidden_dim: int
-        Dimensionality of the hidden layers in the model.
-    num_units: int
+    dim_node_embedding: int
+         Dimension of node embedding.
+    dim_edge_embedding: int
+        Dimension of edge embeddings.
+    units: int
         Number of units in each dense layer of the model.
     max_l: int
         Maximum degree of spherical harmonics.
@@ -837,7 +839,26 @@ def m3gnet_fitting(
                 max_n=m3gnet_hypers.get("max_n"),
                 nblocks=m3gnet_hypers.get("nblocks"),
             )
-            lit_module = PotentialLightningModule(model=model, include_line_graph=True)
+            lit_module = PotentialLightningModule(
+                model=model,
+                include_line_graph=m3gnet_hypers.get("include_line_graph"),
+                allow_missing_labels=m3gnet_hypers.get("allow_missing_labels"),
+                energy_weight=m3gnet_hypers.get("energy_weight"),
+                force_weight=m3gnet_hypers.get("force_weight"),
+                lr=m3gnet_hypers.get("lr"),
+                loss=m3gnet_hypers.get("loss"),
+                loss_params=m3gnet_hypers.get("loss_params"),
+                stress_weight=m3gnet_hypers.get("stress_weight"),
+                magmom_weight=m3gnet_hypers.get("magmom_weight"),
+                data_mean=m3gnet_hypers.get("data_mean"),
+                data_std=m3gnet_hypers.get("data_std"),
+                decay_alpha=m3gnet_hypers.get("decay_alpha"),
+                decay_steps=m3gnet_hypers.get("decay_steps"),
+                sync_dist=m3gnet_hypers.get("sync_dist"),
+                magmom_target=m3gnet_hypers.get("magmom_target"),
+                optimizer=m3gnet_hypers.get("optimizer"),
+                scheduler=m3gnet_hypers.get("scheduler"),
+            )
         else:  # finetune pretrained model
             logging.info(
                 f"Finetuning pretrained model: {m3gnet_hypers['pretrained_model']}"
@@ -848,8 +869,23 @@ def m3gnet_fitting(
             lit_module = PotentialLightningModule(
                 model=model,
                 element_refs=property_offset,
-                lr=1e-4,
-                include_line_graph=True,
+                include_line_graph=m3gnet_hypers.get("include_line_graph"),
+                allow_missing_labels=m3gnet_hypers.get("allow_missing_labels"),
+                energy_weight=m3gnet_hypers.get("energy_weight"),
+                force_weight=m3gnet_hypers.get("force_weight"),
+                lr=m3gnet_hypers.get("lr"),
+                loss=m3gnet_hypers.get("loss"),
+                loss_params=m3gnet_hypers.get("loss_params"),
+                stress_weight=m3gnet_hypers.get("stress_weight"),
+                magmom_weight=m3gnet_hypers.get("magmom_weight"),
+                data_mean=m3gnet_hypers.get("data_mean"),
+                data_std=m3gnet_hypers.get("data_std"),
+                decay_alpha=m3gnet_hypers.get("decay_alpha"),
+                decay_steps=m3gnet_hypers.get("decay_steps"),
+                sync_dist=m3gnet_hypers.get("sync_dist"),
+                magmom_target=m3gnet_hypers.get("magmom_target"),
+                optimizer=m3gnet_hypers.get("optimizer"),
+                scheduler=m3gnet_hypers.get("scheduler"),
             )
 
         logger = CSVLogger(name=exp_name, save_dir=os.path.join(results_dir, "logs"))
