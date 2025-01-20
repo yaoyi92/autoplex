@@ -1,6 +1,6 @@
 version  4
 type  2 Li Cl
-type_weight  0.5 1.0
+type_weight  1.0 1.0
 model_type   0
 prediction  0
 cutoff  8 4

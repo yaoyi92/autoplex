@@ -248,9 +248,8 @@ def test_mlip_fit_maker_jace(
     # check if julia-ACE potential file is generated
     assert Path(jacefit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
 
-@pytest.mark.skip(reason="We can enable this after mock_nep fixture is added")
 def test_mlip_fit_maker_nep(
-        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
+        test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, mock_nep, clean_dir
 ):
     from pathlib import Path
     from jobflow import run_locally
@@ -270,12 +269,21 @@ def test_mlip_fit_maker_nep(
         **{"generation": 100, "batch": 100},
     )
 
+    ref_paths_nep = {"machine_learning_fit": "LiCl"}
+    fake_run_nep_kwargs = {
+        "machine_learning_fit": {"nep_settings": ["generation", "batch", "type_weight"], "check_nep_inputs": True}}
+    mock_nep(ref_paths_nep, fake_run_nep_kwargs)
+
     _ = run_locally(
         nepfit, ensure_success=True, create_folders=True, store=memory_jobstore
     )
 
     # check if NEP potential file is generated
     assert Path(nepfit.output["mlip_path"][0].resolve(memory_jobstore)).exists()
+    # check if model outputs are as expected
+    assert nepfit.output["test_error"].resolve(memory_jobstore) == pytest.approx(0.00606)
+    assert nepfit.output["train_error"].resolve(memory_jobstore) == pytest.approx(0.00191)
+    assert nepfit.output["convergence"].resolve(memory_jobstore)
 
 def test_mlip_fit_maker_nequip(
         test_dir, memory_jobstore, vasp_test_dir, fit_input_dict, clean_dir
