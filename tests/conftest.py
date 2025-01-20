@@ -262,7 +262,7 @@ def copy_nep_outputs(ref_path: str | Path):
     output_path = ref_path / "outputs"
     for output_file in output_path.iterdir():
         # Copy all files except the input files
-        if output_file.is_file() and output_file.suffix != ".in" and output_file.suffix != ".xyz":
+        if output_file.is_file():
             shutil.copy(output_file, ".")
 
 @job
