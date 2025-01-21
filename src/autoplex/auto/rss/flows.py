@@ -235,7 +235,7 @@ class RssMaker(Maker):
         """
         default_config = self.rss_config.model_copy(deep=True)
         if kwargs:
-            default_config = default_config.update_parameters(kwargs)
+            default_config.update_parameters(kwargs)
 
         config_params = default_config.model_dump(by_alias=True, exclude_none=True)
 
