@@ -39,9 +39,9 @@ from autoplex.auto.rss.flows import RssMaker
 from fireworks import LaunchPad
 from jobflow.managers.fireworks import flow_to_workflow
 
-config = RssConfig.from_file('path/to/your/config.yaml')
+rss_config = RssConfig.from_file('path/to/your/config.yaml')
 
-rss_job = RssMaker(name="your workflow name", config=config).make()
+rss_job = RssMaker(name="your workflow name", rss_config=rss_config).make()
 wf = flow_to_workflow(rss_job) 
 lpad = LaunchPad.auto_load()
 lpad.add_wf(wf)
@@ -51,10 +51,12 @@ The above code is based on [`FireWorks`](https://materialsproject.github.io/fire
 
 
 ```python
+from autoplex.settings import RssConfig
 from autoplex.auto.rss.flows import RssMaker
 from jobflow_remote import submit_flow
 
-rss_job = RssMaker(name="your workflow name", config_file='path/to/your/name.yaml').make()
+rss_config = RssConfig.from_file('path/to/your/config.yaml')
+rss_job = RssMaker(name="your workflow name", rss_config=rss_config).make()
 resources = {"nodes": N, "partition": "name", "qos": "name", "time": "8:00:00", "mail_user": "your_email", "mail_type": "ALL", "account": "your account"}
 print(submit_flow(rss_job, worker="your worker", resources=resources, project="your project name"))
 ```
