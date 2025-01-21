@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Literal
 
+import numpy as np  # noqa: TC002
 from monty.serialization import loadfn
 from pydantic import BaseModel, ConfigDict, Field
 from torch.optim import Optimizer  # noqa: TC002
@@ -515,6 +516,9 @@ class M3GNETSettings(AutoplexBaseModel):
         default=0, description="Dimension of state embedding"
     )
     energy_weight: float = Field(default=1.0, description="Weight for energy loss")
+    element_refs: np.ndarray | None = Field(
+        default=None, description="Element offset for PES"
+    )
     force_weight: float = Field(default=1.0, description="Weight for forces loss")
     include_line_graph: bool = Field(
         default=True, description="Whether to include line graph"

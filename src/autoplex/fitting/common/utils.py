@@ -841,6 +841,7 @@ def m3gnet_fitting(
             )
             lit_module = PotentialLightningModule(
                 model=model,
+                element_refs=m3gnet_hypers.get("element_refs"),
                 include_line_graph=m3gnet_hypers.get("include_line_graph"),
                 allow_missing_labels=m3gnet_hypers.get("allow_missing_labels"),
                 energy_weight=m3gnet_hypers.get("energy_weight"),
