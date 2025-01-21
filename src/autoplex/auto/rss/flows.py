@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 
 from jobflow import Flow, Maker, Response, job
 
-from autoplex import RSS_CONFIG
 from autoplex.auto.rss.jobs import do_rss_iterations, initial_rss
+from autoplex.settings import RssConfig
 
 
 @dataclass
@@ -17,13 +17,13 @@ class RssMaker(Maker):
     ----------
     name: str
         Name of the flow.
-    config: RSS_CONFIG
+    rss_config: RssConfig
         Pydantic model that defines the setup parameters for the whole RSS workflow.
         If not explicitly set, the defaults from 'autoplex.settings.RssConfig' will be used.
     """
 
     name: str = "ml-driven rss"
-    config: RSS_CONFIG = field(default_factory=lambda: RSS_CONFIG)
+    rss_config: RssConfig = field(default_factory=lambda: RssConfig())
 
     @job
     def make(self, **kwargs):
@@ -233,9 +233,11 @@ class RssMaker(Maker):
             - 'current_iter': int, The current iteration index.
             - 'kb_temp': float, The temperature (in eV) for Boltzmann sampling.
         """
-        default_config = self.config.model_copy(deep=True)
-        updated_config = default_config.update_parameters(kwargs)
-        config_params = updated_config.model_dump(by_alias=True, exclude_none=True)
+        default_config = self.rss_config.model_copy(deep=True)
+        if kwargs:
+            default_config = default_config.update_parameters(kwargs)
+
+        config_params = default_config.model_dump(by_alias=True, exclude_none=True)
 
         self._process_hookean_paras(config_params)
 
