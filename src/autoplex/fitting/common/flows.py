@@ -40,9 +40,8 @@ class MLIPFitMaker(Maker):
     ----------
     name : str
         Name of the flows produced by this maker.
-    mlip_type: str
-        Choose one specific MLIP type to be fitted:
-        'GAP' | 'J-ACE' | 'NEQUIP' | 'M3GNET' | 'MACE'
+    mlip_type: Literal["GAP", "J-ACE", "NEP", "NEQUIP", "M3GNET", "MACE"]
+        Choose one specific MLIP type to be fitted.
     hyperpara_opt: bool
         Perform hyperparameter optimization using XPOT
         (XPOT: https://pubs.aip.org/aip/jcp/article/159/2/024803/2901815)
