@@ -269,7 +269,7 @@ def test_mlip_fit_maker_nep(
         **{"generation": 100, "batch": 100},
     )
 
-    ref_paths_nep = {"machine_learning_fit": "LiCl"}
+    ref_paths_nep = {"machine_learning_fit": "LiCl_mlipfitmaker"}
     fake_run_nep_kwargs = {
         "machine_learning_fit": {"nep_settings": ["generation", "batch", "type_weight"], "check_nep_inputs": True}}
     mock_nep(ref_paths_nep, fake_run_nep_kwargs)

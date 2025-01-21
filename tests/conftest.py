@@ -136,7 +136,7 @@ def memory_jobstore():
 
 @pytest.fixture(scope="session")
 def nep_test_dir(test_dir):
-    return test_dir / "nep"
+    return test_dir / "fitting" / "NEP"
 
 @pytest.fixture
 def mock_nep(monkeypatch, nep_test_dir):

@@ -946,8 +946,8 @@ def test_complete_dft_vs_ml_benchmark_workflow_nep(
         pre_database_dir=test_dir / "fitting" / "ref_files",
         benchmark_structures=[structure],
         fit_kwargs_list=[{
-            "generation": 100,
-            "batch": 100,
+            "generation": 1000,
+            "batch": 1,
             }]
     )
 
@@ -955,7 +955,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_nep(
     mock_vasp(ref_paths4_mpid, fake_run_vasp_kwargs4_mpid)
 
     # mock nep
-    ref_paths_nep = {"machine_learning_fit": "LiCl"}
+    ref_paths_nep = {"machine_learning_fit": "LiCl_complete_dft_vs_ml_benchmark_workflow"}
     fake_run_nep_kwargs = {
         "machine_learning_fit": {"nep_settings": ["generation", "batch", "type_weight"], "check_nep_inputs": True}}
     mock_nep(ref_paths_nep, fake_run_nep_kwargs)
@@ -970,7 +970,7 @@ def test_complete_dft_vs_ml_benchmark_workflow_nep(
     assert complete_workflow_nep.jobs[5].name == "complete_benchmark_mp-22905"
     assert responses[complete_workflow_nep.jobs[-1].output.uuid][1].output["metrics"][0][0][
                "benchmark_phonon_rmse"] == pytest.approx(
-        1.2588388619302524
+        3.8951576702856716
     )
 
 def test_complete_dft_vs_ml_benchmark_workflow_mace(
