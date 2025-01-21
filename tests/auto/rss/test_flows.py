@@ -315,13 +315,13 @@ def test_rssmaker_custom_config_file(test_dir):
     config_model = RssConfig.from_file(test_dir / "rss" / "rss_config.yaml")
 
     # Test if config is updated as expected
-    rss = RssMaker(config=config_model)
+    rss = RssMaker(rss_config=config_model)
 
-    assert rss.config.tag == "test"
-    assert rss.config.generated_struct_numbers == [9000, 1000]
-    assert rss.config.num_processes_buildcell == 64
-    assert rss.config.num_processes_fit == 64
-    assert rss.config.device_for_rss == "cuda"
-    assert rss.config.isolatedatom_box == [10, 10, 10]
-    assert rss.config.dimer_box == [10, 10, 10]
+    assert rss.rss_config.tag == "test"
+    assert rss.rss_config.generated_struct_numbers == [9000, 1000]
+    assert rss.rss_config.num_processes_buildcell == 64
+    assert rss.rss_config.num_processes_fit == 64
+    assert rss.rss_config.device_for_rss == "cuda"
+    assert rss.rss_config.isolatedatom_box == [10, 10, 10]
+    assert rss.rss_config.dimer_box == [10, 10, 10]
 
