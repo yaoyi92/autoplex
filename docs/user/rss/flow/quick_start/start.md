@@ -103,8 +103,8 @@ print(MLIP_HYPERS.MACE) # Eg:- access MACE hyperparameters
 rss_job = RssMaker(name="your workflow name").make(tag='SiO2',
                                                    ... # Other parameters here
                                                    mlip_type='MACE',
-                                                   hidden_irreps="128x0e + 128x1o",
-                                                   r_max=5.0)
+                                                   {"MACE": "hidden_irreps":"128x0e + 128x1o","r_max":5.0},
+                                                   )
 ```
 
 > **Note**: We primarily recommend the GAP-RSS model for now, as GAP has demonstrated great stability with small datasets. Other models have not been thoroughly explored yet. However, we encourage users to experiment with and test other individual models or combinations for potentially interesting results.
