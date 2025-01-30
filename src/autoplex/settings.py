@@ -73,6 +73,7 @@ class AutoplexBaseModel(BaseModel):
             filename (str): The name of the file to load the parameters from.
         """
         custom_params = loadfn(filename)
+
         return cls(**custom_params)
 
 
@@ -262,8 +263,8 @@ class NEQUIPSettings(AutoplexBaseModel):
         default=False,
         description="When true a restarted run will append to the previous log file",
     )
-    default_dtype: str = Field(default="float32", description="Default data type")
-    model_dtype: str = Field(default="float32", description="Model data type")
+    default_dtype: str = Field(default="float64", description="Default data type")
+    model_dtype: str = Field(default="float64", description="Model data type")
     allow_tf32: bool = Field(
         default=True,
         description="Consider setting to false if you plan to mix "
@@ -758,7 +759,9 @@ class MLIPHypers(AutoplexBaseModel):
         default_factory=GAPSettings, description="Hyperparameters for the GAP model"
     )
     J_ACE: JACESettings = Field(
-        default_factory=JACESettings, description="Hyperparameters for the J-ACE model"
+        default_factory=JACESettings,
+        description="Hyperparameters for the J-ACE model",
+        alias="J-ACE",
     )
     NEQUIP: NEQUIPSettings = Field(
         default_factory=NEQUIPSettings,
@@ -886,42 +889,6 @@ class CustomIncar(AutoplexBaseModel):
     NCORE: int = 16
     LSCALAPACK: str = ".FALSE."
     LPLANE: str = ".FALSE."
-
-
-class Twob(AutoplexBaseModel):
-    """A model describing the two-body GAP parameters."""
-
-    cutoff: float = Field(default=5.0, description="Radial cutoff distance")
-    n_sparse: int = Field(default=15, description="Number of sparse points")
-    theta_uniform: float = Field(
-        default=1.0, description="Width of the uniform distribution for theta"
-    )
-
-
-class Threeb(AutoplexBaseModel):
-    """A model describing the three-body GAP parameters."""
-
-    cutoff: float = Field(default=3.0, description="Radial cutoff distance")
-
-
-class Soap(AutoplexBaseModel):
-    """A model describing the SOAP GAP parameters."""
-
-    l_max: int = Field(default=10, description="Maximum degree of spherical harmonics")
-    n_max: int = Field(
-        default=10, description="Maximum number of radial basis functions"
-    )
-    atom_sigma: float = Field(default=0.5, description="Width of Gaussian smearing")
-    n_sparse: int = Field(default=2500, description="Number of sparse points")
-    cutoff: float = Field(default=5.0, description="Radial cutoff distance")
-
-
-class General(AutoplexBaseModel):
-    """A model describing the general GAP parameters."""
-
-    three_body: bool = Field(
-        default=False, description="Whether to include three-body terms"
-    )
 
 
 class RssConfig(AutoplexBaseModel):
@@ -1095,21 +1062,6 @@ class RssConfig(AutoplexBaseModel):
     device_for_fitting: Literal["cpu", "cuda"] = Field(
         default="cpu", description="Device to be used for model fitting"
     )
-    twob: Twob = Field(
-        default_factory=Twob,
-        description="Parameters for the two-body descriptor, Applicable on to GAP",
-    )
-    threeb: Threeb = Field(
-        default_factory=Threeb,
-        description="Parameters for the three-body descriptor, Applicable on to GAP",
-    )
-    soap: Soap = Field(
-        default_factory=Soap,
-        description="Parameters for the SOAP descriptor, Applicable on to GAP",
-    )
-    general: General = Field(
-        default_factory=General, description="General parameters for the GAP model"
-    )
     scalar_pressure_method: Literal["exp", "uniform"] = Field(
         default="uniform", description="Method for adding external pressures."
     )
@@ -1174,3 +1126,43 @@ class RssConfig(AutoplexBaseModel):
     device_for_rss: Literal["cpu", "cuda"] = Field(
         default="cpu", description="Device to be used for RSS calculations."
     )
+    mlip_hypers: MLIPHypers = Field(
+        default_factory=MLIPHypers, description="MLIP hyperparameters"
+    )
+
+    @classmethod
+    def from_file(cls, filename: str):
+        """Create RSS configuration object from a file."""
+        config_params = loadfn(filename)
+
+        # check if config file has the required keys when train_from_scratch is False
+        train_from_scratch = config_params.get("train_from_scratch")
+        resume_from_previous_state = config_params.get("resume_from_previous_state")
+
+        if not train_from_scratch:
+            for key, value in resume_from_previous_state.items():
+                if value is None:
+                    raise ValueError(
+                        f"Value for {key} in `resume_from_previous_state` cannot be None when "
+                        f"`train_from_scratch` is set to False"
+                    )
+
+        # check if mlip arg is in the config file
+        # Needed for backward compatibility with older config files of RSS workflow
+        mlip_type = config_params["mlip_type"].replace("-", "_")
+        mlip_hypers = MLIPHypers().__getattribute__(mlip_type)
+
+        if "mlip_hypers" not in config_params:
+            config_params["mlip_hypers"] = {config_params["mlip_type"]: {}}
+
+        old_config_keys = []
+        for arg in config_params:
+            mlip_type = config_params["mlip_type"].replace("-", "_")
+            if arg in mlip_hypers.model_fields:
+                config_params["mlip_hypers"][mlip_type][arg] = config_params[arg]
+                old_config_keys.append(arg)
+
+        for key in old_config_keys:
+            del config_params[key]
+
+        return cls(**config_params)
