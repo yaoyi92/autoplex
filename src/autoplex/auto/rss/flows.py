@@ -239,6 +239,11 @@ class RssMaker(Maker):
 
         config_params = default_config.model_dump(by_alias=True, exclude_none=True)
 
+        # Extract MLIP hyperparameters from the config_params
+        mlip_hypers = config_params["mlip_hypers"][config_params["mlip_type"]]
+        del config_params["mlip_hypers"]
+        config_params.update(mlip_hypers)
+
         self._process_hookean_paras(config_params)
 
         if "train_from_scratch" not in config_params:
