@@ -1159,7 +1159,9 @@ class RssConfig(AutoplexBaseModel):
         for arg in config_params:
             mlip_type = config_params["mlip_type"].replace("-", "_")
             if arg in mlip_hypers.model_fields:
-                config_params["mlip_hypers"][mlip_type][arg] = config_params[arg]
+                config_params["mlip_hypers"][mlip_type].update(
+                    {arg: config_params[arg]}
+                )
                 old_config_keys.append(arg)
 
         for key in old_config_keys:
