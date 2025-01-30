@@ -1191,7 +1191,6 @@ def test_complete_dft_vs_ml_benchmark_workflow_nequip(
             "batch_size": 1,
             "learning_rate": 0.005,
             "max_epochs": 1,
-            "default_dtype": "float32",
             "device": "cpu",
         }]
     )
