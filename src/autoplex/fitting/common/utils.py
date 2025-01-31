@@ -826,7 +826,7 @@ def m3gnet_fitting(
             num_workers=1,
         )
         # train from scratch
-        if not m3gnet_hypers["pretrained_model"]:  # train from scratch
+        if not m3gnet_hypers["foundation_model"]:  # train from scratch
             model = M3GNet(
                 element_types=train_element_types,
                 is_intensive=m3gnet_hypers.get("is_intensive"),
@@ -860,13 +860,17 @@ def m3gnet_fitting(
                 optimizer=m3gnet_hypers.get("optimizer"),
                 scheduler=m3gnet_hypers.get("scheduler"),
             )
-        else:  # finetune pretrained model
+        else:  # finetune a foundation model (pretrained model)
             logging.info(
-                f"Finetuning pretrained model: {m3gnet_hypers['pretrained_model']}"
+                f"Finetuning foundation model: {m3gnet_hypers['foundation_model']}"
             )
-            m3gnet_nnp = matgl.load_model(m3gnet_hypers["pretrained_model"])
+            m3gnet_nnp = matgl.load_model(m3gnet_hypers["foundation_model"])
             model = m3gnet_nnp.model
-            property_offset = m3gnet_nnp.element_refs.property_offset
+            property_offset = (
+                m3gnet_nnp.element_refs.property_offset
+                if m3gnet_hypers["use_foundation_model_element_refs"]
+                else None
+            )
             lit_module = PotentialLightningModule(
                 model=model,
                 element_refs=property_offset,

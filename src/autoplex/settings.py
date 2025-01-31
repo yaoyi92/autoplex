@@ -496,7 +496,7 @@ class M3GNETSettings(AutoplexBaseModel):
     results_dir: str = Field(
         default="m3gnet_results", description="Directory to save the results"
     )
-    pretrained_model: str | None = Field(
+    foundation_model: str | None = Field(
         default=None,
         description="Pretrained model. Can be a Path to locally stored model "
         "or name of pretrained PES model available in the "
@@ -505,6 +505,9 @@ class M3GNETSettings(AutoplexBaseModel):
         "model is provided, ensure system has internet "
         "access to be able to download the model."
         "If None, the model will be trained from scratch.",
+    )
+    use_foundation_model_element_refs: bool = Field(
+        default=False, description="Use element refs from the foundation model"
     )
     allow_missing_labels: bool = Field(
         default=False, description="Allow missing labels"
