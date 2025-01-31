@@ -6,8 +6,8 @@ import logging
 from typing import Any, Literal
 
 import numpy as np  # noqa: TC002
+from monty.json import MontyDecoder, jsanitize
 from monty.serialization import loadfn
-from monty.json import jsanitize, MontyDecoder
 from pydantic import BaseModel, ConfigDict, Field
 from torch.optim import Optimizer  # noqa: TC002
 from torch.optim.lr_scheduler import LRScheduler  # noqa: TC002
@@ -79,7 +79,9 @@ class AutoplexBaseModel(BaseModel):
 
     def as_dict(self):
         """Return the model as a MSONable dictionary."""
-        return jsanitize(self.model_copy(deep=True), strict=True, allow_bson=True, enum_values=True)
+        return jsanitize(
+            self.model_copy(deep=True), strict=True, allow_bson=True, enum_values=True
+        )
 
     @classmethod
     def from_dict(cls, d: dict):
@@ -94,6 +96,7 @@ class AutoplexBaseModel(BaseModel):
             if not k.startswith("@")
         }
         return cls(**decoded)
+
 
 class GAPGeneralSettings(AutoplexBaseModel):
     """Model describing general hyperparameters for the GAP fits."""
