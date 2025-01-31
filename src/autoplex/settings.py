@@ -8,7 +8,6 @@ from typing import Any, Literal
 import numpy as np  # noqa: TC002
 from monty.serialization import loadfn
 from monty.json import jsanitize, MontyDecoder
-from pandas.core.window.doc import kwargs_scipy
 from pydantic import BaseModel, ConfigDict, Field
 from torch.optim import Optimizer  # noqa: TC002
 from torch.optim.lr_scheduler import LRScheduler  # noqa: TC002
