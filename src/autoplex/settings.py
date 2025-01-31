@@ -876,9 +876,11 @@ class BuildcellOptions(AutoplexBaseModel):
         "values are (1,2,3,5,4,6,7,8,9,10,11,12,24). "
         "Ranges are allowed (e.g., #SYMMOPS=1-4).",
     )
-    SYSTEM: None | Literal["Rhom", "Tric", "Mono", "Cubi", "Hexa", "Orth", "Tetra"] = (
-        Field(default=None, description="Enforce a crystal system")
-    )
+    SYSTEM: (
+        None
+        | Literal["Rhom", "Tric", "Mono", "Cubi", "Hexa", "Orth", "Tetra"]
+        | set[Literal["Rhom", "Tric", "Mono", "Cubi", "Hexa", "Orth", "Tetra"]]
+    ) = Field(default=None, description="Enforce a crystal system")
     SLACK: float | None = Field(default=None, description="The slack factor")
     OCTET: bool = Field(
         default=False,
