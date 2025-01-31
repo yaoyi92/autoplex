@@ -162,7 +162,7 @@ def initial_rss(
 
         - 'test_error': float, The test error of the fitted MLIP.
         - 'pre_database_dir': str, The directory of the preprocessed database.
-        - 'mlip_path': str, The path to the fitted MLIP.
+        - 'mlip_path': List of path to the fitted MLIP.
         - 'isolated_atom_energies': dict, The isolated energy values.
         - 'current_iter': int, The current iteration index, set to 0.
     """
@@ -330,8 +330,8 @@ def do_rss_iterations(
                 The test error of the fitted MLIP.
             pre_database_dir: str
                 The directory of the preprocessed database.
-            mlip_path: str
-                The path to the fitted MLIP.
+            mlip_path: list[str]
+                List of path to the fitted MLIP.
             isolated_atom_energies: dict
                 The isolated energy values.
             current_iter: int
@@ -471,7 +471,7 @@ def do_rss_iterations(
 
         - 'test_error': float, The test error of the fitted MLIP.
         - 'pre_database_dir': str, The directory of the preprocessed database.
-        - 'mlip_path': str, The path to the fitted MLIP.
+        - 'mlip_path': List of path to the fitted MLIP.
         - 'isolated_atom_energies': dict, The isolated energy values.
         - 'current_iter': int, The current iteration index.
         - 'kt': float, The temperature (in eV) for Boltzmann sampling.

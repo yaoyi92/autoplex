@@ -348,7 +348,7 @@ def process_rss(
     mlip_type: str
         Choose one specific MLIP type:
         'GAP' | 'J-ACE' | 'NequIP' | 'M3GNet' | 'MACE'.
-    mlip_path: str | list
+    mlip_path: str | list[str]
         Path to the MLIP model or List of Path to the MLIP model.
     output_file_name: str
         Prefix for the trajectory/log file name. The actual output file name
@@ -556,7 +556,7 @@ def process_rss(
 
 def minimize_structures(
     mlip_type: str,
-    mlip_path: str | list[str],
+    mlip_path: list[str],
     iteration_index: str,
     structures: list[Structure],
     output_file_name: str = "RSS_relax_results",
@@ -585,8 +585,8 @@ def minimize_structures(
     mlip_type: str
         Choose one specific MLIP type:
         'GAP' | 'J-ACE' | 'NequIP' | 'M3GNet' | 'MACE'.
-    mlip_path: str | list[str]
-        Path to the MLIP model or List of path to the MLIP model.
+    mlip_path: list[str]
+        List of path to the MLIP model.
     iteration_index: str
         Index for the current iteration.
     structures: list[Structure]
