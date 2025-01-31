@@ -7,6 +7,8 @@ from typing import Any, Literal
 
 import numpy as np  # noqa: TC002
 from monty.serialization import loadfn
+from monty.json import jsanitize, MontyDecoder
+from pandas.core.window.doc import kwargs_scipy
 from pydantic import BaseModel, ConfigDict, Field
 from torch.optim import Optimizer  # noqa: TC002
 from torch.optim.lr_scheduler import LRScheduler  # noqa: TC002
@@ -76,8 +78,25 @@ class AutoplexBaseModel(BaseModel):
 
         return cls(**custom_params)
 
+    def as_dict(self):
+        """Return the model as a MSONable dictionary."""
+        return jsanitize(self.model_copy(deep=True), strict=True, allow_bson=True, enum_values=True)
 
-class GeneralSettings(AutoplexBaseModel):
+    @classmethod
+    def from_dict(cls, d: dict):
+        """Create a model from a MSONable dictionary.
+
+        Args:
+            d (dict): A MSONable dictionary representation of the Model.
+        """
+        decoded = {
+            k: MontyDecoder().process_decoded(v)
+            for k, v in d.items()
+            if not k.startswith("@")
+        }
+        return cls(**decoded)
+
+class GAPGeneralSettings(AutoplexBaseModel):
     """Model describing general hyperparameters for the GAP fits."""
 
     at_file: str = Field(
@@ -198,8 +217,8 @@ class SoapSettings(AutoplexBaseModel):
 class GAPSettings(AutoplexBaseModel):
     """Model describing the hyperparameters for the GAP fits for Phonons."""
 
-    general: GeneralSettings = Field(
-        default_factory=GeneralSettings,
+    general: GAPGeneralSettings = Field(
+        default_factory=GAPGeneralSettings,
         description="General hyperparameters for the GAP fits",
     )
     twob: TwobSettings = Field(
