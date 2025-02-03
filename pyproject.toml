@@ -1,6 +1,7 @@
 [build-system]
 requires = [
   "setuptools>=65.0.0",
+  "setuptools-scm>=6",
   "wheel",
 ]
 build-backend = "setuptools.build_meta"
@@ -12,7 +13,8 @@ readme = "README.md"
 keywords = ["high-throughput", "automated", "mlpotential"]
 license = { text = "GPL-3.0 license" }
 authors = [{ name = "Janine George", email = "janine.george@bam.de" }]
-version = "0.1.1"
+# version = "0.1.1"
+dynamic = ["version"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -85,9 +87,7 @@ strict = [
 dev = ["pre-commit>=2.12.1"]
 tests = ["pytest", "pytest-mock", "pytest-split", "pytest-cov", "types-setuptools"]
 
-[tool.versioningit.vcs]
-method = "git"
-default-tag = "0.0.1"
+[tool.setuptools_scm]
 
 
 [tool.cibuildwheel.linux]
