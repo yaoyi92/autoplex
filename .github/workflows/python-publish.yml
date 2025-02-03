@@ -8,15 +8,52 @@
 
 name: Publish autoplex
 on:
-  workflow_dispatch:
   release:
     types: [published]
 
 jobs:
-  deploy:
+  update-changelog:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Fetch Version Tag & Release Notes
+        id: get_release_info
+        run: |
+          echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          echo "NOTES<<EOF" >> $GITHUB_ENV
+          gh release view ${{ github.event.release.tag_name }} --json body -q .body >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Insert Version Tag & Release Notes Below `# Changelog`
+        run: |
+          { echo "# Changelog"; echo; echo "## $VERSION"; echo; echo "$NOTES"; echo; tail -n +2 CHANGELOG.md; } > temp.md && mv temp.md CHANGELOG.md
+          
+      - name: Create Pull Request to push updated CHANGELOG.md
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.ACTION_SECRET }}
+          commit-message: update CHANGELOG
+          title: Update changelog with latest release notes
+          body: Update CHANGELOG.md to reflect release changes
+          branch: update-changelog
+          labels: |
+            automated-pr
+          delete-branch: true
+          base: main
+
+  deploy:
+    needs: update-changelog
+    runs-on: ubuntu-latest
+    steps:
+    - name: Pause for 5 minutes to merge update Changelog PR
+      run: |
+          echo "Wait for 5 minutes to merge PR..."
+          sleep 300
+          echo "Resuming workflow..."
     - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -31,91 +68,3 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
-
-  generate-release-notes:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write    
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-        
-      - name: Fetch Version Tag
-        id: get_version
-        run: echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-
-      - name: Generate Categorized Release Notes and CHANGELOG
-        id: generate_notes
-        run: |
-          echo "NOTES<<EOF" >> $GITHUB_ENV
-          PRS=$(gh api repos/${{ github.repository }}/pulls --jq '.[] | select(.merged_at != null) | {title: .title, url: .html_url, labels: [.labels[].name]}' --paginate)
-
-          ENHANCEMENTS=$(echo "$PRS" | jq -r 'select(.labels | index("enhancement")) | "- \(.title) ([#\(.url | split("/")[-1])](\(.url)))"' || true)
-          BUG_FIXES=$(echo "$PRS" | jq -r 'select(.labels | index("bug")) | "- \(.title) ([#\(.url | split("/")[-1])](\(.url)))"' || true)
-          HOUSEKEEPING=$(echo "$PRS" | jq -r 'select(.labels | index("housekeeping")) | "- \(.title) ([#\(.url | split("/")[-1])](\(.url)))"' || true)
-          DOCS=$(echo "$PRS" | jq -r 'select(.labels | index("documentation")) | "- \(.title) ([#\(.url | split("/")[-1])](\(.url)))"' || true)
-          DEPENDENCIES=$(echo "$PRS" | jq -r 'select(.labels | index("dependencies")) | "- \(.title) ([#\(.url | split("/")[-1])](\(.url)))"' || true)
-          OTHER=$(echo "$PRS" | jq -r 'select(.labels | length == 0) | "- \(.title) ([#\(.url | split("/")[-1])](\(.url)))"' || true)
-
-          if [ ! -z "$ENHANCEMENTS" ]; then
-            echo "### 🚀 Enhancements" >> $GITHUB_ENV
-            echo "$ENHANCEMENTS" >> $GITHUB_ENV
-            echo "" >> $GITHUB_ENV
-          fi
-          
-          if [ ! -z "$BUG_FIXES" ]; then
-            echo "### 🐛 Bug Fixes" >> $GITHUB_ENV
-            echo "$BUG_FIXES" >> $GITHUB_ENV
-            echo "" >> $GITHUB_ENV
-          fi
-
-          if [ ! -z "$HOUSEKEEPING" ]; then
-            echo "### 🧹 Housekeeping" >> $GITHUB_ENV
-            echo "$HOUSEKEEPING" >> $GITHUB_ENV
-            echo "" >> $GITHUB_ENV
-          fi
-          
-          if [ ! -z "$DOCS" ]; then
-            echo "### 📚 Documentation" >> $GITHUB_ENV
-            echo "$DOCS" >> $GITHUB_ENV
-            echo "" >> $GITHUB_ENV
-          fi
-
-          if [ ! -z "$DEPENDENCIES" ]; then
-            echo "### 📦 Dependencies" >> $GITHUB_ENV
-            echo "$DEPENDENCIES" >> $GITHUB_ENV
-            echo "" >> $GITHUB_ENV
-          fi
-          
-          if [ ! -z "$OTHER" ]; then
-            echo "### 🔄 Other Changes" >> $GITHUB_ENV
-            echo "$OTHER" >> $GITHUB_ENV
-            echo "" >> $GITHUB_ENV
-          fi
-
-          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ github.event.release.previous_tag_name }}...${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-
-          echo "EOF" >> $GITHUB_ENV
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update GitHub Release Notes with Categorized formatting
-        run: |
-          gh release edit $VERSION --notes "$NOTES"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Insert Categorised release Notes into CHANGELOG.md
-        run: |
-          { echo "# Changelog"; echo; echo "## $VERSION"; echo; echo "$NOTES"; echo; tail -n +2 CHANGELOG.md; } > temp.md && mv temp.md CHANGELOG.md
-                    
-      - name: Create Pull Request to push updated CHANGELOG.md
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.ACTION_SECRET }}
-          commit-message: update CHANGELOG
-          title: Update changelog with latest release notes
-          body: Update CHANGELOG.md to reflect release changes
-          branch: update-changelog
-          delete-branch: true
-          base: main

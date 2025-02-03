@@ -89,5 +89,7 @@ jobs:
         title: Update devcontainer.json version tag
         body: Update devcontainer.json version tag to reflect release changes
         branch: update-devcontainer
+        labels: |
+            automated-pr
         delete-branch: true
         base: main
