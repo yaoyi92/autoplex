@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python, cuda toolkit and clean up tarballs
+# Install Python and clean up tarballs
 RUN micromamba install -y -n base -c conda-forge \ python=${PYTHON_VERSION} && \
     micromamba clean --all --yes
 
