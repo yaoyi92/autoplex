@@ -44,7 +44,7 @@ jobs:
         run: |
           mkdir -p docs/user/executable
           cp -r tutorials/* docs/user/executable
-          jupyter nbconvert --to markdown docs/user/executable/*.ipynb
+          micromamba run -n autoplex_docs jupyter nbconvert --to markdown docs/user/executable/*.ipynb
 
       - name: Build
         run: micromamba run -n autoplex_docs sphinx-build -W docs _build
