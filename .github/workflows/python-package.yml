@@ -165,5 +165,12 @@ jobs:
             uv pip install --prerelease=allow .[docs,strict]
             uv pip install --upgrade monty
             uv pip install numpy==1.26.4
+
+      - name: Copy tutorials
+        run: |
+          mkdir -p docs/user/executable
+          cp -r tutorials/* docs/user/executable
+          jupyter nbconvert --to markdown docs/user/executable/*.ipynb
+
       - name: Build
         run: micromamba run -n autoplex_docs sphinx-build -W docs _build
