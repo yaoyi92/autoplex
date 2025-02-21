@@ -10,7 +10,6 @@ All rights reserved.
 
 """
 
-
 import contextlib
 import os
 import shutil
@@ -18,11 +17,10 @@ import tempfile
 from collections.abc import Generator
 from pathlib import Path
 
+from atomate2.utils.testing.vasp import monkeypatch_vasp
 from pytest import MonkeyPatch
 
-from atomate2.utils.testing.vasp import monkeypatch_vasp
-
-TEST_ROOT = Path(__file__).parent.parent/ "tests"
+TEST_ROOT = Path(__file__).parent.parent / "tests"
 TEST_DIR = TEST_ROOT / "test_data"
 
 
@@ -38,7 +36,7 @@ def mock_vasp(ref_paths: dict, clean_folders=True) -> Generator:
     ------
         function: A function that mocks calls to VASP.
     """
-    for mf in monkeypatch_vasp(MonkeyPatch(), TEST_DIR ):
+    for mf in monkeypatch_vasp(MonkeyPatch(), TEST_DIR):
         fake_run_vasp_kwargs = {k: {"check_inputs": ()} for k in ref_paths}
         old_cwd = os.getcwd()
         new_path = tempfile.mkdtemp()
