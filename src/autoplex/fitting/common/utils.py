@@ -14,7 +14,7 @@ from pathlib import Path
 
 import ase
 import lightning as pl
-import matgl
+#import matgl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -29,11 +29,11 @@ from ase.neighborlist import NeighborList, natural_cutoffs
 from atomate2.utils.path import strip_hostname
 from calorine.nep import read_loss, write_nepfile, write_structures
 #from dgl.data.utils import split_dataset
-from matgl.apps.pes import Potential
-from matgl.ext.pymatgen import Structure2Graph, get_element_list
-from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
-from matgl.models import M3GNet
-from matgl.utils.training import PotentialLightningModule
+#from matgl.apps.pes import Potential
+#from matgl.ext.pymatgen import Structure2Graph, get_element_list
+#from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_pes
+#from matgl.models import M3GNet
+#from matgl.utils.training import PotentialLightningModule
 from monty.dev import requires
 from monty.serialization import dumpfn
 from nequip.ase import NequIPCalculator
