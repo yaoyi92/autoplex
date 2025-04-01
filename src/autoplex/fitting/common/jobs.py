@@ -10,7 +10,7 @@ from autoplex.fitting.common.utils import (
     check_convergence,
     gap_fitting,
     jace_fitting,
-    m3gnet_fitting,
+    #m3gnet_fitting,
     mace_fitting,
     nep_fitting,
     nequip_fitting,
@@ -187,17 +187,17 @@ def machine_learning_fit(
         )
         mlip_paths.append(train_test_error["mlip_path"])
 
-    elif mlip_type == "M3GNET":
-        train_test_error = m3gnet_fitting(
-            db_dir=database_dir,
-            hyperparameters=hyperparameters.M3GNET,
-            ref_energy_name=ref_energy_name,
-            ref_force_name=ref_force_name,
-            ref_virial_name=ref_virial_name,
-            fit_kwargs=fit_kwargs,
-            device=device,
-        )
-        mlip_paths.append(train_test_error["mlip_path"])
+    #elif mlip_type == "M3GNET":
+    #    train_test_error = m3gnet_fitting(
+    #        db_dir=database_dir,
+    #        hyperparameters=hyperparameters.M3GNET,
+    #        ref_energy_name=ref_energy_name,
+    #        ref_force_name=ref_force_name,
+    #        ref_virial_name=ref_virial_name,
+    #        fit_kwargs=fit_kwargs,
+    #        device=device,
+    #    )
+    #    mlip_paths.append(train_test_error["mlip_path"])
 
     elif mlip_type == "MACE":
         train_test_error = mace_fitting(
